@@ -13,6 +13,11 @@ chart is drawn from the chart, goldens are regenerated. A hand-kept list is the
 one thing that can quietly become a lie.
 **When you finish something, tick it here in the same commit.**
 
+⚠️ **Refer to an entry by its CODE, never by its line number.** Every item below
+carries one — `RAT-006`, `SCR-008` — and § *The codes* says what the areas mean and
+why a code is never reused. A line number is a fact about how much prose sits above
+an item, which is exactly the thing this file grows.
+
 ⚠️ **"One line per item, and a pointer" is what this said until 2026-09-05, and
 it had not been true for a long time** — the open entries below run to twelve
 kilobytes each because they carry the measurements that settled them, and that
@@ -21,13 +26,105 @@ headings say what they hold. **`## Not done` is only what is not done.** Finishe
 work and its reasoning moved to `docs/decisions.md`, which is where to look for
 why a shipped thing is the way it is.
 
+## The codes
+
+Every entry in this file carries a **tracking code** — `AREA-NNN` — and the three
+sections below are addressed by it rather than by a line number. A line number
+moves every time somebody writes a paragraph; a code does not.
+
+**A code is permanent.** It is assigned once, it never changes when an item is
+finished, moved between sections or refused, and a retired number is **never
+reused** — so a code in a commit message, a PR or a `docs/decisions.md` entry keeps
+meaning what it meant.
+
+**Anything new gets one, at the moment it is written down.** A feature and a bug are
+numbered the same way and out of the same sequence — the area already says what the
+subject is and the status column already says whether it is open, so a second prefix
+would be a third name for facts the code and the checkbox carry. Take the next free
+number in the area **by reading the index below**, not by counting entries: a retired
+number is still spent, so the index is the only thing that knows what is free.
+
+⚠️ **A bug fixed in the same sitting it was found still gets a code**, entered
+straight in as `done` with its measurements. The code exists so a commit, a PR and a
+later note can name the same thing; an item that was never open for a day needs that
+exactly as much as one that sat here for a month.
+
+⚠️ **The area is the function code and it is about the SUBJECT, not the file the
+fix lands in.** A rating defect fixed in `internal/core/battle` is still `RAT`,
+because what a reader wants to find is every entry about how the opponent
+chooses. Where an item genuinely straddles two, it takes the area of the half
+that is still open.
+
+| area | short for | what it covers |
+|---|---|---|
+| `ENG` | **eng**ine | the engine's own rules and arithmetic — the board, statuses, combat, the layer contract |
+| `RAT` | **rat**ing | `Suggest` and `price.go`: what the opponent chooses and what it charges for |
+| `PRG` | **pr**o**g**ression | learnsets, evolution lines, placements, builds |
+| `DAT` | **dat**a | balance numbers, `internal/seed/data`, and the golden files that record them |
+| `CAST` | **cast** | authored content: characters, art, flavour |
+| `SCR` | **scr**eens | `internal/screen`, both TUI clients, and `internal/i18n` |
+| `CLI` | **cli**ent | a client that is not one of the two TUIs |
+| `FRG` | **f**o**rg**e | `internal/forge` and the `hexforge` authoring tools |
+| `NET` | **net**work | PvP: rooms, the socket, the wire protocol, the host binary |
+
+⚠️ **`RAT` is *rating*** — what `Suggest` decides — and not a rodent, a rate or a
+ratio. It is the one area whose three letters read as an unrelated English word, so
+the column above exists rather than being obvious.
+
+**status** is `open` (not done), `done` (finished, entry kept in § *Not done* with
+its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
+
+| code | status | what it is |
+|---|---|---|
+| `ENG-001` | shipped | Engine |
+| `ENG-002` | shipped | Traits |
+| `ENG-003` | done | A one-way mirror rate stopped being a measurement above one unit a side — FOU… |
+| `ENG-004` | open | The two-number surface is a different pair, and no skill in the book can carr… |
+| `ENG-005` | done | A field inside a `modifier` was dropped silently in all three books — DONE, a… |
+| `ENG-006` | open | A gate at the top of the health bar — `passive.Condition.AboveHealth` |
+| `ENG-007` | open | Four ways of playing the board that the engine cannot express yet |
+| `ENG-008` | refused | Re-rolling the turn-order tie-break from the seed |
+| `ENG-009` | refused | A ceiling on `Skill.Power` |
+| `ENG-010` | refused | The queue as a third tie-break key |
+| `RAT-001` | shipped | The opponent |
+| `RAT-002` | shipped | Measuring the opponent |
+| `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
+| `RAT-004` | done | A guarded mirror never resolves, because the rating will not spend a guard —… |
+| `RAT-005` | done | The rating could not price hiding — DONE |
+| `RAT-006` | open | Two self-cast skills in one kit is a decision `Suggest` cannot make |
+| `RAT-007` | refused | Waiting — passing a turn because the next one is worth more |
+| `PRG-001` | shipped | Progression |
+| `PRG-002` | refused | `at_stage` on a learnset entry |
+| `PRG-003` | refused | A character class |
+| `DAT-001` | shipped | Balance |
+| `DAT-002` | open | Squad composition bonuses: the mechanism, the first TWO bonuses and the refer… |
+| `DAT-003` | done | A `hexforge new` churned `screens.golden` — DONE, by the third option this en… |
+| `DAT-004` | done | A golden holds a state and says nothing about the path to it — SWEPT, and the… |
+| `DAT-005` | done | `reckless` is the dragon build's 22.1% — CLOSED. All four levers are measured… |
+| `DAT-006` | refused | Rebalancing `reckless` |
+| `CAST-001` | open | Grow the cast |
+| `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
+| `SCR-001` | shipped | Reference screens |
+| `SCR-002` | shipped | Vietnamese |
+| `SCR-003` | shipped | Squads |
+| `SCR-004` | shipped | The aim list opens on every skill |
+| `SCR-005` | shipped | The battle screen budgets its own body |
+| `SCR-006` | shipped | A list of three reads as a sentence |
+| `SCR-007` | done | The battle screen says how many cells a shape catches and never which — DONE |
+| `SCR-008` | done | The cast listing draws every row, so the detail pane shrinks as the cast grow… |
+| `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
+| `CLI-001` | open | Graphical client with ebiten |
+| `FRG-001` | shipped | Authoring |
+| `FRG-002` | refused | A dependency ban |
+| `NET-001` | open | PvP over a LAN — 3v3 or 5v5, one server and n clients |
+
 ## Done
 
 The honest record is the git history — every entry below is a merged PR and
 `git log --oneline` is the full list, in order, and cannot go stale. The grouping
 is only so the shape is readable.
 
-- **Engine.** Turn-based battle on an odd-q hex grid, action-value turn order,
+- `ENG-001` **Engine.** Turn-based battle on an odd-q hex grid, action-value turn order,
   elemental chart. Verifiable logs — a cell and an aim are written only where
   there is one — replay, undo. Draws for a battle nobody can act in and for a
   deadlock. Piercing, healing, draining, regeneration. Conditions read the target
@@ -37,10 +134,10 @@ is only so the shape is readable.
   written. Reach counted in ranks from the far side rather than in cells from
   the caster. A resistance share may be negative, so a target can be made easier
   to afflict and not only harder. Summons. Taunt.
-- **Traits.** A character carries traits as well as a kit: permanent grants,
+- `ENG-002` **Traits.** A character carries traits as well as a kit: permanent grants,
   gated grants that come and go, resistances, replies to whatever attacked,
   amplifiers, drains, and a permanent speed change.
-- **Progression.** Learnsets as unlocks, a placement choosing four skills and one
+- `PRG-001` **Progression.** Learnsets as unlocks, a placement choosing four skills and one
   trait, evolution stages as an allowlist, and late-game builds as data with a
   screen of their own. A line may fork — `Stage.After` names a predecessor, so it
   is a tree — and is read **by order or by name, never both**, with `Furthest`
@@ -48,7 +145,7 @@ is only so the shape is readable.
   identifier and `progression.ValidateStageName` refuses one that could not be:
   it is the key an `after`, a placement and a learnset gate each spell by hand,
   so it is drawn raw in both languages and may not be a word out of one.
-- **Authoring.** `hexforge` (CLI, for pipes) and `hexforge-tui` (full screen)
+- `FRG-001` **Authoring.** `hexforge` (CLI, for pipes) and `hexforge-tui` (full screen)
   over one `internal/forge`, so the two cannot disagree. Skill authoring and
   editing, art picker, kit and allowlist pickers, budget bounds, spar, `weigh`
   and `check`. A flavour clause is authorable from the flags as well as the
@@ -56,9 +153,9 @@ is only so the shape is readable.
   the target's. **The three books answer an author the same way**: a status may
   carry its own `name` beside its numbers, exactly as a skill and a trait do,
   and `statuses.json` refuses a field it does not know rather than dropping it.
-- **Reference screens.** Statuses, traits, elements, species, and the affinity
+- `SCR-001` **Reference screens.** Statuses, traits, elements, species, and the affinity
   chart drawn as closed ASCII loops in element colour.
-- **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
+- `SCR-002` **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
   description is derived from the data, and only the flavour clause is authored.
   A status **category** is worded twice, because a sentence and a column want
   different parts of speech: `StatusCategory` is the predicate the statuses
@@ -91,7 +188,7 @@ is only so the shape is readable.
   entrances. Fixing a leak of this shape is therefore two things: the branch, and
   the entry that would have caught it. The same probe registered the origins
   picker, whose title line no other screen draws.
-- **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
+- `RAT-001` **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
   kills, summons, **hiding** and **tempo** in damage over capped horizons — tempo
   off the speed stat, never off the queue, and hiding off what the enemy's best
   blow on the holder beats its best blow on anybody else by. Both halves of an all-sided skill, a tie
@@ -104,7 +201,7 @@ is only so the shape is readable.
   shipped board's only answering trait is a 4% poison on one unit. Given every
   unit a reply worth having it reads 513‰ and 607‰, so what is null is the data
   and not the term; → `docs/balance.md` § Rating an action.
-- **Measuring the opponent.** `forge.Bout` fights two ratings head to head over the
+- `RAT-002` **Measuring the opponent.** `forge.Bout` fights two ratings head to head over the
   same seeds from both ends of the board, on an **exactly even** control it refuses
   to print a figure without, against a frozen ruler (`FirstUsable`) that may never
   be improved. `Suggest` beats it **81.3%** over 10,000 seeds, band ±0.8pp, and
@@ -112,7 +209,7 @@ is only so the shape is readable.
   of a **board**, not of the rating alone: it was 77.9% before the first crit
   chances landed, and the rating did not change. Re-take it after a data change
   rather than quoting the last one.
-- **Balance.** Every enemy-aimed range re-read under the rank rule, and each ace
+- `DAT-001` **Balance.** Every enemy-aimed range re-read under the rank rule, and each ace
   moved to its own back column behind a screen — 27.6% ally → **47.3%**. Both were
   data answers, and the formation is guarded by a test rather than by whoever
   edits the file next. ⚠️ The levels were deliberately **not** touched: the 20..30
@@ -128,7 +225,7 @@ is only so the shape is readable.
   opponents and an average of them has no referent.
   → `docs/balance.md` § Pricing one number.
 
-- **Squads.** A side is built in the TUI — who is in it, what each brings, where
+- `SCR-003` **Squads.** A side is built in the TUI — who is in it, what each brings, where
   each stands — saved to `squads.json`, and fought against another over N seeds
   **both ways round**, which is what makes a mirror read exactly even instead of
   reporting the first slot's advantage as the squad's — or played by hand against
@@ -145,7 +242,7 @@ is only so the shape is readable.
   raised by `commit()`, which runs on the way out of every member, so merely
   opening one claimed a change. → `README.md` § Building a squad.
 
-- **The aim list opens on every skill**, including one with a single legal cell.
+- `SCR-004` **The aim list opens on every skill**, including one with a single legal cell.
   The rule it replaces — a question with one answer is not a decision — is right
   about the choice and wrong about the reading: the aim list is where a skill's
   footprint is drawn, so skipping it spent the turn before the player had seen
@@ -153,7 +250,7 @@ is only so the shape is readable.
   deliberately does **not** follow: it is a prompt loop driven from a script or a
   pipe, and an extra required line per single-aim skill is a change to the input
   format of every script written against it.
-- **The battle screen budgets its own body**, because it never could fit the
+- `SCR-005` **The battle screen budgets its own body**, because it never could fit the
   window the tool declares. At 120x24 the body has **twenty** rows, and heading +
   board (10) + roster (1 + one a unit) + order + option list (1 + one an option)
   comes to 20 at a 1v1, 24 at a 3v3 and **28** at a 5v5 — `hex.MaxTeamSize` is 5,
@@ -176,7 +273,7 @@ is only so the shape is readable.
   → `docs/screens.md` § *Where a form beats a prompt* → the played battle, *the
   budget*.
 
-- **A list of three reads as a sentence.** `i18n.listed` is the one place that
+- `SCR-006` **A list of three reads as a sentence.** `i18n.listed` is the one place that
   knows the shape — conjunction before the final item, comma between the rest —
   and `join` (prose) and `JoinIDs` (untranslated ids) both go through it while
   keeping their own conjunction key. ⚠️ **Both languages wanted the same shape**,
@@ -191,7 +288,7 @@ is only so the shape is readable.
 
 ## Not done
 
-- [x] ⚠️ **A one-way mirror rate stopped being a measurement above one unit a
+- [x] `ENG-003` ⚠️ **A one-way mirror rate stopped being a measurement above one unit a
       side — FOUND AND FIXED.** The skill that resolved in an order that does not
       mirror was the **aim walk**: `battle.aims` offered its candidates in
       absolute board order, `hex.Cells()` is column-major over the whole board,
@@ -242,7 +339,7 @@ is only so the shape is readable.
       not mirror and it has not been found — which is what to look for first,
       before any figure at 3v3 or 5v5 is quoted. → `README.md` § PvP over a LAN.
 
-- [ ] **PvP over a LAN — 3v3 or 5v5, one server and n clients.** Squads built and
+- [ ] `NET-001` **PvP over a LAN — 3v3 or 5v5, one server and n clients.** Squads built and
       saved on the player's own machine, a room joined by a code and an optional
       password, the battle resolved on the server. The design is settled and
       written down: the client is a **mirror** that runs the engine off the
@@ -1609,7 +1706,7 @@ is only so the shape is readable.
                   join screen's). The new entries are built from `atABattleOf` over
                   `battleCast`, which is the same order-independent fixture the two
                   live entries already use, so they add **no second source** of the
-                  churn TODO.md L2395 records.
+                  churn `DAT-003` records.
             - [x] **The host's flag — step 6. Done 2026-09-07.**
                   `-watch`, off by default, in `cmd/hexarena-host` — the one
                   place in the repository a room's configuration is chosen, and
@@ -3021,11 +3118,11 @@ is only so the shape is readable.
             the hold-back therefore wants one thing rather than two: **the numbers
             read on this board**.
 
-- [ ] **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
+- [ ] `CLI-001` **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
-- [ ] **Grow the cast.** **Nineteen** ship across two origins (eighteen Pokemon,
+- [ ] `CAST-001` **Grow the cast.** **Nineteen** ship across two origins (eighteen Pokemon,
       one Naruto) over **fifty-one** authored stages, and **every one of the
       eleven elements is carried**: ×3 each of dark (Abra, Gastly, Mewtwo) and
       water (Lapras, Poliwag, Squirtle), ×2 each of grass (Bulbasaur, Oddish),
@@ -3170,7 +3267,7 @@ is only so the shape is readable.
       one, and the pair reads the worse half. Whether a dual should lose a
       favourable matchup whole is a decision for whoever authors next — it is
       written down rather than tuned away.
-- [ ] **Ten traced Pokemon are waiting for a character — four complete
+- [ ] `CAST-002` **Ten traced Pokemon are waiting for a character — four complete
       lines.** The art lands first because `cast.ParseBook` refuses a character
       that declares no image, so the order is forced: trace, then author.
       ⚠️ **This entry said "thirty-one" and was stale in BOTH directions**, which
@@ -3220,7 +3317,7 @@ is only so the shape is readable.
       may be reused, and § *Grow the cast* above says why that is not a problem.
       Authoring one is the *Grow the cast* item above, not a separate task — this
       entry is the queue, not the work.
-- [ ] **Squad composition bonuses: the mechanism, the first TWO bonuses and the
+- [ ] `DAT-002` **Squad composition bonuses: the mechanism, the first TWO bonuses and the
       reference screen are BUILT; what is left is the top rungs.**
 
       ⚠️ **The second axis shipped 2026-09-07 as `same_column`, and it is not the
@@ -3574,7 +3671,7 @@ is only so the shape is readable.
             (decision 6), so the first version of this screen draws **two** rungs
             and has to not look broken when it later draws four.
 
-- [ ] **The two-number surface is a different pair, and no skill in the book can
+- [ ] `ENG-004` **The two-number surface is a different pair, and no skill in the book can
       carry it.** `combat.Swung(power, bonus, share)` is the one place two of
       these compose: the **bonus** is `self_requires`', the **share** is
       `self_gradient`'s. `resolveGradient` already refuses a gradient beside a
@@ -3606,7 +3703,7 @@ is only so the shape is readable.
       → `internal/core/skill/skill.go` (`resolveGradient`),
       `internal/forge/weigh.go` (`WeighField`).
 
-- [x] ⚠️ **A declined turn makes a slow board slower — RE-TAKEN, and every
+- [x] `RAT-003` ⚠️ **A declined turn makes a slow board slower — RE-TAKEN, and every
       statement in the old entry was wrong.** The figures were dated 2026-09-03,
       *before the block-charge clause landed*, and nobody re-took them. Measured
       2026-09-07, 200 seeds a row at a limit of 600 turns, mirror boards of
@@ -3648,7 +3745,7 @@ is only so the shape is readable.
       including the negative one, so the day a mirror starts resolving the
       condition says so instead of guarding nothing.
 
-- [x] **A guarded mirror never resolves, because the rating will not spend a
+- [x] `RAT-004` **A guarded mirror never resolves, because the rating will not spend a
       guard — DONE, and the fix this entry costed is NOT the one that shipped.**
       `battle.guardCredit` counts what a **permanent** guard ate as progress, at
       100 per mille. `Set.PermanentPoolIn` is the new reading it needs.
@@ -3733,7 +3830,7 @@ is only so the shape is readable.
       the defender's side.
 
 
-- [x] ⚠️ **A `hexforge new` churned `screens.golden` — DONE, by the third option
+- [x] `DAT-003` ⚠️ **A `hexforge new` churned `screens.golden` — DONE, by the third option
       this entry named and had not tried.** `aSquadOfSide` picks by a **property
       the screen measures** now, not by a position and not by a name: the most
       traits at the cap (the roster row draws statuses), the widest kit as the
@@ -3783,7 +3880,7 @@ is only so the shape is readable.
       screen is actually measuring (a unit with a trait, a unit at an evolved
       stage), which would move only when that property moves.
 
-- [x] **The battle screen says how many cells a shape catches and never which —
+- [x] `SCR-007` **The battle screen says how many cells a shape catches and never which —
       DONE.** The aim list now draws, under the aim the cursor is on, every other
       cell that aim catches and whoever is standing in it, marked with the same
       `..` the shape diagram uses for the same thing and explained on the heading
@@ -3809,7 +3906,7 @@ is only so the shape is readable.
       `Aims[0]` instead of the cursor — because the golden's cursor sits on the
       first aim that catches anything, which is often index nought.
 
-- [x] **A golden holds a state and says nothing about the path to it — SWEPT,
+- [x] `DAT-004` **A golden holds a state and says nothing about the path to it — SWEPT,
       and the one rule the sweep found held by nothing is now held.** The first
       half stands as a fact rather than a task: every fixture that draws the aim
       list reaches it with `p.Aiming = true` (`screens_golden_test.aBattleAiming`,
@@ -3858,7 +3955,7 @@ is only so the shape is readable.
       and `ArrangeScreen` were read for tolerant loops and have none, but no rule
       of theirs was reverted and watched.
 
-- [x] **A field inside a `modifier` was dropped silently in all three books —
+- [x] `ENG-005` **A field inside a `modifier` was dropped silently in all three books —
       DONE, and the asymmetry it warned about was closed with it.**
       `Modifier.UnmarshalJSON` decodes strictly now, so the typo lands as a
       sentence naming the field in a status, a trait and a skill at once; and
@@ -3903,7 +4000,7 @@ is only so the shape is readable.
       because statuses.json was already clean; the two bigger books have not been
       through it.
 
-- [x] **The cast listing draws every row, so the detail pane shrinks as the cast
+- [x] `SCR-008` **The cast listing draws every row, so the detail pane shrinks as the cast
       grows — DONE.** `screen.browseRoom` is `skillsRoom`'s twin now: the listing
       measures its rows from the window in hand and windows them around the cursor,
       and the pane keeps `browseDetailRows` whatever the book's length.
@@ -3982,7 +4079,7 @@ is only so the shape is readable.
       listing, which is most of them; that is the change being visible rather than
       a fixture problem.
 
-- [x] **The rating could not price hiding — DONE.** `pricing.hidden` is the term,
+- [x] `RAT-005` **The rating could not price hiding — DONE.** `pricing.hidden` is the term,
       and it is `taunting` pointed the other way: a taunt is priced by what it
       *forces* an enemy to do, hiding by what it *stops* them doing, and both ask
       about the enemy's options rather than about the holder's danger. That is the
@@ -4029,7 +4126,7 @@ is only so the shape is readable.
       authoring decision and deliberately not folded in here — but a player build
       that takes it is no longer a unit one skill short.
 
-- [ ] **Two self-cast skills in one kit is a decision `Suggest` cannot make.**
+- [ ] `RAT-006` **Two self-cast skills in one kit is a decision `Suggest` cannot make.**
       Found 2026-09-07 putting `burrow` into the Diglett line. In the SPLIT build
       it reads **11.0%** against Machop where the shipped kit reads **72.5%** — and
       the mechanism is not the slot, because the same build with that slot simply
@@ -4054,7 +4151,7 @@ is only so the shape is readable.
       in the split one, and neither number is about the skill.
       → `README.md` § *What a burrow is worth to the Diglett line*.
 
-- [ ] **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
+- [ ] `ENG-006` **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
       Built and measured on 2026-09-07 while closing the `reckless` item, reverted
       because that trait is not the one that wants it, and kept here because the
       *mechanism* is sound and is the only cost shape this engine cannot currently
@@ -4138,7 +4235,7 @@ is only so the shape is readable.
       `thorns`, `ballast` and `static` reply), so nothing changes on today's data —
       but the *rule* would allow one, and this is the site that would be wrong.
 
-- [ ] **Four ways of playing the board that the engine cannot express yet.**
+- [ ] `ENG-007` **Four ways of playing the board that the engine cannot express yet.**
       Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four
       canonical Alakazam mechanics turned out to have no home. They are listed
       together because the first three share one prerequisite and the fourth is
@@ -4199,7 +4296,7 @@ is only so the shape is readable.
          option is refused (`Block`/`OptionRefusal`), and a locked skill is a
          fifth reason beside cooldown, fuel and reach.
 
-- [x] **`reckless` is the dragon build's 22.1% — CLOSED. All four levers are
+- [x] `DAT-005` **`reckless` is the dragon build's 22.1% — CLOSED. All four levers are
       measured, the lever that looked alive was killed by a better instrument, and
       what shipped is a guard rather than a number.**
 
@@ -4259,7 +4356,7 @@ is only so the shape is readable.
 
 ## Decided against — do not re-raise
 
-- **Re-rolling the turn-order tie-break from the seed.** Kept, and the reason
+- `ENG-008` **Re-rolling the turn-order tie-break from the seed.** Kept, and the reason
   first written here was **wrong**: it claimed this needs `atb.Queue.order`
   changed and would invalidate every balance figure. It does not. `seq` comes off
   a counter in `atb.Queue.Add`, which `enlist` calls once per unit, which `New`
@@ -4273,7 +4370,7 @@ is only so the shape is readable.
   fights both ways round, and the coin is worth having *on top of* that.
   → `README.md` § PvP over a LAN.
 
-- **A ceiling on `Skill.Power`.** The arithmetic that looked like it demanded
+- `ENG-009` **A ceiling on `Skill.Power`.** The arithmetic that looked like it demanded
   one is gone: `Rules.damage` builds its numerator in 128 bits now, so nothing
   wraps and nothing panics, and the guard that saturates at `math.MaxInt64` is a
   bound on the **type** rather than on the design — `max_effective_hp` is 11,500,
@@ -4299,7 +4396,7 @@ is only so the shape is readable.
   → `CLAUDE.md` § *Saturate continuous values, cap discrete ones*; the 128-bit
   numerator and its guard in `internal/core/combat/combat.go`.
 
-- **Waiting — passing a turn because the next one is worth more.** It is
+- `RAT-007` **Waiting — passing a turn because the next one is worth more.** It is
   **arithmetically empty in this engine**, not under-built: `spendCooldowns`
   decrements *every* cooldown at the end of an act, a pass and a stunned turn
   alike, so the skill being waited for comes back on the same turn either way and
@@ -4314,7 +4411,7 @@ is only so the shape is readable.
   → `docs/balance.md` § Rating an action; `TestAPassBuysNoCooldownAnActDoesNot`,
   `TestATurnIsDeclinedRatherThanSpentOnACooldownForNothing` and
   `TestATurnIsGivenUpOnlyForAReasonThatIsWrittenDown`.
-- **Rebalancing `reckless`.** All three levers the item named are measured and
+- `DAT-006` **Rebalancing `reckless`.** All three levers the item named are measured and
   dead, and the trait is kept as it stands: an extreme trade that loses badly to
   one matchup and wins nearly everything else — **22.1%** against the fire line
   and **96.6% / 93.0%** against the rest of the cast — which is a legitimate
@@ -4336,7 +4433,7 @@ is only so the shape is readable.
   unchanged defence term makes the build strictly worse.
   → `README.md` § *What `bare`'s dodge clause was worth* and § *What softening
   `bare`'s defence was worth*.
-- **The queue as a third tie-break key.** Built, measured and **thrown away**.
+- `ENG-010` **The queue as a third tie-break key.** Built, measured and **thrown away**.
   `take` was given a key under `cooldown` — when value and cooldown are both
   level, take the aim whose occupant acts soonest — and it moved **0 of 93,320
   decisions** over 2,000 shipped battles. Against the rating without it: **500‰
@@ -4352,18 +4449,18 @@ is only so the shape is readable.
   be compared, never added or multiplied** — a value that reaches an arithmetic
   expression is tempo, and tempo is priced from the speed stat.
   → `docs/balance.md` § Rating an action.
-- **Wording the ids on `cmd/hexarena`'s menu line.** `tui.Extras` prints
+- `SCR-009` **Wording the ids on `cmd/hexarena`'s menu line.** `tui.Extras` prints
   `strips control/dot x1` beside `health <=50%` and `cd3`: it takes no
   `i18n.Lang` at all, and every field on that line is an id or a raw number. So
   the enum spellings there are **not** the defect the strips clause had — that
   one was an i18n'd sentence falling through to an id. Translating this line
   means translating the line, not patching a lookup.
-- **`at_stage` on a learnset entry.** Unblocked and deliberately not built:
+- `PRG-002` **`at_stage` on a learnset entry.** Unblocked and deliberately not built:
   `at_stage: "Ivysaur"` is exactly `stages: ["Ivysaur","Venusaur"]`, and two
   vocabularies for one idea is the cost. → `README.md`.
-- **A character class.** An archetype's curve and kit already say what a class
+- `PRG-003` **A character class.** An archetype's curve and kit already say what a class
   name would, and an archetype has **no** mechanical effect. Do not add one
   without answering what it does that a curve and a kit cannot.
-- **A dependency ban.** Written, then removed on the author's instruction.
+- `FRG-002` **A dependency ban.** Written, then removed on the author's instruction.
   `internal/core` importing nothing outside the standard library is the rule
   that matters; the rest of the tree may use what it needs.

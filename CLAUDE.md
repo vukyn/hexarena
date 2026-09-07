@@ -87,6 +87,13 @@ disagree with the engine — which is the whole of why the event log is a contra
 The moved files carry the reasoning and the measurements; the binding sentence
 stays here.
 
+⚠️ **Work items are addressed by CODE, not by line number.** Every entry in
+`TODO.md` carries one — `AREA-NNN`, e.g. `RAT-006` for a rating item, `SCR-008` for
+a screen one — and `TODO.md` § *The codes* holds the area table and the rule that a
+code is assigned once and never reused. Cite the code in a commit message, a PR and
+a `docs/decisions.md` entry; a line number is stale the next time somebody writes a
+paragraph above it.
+
 **So: still read this file first.** Then open the one for the subject in hand:
 `docs/architecture.md` before touching `internal/room`, `internal/socket` or the
 event stream; `docs/screens.md` before touching `internal/screen` or either
