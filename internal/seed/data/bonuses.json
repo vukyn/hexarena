@@ -18,6 +18,24 @@
       ]
     },
     {
+      "id": "metal_ward",
+      "name": "cùng thép",
+      "axis": "element",
+      "value": "metal",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "ironhide",
+              "stacks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "dark_edge",
       "name": "cùng bóng tối",
       "axis": "element",

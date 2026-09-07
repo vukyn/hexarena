@@ -532,6 +532,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
 > same_column   cùng tuyến      sharers
+  metal_ward    cùng thép       sharers
   dark_edge     cùng bóng tối   sharers
   water_tide    cùng dòng nước  sharers
   same_element  đồng hệ         sharers
@@ -541,7 +542,6 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
   3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
-
 
 
 
@@ -1150,7 +1150,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/37
+chiêu này gây hiệu ứng gì  1/38
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -2671,6 +2671,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
 > same_column   cùng tuyến      sharers
+  metal_ward    cùng thép       sharers
   dark_edge     cùng bóng tối   sharers
   water_tide    cùng dòng nước  sharers
   same_element  đồng hệ         sharers
@@ -2680,7 +2681,6 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
   3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
-
 
 
 
@@ -4261,7 +4261,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/37
+chiêu này gây hiệu ứng gì  1/38
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -4295,6 +4295,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        heft       sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
        stoked     nóng máy · tăng chỉ số · 2 lượt · tối đa 5 cộng dồn
+       ironhide   giáp trụ · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        keenedge   lưỡi sắc · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        tidewell   mạch nguồn · tăng máu hồi vào · vĩnh viễn · tối đa 2 cộng dồn
        phalanx    trận thế · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
@@ -4305,7 +4306,6 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
   poison
 
   cơ hội trúng  300      30%
-
 
 
 
@@ -4346,6 +4346,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   quickened    gia tốc
   evasive      khinh công
   stoked       nóng máy
+  ironhide     giáp trụ
   keenedge     lưỡi sắc
   phalanx      trận thế
   kinship      đồng khí
@@ -4369,7 +4370,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   verdure      xum xuê
   moisture     ẩm ướt
   heft         sức nặng
-  heal_mend    tăng máu hồi vào
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -5206,6 +5206,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 squad bonuses  what a side is paid for what its units share
 
 > same_column     sharers
+  metal_ward      sharers
   dark_edge       sharers
   water_tide      sharers
   same_element    sharers
@@ -5215,7 +5216,6 @@ squad bonuses  what a side is paid for what its units share
   3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
-
 
 
 
@@ -5824,7 +5824,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
 
-the statuses this skill inflicts  1 of 37
+the statuses this skill inflicts  1 of 38
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -7345,6 +7345,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 squad bonuses  what a side is paid for what its units share
 
 > same_column     sharers
+  metal_ward      sharers
   dark_edge       sharers
   water_tide      sharers
   same_element    sharers
@@ -7354,7 +7355,6 @@ squad bonuses  what a side is paid for what its units share
   3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
-
 
 
 
@@ -8935,7 +8935,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
 
-the statuses this skill inflicts  1 of 37
+the statuses this skill inflicts  1 of 38
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -8969,6 +8969,7 @@ space chooses a status · type the chance in parts per thousand
        moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
        heft       builds up for its holder to spend · 4 turns · up to 5 stacks
        stoked     raises a stat · 2 turns · up to 5 stacks
+       ironhide   raises a stat · always in force · up to 2 stacks
        keenedge   raises a stat · always in force · up to 2 stacks
        tidewell   raises healing received · always in force · up to 2 stacks
        phalanx    raises a stat · always in force · up to 2 stacks
@@ -8979,7 +8980,6 @@ space chooses a status · type the chance in parts per thousand
   poison
 
   chance  300      30%
-
 
 
 
@@ -9020,6 +9020,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   quickened    
   evasive      
   stoked       
+  ironhide     
   keenedge     
   phalanx      
   kinship      
@@ -9043,7 +9044,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   verdure      
   moisture     
   heft         
-  heal_mend    raises healing received
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.

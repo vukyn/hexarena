@@ -5,6 +5,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
@@ -108,4 +109,41 @@ func theGuardBoard(t *testing.T, mine, myTraits, theirs, theirTraits []string) (
 		}
 	}
 	return ended, endless
+}
+
+// TestNoShippedSkillGrantsAWard is the guard on a price this file does not have.
+//
+// A warding status is worth **nothing** to `Suggest`, and that is the right answer
+// for as long as no skill applies one: a ward reaches a unit through a composition
+// bonus, which is awarded at enlistment and is never a turn anybody chooses. The
+// moment a SKILL grants one, that nought becomes the burrow defect again — a
+// turn-spending option the rating prices at zero and therefore never casts.
+//
+// ⚠️ Pricing it properly needs a lookahead over the enemies' kits that price.go
+// does not have and has refused to grow before (see `uncured`, which prices only
+// the healing already owed for exactly this reason). So the honest position is
+// "unpriced, and nothing can choose it", held here rather than assumed.
+func TestNoShippedSkillGrantsAWard(t *testing.T) {
+	books, err := seed.Books()
+	if err != nil {
+		t.Fatalf("load the shipped books: %v", err)
+	}
+	warding := map[string]bool{}
+	for _, kind := range books.Statuses.Kinds() {
+		if kind.WardShare > 0 {
+			warding[kind.ID] = true
+		}
+	}
+	if len(warding) == 0 {
+		t.Fatal("no shipped status wards anything, so this guard is watching an empty set")
+	}
+	for _, declared := range books.Skills.Skills() {
+		for _, id := range i18n.StatusesInSkill(declared) {
+			if warding[id] {
+				t.Errorf("the skill %q applies the warding status %q, which price.go values at "+
+					"nought: a turn nobody will ever choose to spend. Price it before shipping "+
+					"the skill, or this is the burrow defect again", declared.ID, id)
+			}
+		}
+	}
 }

@@ -1117,6 +1117,17 @@ func (l Lang) DescribePassive(held passive.Passive, kinds *status.Book) string {
 	return strings.Join(lines, "\n")
 }
 
+// wardTotal is what a full stack of wards refuses together, through the same
+// multiplication battle.resist and status.Set.WardShare apply — never the share
+// added up, which is a figure nothing in the engine computes.
+func wardTotal(kind status.Kind) int {
+	surviving := scale.Base
+	for range kind.MaxStacks {
+		surviving = surviving * (scale.Base - kind.WardShare) / scale.Base
+	}
+	return scale.Base - surviving
+}
+
 // share renders a proportion in parts per thousand as a whole percent.
 //
 // # Rounded here, exact in the tables, and that split is the whole of it
@@ -1527,6 +1538,24 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		if kind.MaxStacks > 1 {
 			out = append(out, l.Say(BlurbStatusStacked,
 				share(kind.PierceShare*kind.MaxStacks)))
+		}
+	}
+	if kind.WardShare > 0 {
+		// Outside the switch beside the pierce share and the modifier terms, and
+		// for the same reason: it belongs to no category.
+		//
+		// ⚠️ The stacked line is NOT the share times the stacks. Wards compose by
+		// multiplying what each lets through — two of six hundred leave sixteen
+		// per cent rather than none — so an added total would be a number the
+		// engine never computes, and at two stacks of six hundred it would print
+		// a total refusal the game does not have.
+		wards := BlurbStatusWardsOnce
+		if kind.MaxStacks > 1 {
+			wards = BlurbStatusWards
+		}
+		out = append(out, l.Say(wards, share(kind.WardShare)))
+		if kind.MaxStacks > 1 {
+			out = append(out, l.Say(BlurbStatusStacked, share(wardTotal(kind))))
 		}
 	}
 	if len(out) == 0 {

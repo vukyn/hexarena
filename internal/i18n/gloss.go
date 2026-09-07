@@ -137,6 +137,7 @@ var (
 		"phalanx":  "trận thế",
 		"tidewell": "mạch nguồn",
 		"keenedge": "lưỡi sắc",
+		"ironhide": "giáp trụ",
 		// The three formation columns, named as the depths they are rather than as
 		// the numbers they are counted by: a bonus line reading "three of 2" says
 		// nothing, and the board's own header already calls them back, middle and

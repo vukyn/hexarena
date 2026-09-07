@@ -432,6 +432,30 @@ type Kind struct {
 	// counter is bounded by max_counter_stacks, which bounds a tally rather than an
 	// effect, so an effect on one is a number the stat budget never answered.
 	PierceShare int
+	// WardShare is the share of every application aimed at its holder that one
+	// stack refuses, in parts per thousand.
+	//
+	// ⚠️ **Blanket, where a trait's resistance names a status.**
+	// passive.Resistance carries a Status and an Amount, so a trait says "I refuse
+	// poison"; there is no way to spell "I refuse a share of whatever is thrown at
+	// me", and a data file listing every status in the book would be a rule nobody
+	// could read or keep current. The two are different claims rather than one at
+	// two grains, which is why this is its own field and not a Resistance with an
+	// empty name — an empty name in that type would be a value every reader of it
+	// has to learn about.
+	//
+	// It composes the way a trait's does, by multiplying what each source lets
+	// through, so two sources of six hundred leave sixteen per cent rather than
+	// none and stacking diminishes for free.
+	//
+	// Positive only. A negative here would be a blanket vulnerability, which is a
+	// real design and a different one: `bare` exists and is granted by a trait that
+	// names what it gives up, where a status that quietly invited everything would
+	// be a cost no screen accounts for. Refused at parse rather than left to an
+	// author.
+	//
+	// Refused on a counter for the reason Modifiers and PierceShare are.
+	WardShare int
 	// Modifiers are the stat terms one stack contributes while it lasts.
 	//
 	// They belong to the status rather than to the skill that applies it, so
@@ -662,6 +686,31 @@ func (s *Set) PierceShare() int {
 		return scale.Base
 	}
 	return total
+}
+
+// WardShare is what every active stack refuses of an application aimed at its
+// holder, accumulated the way a trait's resistances are.
+//
+// ⚠️ **Sources MULTIPLY what they let through rather than adding what they
+// refuse**, which is the reading battle.resist already gives a trait's shares: two
+// stacks of six hundred leave sixteen per cent rather than nothing, so stacking
+// diminishes for free and no saturation helper is needed. Adding the shares would
+// make two stacks of six hundred a total refusal, and a status that cannot be
+// landed at all is the one thing this share is not allowed to be — a single
+// declared full thousand still reaches it, which is the author's door and never a
+// stack's.
+func (s *Set) WardShare() int {
+	surviving := scale.Base
+	for i := range s.entries {
+		share := s.entries[i].kind.WardShare
+		if share == 0 {
+			continue
+		}
+		for range s.entries[i].stacks {
+			surviving = surviving * (scale.Base - share) / scale.Base
+		}
+	}
+	return scale.Base - surviving
 }
 
 // Modifiers returns the stat terms every active stack contributes, accumulated.
@@ -1155,6 +1204,7 @@ type bookFile struct {
 		TickPower   int                 `json:"tick_power"`
 		HealShare   int                 `json:"heal_share"`
 		PierceShare int                 `json:"pierce_share,omitempty"`
+		WardShare   int                 `json:"ward_share,omitempty"`
 		PoolPower   int                 `json:"pool_power"`
 		Modifiers   []modifier.Modifier `json:"modifiers"`
 	} `json:"kinds"`
@@ -1315,6 +1365,12 @@ func ParseBook(raw []byte) (*Book, error) {
 		case declared.PierceShare < 0 || declared.PierceShare > scale.Base:
 			return nil, fmt.Errorf("status %q pierces %d, want a share in parts per thousand between 0 and %d",
 				declared.ID, declared.PierceShare, scale.Base)
+		case declared.WardShare < 0 || declared.WardShare > scale.Base:
+			return nil, fmt.Errorf("status %q wards %d, want a share in parts per thousand between 0 and %d: a negative would be a blanket vulnerability, which is a trait's business rather than a status's",
+				declared.ID, declared.WardShare, scale.Base)
+		case category.Counter() && declared.WardShare != 0:
+			return nil, fmt.Errorf("status %q is a %s warding %d: a counter that is spent may not also refuse what is thrown at its holder",
+				declared.ID, category, declared.WardShare)
 		case category.Counter() && declared.PierceShare != 0:
 			return nil, fmt.Errorf("status %q is a %s piercing %d: a counter that is spent may not also change what a blow ignores, because its cap of %d bounds an effect it was never meant to have",
 				declared.ID, category, declared.PierceShare, stackCap)
@@ -1359,9 +1415,9 @@ func ParseBook(raw []byte) (*Book, error) {
 			MaxStacks: declared.MaxStacks, Duration: declared.Duration,
 			Permanent: declared.Permanent,
 			TickPower: declared.TickPower, HealShare: declared.HealShare,
-			PierceShare: declared.PierceShare,
-			PoolPower:   declared.PoolPower,
-			Modifiers:   declared.Modifiers,
+			PierceShare: declared.PierceShare, WardShare: declared.WardShare,
+			PoolPower: declared.PoolPower,
+			Modifiers: declared.Modifiers,
 		}
 		book.byID[kind.ID] = kind
 		book.kinds = append(book.kinds, kind)

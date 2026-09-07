@@ -680,6 +680,9 @@ const (
 	// second stack can.
 	BlurbStatusPierces
 	BlurbStatusPiercesOnce
+	// What a ward refuses of everything aimed at its holder.
+	BlurbStatusWards
+	BlurbStatusWardsOnce
 	BlurbStatusRaises
 	BlurbStatusLowers
 	BlurbStatusRaisesOnce

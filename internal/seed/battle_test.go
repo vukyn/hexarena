@@ -636,8 +636,16 @@ func aHandPlayedSpread(t *testing.T) []battle.Event {
 		{ID: "front", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 2},
 			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 10),
 			Skills: []string{"strike"}},
+		// ⚠️ **A different element from the one in front, deliberately.** The chain
+		// steps between units carrying the same STATUS — chainFrom reads the
+		// charge, never the affinity — so the two victims sharing an element was
+		// incidental, and it stopped being free the day a per-element composition
+		// bonus shipped: two metal units are a tribe now, and `metal_ward`'s ward
+		// refused enough of the charge that the run never formed. The fixture is
+		// about a current walking a row of carriers, so the elements are the one
+		// thing in it that may differ.
 		{ID: "behind", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
-			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 10),
+			Affinity: mustAffinity(t, "grass"), Stats: benchStats(4800, 300, 300, 10),
 			Skills: []string{"strike"}},
 	})
 	if err != nil {
