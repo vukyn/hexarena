@@ -3552,106 +3552,63 @@ is only so the shape is readable.
          option is refused (`Block`/`OptionRefusal`), and a locked skill is a
          fifth reason beside cooldown, fuel and reach.
 
-- [ ] **`reckless` is the dragon build's 22.1%.** The roadmap said the gap was the
-      missing detonate. It was tested: the line was given one (`dragon_drive`, off
-      the `expose` its own `dragon_claw` applies, and it does fire — 19 amplified
-      casts in 60 battles), and fielding it reads **21.2%** against 22.0%, which is
-      nothing and slightly the wrong way. ⚠️ **Measured one change at a time over
-      3000 battles**: the detonate **−0.8**, `reckless → blood_thirst` **+33.1**,
-      `reckless → blaze` **+16.9**, fire losing *its* detonate **+10.9**. The trait
-      grants `unleashed` **and** `bare` — 30% of attack for 40% of defence *and*
-      40% of dodge — into a build whose opponent amplifies its heaviest skill three
-      and a half times off a status.
-      ⚠️ **`TestRecklessIsATradeAndNotAGift` cannot see this.** It asks whether
-      something is given up and passes; whether *too much* is given up is a
-      different question, and the same shape of gap a win rate had against
-      `swiftness`.
-      ⚠️ **Do not just swap the build's trait.** `blood_thirst` beats `reckless` in
-      the mirror **and** against the rest of the cast (100%/100% against 98.6%/96.0%),
-      so the swap is a power increase rather than a rebalance. Softening the cost is
-      the other lever and it is uncoupled — `bare` is granted by `reckless` and by
-      nothing else, and no skill applies it — but there is **no test holding its
-      magnitude**, so whatever it becomes has to be measured and written down the
-      same way. Decide what the trait is *for* first.
-      ⚠️ **Dropping `bare`'s dodge clause was tried and it is not the lever.** The
-      argument was good — the clause is what makes the trait two-stats-for-one, and
-      dodge gates whether an attack connects at all, so removing it should compound
-      against a burn-and-detonate opponent. Measured on the same instrument, same
-      3000 battles both ways round: **R0 shipped 22.0% · R1 dodge dropped 24.8%
-      (+2.8) · R2 vulnerability alone 16.1% (−5.9) · R3 both 18.7% (−3.3)**, against
-      referents re-taken on the same run of **A `blood_thirst` 55.1%** and **B
-      `blaze` 38.9%**. R3 is below where the trait started and far below B, so the
-      candidate was **not shipped**. The interaction is clean — `R3−R0 = −3.3`
-      against `(R1−R0)+(R2−R0) = −3.1` — so the two terms **add**, and the
-      superlinearity the lever was chosen for does not exist.
-      ⚠️ **`bare`'s cost is 88% defence and 12% dodge**, which is why. Decomposed:
-      dodge-only reads **43.4%**, no `bare` at all **46.3%**, and those add too
-      (2.8 + 21.4 = 24.2 against 24.3). So the *only* lever that can move the figure
-      is softening the defence magnitude — the one with no natural stopping point,
-      and the one this item has always been reluctant to pull. Dropping `bare`
-      outright lands at 46.3%, inside (B, A) and on the 45–50% target, but that is a
-      trait with no cost and `TestRecklessIsATradeAndNotAGift` refuses it.
-      ⚠️ **Half the missing guard now exists.**
-      `TestRecklessSpendsNoMoreThanItBuys` prices the trait in **damage off the
-      event log** rather than in wins — a win rate cannot price a stat, which is the
-      `swiftness` finding — and asserts the trait buys damage and spends no more
-      than twice what it buys (a declared design constant borrowed from the detonate
-      rule, the only invented number in it). Shipped data reads 30956 bought for
-      50084 spent, ratio 1.62. It is what caught R3: `bought` went **negative**
-      (−7898) where the 18.7% win rate sat comfortably inside every existing band.
-      The other half — a cast-wide *no trait may lower more distinct stats than it
-      raises* (`ballast` keeps it non-vacuous; necessary and **not** sufficient,
-      since it would pass a `bare` at −900) — is now **dropped rather than held**.
-      No fix landed for it to land with, and the sweep below is the reason it is
-      the wrong test: it counts stats and never magnitudes, so it would pass a
-      `bare` at −900 and refuse a `bare` at −25, and what turned out to be worth
-      holding is exactly the magnitude. The ledger already holds that, in the
-      currency the trait is denominated in.
-      ⚠️ **The third lever is dead too, and all three are now measured.** Softening
-      `bare`'s defence magnitude was swept on the same instrument — dodge left at
-      −400, `unleashed` untouched, 3000 battles a row, referents re-taken on the
-      same run and identical (**A `blood_thirst` 55.1%**, **B `blaze` 38.9%**,
-      **R0 22.0%**). The four amounts the item prescribed **all sit under the
-      floor**: −300 **24.4%** · −250 **24.7%** · −200 **27.8%** · −150 **37.0%**.
-      Swept finer: −125/−100/−95 **37.4%**, −90/−85/−80/−75 **39.9%**, −50
-      **41.2%**, −25 **42.9%**, and a term of 0 is refused by the parser.
-      ⚠️ **The dial is a quarter as long as it reads, because the stat saturates.**
-      `modifier.Set.Stat` saturates a change towards a floor rather than applying
-      it, so a −400‰ term on a base of 400 fights at **290**, not 240, and the whole
-      reachable range of the lever is **290..391**. The rate also moves in *steps*:
-      fourteen amounts give nine rates, with plateaus (−90..−75 are all exactly
-      1197/3000) and cliffs, because a two-point defence change is worth nothing
-      until it moves a strike across a kill threshold. **A dial like this cannot be
-      tuned to a target** — the nearest rung to the 45–50% wanted is 42.9%, at a
-      cost of nine points of a stat.
-      ⚠️ **Both gates flip at the same rung, which is why nothing shipped.** The
-      duel clears **B** between −95 (37.4%) and −90 (39.9%); the cast-wide pair
-      saturates squirtle at **100%** between −95 (99.0%/98.6%) and −90
-      (99.0%/**100.0%**). Same two points of defence, 366 → 368, both directions at
-      once — because both are one event, a strike crossing a kill threshold. So
-      **every amount that makes the dragon build a real matchup also makes
+- [x] **`reckless` is the dragon build's 22.1% — CLOSED. All four levers are
+      measured, the lever that looked alive was killed by a better instrument, and
+      what shipped is a guard rather than a number.**
+
+      The three dials this item had already spent stand: the missing detonate is
+      worth **−0.8**, dropping `bare`'s dodge clause **+2.8**, a vulnerability
+      **−5.9**, and softening `bare`'s defence clears the duel floor only past a
+      cliff two points of defence wide.
+
+      ⚠️ **The fourth lever was built, measured and reverted.** The item's own
+      conclusion asked for *a different kind of cost — one the duel prices and the
+      cast-wide matchups do not*, and there is a reason no stat can be that: both
+      gates a magnitude offers are the same event, a strike crossing a kill
+      threshold. What is not a stat is **duration** — the duel is a grind and the
+      cast-wide matchups are over while the holder is healthy — so
+      `passive.Condition` was given an `AboveHealth` twin and `reckless` was gated
+      at the top of the bar. Best rung **29.7%** against a floor of **36.9%**, and
+      not even monotone. The term was reverted with the reading: a gate end no
+      data declares is a field nothing reads.
+
+      ⚠️ **A premise of the whole item was sixty-five points stale, and its own
+      test had said so.** The cast-wide objection — that softening `bare` makes
       `reckless` the 100%-against-the-cast trait `blood_thirst` was refused for
-      being**, and there is no value that passes both. Reported and **not shipped**;
-      the data is unchanged and the floor in
-      `TestTheDragonBuildIsASidegradeAndNotAnUpgrade` therefore **stays at 150**,
-      since the duel still reads 22.1%. What the trait needs next is a *different
-      kind* of cost — one the duel prices and the cast-wide matchups do not — or the
-      acceptance that the 22% is a statement about `inferno` and belongs to the fire
-      line's detonate. All three of `reckless`'s own dials are spent.
-      ⚠️ **A `weigh`-shaped instrument for a trait is the tool that is missing**,
-      and it is its own piece of work. Everything above was measured by editing
-      shipped JSON, running a duel, and putting it back: there is no way to sweep a
-      trait's field the way `weigh` sweeps a skill's, so every reading costs a
-      hand-managed data mutation and cannot be reproduced from the repo. A trait
-      field table would have priced all four readings and both decompositions in one
-      pass. The magnitude sweep found a third of it: patch the parsed
-      `statuses.json` **in memory** and rebuild the status, passive and skill books
-      around it, which is exact and reproducible and needs no file put back. What is
-      still missing is somewhere for the answer to live that is not a test log.
-      → `TODO.md` for the `weigh` field-coverage item this joins.
-      → `README.md` § *What the dragon line's detonate was worth*, § *What
-      `bare`'s dodge clause was worth* and § *What softening `bare`'s defence was
-      worth*.
+      being — was measured against a Squirtle whose `withdraw` restored nothing,
+      and `squirtle_test.go` carries the sentence *"Re-take it before quoting the
+      amount."* Nobody did. Re-taken: squirtle against the dragon build **93.0% →
+      28.4%**, `blood_thirst`'s cast-wide pair **100%/100% → 100%/88.0%**. The
+      cast-wide gate is **no longer binding** — every softening stays under both
+      referents — so the third lever was alive again.
+
+      ⚠️ **And the ledger killed it properly.** Damage off the event log, which is
+      the currency the trait is denominated in, says what no win rate could: from
+      about −200 onwards `cost` goes **negative** — a unit holding `reckless`
+      takes *less* than a unit holding no trait at all while dealing five times
+      more, because `unleashed` ends the battle sooner and `burn` ticks fewer
+      times. −250 costs 22632 and wins 25.1%; −200 costs **−1134** and wins 28.5%;
+      the duel needs 36.9%. **The two gates do still flip together — they are just
+      not the pair on record.** Duel against ledger, not duel against cast-wide,
+      and every value that makes the matchup real makes the trait free.
+
+      **Shipped:** `TestRecklessSpendsNoMoreThanItBuys` gains its lower bound. It
+      had only *not a tax* and no *still a trade*, so it passed all eight gift
+      values. Nought rather than a share, so nothing is invented; the shipped
+      trait clears it by 50084. Mutated on disk, `bare` at −250 stays green and
+      −200/−150 go red while `TestRecklessIsATradeAndNotAGift` stays green through
+      all three — which is exactly why it was added: counting which stats a grant
+      lowers cannot see how much.
+
+      **Not shipped:** any change to `bare`. The data is unchanged at −400, the
+      duel still reads 22.1%, and the floor in
+      `TestTheDragonBuildIsASidegradeAndNotAnUpgrade` stays at 150. What is left
+      is the acceptance this item has been circling for four levers: the 22% is a
+      statement about `inferno` and belongs to the fire line's detonate.
+      → `README.md` § *What gating `reckless` was worth* and § *What re-taking the
+      whole thing on a working `withdraw` was worth*.
+      → the `weigh`-shaped trait instrument is still missing and is still its own
+      piece of work; this measured four more readings by hand.
 
 ## Decided against — do not re-raise
 

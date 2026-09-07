@@ -87,6 +87,14 @@ func TestSkullBashScalesOffDefenceAndNotAttack(t *testing.T) {
 // the survival figure is a reading of the block clause alone, and the direction
 // of the trade is the part that carries forward rather than the size of it.
 // Re-take it before quoting the amount.
+// ⚠️ **This warning went unheeded for a release and it cost a wrong conclusion.**
+// Squirtle's own matchup figures were quoted from that era in README.md and in
+// TODO.md — 93.0% for the dragon build against it, 100% for `blood_thirst` — and
+// they were used as the reason `reckless` could not be softened. Re-taken on the
+// working `withdraw` they read **28.4%** and **88.0%**, sixty-five points and
+// twelve points out, and the objection built on them was gone. The conclusion
+// survived on other grounds, which is luck rather than method. → README.md
+// § *What re-taking the whole thing on a working `withdraw` was worth*.
 func TestBallastIsATradeAndNotAGift(t *testing.T) {
 	traits, statuses := mustPassives(t), mustStatuses(t)
 	held, err := traits.Lookup("ballast")

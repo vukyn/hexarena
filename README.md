@@ -3474,9 +3474,11 @@ passes; it cannot ask whether it gives up too much, which is the same shape of g
 win rate had against `swiftness`.
 
 What to do about the trait is left open on purpose. `blood_thirst` beats it in the
-mirror *and* against the rest of the cast (100% either way, where `reckless` reads
-98.6% and 96.0%), so swapping the build's trait would be a power increase rather than
-a rebalance. Softening the cost is the other lever, and it is at least uncoupled —
+mirror *and* against the rest of the cast, so swapping the build's trait would be a
+power increase rather than a rebalance. ⚠️ **The cast-wide figures this sentence used
+to quote — 100% either way for `blood_thirst`, 98.6% and 96.0% for `reckless` — were
+stale by sixty-five points and are re-taken in § *What re-taking the whole thing on a
+working `withdraw` was worth* below.** The conclusion survives; the numbers did not. Softening the cost is the other lever, and it is at least uncoupled —
 `bare` is granted by `reckless` and by nothing else, and no skill applies it — but
 nothing in the suite holds its magnitude either, so whatever it becomes has to be
 measured and written down the same way this was.
@@ -3673,6 +3675,113 @@ rebuilding the status, passive and skill books around it, rather than from editi
 the shipped file and putting it back. That is cheap, exact and reproducible, and it
 is roughly a third of the `weigh`-shaped trait instrument the open item asks for —
 what is still missing is somewhere for the result to live that is not a test log.
+
+### What gating `reckless` was worth
+
+Nothing, and this is the fourth lever falsified.
+
+All three of the trait's own dials had been measured and none of them worked, and the
+item's own conclusion was that what it needed was *a different kind of cost — one the
+duel prices and the cast-wide matchups do not*. There is a reason no stat could be
+that: both gates the trait's magnitude offers are the same event, a strike crossing a
+kill threshold, so every amount moves both at once. What is **not** a stat is
+duration. The duel against the fire line is a grind; the cast-wide matchups are over
+while the holder is still healthy. So a gate at the *top* of the bar — `reckless` in
+force only while its holder is above a share of maximum health — lapses exactly when
+`bare` is killing it in the duel and never lapses at all in a matchup that is won
+first.
+
+`passive.Condition` was given an `AboveHealth` term to try it, and it does not work:
+
+| `above_health` | duel | bulbasaur | squirtle |
+| --- | --- | --- | --- |
+| — (shipped) | 22.2% | 96.7% | 27.7% |
+| 300 | 20.3% | 97.7% | 31.7% |
+| 500 | 22.7% | 97.3% | 30.3% |
+| 700 | 27.3% | 98.0% | 26.7% |
+| **800** | **29.7%** | 98.0% | 27.0% |
+| 1000 | 25.3% | 98.0% | 29.7% |
+
+The best rung is 29.7% against a floor of **36.9%**, and the curve is not even
+monotone. The reasoning was sound and the size is not there: turning the trait off
+late in a duel it is already losing recovers a fraction of what it gave away early.
+
+**The term was reverted with the reading.** A gate end no data declares is a field
+nothing reads, which is the shape this repository refuses everything else in — so
+what is kept is this table, and the design note that a duration gate is the only kind
+of cost left that could decouple the two.
+
+### What re-taking the whole thing on a working `withdraw` was worth
+
+⚠️ **A premise of every paragraph above was sixty-five points stale, and its own test
+had said so.** The cast-wide half of the objection — that softening `bare` turns
+`reckless` into the 100%-against-the-cast trait `blood_thirst` was refused for being
+— was measured against a Squirtle whose `withdraw` restored nothing: a self-aimed
+skill's `restores` clause paid out until the payout was given a second caller, and
+`TestBallastIsATradeAndNotAGift` carries the sentence *"Re-take it before quoting the
+amount."* Nobody re-took it.
+
+Re-taken, 1500 duels both ways round and 500 seeds a cast matchup, on the engine as
+it stands:
+
+| | duel | bulbasaur | squirtle |
+| --- | --- | --- | --- |
+| `reckless` (shipped) | 22.1% | 97.2% | 28.4% |
+| **A** `blood_thirst` | 54.4% | 100.0% | **88.0%** |
+| **B** `blaze` | **36.9%** | 98.2% | 36.6% |
+
+Squirtle against the dragon build has gone from 93.0% to **28.4%**, and
+`blood_thirst`'s cast-wide pair from 100%/100% to 100%/**88.0%**. So the cast-wide
+gate **is no longer binding**: swept again, every softening of `bare` stays under
+both referents — bulbasaur never passes 99.0 against A's 100.0, squirtle never passes
+79.8 against A's 88.0 — where before, every value that fixed the duel saturated
+squirtle at 100%.
+
+| `bare` defence | duel | bulbasaur | squirtle |
+| --- | --- | --- | --- |
+| −400 (shipped) | 22.1% | 97.2% | 28.4% |
+| −250 | 25.1% | 98.6% | 41.0% |
+| −200 | 28.5% | 98.4% | 42.8% |
+| −150 | 36.5% | 98.6% | 42.8% |
+| −125 … −100 | 37.0% | 98.8% | 78.8% |
+| −90 … −75 | 39.9% | 98.8% | 78.8% |
+| −50 | 41.1% | 99.0% | 79.8% |
+
+**And the lever is still dead, for a better reason.** The ledger — damage off the
+event log, the currency the trait is denominated in — says what no win rate could:
+
+| `bare` defence | bought | spent | ratio |
+| --- | --- | --- | --- |
+| −400 (shipped) | 30956 | **50084** | 1.62 |
+| −250 | 76988 | 22632 | 0.29 |
+| −200 | 111727 | **−1134** | −0.01 |
+| −150 | 168766 | **−26170** | −0.16 |
+| −90 | 191895 | **−74549** | −0.39 |
+
+A **negative** cost means a unit holding `reckless` takes *less* damage than a unit
+holding no trait at all, while dealing several times more. The mechanism is the
+trait's own tempo: `unleashed` ends the battle sooner, `burn` ticks fewer times, and
+from about −200 onwards the tempo swallows the vulnerability whole. So the two gates
+do still flip together — they are just not the pair on record. It is **duel against
+ledger**, not duel against cast-wide: the crossover sits between −250 (a cost of
+0.29, a duel of 25.1%) and −200 (a cost of −0.01, a duel of 28.5%), and the duel
+needs 36.9%. Every value that makes the matchup real makes the trait free.
+
+**What shipped is the guard, not a number.**
+`TestRecklessSpendsNoMoreThanItBuys` had only an upper bound — *not a tax* — and no
+lower one, so it passed all eight of those gift values. It now also asserts the trait
+costs something at all. Nought rather than a share, so nothing is invented: it is the
+claim the trait's own name makes, said in the one currency that can see a magnitude,
+and the shipped trait clears it by 50084. Mutated on disk: `bare` at −250 stays green
+and −200 and −150 go red, while `TestRecklessIsATradeAndNotAGift` stays green through
+all three — which is the whole point of adding it, because counting which stats a
+grant lowers cannot see how much.
+
+`bare` is therefore **unchanged at −400**, the duel still reads 22.1%, and the floor
+in `TestTheDragonBuildIsASidegradeAndNotAnUpgrade` stays at 150. All four levers are
+now measured and written down, and what is left is the acceptance the item has been
+circling: the dragon build's 22% is a statement about `inferno` and belongs to the
+fire line's detonate rather than to this trait.
 
 ### Both halves of an all-sided skill
 
