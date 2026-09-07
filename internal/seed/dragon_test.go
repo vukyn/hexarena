@@ -303,6 +303,31 @@ func TestRecklessSpendsNoMoreThanItBuys(t *testing.T) {
 		t.Errorf("reckless buys %d damage, so the attack it grants is worth nothing "+
 			"and the whole trait is cost", bought)
 	}
+	// ⚠️ **The lower bound, and it is the half that was missing.** The bound above
+	// says the trade has not become a tax; this one says there is still a trade.
+	// Without it the test is one-sided, and a one-sided test on a ledger is exactly
+	// the shape the *stat* test has: TestRecklessIsATradeAndNotAGift asserts that
+	// something is given up by counting which stats a grant lowers, and a count
+	// cannot see a magnitude — so it passes a `bare` that lowers defence by an
+	// amount the trait's own tempo more than pays back.
+	//
+	// That is not hypothetical. Softening `bare`'s defence term — the third lever
+	// this trait has been rebalanced through, and the one that reads as obviously
+	// safe — drives `cost` **negative** from about −200 onwards: at −150 the trait
+	// buys 168766 damage and costs **−26170**, meaning a unit holding `reckless`
+	// takes *less* than a unit holding no trait at all while dealing five times
+	// more. `unleashed` ends the battle sooner, the burn ticks fewer times, and the
+	// tempo swallows the vulnerability whole. Both existing assertions pass every
+	// one of those values.
+	//
+	// Nought rather than a share of what it buys, so no number is invented: the
+	// claim is the same one the trait's own name makes, and the shipped trait
+	// clears it by 50084.
+	if cost <= 0 {
+		t.Errorf("reckless buys %d damage and costs %d taken: a trait that lowers what "+
+			"its holder takes while raising what it deals is not a trade, whatever its "+
+			"grants say they lower", bought, cost)
+	}
 	if cost > 2*bought {
 		t.Errorf("reckless buys %d damage and costs %d taken, over twice what it buys: "+
 			"the trade has become a tax", bought, cost)

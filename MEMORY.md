@@ -87,6 +87,7 @@ that owns the subject wins and the note is the thing to fix.
 - [golden không giữ được luật phím](memory/hexarena-a-golden-cannot-hold-a-keystroke-rule.md) — mọi fixture gán p.Aiming=true; vòng lặp `&& Aiming` dung thứ cả hai đáp án
 - [baseline mutation lấy từ git](memory/hexarena-a-mutation-baseline-must-come-from-git.md) — copy file đang dirty làm backup → chạy lỗi thành edit vĩnh viễn
 - [fixture chọn theo tính chất vẫn mù](memory/hexarena-a-fixture-chosen-by-property-is-blind-to-other-properties.md) — battleCast sắp theo SỐ chiêu → kit toàn `single`, tính năng diện tích vô hình
+- [referent cũ sống lâu hơn kết luận nó chặn](memory/hexarena-a-stale-referent-outlives-the-conclusion-it-blocked.md) — squirtle 93.0%→28.4%; chính test đó đã ghi "re-take before quoting"
 - [nhánh summon bỏ qua giá](memory/hexarena-the-summon-branch-skips-the-price.md) — continue nên không tới prices.rate; ⚠️ probe trước khi kết luận
 - [counter có hạn ≠ trần cả trận](memory/hexarena-a-timed-counter-is-not-a-lifetime-cap.md) — phải permanent + category không ai strip
 - [hai cửa sổ không phủ hết list](memory/hexarena-two-windows-do-not-cover-a-growing-list.md) — vỡ 3 lần; duyệt hết con trỏ
