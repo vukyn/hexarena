@@ -114,8 +114,8 @@ func (p Password) GoString() string { return "wire.Password(" + p.String() + ")"
 // Hello is the first thing a client says. Client → server.
 //
 // It carries the three version numbers inline (see Version), the squad the
-// player built on their own machine, the room's password and a name for the
-// other player to read.
+// player built on their own machine, the room's password, a name for the other
+// player to read, and whether this client means to watch rather than play.
 //
 // The squad is a placement.Squad and not a resolved roster, which is the whole
 // reason a client can be trusted with it: a Placement is a *reference* —
@@ -133,6 +133,35 @@ type Hello struct {
 	Name string `json:"name,omitempty"`
 	// Password is the room's password, or empty for a room with none.
 	Password Password `json:"password,omitempty"`
+	// Watch is this client asking to **watch** the match rather than play it. A
+	// watcher takes no seat, so what it asks for is to be sent the match rather
+	// than to be asked for a decision in it; the room answers by welcoming it
+	// with no seat at all (→ Welcome.Watching).
+	//
+	// ⚠️ **The joiner is what says which it means, and that is the whole reason
+	// this field exists.** A room's code is twelve characters and the twelve a
+	// watcher pastes are the same twelve a player pastes, so either the room
+	// hands out a second kind of code or the joiner says which it means. The
+	// second is cheaper — one flag against a second code space, a second thing
+	// for a host to print and a second thing to mistype — and it is a change to
+	// what a hello *says* rather than a change to what a code *is*.
+	//
+	// ⚠️ **A watcher's squad is ignored, and the asymmetry with a room that
+	// drafts is deliberate rather than an oversight.** A squad brought to a room
+	// that drafts is refused (CodeSquadUnwanted), because a squad quietly dropped
+	// would be a player watching the side they spent an evening building fail to
+	// appear with nothing saying why. That argument does not reach a watcher at
+	// all: a watcher expects **no side of its own**, so there is nothing that
+	// fails to appear and nothing to misread. So this needs no refusal — not
+	// CodeSquadUnwanted, whose wording says in as many words that the room drafts
+	// and to join again with no squad chosen, which would send a watcher to fix
+	// something that is not wrong, and not a code of its own either. Nothing here
+	// enforces that; a hello is a shape and the room is what decides.
+	//
+	// It carries no omitempty, for the reason Welcome.Drafts does not: a client
+	// that means to play writes `false` rather than nothing, so what a joiner
+	// asked for reads whole in a log and in the golden.
+	Watch bool `json:"watch"`
 }
 
 // Kind is KindHello.
@@ -245,12 +274,41 @@ type Welcome struct {
 	// draft writes `false` rather than nothing, so the configuration a match runs
 	// under reads whole in a log and in the golden.
 	Drafts bool `json:"drafts"`
-	// Seat is which of the room's two places this client took, for the match.
+	// Seat is which of the room's two places this client took, for the match —
+	// and **an empty seat is the room's answer to Hello.Watch**: a welcome that
+	// names no seat is the room saying this client watches.
+	//
+	// ⚠️ **There is deliberately no second field saying so.** Seat's own zero
+	// value already means "no seat" rather than quietly meaning the host, so a
+	// boolean beside it would be a second statement of a fact this field already
+	// owns, and the only thing it could add is a disagreement to resolve — the
+	// reason Act carries no unit and Pass carries no reason. Welcome.Watching is
+	// the reading, derived here once.
+	//
+	// ⚠️ A watcher is **not a third seat**, and that is a decision about who wins
+	// rather than about tidiness: the order the two seats are visited in reaches
+	// the roster and the roster's order decides which side wins a speed tie, so a
+	// watcher threaded through the same places as the players changes the battle
+	// it came to watch. → internal/room/series.go, seatCount.
 	Seat Seat `json:"seat"`
 }
 
 // Kind is KindWelcome.
 func (Welcome) Kind() Kind { return KindWelcome }
+
+// Watching reports whether this welcome seats a watcher rather than a player,
+// which is exactly the absence of a seat.
+//
+// ⚠️ **It is derived and never stored, and the derivation is the point.** The
+// room, the transport and the screen each have to ask this question, and three
+// callers writing the condition out are three places for it to be written
+// differently — one of them eventually as `Seat != SeatHost`, which is the same
+// answer today and stops being one the moment anything else can sit down. So it
+// is read off Seat.Valid, which is already this package's one declaration of
+// what a seat may be. That is the shape CodeCount and KindCount take for their
+// enums and the shape DraftSteps takes for DraftStep.Valid: one declaration, and
+// everything else asks it.
+func (w Welcome) Watching() bool { return !w.Seat.Valid() }
 
 // Refused is the room turning a client away: a Code and nothing else. Server →
 // client.
