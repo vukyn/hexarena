@@ -464,7 +464,7 @@ func TestCategoryNames(t *testing.T) {
 	// reference's print order among them — move when a category is slotted in
 	// rather than appended, which is the rule both HealCut and Taunt are declared
 	// under. A new category belongs on the END of this line.
-	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt", "heal_cut", "charge", "absorb", "reserve"}
+	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt", "heal_cut", "charge", "absorb", "reserve", "heal_mend"}
 	categories := status.Categories()
 	if len(categories) != len(want) {
 		t.Fatalf("there are %d categories, want %d", len(categories), len(want))
@@ -615,10 +615,19 @@ func TestHealShareBelongsOnlyToAHealCut(t *testing.T) {
 			"want between -1000 and -1"},
 		{"a buff with a heal share",
 			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"buff","max_stacks":1,"duration":1,"heal_share":-400}]}`,
-			"which only a heal_cut uses"},
+			"which only a heal_cut or a heal_mend uses"},
 		{"a dot with a heal share",
 			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"dot","max_stacks":1,"duration":1,"tick_power":500,"heal_share":-400}]}`,
-			"which only a heal_cut uses"},
+			"which only a heal_cut or a heal_mend uses"},
+		{"a heal mend that lowers healing",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"heal_mend","max_stacks":1,"duration":1,"heal_share":-400}]}`,
+			"it must raise the healing"},
+		{"a heal mend past a doubling",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"heal_mend","max_stacks":1,"duration":1,"heal_share":1001}]}`,
+			"want between 1 and 1000"},
+		{"a heal mend with no share",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"heal_mend","max_stacks":1,"duration":1}]}`,
+			"has no heal_share"},
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {

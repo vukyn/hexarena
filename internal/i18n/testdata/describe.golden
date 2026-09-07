@@ -1124,6 +1124,11 @@ Dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng 
 Tự nó không làm gì cả. Nó dồn lại trên người mang, và chính chiêu của người đó tiêu nó đi — dồn được càng nhiều thì một chiêu tiêu được càng nhiều.
 Dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn.
 
+[status] tidewell
+Bên mang hồi máu bao nhiêu cũng được cộng thêm 25% mỗi cộng dồn, hồi từ đâu cũng vậy.
+Tối đa là 50%.
+Tăng máu hồi vào · vĩnh viễn · tối đa 2 cộng dồn.
+
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
 
@@ -2246,6 +2251,11 @@ Builds up for its holder to spend · 5 turns · up to 999 stacks.
 [status] heft
 Does nothing at all on its own. It builds up on whoever holds it, and that unit's own skills spend it — the more there is, the more one of them can spend at once.
 Builds up for its holder to spend · 4 turns · up to 5 stacks.
+
+[status] tidewell
+Every heal the holder receives is raised by 25% per stack, whatever gave it.
+At its cap that is 50%.
+Raises healing received · always in force · up to 2 stacks.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.

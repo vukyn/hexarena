@@ -248,6 +248,7 @@ const (
 	CategoryRegen
 	CategoryTaunt
 	CategoryHealCut
+	CategoryHealMend
 	CategoryCharge
 	CategoryAbsorb
 	CategoryReserve
@@ -279,6 +280,7 @@ const (
 	CategoryNounRegen
 	CategoryNounTaunt
 	CategoryNounHealCut
+	CategoryNounHealMend
 	CategoryNounCharge
 	CategoryNounAbsorb
 	CategoryNounReserve
@@ -667,6 +669,12 @@ const (
 	SummaryCosts
 	BlurbStatusCutsHealing
 	BlurbStatusCutsHealingOnce
+	// The mirror pair, for the category that raises a heal instead of cutting it.
+	// Two wordings rather than one with the verb substituted, for the reason every
+	// pair in this file is two: a sentence assembled out of a clause and an
+	// operator reads as a sentence in neither language.
+	BlurbStatusMendsHealing
+	BlurbStatusMendsHealingOnce
 	BlurbStatusRaises
 	BlurbStatusLowers
 	BlurbStatusRaisesOnce

@@ -1455,6 +1455,21 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 			out = append(out, l.Say(BlurbStatusStacked,
 				healCut(kind.HealShare*kind.MaxStacks)))
 		}
+	case status.HealMend:
+		// The mirror of the arm above, and it is a separate arm for the reason
+		// HealMend is a separate category: this switch is what a status says about
+		// itself, and one arm serving both would have to word the direction from
+		// the sign of a number — which is how a sentence ends up saying "cut by
+		// -40%".
+		mend, mends := share(kind.HealShare), BlurbStatusMendsHealingOnce
+		if kind.MaxStacks > 1 {
+			mends = BlurbStatusMendsHealing
+		}
+		out = append(out, l.Say(mends, mend))
+		if kind.MaxStacks > 1 {
+			out = append(out, l.Say(BlurbStatusStacked,
+				share(kind.HealShare*kind.MaxStacks)))
+		}
 	case status.Absorb:
 		// Three sentences where a shield needs two, and the third is the one that
 		// stops a reader importing what they already know about a shield. A pool

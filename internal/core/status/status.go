@@ -186,10 +186,39 @@ const (
 	//
 	// Declared last, which is the rule.
 	Reserve
+	// HealMend raises the healing its holder RECEIVES, and is HealCut read the
+	// other way up.
+	//
+	// ⚠️ **The arithmetic was already there and only the parser said no.**
+	// battle.healingFor computes `scale.Base + share` and clamps the result at
+	// nought, so a positive share has always raised a heal correctly — what did
+	// not exist was a category allowed to carry one. That is why this is a
+	// category and not a relaxation of HealCut's bound: a category prints as a
+	// PREDICATE on the statuses reference, `heal_cut` reads "lowers the healing
+	// its holder receives", and a status that raised healing under that heading
+	// would be a lie on screen. Taunt and HealCut each paid for that lesson
+	// already.
+	//
+	// It is NOT harmful — it is something its holder wants — so a cleanse aimed
+	// at debuffs may not take it and a dispel aimed at an enemy may, which is the
+	// Absorb reading rather than the HealCut one.
+	//
+	// It does NOT outlast a shield. Nothing puts one on by hitting: it is granted
+	// to its own side, so the question that predicate answers is one nobody asks
+	// about it.
+	//
+	// ⚠️ **Bounded at a doubling.** HealCut is bounded at total negation because
+	// that is where the arithmetic stops meaning anything; the mirror of "takes
+	// all of it" is "adds all of it again", and a share above that is a heal
+	// multiplier with no argument behind it. One stack may promise a doubling and
+	// the stack cap is what decides the rest.
+	//
+	// Declared last, which is the rule.
+	HealMend
 )
 
 // CategoryCount is the number of categories.
-const CategoryCount = int(Reserve) + 1
+const CategoryCount = int(HealMend) + 1
 
 var categoryNames = [CategoryCount]string{
 	Dot:        "dot",
@@ -203,6 +232,7 @@ var categoryNames = [CategoryCount]string{
 	Charge:     "charge",
 	Absorb:     "absorb",
 	Reserve:    "reserve",
+	HealMend:   "heal_mend",
 }
 
 func (c Category) String() string {
@@ -1194,15 +1224,23 @@ func ParseBook(raw []byte) (*Book, error) {
 		// Bounded on both sides — it must reduce, or the category name is a lie,
 		// and one stack may not promise more than total negation, which is a bound
 		// on the arithmetic rather than an authored ceiling.
+		// The two heal categories are validated together and in opposite
+		// directions, which is the whole of what makes them two categories: each
+		// one's whole job is that number, and a share pointing the wrong way would
+		// make the heading it prints under a lie.
+		movesHealing := category == HealCut || category == HealMend
 		switch {
-		case category == HealCut && declared.HealShare == 0:
-			return nil, fmt.Errorf("status %q cuts healing but has no heal_share", declared.ID)
+		case movesHealing && declared.HealShare == 0:
+			return nil, fmt.Errorf("status %q is %s but has no heal_share", declared.ID, category)
 		case category == HealCut && (declared.HealShare > 0 || declared.HealShare < -scale.Base):
 			return nil, fmt.Errorf("status %q declares heal_share %d, want between %d and -1: it must lower the healing its holder receives",
 				declared.ID, declared.HealShare, -scale.Base)
-		case category != HealCut && declared.HealShare != 0:
-			return nil, fmt.Errorf("status %q is %s but declares heal_share %d, which only a %s uses",
-				declared.ID, category, declared.HealShare, HealCut)
+		case category == HealMend && (declared.HealShare < 0 || declared.HealShare > scale.Base):
+			return nil, fmt.Errorf("status %q declares heal_share %d, want between 1 and %d: it must raise the healing its holder receives, and one stack may promise at most a doubling",
+				declared.ID, declared.HealShare, scale.Base)
+		case !movesHealing && declared.HealShare != 0:
+			return nil, fmt.Errorf("status %q is %s but declares heal_share %d, which only a %s or a %s uses",
+				declared.ID, category, declared.HealShare, HealCut, HealMend)
 		}
 		// A counter that carries a modifier is a counter that is bounded by nothing
 		// and does something anyway, which is the one combination its own cap was

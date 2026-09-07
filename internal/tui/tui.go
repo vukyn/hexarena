@@ -107,7 +107,65 @@ func Effects(unit *battle.Unit) string {
 		}
 		parts = append(parts, part)
 	}
-	return strings.Join(parts, ", ")
+	return elided(parts, effectsRoom)
+}
+
+// effectsRoom is what the roster row leaves this column at the width the program
+// promises to draw in.
+//
+// The row spends 59 cells before it — the tag, the name, the health bar, the
+// speed and the gaps between them, all fixed by the format string above — and the
+// floor is 120 with one cell held back, so what is left is this. It is a constant
+// rather than a measurement because the format string it is derived from is one.
+const effectsRoom = 60
+
+// elided joins what fits and counts what did not.
+//
+// ⚠️ **The column had no bound at all until a squad could hold three composition
+// bonuses at once.** One unit carrying `phalanx x2 (always)`, `tidewell x2
+// (always)`, `kinship x2 (always)` and a poison draws 124 cells into a row that
+// has 60, and `TestEveryWordingFitsTheMinimumWidth` is what said so. Bonuses
+// stack by design and a per-element table is eight more of them, so the row was
+// always going to meet this — the third bonus is simply where it did.
+//
+// The count is kept rather than the text truncated mid-word, because a reader who
+// can see that two effects are hidden knows to open the unit; one who sees
+// `kinsh…` knows only that something is broken. It is the same trade every
+// listing in this repository makes about an ellipsis.
+func elided(parts []string, room int) string {
+	if len(parts) == 0 {
+		return "-"
+	}
+	kept, width := 0, 0
+	for _, part := range parts {
+		// The separator is paid for by every part after the first, which is what
+		// makes this arithmetic and not an estimate.
+		next := len(part)
+		if kept > 0 {
+			next += len(", ")
+		}
+		// The marker has to fit too, or eliding would overflow the row it exists
+		// to keep inside one. Reserved only while something is actually left over.
+		reserve := 0
+		if kept+1 < len(parts) {
+			reserve = len(" +9")
+		}
+		if width+next+reserve > room {
+			break
+		}
+		width += next
+		kept++
+	}
+	// Nothing fits, which a row this narrow can reach: say how many there are
+	// rather than drawing a blank that reads as "no effects".
+	if kept == 0 {
+		return fmt.Sprintf("+%d", len(parts))
+	}
+	drawn := strings.Join(parts[:kept], ", ")
+	if kept < len(parts) {
+		drawn += fmt.Sprintf(" +%d", len(parts)-kept)
+	}
+	return drawn
 }
 
 // Order shows the units due to act next.
