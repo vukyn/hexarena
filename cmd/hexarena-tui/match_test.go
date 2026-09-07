@@ -132,10 +132,18 @@ func openARoom(t *testing.T, battles int) (*aRoom, *forge.Library) {
 // test that waited out the default ninety seconds would not be run.
 func openARoomAllowing(t *testing.T, battles, allowance int) (*aRoom, *forge.Library) {
 	t.Helper()
-	return openARoomConfigured(t, room.Config{
+	return openARoomConfigured(t, aRoomConfig(battles, allowance))
+}
+
+// aRoomConfig is the configuration those two open, named so that a test wanting
+// one thing changed about it does not restate the rest. → openAWatchableRoom,
+// which is the only caller that does, and which exists because -watch made
+// watching opt-in: a room left at this default answers watching_closed.
+func aRoomConfig(battles, allowance int) room.Config {
+	return room.Config{
 		Format: wire.Format3v3, Battles: battles,
 		Allowance: allowance, Seed: 11, TurnCap: room.DefaultTurnCap,
-	})
+	}
 }
 
 // openARoomConfigured is the same setup with the whole room.Config named, which
@@ -760,4 +768,15 @@ func TestThisBinaryKnowsWhatItIs(t *testing.T) {
 			version.Build, said)
 	}
 	t.Logf("this binary announces itself as %q, data %s", said, version.Data.Digest.Short())
+}
+
+// openAWatchableRoom is a room spectators are let into, which every test that
+// dials one needs: cmd/hexarena-host's -watch made watching opt-in, so a room
+// at the shipped default answers watching_closed. It wraps aRoomConfig rather
+// than restating it, so the two cannot drift apart.
+func openAWatchableRoom(t *testing.T, battles int) (*aRoom, *forge.Library) {
+	t.Helper()
+	config := aRoomConfig(battles, room.DefaultAllowance)
+	config.Watchable = true
+	return openARoomConfigured(t, config)
 }

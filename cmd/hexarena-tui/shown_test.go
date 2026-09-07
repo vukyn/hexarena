@@ -42,7 +42,7 @@ import (
 // any code handed to it and so will a live battle, so a table pairing codes with
 // screens could be permuted freely and every drawing assertion would still pass.
 // So both sets are **produced out of a real room.Room**, and one of them out of a
-// real socket.Server: eight refusals a gate can answer a *join* with, and three a
+// real socket.Server: nine refusals a gate can answer a *join* with, and three a
 // room can answer a seated peer with. The
 // two are then held **disjoint and total** against wire.CodeCount, and the walk
 // has a default arm — so a code moved from one set to the other lands in neither
@@ -344,9 +344,13 @@ func aMatchClosedBy(m model, closure wire.Closure) model {
 // ⚠️ **The eighth does not come out of a room at all**, and that is a fact about
 // the feature rather than a shortcut here: a room keeps no count of who is
 // watching it, so the cap on watchers — and the refusal that carries it — belongs
-// to whatever holds the connections. → aWatcherOverTheCap.
+// to whatever holds the connections. → aWatcherOverTheCap. ⚠️ **The ninth is its
+// twin from the other side and does come out of a room**: whether a room takes
+// watchers at all is one field of its configuration, so the room answers that
+// one itself, and the two are held apart here because their two sentences give
+// opposite advice.
 //
-// What it cannot see: a ninth way the gate could refuse that this file does
+// What it cannot see: a tenth way the gate could refuse that this file does
 // not think to provoke. The count is logged for that reason — a gate that grew
 // one would leave that code being checked on the battle screen, which is a
 // failure of *this* helper rather than of the claim.
@@ -431,18 +435,33 @@ func theGateAnswers(t *testing.T) map[wire.Code]bool {
 	// 8. A spectator arriving at a match that already has as many people
 	//    watching as the transport carries — the one refusal at a gate that comes
 	//    out of a **server** rather than a room. → aWatcherOverTheCap.
+	//
+	//    ⚠️ The room has to be **opened to spectators** for this case to reach
+	//    the cap at all: watching is off by default, so a plain config() would
+	//    have the first of the eight fillers turned away by case 9's refusal and
+	//    this case would answer the wrong code.
 	watching := hello()
 	watching.Watch = true
-	answers[aWatcherOverTheCap(t, config(), deps, watching)] = true
+	watched := config()
+	watched.Watchable = true
+	answers[aWatcherOverTheCap(t, watched, deps, watching)] = true
+	// 9. A spectator arriving at a room the host never opened to spectators,
+	//    which is the room's own answer and not the transport's: whether a room
+	//    may be watched is one field of its configuration, and how many may watch
+	//    it at once is the cap above. The two are different questions and the
+	//    refusals say different things — the cap's wording tells the reader to
+	//    wait for one of the current watchers to leave, and here there are none
+	//    and never will be. → wire.CodeWatchingClosed.
+	answers[refusedBy(t, config(), deps, watching)] = true
 
 	delete(answers, wire.CodeNone)
-	if len(answers) != 8 {
+	if len(answers) != 9 {
 		named := make([]string, 0, len(answers))
 		for code := range answers {
 			named = append(named, code.String())
 		}
 		slices.Sort(named)
-		t.Fatalf("eight ways of being turned away at a gate produced %d distinct codes (%v), "+
+		t.Fatalf("nine ways of being turned away at a gate produced %d distinct codes (%v), "+
 			"so two of the cases above are answering with the same refusal and one code is "+
 			"being checked on the wrong screen", len(answers), named)
 	}
@@ -450,14 +469,17 @@ func theGateAnswers(t *testing.T) map[wire.Code]bool {
 }
 
 // aWatcherOverTheCap is the eighth way of being turned away, and the only one
-// here that no room.Room can produce.
+// here that no room.Room can produce. It takes its configuration rather than
+// building one because the room has to have been **opened to spectators**:
+// watching is off by default, so the eight fillers below would otherwise be
+// turned away by the ninth case's refusal and never reach the cap.
 //
 // ⚠️ **The cap on watchers is the transport's own fact.** A room keeps no count
 // of who is watching it, no list and no limit — which is exactly what keeps its
 // two seats, its roster and its result untouched by anybody watching — so the
 // only thing that can refuse the watcher over the cap is whatever holds the
 // connections. That is internal/socket, so this case needs a real server over a
-// real listener where the other seven need only a room. → wire.CodeTooManyWatchers.
+// real listener where the other eight need only a room. → wire.CodeTooManyWatchers.
 //
 // It fills the table to socket.MaxWatchers and dials one more. The refusal comes
 // back through Dial, which is the very path the join screen's own refusal takes.

@@ -95,6 +95,17 @@ func draftingConfig(matchSeed uint64, allowance int) room.Config {
 	return out
 }
 
+// watchable is a configuration a watcher may join, which is **not** the default:
+// a room takes watchers only because a host asked for it (room.Config.Watchable,
+// cmd/hexarena-host's -watch). It is a wrapper rather than a variant of config
+// because watching is orthogonal to the series, the allowance and the draft, and
+// because leaving config as the shipped default keeps that default visible in
+// every test that does not want a watcher.
+func watchable(cfg room.Config) room.Config {
+	cfg.Watchable = true
+	return cfg
+}
+
 // theThreeSlots are the formation cells the fixture squads stand in: one per
 // rank, so a squad holds a front, a middle and a back.
 var theThreeSlots = []hex.Offset{{Col: 0, Row: 1}, {Col: 1, Row: 1}, {Col: 2, Row: 1}}

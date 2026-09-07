@@ -154,6 +154,15 @@ type settings struct {
 	// says it — a client cannot know the room drafts until it has been welcomed,
 	// and the hello carrying its squad goes first. → TODO.md.
 	draft bool
+	// watch says a spectator may watch this match: a client that asked to watch
+	// is welcomed with no seat and handed the match off the room's record.
+	//
+	// ⚠️ **Off by default, and that is a decision rather than a bounds check.**
+	// A room is for the two people in it unless the host said otherwise, so the
+	// flag is what says otherwise — and a room that was not opened to spectators
+	// refuses one by name (wire.CodeWatchingClosed) rather than letting them in
+	// quietly. → room.Config.Watchable.
+	watch bool
 	// version is the ask that is answered instead of hosting anything: print
 	// what this binary is and exit. Everything else in this struct configures a
 	// room, and this one says no room is wanted.
@@ -163,8 +172,8 @@ type settings struct {
 // String is the settings as a line, with the password redacted through the type
 // that owns the redaction. → the note on the struct, for why this exists at all.
 func (s settings) String() string {
-	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, version %t",
-		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.version)
+	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, watch %t, version %t",
+		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.watch, s.version)
 }
 
 // GoString is the same for %#v, which does not go through String.
@@ -251,6 +260,7 @@ func flags(chosen *settings) *flag.FlagSet {
 	})
 	set.Uint64Var(&chosen.seed, "seed", 0, "the match's seed; 0 draws one and prints it")
 	set.BoolVar(&chosen.draft, "draft", false, "ban and pick from one shared pool instead of bringing squads; join with NO squad")
+	set.BoolVar(&chosen.watch, "watch", false, "let spectators watch; they paste the SAME code the players do")
 	// The same sentence cmd/hexarena-tui's flag shows in English, and the same
 	// three numbers. That client takes its descriptions from internal/i18n
 	// because it has two languages to keep honest; this binary has one and reads
@@ -453,6 +463,7 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 		TurnCap:   chosen.turns,
 		Password:  chosen.password,
 		Drafts:    chosen.draft,
+		Watchable: chosen.watch,
 	}
 	// ⚠️ **A drafting bo3 is refused HERE, in words, rather than by Config.Validate.**
 	// The room refuses it too and its sentence is the authority on *why* — decision
@@ -608,6 +619,18 @@ func banner(held *hosted, how string, out io.Writer) {
 	// stops being read.
 	if held.config.Drafts {
 		fmt.Fprintf(out, "  draft       yes — both sides ban and pick here; JOIN WITH NO SQUAD\n")
+	}
+	// ⚠️ **What a host has to be told is that there is no second code.** The
+	// room code decision the whole feature rests on is that a spectator pastes
+	// the same twelve characters a player does — one flag on the hello rather
+	// than a second code space, a second thing to print and a second thing to
+	// mistype — and the host is the one person who reads that code out, so the
+	// host is where it has to be said. Drawn only when it is true, for the draft
+	// line's reason: a line every ordinary host reads past is how the one that
+	// matters stops being read.
+	if held.config.Watchable {
+		fmt.Fprintf(out, "  watch       yes — spectators paste the SAME %d characters the players do\n",
+			wire.RoomCodeLength)
 	}
 	fmt.Fprintf(out, "  allowance   %ds a turn, %d turns a battle at most\n", held.config.Allowance, held.config.TurnCap)
 	fmt.Fprintf(out, "  seed        %d\n", held.config.Seed)

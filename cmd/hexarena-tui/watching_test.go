@@ -104,7 +104,7 @@ func keysAWatcherMayPress(t *testing.T) []string {
 //     sender with wire.CodeNotYourTurn, so an empty refusal list over a whole
 //     match is the room saying it was never spoken to.
 func TestAMatchIsWatchedFromTheJoinScreenToTheResultOverALoopbackListener(t *testing.T) {
-	held, library := openARoom(t, 1)
+	held, library := openAWatchableRoom(t, 1)
 	m, fake := joining(t, held, library, i18n.Vi)
 
 	// Claim 1, the reaching: the toggle is a chord on the join screen, and the
@@ -284,7 +284,7 @@ func sweepAWatcher(t *testing.T, m model, keys []string) model {
 // behaviour after one: room_full is the transport's to produce and
 // internal/socket already measures it.
 func TestTheWatchToggleSurvivesARefusalAndIsSentOnTheNextTry(t *testing.T) {
-	held, library := openARoom(t, 1)
+	held, library := openAWatchableRoom(t, 1)
 	m, _ := joining(t, held, library, i18n.Vi)
 
 	typed := m.join.Code.Value()
