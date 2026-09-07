@@ -248,7 +248,7 @@ func TestATimeoutOnNothingIsRefusedAndSpendsNobodysTurn(t *testing.T) {
 		opened := newRoom(t, config(11, 1))
 		squad := squadOf(t, dependencies.Characters, "one.squad",
 			"pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")
-		seat, _, err := opened.Join(hello(t, squad, "Alone"))
+		admitted, _, err := opened.Join(hello(t, squad, "Alone"))
 		if err != nil {
 			t.Fatalf("join: %v", err)
 		}
@@ -256,11 +256,11 @@ func TestATimeoutOnNothingIsRefusedAndSpendsNobodysTurn(t *testing.T) {
 			t.Fatal("a room with one player is waiting on somebody to act")
 		}
 		for attempt := 0; attempt < 6; attempt++ {
-			out, err := opened.TimedOut(seat)
+			out, err := opened.TimedOut(admitted.Seat)
 			if err != nil {
 				t.Fatalf("timeout %d: %v", attempt, err)
 			}
-			if got := onlyCodeFor(t, out, seat); got != wire.CodeNotYourTurn {
+			if got := onlyCodeFor(t, out, admitted.Seat); got != wire.CodeNotYourTurn {
 				t.Fatalf("timeout %d answered %q, want %q", attempt, got, wire.CodeNotYourTurn)
 			}
 		}

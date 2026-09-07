@@ -62,8 +62,15 @@ import (
 //   - **Writing a finished match out as a battle.Log.** Another cursor over the
 //     battle, and the room already reads it that way so that a second consumer
 //     costs nothing.
-//   - **Spectators.** A third seat is a room change, not a registry one; a
-//     watcher is a cursor.
+//   - **Watchers, as things this file counts, lists or caps.** ⚠️ This bullet
+//     used to read *"Spectators. A third seat is a room change, not a registry
+//     one; a watcher is a cursor"*, and the second half of that is what shipped:
+//     Since is here, because a cursor over the room's record has to be read
+//     inside the room's goroutine like any other reading. What is **not** here
+//     is any notion of *who* is watching — no count, no list, no limit — because
+//     a watcher is a connection and connections are the transport's. A registry
+//     that capped them would be a registry holding a fact it cannot keep true:
+//     nothing tells it when one goes away. → TODO.md's spectator step 4.
 type Registry struct {
 	// mu guards rooms and live, and nothing else. ⚠️ It is never held across a
 	// send on a room's inbox.
@@ -129,6 +136,12 @@ const (
 	// transport needs (Awaiting, Result, Played) taken **inside** the room's
 	// goroutine, because reading them from outside would be sharing the room.
 	inputRead
+	// inputSince is a **watcher's** read of the room's record, and it is not one
+	// of the room's inputs either: it changes nothing and the room does not
+	// learn that it happened. It is here for inputRead's reason and no other —
+	// Room.Since walks a slice the room appends to, so taking it from outside
+	// the goroutine would be sharing the room. → Registry.Since.
+	inputSince
 )
 
 // request is one call into a room.
@@ -145,6 +158,10 @@ type request struct {
 	// body is inputDeliver's message. An interface, but a message rather than a
 	// function: nothing in wire closes over a room.
 	body wire.Body
+	// cursor is inputSince's read position, which is a number this registry
+	// handed the caller itself on a previous answer. → Registry.Since on what
+	// that makes an out-of-range one.
+	cursor int
 	// reply is where the answer goes, one channel per request, buffered so that
 	// the room's goroutine never blocks answering.
 	reply chan served
@@ -176,11 +193,37 @@ type served struct {
 // ending still has to travel here — the same division Known draws between a
 // refusal for the peer and an answer for the transport.
 type Answer struct {
-	// Seat is the seat a Join handed out, and the zero Seat everywhere else —
-	// including a refused join, exactly as Room.Join reports it.
-	Seat wire.Seat
+	// Admission is what the gate did with a Join, embedded so that the three
+	// outcomes are **declared once**, in the package that decides them, rather
+	// than restated here and kept in step by hand. It is the zero Admission on
+	// every other input, exactly as Room.Join reports a refusal.
+	//
+	// ⚠️ **Watching is for the transport, not for the peer**, which is the same
+	// division Known draws one field down. The peer already knows: it asked, and
+	// its welcome names no seat. What the transport has to decide is whether to
+	// keep this connection at all — and it cannot read that off Seat, because a
+	// refusal and a welcomed watcher both have none. The alternative, a transport
+	// reaching into Out for the wire.Welcome and asking whether *its* seat is
+	// empty, is a transport parsing its own output: the same mistake Known
+	// exists to prevent, one message down.
+	//
+	// ⚠️ And it may not be inferred from the hello either. A hello carrying
+	// Watch that is refused for its version or its password is a refusal like
+	// any other, so what the room *did* and what the client *asked for* part
+	// company on exactly the connections a transport must not keep.
+	Admission
 	// Out is every message the room wants sent, in order.
 	Out []Outbound
+	// Watched is what a watcher's Since asked for: the recorded bodies from the
+	// cursor it passed, **copied** out of the room's own record. Cursor is the
+	// one to pass next time.
+	//
+	// Both are the zero value on every other input, exactly as the Admission
+	// above is — the same shape and the same reason, which is that one Answer
+	// type carries every input's answer rather than each input growing a type.
+	// → Registry.Since.
+	Watched []wire.Body
+	Cursor  int
 	// Reading is the room after the input. It is the zero Reading when Known is
 	// false, because there was no room to read.
 	Reading Reading
@@ -322,6 +365,52 @@ func (g *Registry) Read(code wire.RoomCode) (Reading, bool) {
 	return answered.Reading, true
 }
 
+// Since is a **watcher's** read of one room's record, by code: the bodies
+// recorded from cursor onward, the cursor to pass next time, and whether there
+// was a room to read at all.
+//
+// It is Read's shape rather than a new one — take the reading inside the room's
+// goroutine, copy it out, and report a code no room is running under as *not
+// known* rather than as an empty read. That last distinction is the whole reason
+// the bool is here and is the same one Answer.Known draws: a watcher of a room
+// that has finished must not look like a watcher that is merely up to date, and
+// a room removes its own entry the moment its match ends.
+//
+// ⚠️ **The copy is taken even though the room's own view is already safe to
+// hand out**, and the reasoning is worth writing down because the obvious reading
+// of it is "this copy is free to delete". Room.Since returns a three-index view,
+// so its capacity is its length: a caller's own append reallocates instead of
+// writing into the slot the next body is going to be recorded in, and append
+// only ever *writes* at an index the view cannot address, so the elements a
+// watcher reads are ones the room will never touch again — and the reply
+// channel is the happens-before edge that makes reading them ordered. So it is
+// safe today, and the copy is not what makes it safe today. It is taken for
+// Reading.Played's reason: "nothing outside the room's goroutine holds a slice
+// into memory the room owns" is a property a reader checks by reading one line,
+// where "the aliasing is harmless because of what append does" is an argument
+// that the first record which ever *rewrites* a recorded slot — a ring buffer
+// put in when the bound in watch.go stops being comfortable, say — would
+// silently invalidate.
+//
+// ⚠️ **An out-of-range cursor panics on the room's own goroutine**, which is
+// Room.Since's deliberate choice and not something this hides: answering one
+// with an empty read would make a consumer that has got ahead of the room look
+// exactly like one that is up to date. What travels with it is a warning for
+// whoever holds the cursors, because the blast radius is bigger here than inside
+// one room — **a cursor is a number this registry handed out for one room, and a
+// room's code is handed out again once its match ends** (the room byte is the
+// lowest free one, so a finished room gives its code back). A transport that let
+// a watcher's cursor outlive the room it came from would therefore be asking a
+// fresh room about a record it never had. Drop the cursor with the room. →
+// TODO.md's spectator step 4.
+func (g *Registry) Since(code wire.RoomCode, cursor int) ([]wire.Body, int, bool) {
+	answered, err := g.ask(code, request{kind: inputSince, cursor: cursor})
+	if err != nil || !answered.Known {
+		return nil, 0, false
+	}
+	return answered.Watched, answered.Cursor, true
+}
+
 // Close stops one room and reports whether there was one to stop. The room's
 // goroutine ends; whatever it was in the middle of a match is not written
 // anywhere, because nothing writes a match out yet.
@@ -455,7 +544,7 @@ func answerFrom(playing *Room, asked request) served {
 	var answered served
 	switch asked.kind {
 	case inputJoin:
-		answered.answer.Seat, answered.answer.Out, answered.err = playing.Join(asked.hello)
+		answered.answer.Admission, answered.answer.Out, answered.err = playing.Join(asked.hello)
 	case inputDeliver:
 		answered.answer.Out, answered.err = playing.Deliver(asked.seat, asked.body)
 	case inputTimedOut:
@@ -463,8 +552,10 @@ func answerFrom(playing *Room, asked request) served {
 	case inputLeft:
 		answered.answer.Out, answered.err = playing.Left(asked.seat)
 	case inputRead:
+	case inputSince:
+		answered.answer.Watched, answered.answer.Cursor = watchedFrom(playing, asked.cursor)
 	default:
-		// Unreachable while the five kinds above are the five that exist, and it
+		// Unreachable while the six kinds above are the six that exist, and it
 		// answers rather than panicking because a request the registry cannot
 		// read is a bug in this file and not a reason to take a process down.
 		answered.err = fmt.Errorf("the registry cannot read input kind %d", asked.kind)
@@ -474,6 +565,21 @@ func answerFrom(playing *Room, asked request) served {
 	// travel back with the input that ended it. → the note on Answer.
 	answered.answer.Reading = readingOf(playing)
 	return answered
+}
+
+// watchedFrom takes a watcher's read inside the room's goroutine and copies the
+// bodies out, the way readingOf copies Played. → Registry.Since for why the copy
+// is taken over a view that is already safe, and what makes an out-of-range
+// cursor a programming error rather than a condition to answer.
+//
+// The bodies themselves are **not** deep-copied and must not be: a wire.Body is
+// an interface over a value the room recorded and never edits, and one of them
+// (wire.Start) carries the roster slice the players' own Outbound already hands
+// the transport. A second copy would be a second roster for a renderer to
+// disagree with.
+func watchedFrom(playing *Room, cursor int) ([]wire.Body, int) {
+	bodies, next := playing.Since(cursor)
+	return append(make([]wire.Body, 0, len(bodies)), bodies...), next
 }
 
 // readingOf copies the room's readings out. Everything it carries is a value or

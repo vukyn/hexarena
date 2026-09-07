@@ -129,12 +129,12 @@ func TestTheGateRefusesEachThingForItsOwnCode(t *testing.T) {
 					t.Fatalf("seating a peer before the case: %v", err)
 				}
 			}
-			seat, out, err := opened.Join(one.hello(t))
+			admitted, out, err := opened.Join(one.hello(t))
 			if err != nil {
 				t.Fatalf("join: %v", err)
 			}
-			if seat.Valid() {
-				t.Errorf("a refused peer was given the %q seat", seat)
+			if admitted.Seat.Valid() {
+				t.Errorf("a refused peer was given the %q seat", admitted.Seat)
 			}
 			if got := onlyCode(t, out); got != one.want {
 				t.Errorf("the gate answered %q, want %q", got, one.want)
@@ -305,18 +305,18 @@ func TestOnlyALeafOfTheLineMayTakeTheField(t *testing.T) {
 				placeUnit(t, dependencies.Characters, "pokemon.gastly", theThreeSlots[2], progression.LevelCap),
 			}}
 			opened := newRoom(t, config(7, 1))
-			seat, out, err := opened.Join(hello(t, squad, "Forked"))
+			admitted, out, err := opened.Join(hello(t, squad, "Forked"))
 			if err != nil {
 				t.Fatalf("join: %v", err)
 			}
 			if one.want {
-				if !seat.Valid() {
+				if !admitted.Seat.Valid() {
 					t.Fatalf("fielding %q was refused with %q, and it is a tip of the line",
 						one.stage, onlyCode(t, out))
 				}
 				return
 			}
-			if seat.Valid() {
+			if admitted.Seat.Valid() {
 				t.Fatalf("fielding %q was accepted, and something in the line grows out of it", one.stage)
 			}
 			if got := onlyCode(t, out); got != wire.CodeSquadRefused {
@@ -345,11 +345,11 @@ func TestOneSquadMayFieldTheSameCharacterTwice(t *testing.T) {
 		placeUnit(t, dependencies.Characters, "pokemon.machop", theThreeSlots[2], progression.LevelCap),
 	}}
 	opened := newRoom(t, config(7, 1))
-	seat, out, err := opened.Join(hello(t, squad, "Doubled"))
+	admitted, out, err := opened.Join(hello(t, squad, "Doubled"))
 	if err != nil {
 		t.Fatalf("join: %v", err)
 	}
-	if !seat.Valid() {
+	if !admitted.Seat.Valid() {
 		t.Fatalf("a squad fielding %q twice was refused with %q", twice, onlyCode(t, out))
 	}
 	// And it reaches a battle rather than merely getting past the gate: the two
@@ -384,11 +384,11 @@ func TestALeavingPeerBeforeTheMatchFreesItsSeat(t *testing.T) {
 	legal := squadOf(t, dependencies.Characters, "legal.squad",
 		"pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")
 	opened := newRoom(t, config(7, 1))
-	seat, _, err := opened.Join(hello(t, legal, "Host"))
+	admitted, _, err := opened.Join(hello(t, legal, "Host"))
 	if err != nil {
 		t.Fatalf("join: %v", err)
 	}
-	if _, err := opened.Left(seat); err != nil {
+	if _, err := opened.Left(admitted.Seat); err != nil {
 		t.Fatalf("leave: %v", err)
 	}
 	if opened.Finished() {
@@ -400,9 +400,9 @@ func TestALeavingPeerBeforeTheMatchFreesItsSeat(t *testing.T) {
 	if err != nil {
 		t.Fatalf("rejoin: %v", err)
 	}
-	if retaken != seat {
+	if retaken.Seat != admitted.Seat {
 		t.Errorf("the freed %q seat was handed out as %q, and the refusal was %q",
-			seat, retaken, onlyCode(t, out))
+			admitted.Seat, retaken.Seat, onlyCode(t, out))
 	}
 }
 

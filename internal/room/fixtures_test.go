@@ -187,6 +187,20 @@ func helloWithNoSquad(t *testing.T, name string) wire.Hello {
 	return hello(t, placement.Squad{}, name)
 }
 
+// watchingHello is a client asking to **watch** the match rather than play it.
+//
+// It takes a squad rather than assuming the empty one, and that is the whole
+// reason it is a parameter: a watcher's squad is *ignored* rather than refused,
+// so the case worth being able to build is a watching hello carrying a side —
+// including an illegal one, which is what tells "ignored" apart from "happened
+// to be legal". → TestAWatchersSquadIsIgnoredWhateverItBrought.
+func watchingHello(t *testing.T, name string, squad placement.Squad) wire.Hello {
+	t.Helper()
+	out := hello(t, squad, name)
+	out.Watch = true
+	return out
+}
+
 // mirror is a fake client, and it is a **mirror** in the sense the design record
 // means: it holds its own *battle.Battle built from the seed and roster on
 // wire.Start and steps it with the decisions on wire.Turn, so it computes the

@@ -60,12 +60,12 @@ func TestTwoFakeClientsDraftAndFightAWholeMatchInProcess(t *testing.T) {
 	// field is the side it is about to draft, and a hello that brought one is
 	// refused with wire.CodeSquadUnwanted (→
 	// TestADraftingRoomRefusesASquadAsUnwanted).
-	seat, out, err := opened.Join(helloWithNoSquad(t, "Host"))
+	admitted, out, err := opened.Join(helloWithNoSquad(t, "Host"))
 	if err != nil {
 		t.Fatalf("the host joins: %v", err)
 	}
-	if seat != wire.SeatHost {
-		t.Fatalf("the first peer took the %q seat, want the host's", seat)
+	if admitted.Seat != wire.SeatHost {
+		t.Fatalf("the first peer took the %q seat, want the host's", admitted.Seat)
 	}
 	if len(out) != 1 {
 		t.Fatalf("the first join produced %d messages, want only a welcome", len(out))
@@ -75,12 +75,12 @@ func TestTwoFakeClientsDraftAndFightAWholeMatchInProcess(t *testing.T) {
 		t.Error("a room with one player is waiting on a seat to decide")
 	}
 
-	seat, out, err = opened.Join(helloWithNoSquad(t, "Guest"))
+	admitted, out, err = opened.Join(helloWithNoSquad(t, "Guest"))
 	if err != nil {
 		t.Fatalf("the guest joins: %v", err)
 	}
-	if seat != wire.SeatGuest {
-		t.Fatalf("the second peer took the %q seat, want the guest's", seat)
+	if admitted.Seat != wire.SeatGuest {
+		t.Fatalf("the second peer took the %q seat, want the guest's", admitted.Seat)
 	}
 	// ⚠️ **Still one message**: opening a draft announces nothing at all, because
 	// nothing has been decided and a room must not send a wire.Drafted carrying

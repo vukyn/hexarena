@@ -45,12 +45,12 @@ func TestTwoFakeClientsFightAWholeBo3InProcess(t *testing.T) {
 	guestSquad := squadOf(t, dependencies.Characters, "guest.squad",
 		"pokemon.charmander", "pokemon.squirtle", "pokemon.cleffa")
 
-	seat, out, err := opened.Join(hello(t, hostSquad, "Host"))
+	admitted, out, err := opened.Join(hello(t, hostSquad, "Host"))
 	if err != nil {
 		t.Fatalf("the host joins: %v", err)
 	}
-	if seat != wire.SeatHost {
-		t.Fatalf("the first peer took the %q seat, want the host's", seat)
+	if admitted.Seat != wire.SeatHost {
+		t.Fatalf("the first peer took the %q seat, want the host's", admitted.Seat)
 	}
 	// One message and no battle: a room with one player in it is a room waiting.
 	if len(out) != 1 {
@@ -61,12 +61,12 @@ func TestTwoFakeClientsFightAWholeBo3InProcess(t *testing.T) {
 		t.Error("a room with one player is waiting on a seat to act")
 	}
 
-	seat, out, err = opened.Join(hello(t, guestSquad, "Guest"))
+	admitted, out, err = opened.Join(hello(t, guestSquad, "Guest"))
 	if err != nil {
 		t.Fatalf("the guest joins: %v", err)
 	}
-	if seat != wire.SeatGuest {
-		t.Fatalf("the second peer took the %q seat, want the guest's", seat)
+	if admitted.Seat != wire.SeatGuest {
+		t.Fatalf("the second peer took the %q seat, want the guest's", admitted.Seat)
 	}
 	clients.deliver(t, out)
 

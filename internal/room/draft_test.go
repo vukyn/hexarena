@@ -217,11 +217,11 @@ func TestAWelcomeSaysWhetherTheRoomDrafts(t *testing.T) {
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			opened := newRoom(t, one.configuration)
-			seat, out, err := opened.Join(one.joining)
+			admitted, out, err := opened.Join(one.joining)
 			if err != nil {
 				t.Fatalf("join: %v", err)
 			}
-			if !seat.Valid() {
+			if !admitted.Seat.Valid() {
 				t.Fatalf("the hello was refused with %v", out)
 			}
 			welcome := onlyWelcome(t, out)
@@ -451,7 +451,7 @@ func TestADraftingRoomRefusesASquadAsUnwanted(t *testing.T) {
 	// The same legal squad, in a room that does not draft, is accepted — which is
 	// what makes the refusal below a fact about the room.
 	ordinary := newRoom(t, config(11, 1))
-	if seat, out, err := ordinary.Join(hello(t, legal, "An")); err != nil || !seat.Valid() {
+	if admitted, out, err := ordinary.Join(hello(t, legal, "An")); err != nil || !admitted.Seat.Valid() {
 		t.Fatalf("a room that does not draft refused the fixture squad (%v): %v", out, err)
 	}
 
@@ -464,12 +464,12 @@ func TestADraftingRoomRefusesASquadAsUnwanted(t *testing.T) {
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			opened := newRoom(t, draftingConfig(11))
-			seat, out, err := opened.Join(hello(t, one.squad, "An"))
+			admitted, out, err := opened.Join(hello(t, one.squad, "An"))
 			if err != nil {
 				t.Fatalf("join: %v", err)
 			}
-			if seat.Valid() {
-				t.Fatalf("a drafting room seated %q for a hello that brought a squad", seat)
+			if admitted.Seat.Valid() {
+				t.Fatalf("a drafting room seated %q for a hello that brought a squad", admitted.Seat)
 			}
 			if code := onlyCode(t, out); code != wire.CodeSquadUnwanted {
 				t.Errorf("a drafting room answered %s with %q, want %q: the fix is to bring "+
@@ -1011,9 +1011,9 @@ func TestAPeerCannotCancelADraftByClaimingItsOwnClockRanOut(t *testing.T) {
 func TestADecideOutsideADraftIsRefused(t *testing.T) {
 	t.Run("a drafting room with one peer in it", func(t *testing.T) {
 		opened := newRoom(t, draftingConfig(11))
-		seat, out, err := opened.Join(helloWithNoSquad(t, "Alone"))
-		if err != nil || seat != wire.SeatHost {
-			t.Fatalf("the host joins a drafting room: %q, %v, %v", seat, out, err)
+		admitted, out, err := opened.Join(helloWithNoSquad(t, "Alone"))
+		if err != nil || admitted.Seat != wire.SeatHost {
+			t.Fatalf("the host joins a drafting room: %q, %v, %v", admitted.Seat, out, err)
 		}
 		if onTurn, waiting := opened.Awaiting(); waiting {
 			t.Errorf("a drafting room with one player is waiting on %q; the second seat is "+
