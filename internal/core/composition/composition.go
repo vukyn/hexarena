@@ -167,12 +167,17 @@ type Bonus struct {
 	// Value is the one value on the axis this bonus counts, or empty for all of
 	// them.
 	//
-	// ⚠️ **Empty is a real answer and it is the older one.** `same_element` counts
-	// whichever element a side happens to share and hands out the same grant for
-	// any of them; a bonus naming a value is the narrower shape — "three of WATER
-	// heal better" — and the two are different designs rather than one with a
-	// default. A table of per-value bonuses says what each tribe is FOR, where the
-	// unnamed form says only that sharing is worth something.
+	// ⚠️ **Empty is a real answer, and it is the older one — but nothing ships on
+	// it any more.** The unnamed form counts whichever value a side happens to
+	// share and hands out the same grant for any of them; a bonus naming a value
+	// is the narrower shape — "three of WATER heal better" — and the two are
+	// different designs rather than one with a default. `same_element` was the
+	// unnamed one, and it was retired once the per-element table covered all eight
+	// fieldable elements, because a table that says what each tribe is FOR and a
+	// blanket that says only that sharing is worth something both paying at once
+	// is two answers to one question. The shape stays because it is a design and
+	// not scaffolding — a future axis may well want it — and this package's own
+	// tests are what keep it alive.
 	//
 	// It is checked against the axis at parse: an element that is not on the chart
 	// is a bonus that could never fire, and a bonus that can never fire loads,
@@ -410,18 +415,22 @@ func elementTallies(chart *element.Chart, members []Member) []tally {
 func columnTallies(members []Member) []tally {
 	var tallies []tally
 	for _, member := range members {
-		tallies = counted(tallies, columnValue(member.Column), member.ID)
+		tallies = counted(tallies, ColumnValue(member.Column), member.ID)
 	}
 	return tallies
 }
 
-// columnValue is the name a column is counted and logged under.
+// ColumnValue is the name a column is counted and logged under.
 //
 // Named rather than the bare number, because the value reaches a log line and a
 // screen through the same slot an element's name does: "three of 2" is a sentence
 // nobody can read, and a reader who cannot tell which axis a bonus counted cannot
 // reproduce it from the data.
-func columnValue(column int) string { return "column" + strconv.Itoa(column) }
+//
+// Exported because the gloss table has to be checkable against it. A test that
+// wrote "column" + itoa itself would be a second copy of this rule, and the two
+// would agree right up until the day one of them changed.
+func ColumnValue(column int) string { return "column" + strconv.Itoa(column) }
 
 // Deps are the books a bonus is checked against.
 //
