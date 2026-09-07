@@ -2,7 +2,8 @@
 
 How the game is priced and tuned: what `Suggest` pays for, what a character is
 made of, each of the mechanic categories and what it cost to add, and the two
-instruments that measure a number — `hexforge weigh` and `forge.Bout`.
+instruments that measure a number — `hexforge weigh` and `forge.Bout` — and the
+one that measures whether a build plays its own kit, `forge.Library.Census`.
 
 ⚠️ **This was `CLAUDE.md` until 2026-09-05 and it moved for size, not for
 importance** — that file is loaded whole at the start of every session and this
@@ -1589,3 +1590,48 @@ measurement prettier. Same note `Weigh` carries; see § *Pricing one number*.
 `Bout` takes the roster as a **parameter**, so `internal/forge` keeps not importing
 `internal/seed`: a tool that read the embedded copy would keep reporting on the cast
 as it was at the last build.
+
+## Whether a build plays its own kit: `forge.Library.Census`
+
+A rate cannot say whether a build used its own four slots. It can read perfectly
+well with three of them and a dead one, and it did: the reading that opened
+`RAT-006` quoted a collapse from 725‰ to 110‰ and blamed a summon the rating had
+never cast — when it was re-taken, that summon was uncast in the **winning** kit as
+well, and dropping it altogether left the shipped tally battle for battle. What had
+actually changed was a *hide*, cast about three times a battle, spending turns the
+build could not afford. None of that is in a rate; all of it is one line of a cast
+census.
+
+`Census(build, againstSquadID, seeds)` counts, per skill in the build's own kit
+order, how often the build cast it. `Silent()` is the slots that never fired.
+
+**The board is the whole instrument, and it is blind in two obvious shapes.**
+
+- ⚠️ **A duel is blind to a whole class of skill.** In a one on one a taunt denies
+  an aim nobody had a choice about and a hide has no other ally for its `elsewhere`
+  term to point at, so both are correctly priced at nothing. Measured:
+  `squirtle.fortress` casts `taunt` **0** times in 132 duels and **252** times in as
+  many squad battles. A duelling census reports a dead slot on a build that plays it
+  every battle.
+- ⚠️ **A mirror is blind differently.** Putting the subject's own character on both
+  sides sounds like the cleanest control there is, and against a copy of itself a
+  skill can be strictly dominated by its own kit-mate: seven shipped builds read a
+  silent slot on that board and every one of them plays it against somebody else.
+
+So the subject stands **in** an authored squad, in place of its first member,
+against that squad intact. The companions and the opponents are then the same six
+units on both sides of the reading and cancel; the only difference on the board is
+the subject's four slots. Both arrangements, same seeds, for the reason everything
+here is fought twice.
+
+**One board is still one matchup.** A slot silent against one squad is a fact about
+that squad — `split` is uncast against eight of the twenty-one characters and cast
+four hundred-odd times across the rest — so the rule
+`TestEveryShippedBuildPlaysItsOwnKit` walks the authored squads and asks only that a
+slot fires *somewhere*, stopping at the first board that leaves nothing silent.
+
+⚠️ **A gated slot needs board TIME rather than more boards.** At two seeds
+`machop.charge` reads `wrecking_swing` silent on all four boards: it is gated on
+five stacks of `heft` and `brace` grants them a battle at a time, so its gate is
+only crossed in a battle that runs long enough. That is what set the seed count,
+and it is the sort of floor that has to be measured rather than picked.

@@ -58,6 +58,10 @@ func hidingBooks(t *testing.T) Books {
 	skills, err := skill.ParseBook([]byte(`{"skills":[
 	  {"id":"jab","element":"neutral","range":1,"pattern":"single",
 	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"nudge","element":"neutral","range":1,"pattern":"single",
+	   "power":40,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"graze","element":"neutral","range":1,"pattern":"single",
+	   "power":40,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"burrow","element":"neutral","range":0,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
 	   "self_applies":[{"status":"burrowed","chance":1000,"stacks":1}]}
@@ -86,7 +90,13 @@ func hidingBooks(t *testing.T) Books {
 
 // aHiderAndAnAlly is one hider, one ally whose toughness the caller chooses, and
 // one attacker that can reach both.
-func aHiderAndAnAlly(t *testing.T, allyDefence int64) (*Battle, *Unit, *Unit, *Unit) {
+//
+// ⚠️ **The attacker's speed is the caller's, because the term reads it.** A hide
+// counts down on its holder's turns and denies the attacker's, so the two speeds
+// are half the arithmetic; the fixture that leaves them equal is the one where
+// the conversion is a multiplication by one and the rest of the equality can be
+// read on its own.
+func aHiderAndAnAlly(t *testing.T, allyDefence, hitterSpeed int64) (*Battle, *Unit, *Unit, *Unit) {
 	t.Helper()
 	fight, err := New(hidingBooks(t), 7, []Roster{
 		{ID: "hider", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
@@ -96,7 +106,7 @@ func aHiderAndAnAlly(t *testing.T, allyDefence int64) (*Battle, *Unit, *Unit, *U
 			Affinity: neutralOnly(t), Stats: healStats(3000, 500, allyDefence, 2),
 			Skills: []string{"jab"}},
 		{ID: "hitter", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
-			Affinity: neutralOnly(t), Stats: healStats(4800, 500, 300, 1),
+			Affinity: neutralOnly(t), Stats: healStats(4800, 500, 300, hitterSpeed),
 			Skills: []string{"jab"}},
 	})
 	if err != nil {
@@ -115,9 +125,11 @@ func aHiderAndAnAlly(t *testing.T, allyDefence int64) (*Battle, *Unit, *Unit, *U
 //
 // The ally is tougher than the hider, so the attacker prefers the hider and the
 // denial is real; what it is worth is how much better the hider was as a target,
-// for as long as the hiding lasts.
+// for as long as the hiding lasts — converted into the attacker's own turns,
+// which at equal speeds is a multiplication by one and is why this fixture leaves
+// them equal.
 func TestHidingIsWorthTheDifferenceOverTheTurnsItLasts(t *testing.T) {
-	fight, hider, ally, hitter := aHiderAndAnAlly(t, 800)
+	fight, hider, ally, hitter := aHiderAndAnAlly(t, 800, 60)
 	prices := fight.newPricing()
 
 	onHider := fight.bestAgainst(hitter, hider)
@@ -125,6 +137,13 @@ func TestHidingIsWorthTheDifferenceOverTheTurnsItLasts(t *testing.T) {
 	if onHider <= onAlly {
 		t.Fatalf("the attacker would rather hit the ally (%d) than the hider (%d), so this "+
 			"fixture measures the nought case rather than the arithmetic", onAlly, onHider)
+	}
+	// The cap is the OTHER half of the term and is measured on its own below, so
+	// this fixture has to be one it does not bind in.
+	if ordinary := prices.turnWorth(hitter); ordinary < onHider-onAlly {
+		t.Fatalf("an ordinary turn of the attacker's is worth %d against a denied "+
+			"difference of %d, so this fixture is reading the cap rather than the "+
+			"difference", ordinary, onHider-onAlly)
 	}
 
 	kind := status.Kind{ID: burrowStatus, Category: status.Buff, MaxStacks: 1, Duration: 2}
@@ -149,13 +168,43 @@ func TestHidingIsWorthTheDifferenceOverTheTurnsItLasts(t *testing.T) {
 	}
 }
 
+// TestHidingIsCountedInTheAttackersTurnsAndNotTheHolders is the conversion,
+// asked as a figure because no decision on any board can see it on its own.
+//
+// A hiding status counts down on its HOLDER's turns, so the horizon above is the
+// holder's — and what a hide denies is the attacker's. Charging the horizon
+// straight through billed a fast hider the attacker's whole blow once per turn of
+// a window the attacker might never act in, which made hiding the largest figure
+// on the board and the only turn such a unit ever took: measured on the shipped
+// Diglett, the split build reads 725‰ against a Machop, the same build with
+// `burrow` in a slot reads 110‰, and with that slot simply empty 780‰.
+//
+// Half the speed is half the denial, and the fixture picks a ratio the division
+// is exact at so the statement is an equality rather than a bound.
+func TestHidingIsCountedInTheAttackersTurnsAndNotTheHolders(t *testing.T) {
+	kind := status.Kind{ID: burrowStatus, Category: status.Buff, MaxStacks: 1, Duration: 2}
+
+	fight, hider, _, _ := aHiderAndAnAlly(t, 800, 60)
+	together := fight.newPricing().hidden(hider, kind)
+	if together <= 0 {
+		t.Fatalf("hiding at equal speeds is priced at %d, so there is nothing to halve",
+			together)
+	}
+
+	half, halfHider, _, _ := aHiderAndAnAlly(t, 800, 30)
+	if got := half.newPricing().hidden(halfHider, kind); got != together/2 {
+		t.Errorf("an attacker at half the holder's speed is denied %d, want half of %d: "+
+			"the window is being counted in the holder's turns", got, together)
+	}
+}
+
 // TestHidingFromAnAttackerWithABetterTargetIsWorthNothing is the nought case, and
 // it is the one that stops the term becoming "always hide".
 //
 // An attacker whose best blow was aimed at somebody else loses nothing when this
 // unit goes underground — it hits that somebody else, exactly as it was going to.
 func TestHidingFromAnAttackerWithABetterTargetIsWorthNothing(t *testing.T) {
-	fight, hider, ally, hitter := aHiderAndAnAlly(t, 1)
+	fight, hider, ally, hitter := aHiderAndAnAlly(t, 1, 60)
 	prices := fight.newPricing()
 
 	onHider := fight.bestAgainst(hitter, hider)
@@ -170,4 +219,69 @@ func TestHidingFromAnAttackerWithABetterTargetIsWorthNothing(t *testing.T) {
 		t.Errorf("hiding from an attacker with a better target is priced at %d, want nought: "+
 			"the whole attack is being denied rather than the difference", got)
 	}
+}
+
+// TestHidingIsCappedAtAnOrdinaryTurnOfTheAttackers is the other half of the
+// term, and it is the correction turnWorth is already the written statement of.
+//
+// A denied turn is not another cast of the attacker's heaviest skill — that one
+// is on cooldown most of the time — it is an ordinary turn of that attacker's.
+// The cap is what stops a kit holding one big skill and three small ones from
+// billing its whole best blow for every turn of a hide.
+//
+// The two arms hold the attacker's BEST blow fixed and move only the rest of its
+// kit, so what is read is the mean rather than the maximum. Without the cap both
+// arms price identically, which is what makes this a test rather than a
+// restatement.
+func TestHidingIsCappedAtAnOrdinaryTurnOfTheAttackers(t *testing.T) {
+	kind := status.Kind{ID: burrowStatus, Category: status.Buff, MaxStacks: 1, Duration: 2}
+
+	// One skill, so an ordinary turn of this attacker's is its heaviest blow and
+	// the cap cannot bind.
+	narrow, hider, _, _ := aHiderAndAnAllyFacing(t, []string{"jab"})
+	uncapped := narrow.newPricing().hidden(hider, kind)
+	if uncapped <= 0 {
+		t.Fatalf("hiding is priced at %d against a single-skill attacker, so there is "+
+			"nothing for the cap to bite into", uncapped)
+	}
+
+	// The same heaviest blow with a small skill beside it. Nothing about what
+	// this attacker can do to the holder at its best has changed.
+	broad, wider, _, hitter := aHiderAndAnAllyFacing(t, []string{"jab", "nudge", "graze"})
+	prices := broad.newPricing()
+	if ordinary, best := prices.turnWorth(hitter), prices.strike(hitter); ordinary >= best {
+		t.Fatalf("an ordinary turn of this attacker's is worth %d against a best blow of "+
+			"%d, so the fixture holds nothing for the cap to be about", ordinary, best)
+	}
+	if got := prices.hidden(wider, kind); got >= uncapped {
+		t.Errorf("hiding from an attacker with a small skill beside its big one is priced "+
+			"at %d against %d for the big one alone: the term is still reading the "+
+			"heaviest blow", got, uncapped)
+	}
+}
+
+// aHiderAndAnAllyFacing is aHiderAndAnAlly with the attacker's kit chosen, for
+// the one property that is about that kit rather than about its best blow.
+func aHiderAndAnAllyFacing(t *testing.T, hitterSkills []string) (*Battle, *Unit, *Unit, *Unit) {
+	t.Helper()
+	fight, err := New(hidingBooks(t), 7, []Roster{
+		{ID: "hider", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: neutralOnly(t), Stats: healStats(4800, 500, 300, 60),
+			Skills: []string{"burrow", "jab"}},
+		{ID: "ally", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
+			Affinity: neutralOnly(t), Stats: healStats(3000, 500, 800, 2),
+			Skills: []string{"jab"}},
+		{ID: "hitter", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: neutralOnly(t), Stats: healStats(4800, 500, 300, 60),
+			Skills: hitterSkills},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	fight.Drain()
+	hider, _ := fight.Unit("hider")
+	ally, _ := fight.Unit("ally")
+	hitter, _ := fight.Unit("hitter")
+	return fight, hider, ally, hitter
 }

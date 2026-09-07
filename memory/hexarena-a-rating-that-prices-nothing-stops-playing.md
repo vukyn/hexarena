@@ -30,8 +30,8 @@ and a pass rule; both were wrong, and a plain **1v1** reproduces it.
   (`shielded`, `guarded`). There is no term anywhere for what **destroying** one is
   worth to the attacker, and that asymmetry is the defect: progress that is not
   health lost is invisible to the whole file. Compare
-  [[hexarena-a-greedy-rating-cannot-hold-two-self-casts]] — same blind spot, one
-  step less severe.
+  [[hexarena-a-denied-turn-is-not-a-lost-turn]] — the same blind spot from the
+  other end: what an enemy KEEPS when its aim is denied is invisible too.
 - **A guard board must be asymmetric to resolve.** Only one side may carry the
   guard. That is also the right shape for measuring what a guard is worth, so the
   board that works and the board that answers the question are the same board.
