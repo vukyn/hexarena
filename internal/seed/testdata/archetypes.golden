@@ -253,4 +253,16 @@ manifold, formation column 1
            absorbs 6800 of the 11500 budget, 4700 to spare
   kit      dig rock_throw split sand_tomb burrow earthquake stone_edge sandstorm body_slam taunt
 
-21 presets
+crooner, formation column 2
+  the one that aims at a shape instead of a unit and pays for it in armour: a health pool as deep as the cast's healers hold, behind a guard as thin as the cast's glass cannons, so it survives being splashed and loses to being found
+  demands  a character built from it must carry light
+  hp 1470->4400  attack 190->560  defense 80->240  speed 32->95  accuracy 48->145  dodge 12->36
+  level 1  hp 1470, atk 190, def 80, spd 32, acc 48, ddg 12
+           absorbs 1863 of the 11500 budget, 9637 to spare
+  level 30 hp 2910, atk 371, def 158, spd 62, acc 95, ddg 23
+           absorbs 4442 of the 11500 budget, 7058 to spare
+  level 60 hp 4400, atk 560, def 240, spd 95, acc 145, ddg 36
+           absorbs 7927 of the 11500 budget, 3573 to spare
+  kit      dazzle refrain patter plunge sing charm moonblast hyper_voice body_slam taunt rally
+
+22 presets

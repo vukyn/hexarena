@@ -146,6 +146,11 @@ var (
 		// trunk thickens with — the standing bulk of the thing — and not "sinh
 		// trưởng", which is the growing rather than what was grown.
 		"heartwood": "lõi gỗ",
+		// A noun, and deliberately not "tập trung" (`focus`, the timed accuracy
+		// buff a skill grants): that is a unit gathering itself for a few turns,
+		// and this is the light a squad of its own is standing in for the whole
+		// battle. The two share a stat and share nothing else.
+		"limelight": "hào quang",
 		// The three formation columns, named as the depths they are rather than as
 		// the numbers they are counted by: a bonus line reading "three of 2" says
 		// nothing, and the board's own header already calls them back, middle and
@@ -226,6 +231,7 @@ var (
 		"spendthrift": "kẻ không trả giá",
 		"stoker":      "kẻ tăng tốc",
 		"manifold":    "kẻ tách thân",
+		"crooner":     "kẻ hát vang",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

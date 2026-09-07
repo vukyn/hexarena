@@ -189,12 +189,16 @@ func TestTheSkillFilterNarrowsByIDAndByName(t *testing.T) {
 		{someIDSkillQuery, []string{
 			"dragon_rage", "dragon_dance", "dragon_claw", "dragon_drive",
 		}, "the id"},
-		// The diacritics, dropped: "phi diệp" typed on an ASCII keyboard.
-		{"diep", []string{"razor_leaf"}, "a name with its marks left off"},
+		// The diacritics, dropped: "phi diệp" typed on an ASCII keyboard, which
+		// also finds "điệp khúc" — two different words that fold to the same
+		// letters, which is the whole of what the query can see.
+		{"diep", []string{"razor_leaf", "refrain"}, "a name with its marks left off"},
 		// đ is not a d with a mark on it, so this is the entry an NFD-and-strip
-		// implementation would have needed by hand anyway.
+		// implementation would have needed by hand anyway. `plunge` rides along on
+		// a plain d and a marked vowel instead ("dốc thân"), so the row proves the
+		// fold reaches both kinds at once.
 		{"doc", []string{
-			"poison_powder", "sludge_bomb", "venoshock", "toxic", "venom_fang",
+			"poison_powder", "sludge_bomb", "venoshock", "plunge", "toxic", "venom_fang",
 		}, "đ folded to d"},
 		{noSkillQuery, nil, "a query nothing answers to"},
 	} {

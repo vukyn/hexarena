@@ -214,6 +214,36 @@
       ]
     },
     {
+      "id": "igglybuff.vang",
+      "character": "pokemon.igglybuff",
+      "name": "hát vang",
+      "intent": "Chẳng nhắm vào ai: cứ hát cho cả hàng bên kia nghe, rồi hát lại câu ấy lần nữa",
+      "skills": [
+        "dazzle",
+        "refrain",
+        "hyper_voice",
+        "sing"
+      ],
+      "passives": [
+        "endurance"
+      ]
+    },
+    {
+      "id": "igglybuff.doc",
+      "character": "pokemon.igglybuff",
+      "name": "dốc sức",
+      "intent": "Đổi máu lấy đòn, rồi lấy phần máu ấy về từ chính kẻ vừa hứng đòn",
+      "skills": [
+        "plunge",
+        "patter",
+        "body_slam",
+        "moonblast"
+      ],
+      "passives": [
+        "blood_thirst"
+      ]
+    },
+    {
       "id": "magnemite.trickle",
       "character": "pokemon.magnemite",
       "name": "nhỏ giọt",

@@ -1311,6 +1311,93 @@
       ]
     },
     {
+      "id": "dazzle",
+      "name": "loá sáng",
+      "flavour": "Bung ra một vệt sáng chói dọc hàng đứng, ai hứng phải cũng phải nhắm mắt lại",
+      "element": "light",
+      "range": 2,
+      "pattern": "column",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 250,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "refrain",
+      "name": "điệp khúc",
+      "flavour": "Hát lại đúng câu vừa hát, và câu ấy thì ở lại trong đầu người nghe rất lâu",
+      "element": "light",
+      "range": 2,
+      "pattern": "arc_up",
+      "power": 1200,
+      "strikes": 1,
+      "accuracy": 880,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "fester",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "patter",
+      "name": "vỗ dồn",
+      "flavour": "Vỗ liên tiếp vào cùng một chỗ, nhanh tới mức chẳng chừa lúc nào để đỡ",
+      "element": "light",
+      "range": 1,
+      "pattern": "single",
+      "power": 380,
+      "strikes": 3,
+      "accuracy": 850,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "plunge",
+      "name": "dốc thân",
+      "flavour": "Lấy đà rồi lao thẳng vào, không giữ lại chút gì cho mình",
+      "element": "light",
+      "range": 1,
+      "pattern": "single",
+      "power": 1900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cost": 120,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
       "id": "rinse",
       "name": "gột sạch",
       "flavour": "Dội nước lên đồng đội, thứ gì bám trên người đều trôi theo",
