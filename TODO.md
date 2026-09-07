@@ -92,8 +92,9 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
 | `RAT-004` | done | A guarded mirror never resolves, because the rating will not spend a guard —… |
 | `RAT-005` | done | The rating could not price hiding — DONE |
-| `RAT-006` | open | Two self-cast skills in one kit is a decision `Suggest` cannot make |
+| `RAT-006` | done | Two self-cast skills in one kit — RE-MEASURED, and the premise did not surviv… |
 | `RAT-007` | refused | Waiting — passing a turn because the next one is worth more |
+| `RAT-008` | open | A denied enemy turn is not a lost enemy turn, and no factor closes the gap |
 | `PRG-001` | shipped | Progression |
 | `PRG-002` | refused | `at_stage` on a learnset entry |
 | `PRG-003` | refused | A character class |
@@ -118,6 +119,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
+| `FRG-003` | open | The cast census has no command, so an author cannot run the rule their bui… |
 | `NET-001` | open | PvP over a LAN — 3v3 or 5v5, one server and n clients |
 
 ## Done
@@ -4259,30 +4261,119 @@ is only so the shape is readable.
       authoring decision and deliberately not folded in here — but a player build
       that takes it is no longer a unit one skill short.
 
-- [ ] `RAT-006` **Two self-cast skills in one kit is a decision `Suggest` cannot make.**
-      Found 2026-09-07 putting `burrow` into the Diglett line. In the SPLIT build
-      it reads **11.0%** against Machop where the shipped kit reads **72.5%** — and
-      the mechanism is not the slot, because the same build with that slot simply
-      **empty** reads **78.0%**. Over a whole duel the rating cast the split **not
-      once**: hiding is worth more *this turn* than a body is, every turn both are
-      available, so the build's whole win condition never happens.
+- [x] `RAT-006` **Two self-cast skills in one kit — RE-MEASURED, and the premise did
+      not survive.** The reading this was raised on reproduces exactly and means
+      something else. Diglett against Machop, 200 seeds each way, cast counts beside
+      the rate:
 
-      ⚠️ **It is a property of the rating rather than a bug in either skill.**
-      `Suggest` is a greedy one-turn evaluator: it prices what a turn does now and
-      has no term for "this compounds". A summon and a hide are both turns that
-      deal no damage, so the one with the larger immediate number wins the slot
-      forever. Nothing is mis-priced — `hidden` is bounded by what the enemy would
-      actually have thrown and `summonWorth` by the body it buys — and the rating
-      still cannot choose between them.
+      | kit | rate | casts |
+      |---|---|---|
+      | shipped `diglett.three` | **725‰** | `split` **0**, dig 1750, earthquake 1846, rock_throw 1610 |
+      | `burrow` for `rock_throw` | **110‰** | `split` **0**, burrow **1258** |
+      | `burrow` for `dig` | 45‰ | `split` **0**, burrow 1288 |
+      | `burrow` for `split` | 550‰ | burrow 1214 |
+      | that slot simply empty | **780‰** | `split` **0** |
+      | `split` dropped entirely | **725‰** | W290 L110 — the shipped tally to the battle |
 
-      Two ways out, and the first is free: **an authoring rule** — one turn-spending
-      self-cast per kit, stated where builds are authored and held by a test over
-      builds.json. The second is the real fix and is its own piece of work: a rating
-      that can see a second turn, which is a search rather than a term and would
-      change every figure in this repository.
-      Until then, the same skill is worth **+21.5** in the whole build and **−61.5**
-      in the split one, and neither number is about the skill.
-      → `README.md` § *What a burrow is worth to the Diglett line*.
+      ⚠️ **Three readings overturn the diagnosis, and the third is the decisive
+      one.** `split` is uncast in the *winning* kit as well, so "the rating never
+      cast the split" is not what changed. Dropping `split` altogether leaves the
+      shipped figure bit for bit — same wins, same losses — so against this
+      opponent that slot contributes exactly nought whether `burrow` is beside it
+      or not. And `burrow` is not a slot the rating declined: it is cast about
+      three times a battle, and each of those turns is what the collapse is made
+      of. The entry blamed a silent skill for a loud one.
+
+      ⚠️ **The authoring rule it asked for is REFUSED as written.** "One
+      turn-spending self-cast per kit" is contradicted by the shipped catalogue:
+      `bulbasaur.parasite` holds `synthesis` and `ingrain` and plays both, because
+      a heal's price moves with the health it is aimed at and two such skills
+      therefore take turns; `squirtle.fortress` holds three and plays all three. A
+      count would refuse two builds that use every slot they name.
+
+      **What shipped instead is the rule the reading actually wanted, measured.**
+      `forge.Library.Census` counts how often a build casts each of its own skills,
+      and `TestEveryShippedBuildPlaysItsOwnKit` holds *a build may not name a skill
+      it never casts* over the whole catalogue.
+      ⚠️ **The board is the finding inside the finding.** A duel is blind to
+      whole categories: `squirtle.fortress` casts `taunt` **0** times in 132 duels
+      and **252** times in as many squad battles, because in a one on one a taunt
+      denies an aim nobody had a choice about. A mirror is blind differently —
+      against a copy of itself a skill can be dominated by its own kit-mate, and
+      seven shipped builds read a dead slot they play against anybody else. So the
+      census stands the subject **in** an authored squad in place of its first
+      member, against that squad intact, and the rule walks the four of them.
+      `TestACensusSeesASlotThatCannotFire` is the other half: a kit whose
+      `wrecking_swing` has no `brace` beside it to fuel it must read silent, or the
+      green above is green for nothing.
+
+      **And the real defect, which was in the rating.** `pricing.hidden` made two
+      errors and both are now corrected: it counted the hiding window in the
+      HOLDER's turns when what a hide denies is the ENEMY's (`overTheWindow`), and
+      it priced a denied turn at the heaviest blow in the enemy's kit when a denied
+      turn is an ORDINARY turn of that enemy's — the correction `turnWorth` has
+      been the written statement of since the `outrage` measurement. On the board
+      above that takes `burrow` from 5502 to 1362.
+      → `RAT-008` for what is left, which is not a factor.
+
+- [ ] `RAT-008` **A denied enemy turn is not a lost enemy turn, and no factor closes
+      the gap.** Raised 2026-09-08 out of `RAT-006`, whose two corrections to
+      `pricing.hidden` are shipped and are **not** the size of the hole.
+
+      **The measurement, on the Diglett board `RAT-006` tabulates.** With `hidden`
+      returning nought outright the split build reads **780‰** against Machop —
+      exactly the slot-empty control, because `burrow` is then never cast. Divided
+      by 64 it reads 775‰; by 4, 175‰; as shipped after both corrections, 110‰.
+      The term has to fall by roughly **thirty times** before the attacks win the
+      turn, and the two errors that were genuinely there are worth **four** between
+      them: probed on the opening board, `bestAgainst` 2751, `turnWorth` 1293,
+      windowed **1362** — against a best strike of **352** for the holder itself.
+
+      ⚠️ **So the remaining error is not a mis-scaled factor, it is the wrong
+      quantity.** Read the log and the mechanism is plain: while the hider is
+      under, Machop casts `brace`, three times, and comes out of the window with
+      its defence permanently raised. The turn was denied its *aim* and kept its
+      *value*. `hidden` prices what the enemy could not throw; what it should
+      price is the difference between the enemy's best turn with the holder
+      reachable and its best turn without — and the second half of that is one ply
+      of the opponent's own rating, which is a **search rather than a term** and is
+      the same refusal this file already makes for a rating that can see a second
+      turn.
+
+      ⚠️ **`elsewhere` is the half that already does this and it cannot be
+      widened cheaply**: it reads the enemy's best strike at the holder's other
+      allies, so it is nought exactly when the holder is the only target — which is
+      every duel, and every board where a hide looks best. A floor of
+      `turnWorth(other)` was considered and refused on the reading: `turnWorth`
+      counts only enemy-aimed skills, and against a hidden holder in a one on one
+      the enemy cannot use any of them, so it would subtract an alternative the
+      enemy does not have.
+
+      ⚠️ **Deferral is the other half and it is not modelled at all.** A hide
+      moves the enemy's blow later; it removes it only if the battle ends first,
+      which a one-turn evaluator cannot know. Both halves point at the same missing
+      machinery, which is why this is one item and not two.
+
+      Until then `burrow` is over-priced in a duel and about right in a squad —
+      `diglett.whole` plays it 7 times over the census boards and reads 317 of 440
+      against the cast — so the shipped catalogue is not carrying the defect.
+
+- [ ] `FRG-003` **The cast census has no command, so an author cannot run the rule
+      their build has to pass.** `forge.Library.Census` counts how often a build
+      casts each of its own skills and `TestEveryShippedBuildPlaysItsOwnKit` holds
+      the catalogue to it — but the only way to see a count today is to read a test
+      failure. `hexforge spar` and `hexforge weigh` are the shape it wants: a
+      subcommand naming a build, optionally a squad to stand in, printing the kit
+      in its own order with a count beside each slot and the silent ones marked.
+
+      ⚠️ **What it must print beside the numbers is the board.** A count without
+      the squad it was taken against is a figure nobody can re-take, which is why
+      `CastCensus.Against` exists on the report rather than only in the call — the
+      same rule `SquadReport.Without` follows.
+
+      Small, and deliberately not folded into the work that built the instrument:
+      the rule is held by a test either way, and a command is a screen with its own
+      wording and its own two languages.
 
 - [ ] `ENG-006` **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
       Built and measured on 2026-09-07 while closing the `reckless` item, reverted

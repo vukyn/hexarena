@@ -3795,7 +3795,8 @@ fire line's detonate rather than to this trait.
 The rating learned to price hiding, so the line's own hiding skill could go into a
 build. Which build turned out to matter more than whether.
 
-Measured 400 battles a cell, both ways round, against four of the cast:
+Measured 400 battles a cell, both ways round, against four of the cast — and
+re-taken 2026-09-08, when the reading below turned out to say something else:
 
 | kit | squirtle | charmander | machop | gastly |
 | --- | --- | --- | --- | --- |
@@ -3805,7 +3806,7 @@ Measured 400 battles a cell, both ways round, against four of the cast:
 | **whole**, `burrow` for `stone_edge` | 100.0% | 10.0% | 20.5% | 80.5% |
 | **split**, shipped (`rock_throw`) | 100.0% | 0.0% | **72.5%** | 86.0% |
 | **split**, the slot empty | 100.0% | 0.0% | **78.0%** | 83.0% |
-| **split**, `burrow` for `rock_throw` | 100.0% | 2.0% | **11.0%** | 94.5% |
+| **split**, `burrow` for `rock_throw` | 95.5% | 2.0% | **11.0%** | 94.5% |
 
 **In the whole build it is the fourth slot's best use.** It turns the one matchup
 that was a script — Charmander at 9.5% — into a real one at 31.0%, adds eleven
@@ -3817,17 +3818,38 @@ which the dpt heuristic said first and the Machop column confirms.
 
 ⚠️ **In the split build it is a disaster, and the slot-empty row is why that is
 worth knowing.** 11.0% against Machop where the shipped kit reads 72.5% — and the
-same build with the slot *empty* reads **78.0%**, better than shipped. So burrow is
-not costing a slot, it is costing the mechanism: over a whole duel the rating cast
-the split **not once**. Hiding is worth more this turn than a body is, every turn
-both are off cooldown, and `Suggest` is a greedy one-turn evaluator with no term for
-"this compounds".
+same build with the slot *empty* reads **78.0%**, better than shipped. So `burrow`
+is not costing a slot. It is costing more than the slot is worth.
 
-Nothing is mis-priced. `hidden` is bounded by what the enemy would actually have
-thrown and `summonWorth` by the body it buys; the rating still cannot choose between
-two turns that deal no damage. **The same skill is worth +21.5 in one build and
-−61.5 in the other, and neither number is about the skill.** → `TODO.md` § *Two
-self-cast skills in one kit*.
+⚠️ **The first reading of that blamed the wrong skill, and the cast counts are
+what said so.** It read "over a whole duel the rating cast the split **not
+once**", and concluded that two turns which deal no damage are a choice a greedy
+one-turn evaluator cannot make. Counted rather than inferred, against Machop:
+`split` is cast **0** times in the *winning* shipped kit as well, and dropping it
+from that kit altogether leaves the figure at 725‰ with the same 290 wins and 110
+losses — the same battles, to the battle. Against Squirtle and Gastly the same
+skill is cast 800 and 698 times. It is a matchup, not a mechanism.
+
+What is actually happening is in the other column. `burrow` is cast **1258** times
+in 400 battles — about three a battle — and each of those turns is what the
+collapse is made of. Read the log and the mechanism is plain: while the Diglett is
+under, the Machop spends the turns it cannot aim on `brace`, and comes out of the
+window with its defence permanently raised. **The turn lost its aim and kept its
+value**, which is precisely what `pricing.hidden` did not model.
+
+⚠️ **Two errors in that term are now corrected and they are worth four of a needed
+thirty.** It counted the hiding window in the **holder's** turns when what a hide
+denies is the **enemy's** — equal only at equal speed, and this Diglett is fast —
+and it priced a denied turn at the heaviest blow in the enemy's kit when a denied
+turn is an *ordinary* turn of that enemy's, which is the same correction
+`turnWorth` has been the written statement of since the `outrage` measurement. On
+the opening board that takes the figure from 5502 to 1362, against a best strike of
+352 for the Diglett itself. **It moved exactly one cell of the twenty-eight above**
+— the split build against Squirtle, 100.0% to 95.5% — and every other figure in the
+table is unchanged. With the term returning nought outright the split row reads
+780‰ against Machop, its own slot-empty control, so the rest of the hole is not a
+factor: it is the enemy's kept turn, which needs one ply of the opponent's own
+rating. → `TODO.md` § `RAT-008`.
 
 ⚠️ **One clamp was written and thrown away.** Chasing the split-build collapse,
 `hidden` was given the bound `restored`'s third clamp is written on — you can only
@@ -3835,6 +3857,13 @@ avoid dying once, so denial above the holder's remaining health cannot be banked
 It is a good sentence and it moved **one battle in four hundred**, in one matchup,
 and nothing else across 3,200. An argument that sounds right is not a measurement,
 so it was reverted rather than kept as insurance.
+
+⚠️ **And a rate cannot say any of this.** Everything above that turned out to be
+wrong was wrong because a win rate reads exactly the same with a dead slot in it.
+`forge.Library.Census` counts the casts, and
+`TestEveryShippedBuildPlaysItsOwnKit` holds the rule that came out of this over the
+whole catalogue: a build may not name a skill it never casts. →
+`docs/balance.md` § *Whether a build plays its own kit*.
 
 ### Both halves of an all-sided skill
 

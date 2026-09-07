@@ -1287,11 +1287,57 @@ func (p *pricing) hidden(holder *Unit, kind status.Kind) int64 {
 				elsewhere = value
 			}
 		}
-		if against > elsewhere {
-			denied += against - elsewhere
+		// ⚠️ **What a denied turn is worth is an ORDINARY turn of this enemy's,
+		// not the heaviest blow in its kit** — the correction turnWorth is
+		// already the written statement of, and which this term had gone on
+		// making. The heaviest skill is on cooldown most of the time, so charging
+		// a hide against it over-priced every turn of the window by the gap
+		// between the best and the mean. bestAgainst still decides *whether* this
+		// enemy wanted the holder at all, because that question is about the aim
+		// rather than about the size.
+		lost := against - elsewhere
+		if ordinary := p.turnWorth(other); ordinary > 0 && ordinary < lost {
+			lost = ordinary
+		}
+		if lost > 0 {
+			denied += p.overTheWindow(lost, holder, other, kind)
 		}
 	}
-	return denied * turnsOf(kind, buffHorizon)
+	return denied
+}
+
+// overTheWindow is one enemy's share of a hide, counted in THAT ENEMY's turns.
+//
+// ⚠️ **A hiding status counts down on its HOLDER's turns and denies its ENEMY's,
+// and those are the same number only at the same speed.** turnsOf answers the
+// first question, so charging it directly billed a hide the enemy's whole blow
+// once per turn of a window the enemy might never act in. Measured on the shipped
+// Diglett, which is fast: against a Machop the split build reads 725‰, the same
+// build with burrow in a slot reads 110‰ and with that slot simply empty 780‰ —
+// so hiding was worth −670‰ against doing nothing at all, and the rating took it
+// on cooldown every battle because it was the biggest figure on the board.
+//
+// The conversion is the enemy's speed against the holder's, which is the same
+// reading tempo takes: a wait is 1_000_000/speed, so twice the speed is twice the
+// turns in any span. It is a per-enemy figure rather than one applied to the
+// total, because a squad's members do not share a speed and the fast one is
+// exactly the one a hide takes the most from.
+//
+// ⚠️ It is not clamped at one turn. A hide that outlasts several of a slow
+// holder's turns really does deny several blows, and that is the arm of the same
+// measurement — the fixture with the speeds swapped — that stops this being a
+// correction which only ever subtracts.
+func (p *pricing) overTheWindow(value int64, holder, other *Unit, kind status.Kind) int64 {
+	mine := p.fight.Stats(holder).Get(progression.Speed)
+	if mine <= 0 {
+		return 0
+	}
+	// The ratio is a permille share so the arithmetic is the one combat.Scaled
+	// already carries a saturation for; the ceiling on a speed bounds it well
+	// below anything that could overflow the int it is handed as.
+	share := p.fight.Stats(other).Get(progression.Speed) * int64(scale.Base) / mine
+	return combat.Scaled(
+		combat.Repeated(value, int(turnsOf(kind, buffHorizon))), int(share))
 }
 
 // mended is what raising somebody's healing buys them, and it is `uncured`
