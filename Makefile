@@ -135,3 +135,9 @@ check:
 
 clean:
 	@rm -rf bin/
+
+
+# Repo-local process runner (mprocs.yaml in this directory).
+.PHONY: mprocs
+mprocs:
+	mprocs

@@ -1,0 +1,29 @@
+# hexarena — repo-local mprocs. Run `mprocs` (or `make mprocs`) from repo root.
+# Procs run in the repo root, so no `cwd:` is needed.
+# Rarely-used targets stay in the Makefile: build, install, clean, fmt, vet, run,
+# auto, forge, forge-tui-en.
+procs:
+  check:
+    # The gate: gofmt -l, go vet, go test ./..., + 4 race packages. ~1 min.
+    shell: make check
+    autostart: false
+  test:
+    shell: make test
+    autostart: false
+  golden:
+    # Accept new goldens, then READ the diff — goldens are the design record.
+    # Never `go test ./... -update` (-update exists in few packages).
+    shell: make golden
+    autostart: false
+  play-tui:
+    # Full-screen client. Opens in Vietnamese; ctrl+l swaps language.
+    shell: make play-tui
+    autostart: false
+  forge-tui:
+    # Authoring client over internal/seed/data.
+    shell: make forge-tui
+    autostart: false
+  host:
+    # PvP host on :13579 — prints the join code, serves one match, exits.
+    shell: make host
+    autostart: false
