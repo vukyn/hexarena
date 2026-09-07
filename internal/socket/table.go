@@ -15,6 +15,55 @@ import (
 // literal whose length is a coincidence.
 const seatsPerTable = 2
 
+// MaxWatchers is how many watching connections one table carries, and it is
+// **not** a second seat count: it bounds a collection rather than naming one.
+//
+// Eight, and the two things it was picked against. A room is a handful of people
+// in one place on one LAN, so four times the two seats is more than a group
+// watching a match ever needs — and the cost of the number is paid inside the
+// room's exchange lock, where every watcher is written to in turn, so the worst
+// case a stuck spectator can impose on the two people actually playing is this
+// many Timings.Write. Uncapped is the real objection: a table's watchers are
+// connections a stranger on the LAN opens, and nothing else in this transport
+// would stop one machine opening thousands.
+//
+// It is exported because the cap is a fact about the transport that its callers
+// need: a host printing how many people are watching, a client wording
+// wire.CodeTooManyWatchers, and the test that fills a table up. → TODO.md
+// § *Spectators*, step 6, where a host's flag decides whether a room takes
+// watchers at all — this decides how many, and the two are different questions.
+const MaxWatchers = 8
+
+// watcher is one connection reading the room's record: a socket, its own place
+// in that record, and the way to end it.
+//
+// ⚠️ **It is deliberately not a seat and lives beside the two rather than among
+// them.** The order the seats are visited in reaches the roster and the roster's
+// order decides which side wins a speed tie, so a watcher threaded through the
+// same fields would change who wins the match it came to watch — and nothing
+// would look wrong, because the roster would still be legal and both players
+// would still agree on every digest. → room/watch.go, which says the same thing
+// from the room's end, and seatsPerTable above.
+type watcher struct {
+	// peer is the socket, and it is written to under the table's exchange lock
+	// like a seat's.
+	peer *connection
+	// cursor is where this connection has reached in the room's record.
+	//
+	// ⚠️ It is a **check** rather than a read position, and the difference is
+	// what makes an out-of-range cursor unreachable: the bodies are handed to
+	// the transport by the answer to the input that recorded them, so this is
+	// compared against where the room says the record now stands and is never
+	// passed back into a room. → room.Answer.Watched, and Server.forward.
+	cursor int
+	// stop ends this connection's own goroutine, which is how a watcher is let
+	// go of without holding a lock across a close: cancelling the context its
+	// read is sitting in unblocks that read, and everything else — the socket,
+	// the table entry, the cursor — is tidied up by the departure that already
+	// runs behind every connection.
+	stop func()
+}
+
 // table is one room's two connections, plus the timer on whichever seat is being
 // asked something.
 //
@@ -42,6 +91,24 @@ type table struct {
 
 	// host and guest are the two seats' connections, guarded by exchange.
 	host, guest *connection
+
+	// watchers is every connection reading this room's record, in the order they
+	// arrived, guarded by exchange and bounded by MaxWatchers.
+	//
+	// ⚠️ **The same lock as the seats, and that is the point rather than
+	// convenience.** exchange orders one whole exchange — ask the room, then
+	// write what it answered — so the order bodies reach a watcher is the order
+	// the room produced them in, which is exactly the guarantee the two seats
+	// get. A lock of its own would let two exchanges' fan-outs interleave and
+	// deliver one watcher turn six before turn five, and no client could tell,
+	// because a mirror applies whatever it is handed. The cost is the one
+	// exchange already carries — a stuck peer holds its own room still for up to
+	// Timings.Write — with MaxWatchers bounding how many times over.
+	//
+	// ⚠️ It is a **slice and not a map**, for the reason the seats are two named
+	// fields: a map's iteration order must not reach an output, and the order
+	// several people are written to is one.
+	watchers []*watcher
 
 	// allowance is the timer on the seat the room is waiting for.
 	allowance allowance
@@ -99,6 +166,56 @@ func (t *table) free(seat wire.Seat, peer *connection) {
 	if t.at(seat) == peer {
 		t.seat(seat, nil)
 	}
+}
+
+// full is whether this table already carries as many watchers as it may, and it
+// is the **one** declaration of that bound.
+//
+// ⚠️ **admit deliberately does not check it again, and that is a measurement
+// rather than a preference.** The bound has to be read *before* the welcome goes
+// out — a welcome followed by a refusal is two answers to one hello — so the
+// refusal is the caller's, and a second check here would be a guard a mutation
+// deletes for free: with one in each place, turning this one into "make room by
+// dropping the oldest watcher" left the whole suite green, because the caller's
+// refusal never let the mutated line run. One bound, one place that states it,
+// and a test that can see it move.
+//
+// The caller holds exchange.
+func (t *table) full() bool { return len(t.watchers) >= MaxWatchers }
+
+// admit records a connection as watching.
+//
+// The caller holds exchange and has already asked full. The cursor is where the
+// record stood when this connection was handed everything recorded so far, so
+// the first fan-out that follows can check that it is handing this watcher the
+// very next bodies.
+func (t *table) admit(peer *connection, cursor int, stop func()) {
+	t.watchers = append(t.watchers, &watcher{peer: peer, cursor: cursor, stop: stop})
+}
+
+// unwatch gives a watching connection's place back, and takes the lock itself
+// because it is called from the departure behind every connection.
+//
+// It is safe to call for a connection that is no longer there, which is the
+// ordinary case rather than a guard: a match that ends lets go of every watcher
+// on its way out, and each of those connections then runs this on its way out
+// too.
+func (t *table) unwatch(peer *connection) {
+	t.exchange.Lock()
+	defer t.exchange.Unlock()
+	for at, watching := range t.watchers {
+		if watching.peer == peer {
+			t.watchers = append(t.watchers[:at], t.watchers[at+1:]...)
+			return
+		}
+	}
+}
+
+// watching is how many connections are reading this room's record.
+func (t *table) watching() int {
+	t.exchange.Lock()
+	defer t.exchange.Unlock()
+	return len(t.watchers)
 }
 
 // lateTimeouts is how many timeouts fired after the seat had already answered.

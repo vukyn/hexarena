@@ -1341,16 +1341,103 @@ is only so the shape is readable.
                   **illegal** squad is the arm that measures it), and
                   `TestTheRegistryHandsOutAWatchersRead`, whose copy claim is
                   measured by writing into what the registry handed back.
-            - [ ] **The transport holds watcher connections — step 4.**
+            - [x] **The transport holds watcher connections — step 4. Done
+                  2026-09-07.**
                   `internal/socket`. ⚠️ **`Outbound` cannot address a watcher and
                   must not be taught to**: `Outbound.To` is a `wire.Seat` and
                   `Server.send` reads an invalid `To` as "the connection this was
                   read from", so a body aimed at a watcher would be delivered to
-                  whichever player last spoke. The transport therefore *pulls* —
-                  a cursor per watching connection over `Room.Since` — rather
-                  than the room pushing. `seatsPerTable = 2` is the other two of
-                  the three twos and stays two for the reason `seatCount` does; a
-                  watching connection is not a seat at a table.
+                  whichever player last spoke. `seatsPerTable = 2` is the other
+                  two of the three twos and stays two for the reason `seatCount`
+                  does; a watching connection is not a seat at a table.
+                  ⚠️ **This item predicted that the transport would therefore
+                  *pull* — "a cursor per watching connection over `Room.Since`" —
+                  and half of that is wrong.** It pulls exactly **once**, at a
+                  watcher's join (`Registry.Since(code, 0)`), and is *handed*
+                  every body after that on the answer to the input that recorded
+                  it. A pull cannot see the record's **last** body: the exchange
+                  that records a match's final `wire.Turn` is the exchange that
+                  finishes the room, and a finished room retires its own entry at
+                  once — so a transport that answered its players and then asked
+                  for the record was asking a room that had already gone.
+                  Measured before it was changed: every run of a whole match
+                  handed a reader **62 of its 63 turns** and an unknown room on
+                  the read after the last one, three runs out of three, with no
+                  race to lose because retiring beats a socket write every time.
+                  So `room.Answer.Watched`/`Cursor` are filled on **every**
+                  input rather than on a `Since` alone — one line in
+                  `answerFrom`, inside the room's own goroutine, before anything
+                  can retire. That is the one change outside `internal/socket`.
+                  ⚠️ **The payoff is that step 3's hazard became structural.**
+                  The transport now hands a room **no cursor but nought**, so the
+                  panic `Room.Since` takes on an out-of-range cursor — on the
+                  room's own goroutine, taking the process with it — is not
+                  reachable from here at all, and no range guard was added inside
+                  `Registry.Since` (which would have been a second declaration of
+                  the range rule and would have turned a desync into a silent
+                  empty read). A watcher's own cursor is a **check** instead: the
+                  fan-out compares it against where the room says the record
+                  stands and ends any watcher that is out of step, and every
+                  watcher is let go of when its room ends, so a cursor cannot
+                  outlive the room that issued it.
+                  ⚠️ **Catch-up and live bodies are ordered by a lock rather than
+                  by an arrangement of calls.** The catch-up read, its write and
+                  the connection joining the table all happen under the table's
+                  `exchange`, and every body recorded afterwards comes from an
+                  exchange that has to take the same lock — so there is no window
+                  for a body to be recorded between the read and the join (a
+                  skip) or to be both caught up and forwarded (a duplicate). The
+                  watchers are guarded by that same lock, not one of their own,
+                  because it is what already makes the order bodies reach a peer
+                  the order the room produced them in.
+                  ⚠️ **Nothing a watcher does re-arms the allowance**, which is
+                  the whole of "a watcher cannot disturb the match" at this
+                  layer: `settled` is skipped for a watching connection's join,
+                  its messages and its departure, because a re-arm would restart
+                  the turn of whoever is being asked — so a spectator could
+                  otherwise keep a stalling player alive indefinitely, and a
+                  suite whose clients answer would never see it.
+                  ⚠️ **A cap, and a refusal code of its own.** `MaxWatchers = 8`
+                  — four times the two seats, more than a group in one room ever
+                  needs, and a bound on the fan-out that happens under the room's
+                  exchange lock; uncapped is a cheap denial of service. The one
+                  over it is refused `wire.CodeTooManyWatchers`, **declared last**
+                  with the "declared last" comment moved onto it, worded in both
+                  books, and produced in `cmd/hexarena-tui`'s
+                  `shown_test.go` — the eighth entry of `gate` and the only one
+                  there that comes out of a real `socket.Server` rather than a
+                  `room.Room`, because a room keeps no count of who is watching.
+                  ⚠️ `CodeRoomFull` could not be reused: both books word it about
+                  the two seats and then advise waiting or opening a room of your
+                  own, which is nonsense advice for somebody who came to watch
+                  *this* match. ⚠️ `internal/wire`'s own
+                  `TestAWatcherIsRefusedByNoCodeOfItsOwn` **banned any code named
+                  after watching** and had to be narrowed to the decision step 1
+                  actually made — a watcher's *squad* is ignored rather than
+                  refused — so it is now `TestTheOnlyCodeAboutAWatcherIsTheCap`,
+                  an allowlist of exactly one.
+                  ⚠️ **An act from a watcher goes to the room and is refused
+                  there** (`CodeNotYourTurn`, step 2's test); the transport does
+                  not declare that rule a second time. A watcher's departure
+                  frees no seat and ends no match — it must not reach `room.Left`,
+                  and ⚠️ that branch is only *measurable* through the clock,
+                  because `room.Left` happens to ignore a report from no seat.
+                  The nets: `TestAWatcherIsHandedTheStartAndEveryTurnOfAWholeMatch`
+                  (counts checked against `Mirror.Compared` and the room's own
+                  battles played, not against this test's arithmetic),
+                  `TestAWatcherJoiningHalfwayIsHandedTheWholeMatchAndThenKeepsUp`,
+                  `TestTwoWatchersAtDifferentPositionsEachGetEverythingTheyAreOwed`
+                  (why it is a `Since` and not a `Drain`),
+                  `TestNoAllowanceIsEverArmedForAWatcher` (through
+                  `allowance.armed`, the only thing in the package that can tell
+                  an armed clock from a disarmed one),
+                  `TestTheWatcherOverTheCapIsRefusedAndTheRestAreUndisturbed`,
+                  `TestAMatchWithWatchersAttachedIsTheSameMatch` (the end-to-end
+                  twin of step 2's comparison — the only one that could see a
+                  watcher having quietly become a third citizen),
+                  `TestAWatchersActIsRefusedAndTheMatchIsWhereItWas`,
+                  `TestAShutdownTellsEveryWatcher`, `TestAWatcherLeavingEndsNothing`
+                  and `TestATableIsStillTwoSeatsAndAFixedWalk`.
             - [ ] **A watching TUI — step 5.** A client welcomed with no seat
                   builds the same mirror off the recorded `wire.Start` and applies
                   the same `wire.Turn`s, so the battle screen is the one that is

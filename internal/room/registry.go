@@ -214,14 +214,33 @@ type Answer struct {
 	Admission
 	// Out is every message the room wants sent, in order.
 	Out []Outbound
-	// Watched is what a watcher's Since asked for: the recorded bodies from the
-	// cursor it passed, **copied** out of the room's own record. Cursor is the
-	// one to pass next time.
+	// Watched is the bodies a watcher is owed **because of this input**, copied
+	// out of the room's own record, and Cursor is where the record stands after
+	// it. On a Since it is instead the read the caller asked for, from the cursor
+	// it passed.
 	//
-	// Both are the zero value on every other input, exactly as the Admission
-	// above is — the same shape and the same reason, which is that one Answer
-	// type carries every input's answer rather than each input growing a type.
-	// → Registry.Since.
+	// ⚠️ **This used to be filled on a Since alone, and that could not carry the
+	// last body of a match.** The exchange that records the final wire.Turn is
+	// the exchange that finishes the room, and a finished room retires its own
+	// entry the moment its match ends — so a transport that answered its players
+	// and *then* asked for the record was asking a room that had already gone.
+	// Measured before it was changed: every run of a whole match handed a reader
+	// 62 of its 63 turns and an unknown room on the read after the last one, with
+	// no race to lose, because retiring beats a socket write every time. What a
+	// second call cannot see, the answer to the input itself can, so the record
+	// read rides home with the input that produced it — inside the room's own
+	// goroutine, before anything can retire.
+	//
+	// ⚠️ **So a transport never hands a room a cursor of its own**, which is what
+	// makes the hazard on Registry.Since structural rather than remembered: the
+	// only cursor it passes is nought, at a watcher's join, and Room.Since panics
+	// on a cursor its record cannot answer. A stale cursor pointed at a fresh room
+	// under a reissued code cannot reach the room at all.
+	//
+	// It is empty on an input that recorded nothing, which is most of them — a
+	// refusal, a read, a decision that opened no turn — and one Answer type
+	// carries every input's answer rather than each input growing a type, exactly
+	// as the Admission above does. → Registry.Since, and internal/room/watch.go.
 	Watched []wire.Body
 	Cursor  int
 	// Reading is the room after the input. It is the zero Reading when Known is
@@ -401,8 +420,14 @@ func (g *Registry) Read(code wire.RoomCode) (Reading, bool) {
 // room's code is handed out again once its match ends** (the room byte is the
 // lowest free one, so a finished room gives its code back). A transport that let
 // a watcher's cursor outlive the room it came from would therefore be asking a
-// fresh room about a record it never had. Drop the cursor with the room. →
-// TODO.md's spectator step 4.
+// fresh room about a record it never had. Drop the cursor with the room.
+//
+// ⚠️ **Step four answered that by never handing a room a cursor but nought.** A
+// watcher's catch-up is Since(0), which is safe against any record, and every
+// body after it rides home on the answer to the input that recorded it — so the
+// transport's own cursors are never passed back in and a stale one cannot reach
+// a room at all. → Answer.Watched, which is where the reason that had to change
+// is written down.
 func (g *Registry) Since(code wire.RoomCode, cursor int) ([]wire.Body, int, bool) {
 	answered, err := g.ask(code, request{kind: inputSince, cursor: cursor})
 	if err != nil || !answered.Known {
@@ -542,6 +567,10 @@ func (g *Registry) serve(code wire.RoomCode, playing *Room, entry *handle) {
 // parameter of a call made on the room's own goroutine.
 func answerFrom(playing *Room, asked request) served {
 	var answered served
+	// Where the record stands **before** the input, so that the answer can carry
+	// whatever the input appended to it. → Answer.Watched, and recordedBy, for
+	// why a second call cannot fetch those bodies afterwards.
+	before := recordedBy(playing)
 	switch asked.kind {
 	case inputJoin:
 		answered.answer.Admission, answered.answer.Out, answered.err = playing.Join(asked.hello)
@@ -553,7 +582,11 @@ func answerFrom(playing *Room, asked request) served {
 		answered.answer.Out, answered.err = playing.Left(asked.seat)
 	case inputRead:
 	case inputSince:
+		// A watcher's own read, from the cursor it passed rather than from where
+		// the record stood a moment ago, and the one kind that appends nothing.
 		answered.answer.Watched, answered.answer.Cursor = watchedFrom(playing, asked.cursor)
+		answered.answer.Reading = readingOf(playing)
+		return answered
 	default:
 		// Unreachable while the six kinds above are the six that exist, and it
 		// answers rather than panicking because a request the registry cannot
@@ -561,10 +594,27 @@ func answerFrom(playing *Room, asked request) served {
 		answered.err = fmt.Errorf("the registry cannot read input kind %d", asked.kind)
 		return answered
 	}
+	// What this input recorded, on every input rather than on a read of its own.
+	// → Answer.Watched.
+	answered.answer.Watched, answered.answer.Cursor = watchedFrom(playing, before)
 	// Read on every answer, not only on inputRead: a match's result has to
 	// travel back with the input that ended it. → the note on Answer.
 	answered.answer.Reading = readingOf(playing)
 	return answered
+}
+
+// recordedBy is how long the room's record is, which is Since's second return
+// with the read itself thrown away — a view costs nothing to take, so this is a
+// length and not a copy.
+//
+// ⚠️ It asks that way rather than through an accessor of its own so that the
+// record's field stays named inside the two functions that own it, which is
+// TestTheWatcherRecordIsWriteOnlyFromTheRoom's first claim: the room writes that
+// record and never reads it, and a `Recorded()` beside `Since` would be a second
+// door into it for that walk to have to excuse.
+func recordedBy(playing *Room) int {
+	_, recorded := playing.Since(0)
+	return recorded
 }
 
 // watchedFrom takes a watcher's read inside the room's goroutine and copies the

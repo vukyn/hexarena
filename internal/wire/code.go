@@ -50,9 +50,10 @@ const (
 	//
 	// ⚠️ It does not stretch to a watcher, because a watcher takes no seat (→
 	// Hello.Watch, Welcome.Watching) and the seats being full therefore says
-	// nothing about whether one may join. Whether a room caps its watchers at
-	// all, and what turns away the one over the cap, is the room's decision and
-	// the transport's rather than this constant's — → TODO.md § *Spectators*.
+	// nothing about whether one may join. What turns away the watcher over the
+	// cap is CodeTooManyWatchers, declared below: the cap is the transport's
+	// fact rather than this constant's, and the two sentences a player reads are
+	// different advice.
 	CodeRoomFull
 	// CodeSquadRefused is a squad that did not pass the gate: Squad.Validate,
 	// then Take (which is already the loadout check), then the format's size and
@@ -117,19 +118,42 @@ const (
 	// chosen, which sends somebody who never wanted a side to fix something that
 	// is not wrong. A watcher's squad is therefore ignored, by this code and by no
 	// new one.
+	CodeSquadUnwanted
+	// CodeTooManyWatchers is a watcher turned away because the match it came to
+	// see already has as many people watching as the transport carries. It is
+	// the **transport's** refusal and not a room's: a room keeps no count of
+	// watchers, no list of them and no cap — that is what makes its seats,
+	// its roster and its result untouched by anybody watching (→ Hello.Watch) —
+	// so the only thing that can answer this is whatever holds the connections.
+	//
+	// ⚠️ **CodeRoomFull cannot say it, and the reason is the wording rather than
+	// the type.** Both books word that code as two players already having the
+	// board and then advise waiting for their match to finish or opening a room
+	// of your own — advice that is nonsense for somebody who wanted to watch
+	// *this* match, and a refusal about **seats** says nothing at all to a client
+	// that asked for none. A refusal that misdirects is worse than one that is
+	// merely blunt, which is the argument CodeSquadUnwanted is here on.
+	//
+	// ⚠️ It is answered **after** a room has welcomed the watcher rather than
+	// instead of the gate's own checks, which is that gate's discipline one layer
+	// out: a peer wrong about two things is told about the earlier one, so a
+	// watcher on a stale build or with the wrong password hears about that rather
+	// than about a queue it was never going to join. The welcome such a
+	// connection provoked is dropped rather than sent — a welcome followed by a
+	// refusal would be two answers to one hello.
 	//
 	// Declared last, which is the rule this enum shares with Kind and with
 	// battle.Kind: a code serialises by name, so appending cannot reinterpret a
 	// refusal a peer already knows how to word. ⚠️ **The comment moves with the
-	// last constant** — left on CodeUnknownMessage it would say something false
+	// last constant** — left on CodeSquadUnwanted it would say something false
 	// about this file.
-	CodeSquadUnwanted
+	CodeTooManyWatchers
 )
 
 // CodeCount is the number of codes, and it exists so a test can walk them rather
 // than range over the table of names and ask it whether it holds what it holds.
 //
-// ⚠️ **Every code is worded and every code but one is drawn.** Lang.Refusal in
+// ⚠️ **Every code is worded and every code is drawn.** Lang.Refusal in
 // internal/i18n carries a line per code in both books, and the walk over this
 // count against those books is internal/i18n/protocol_test.go — it could never
 // be here, because wire must not import internal/i18n (the whole point of a
@@ -139,12 +163,16 @@ const (
 // TestEveryRefusalIsShownAndEveryClosureIsShown is the other half: it produces
 // every code out of a real room and reads its sentence back off a drawn screen.
 //
-// ⚠️ **The one exception is CodeSquadUnwanted, and it is a stated debt rather
-// than an omission.** No room answers it yet, because a room that drafts is the
-// next step — so that test names it as owed and holds the owed set at exactly
-// one, which is what stops the exception growing quietly. → TODO.md § *The
-// draft on the wire*.
-const CodeCount = int(CodeSquadUnwanted) + 1
+// ⚠️ **This paragraph used to name CodeSquadUnwanted as the one exception, and
+// that debt has been paid twice over.** It read that no room answered that code
+// yet and that the drawing test held an `owed` set of exactly one; a room drafts
+// now, so the entry went and the set is empty. CodeTooManyWatchers arrived with
+// its producer already written — the transport refuses the watcher over its cap
+// — so it never joined that set either. The mechanism is what to keep: a value
+// declared ahead of anything that answers it belongs in `owed` with the step
+// that owes it, because a code nothing produces is a wording no player ever
+// reads.
+const CodeCount = int(CodeTooManyWatchers) + 1
 
 // codeNames is the wire form of every code, and it is the format: renaming an
 // entry breaks every peer built before the rename.
@@ -160,6 +188,7 @@ var codeNames = [CodeCount]string{
 	CodeIllegalAction:    "illegal_action",
 	CodeUnknownMessage:   "unknown_message",
 	CodeSquadUnwanted:    "squad_unwanted",
+	CodeTooManyWatchers:  "too_many_watchers",
 }
 
 func (c Code) String() string {

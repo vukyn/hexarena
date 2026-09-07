@@ -139,15 +139,46 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 	entry := s.claim(code)
 	defer s.release(code, entry)
 
-	seat, seated := s.join(ctx, code, entry, peer, hello)
-	if !seated {
+	admitted, kept := s.join(ctx, gone, code, entry, peer, hello)
+	if !kept {
 		return
 	}
 	// Whatever route this connection leaves by — a read error, a closed peer, a
-	// finished match — the room is told once, here.
-	defer s.left(code, entry, peer, seat)
+	// finished match — it is given back once, here: a seat to the room, and a
+	// watcher's place to the table that was holding it.
+	defer s.parted(code, entry, peer, admitted)
 	go s.keepalive(ctx, gone, peer)
-	s.pump(ctx, code, entry, peer, seat)
+	s.pump(ctx, code, entry, peer, admitted)
+}
+
+// parted is the one departure every connection takes, whichever kind it was.
+//
+// ⚠️ **A watcher must not reach `left`**, and it is a branch here rather than a
+// guard inside that function because the two are different events. `left` tells
+// the *room* that a seat went away, which with no rejoin ends the match; a
+// watcher took no seat, so there is nothing to tell the room — it never knew one
+// was there — and what goes back is a place at the table and a cursor. Passing a
+// watcher's empty seat to room.Left would be reporting a departure the room
+// would have to decide what to do with.
+func (s *Server) parted(code wire.RoomCode, entry *table, peer *connection, admitted room.Admission) {
+	if admitted.Watching {
+		entry.unwatch(peer)
+		return
+	}
+	s.left(code, entry, peer, admitted.Seat)
+}
+
+// speaking is what to call a connection in a message reported to the caller: the
+// seat it took, or that it is one of the people watching.
+//
+// A watcher has no name here on purpose. wire.Hello.Name is a string a stranger
+// chose and this transport hands it to the Joined callback unchanged rather than
+// putting it into its own errors.
+func speaking(admitted room.Admission) string {
+	if admitted.Watching {
+		return "a watcher"
+	}
+	return string(admitted.Seat)
 }
 
 // roomOf is the map key a pasted code names, and the reason it decodes rather
@@ -216,42 +247,206 @@ func (s *Server) firstHello(ctx context.Context, peer *connection) (wire.Hello, 
 	return wire.Hello{}, false
 }
 
-// join is the gate, by code, and the seating that follows it.
+// join is the gate, by code, and the seating — or the watching — that follows
+// it.
 //
 // The seat is recorded **before** the batch goes out, because the second peer's
 // join is answered with a wire.Start for *both* seats and the first one's
 // connection has to be findable by then.
-func (s *Server) join(ctx context.Context, code wire.RoomCode, entry *table, peer *connection, hello wire.Hello) (wire.Seat, bool) {
+//
+// ⚠️ **What it branches on is room.Admission.Watching and never an empty seat.**
+// A refusal and a welcomed watcher both leave the seat empty — those are the
+// three answers a wire.Seat cannot hold, which is why Admission exists — so
+// `!Seat.Valid()` would close the connection of everybody who came to watch. Nor
+// may it read the welcome back out of answered.Out: that is a transport parsing
+// its own output, the mistake Answer.Known exists to prevent, one message down.
+func (s *Server) join(ctx context.Context, stop func(), code wire.RoomCode, entry *table,
+	peer *connection, hello wire.Hello) (room.Admission, bool) {
 	entry.exchange.Lock()
 	defer entry.exchange.Unlock()
 	answered, err := s.rooms.Join(code, hello)
 	if err != nil {
 		s.failed(fmt.Errorf("join room %s: %w", code, err))
-		return "", false
+		return room.Admission{}, false
 	}
-	if !answered.Known || !answered.Seat.Valid() {
+	if !answered.Known || (!answered.Watching && !answered.Seat.Valid()) {
 		// An unknown code, or the room's own refusal. Either way the one message
 		// names no seat, so it goes to the connection it was read from and the
 		// connection ends.
 		s.send(ctx, entry, peer, answered.Out)
-		return "", false
+		return room.Admission{}, false
+	}
+	if answered.Watching {
+		return s.watched(ctx, stop, code, entry, peer, answered)
 	}
 	entry.seat(answered.Seat, peer)
 	s.send(ctx, entry, peer, answered.Out)
 	s.settled(ctx, code, entry, answered)
+	// The second seat's join is what opens the first battle, so it is an exchange
+	// that records — the wire.Start every watcher already attached is owed.
+	s.forward(ctx, entry, answered)
 	// Told **after** the messages went out rather than before, so a caller
 	// printing a line for a join and a line for the match starting prints them in
 	// the order the room produced them. The seat is the room's own answer, so a
 	// refused join reaches no callback at all — the returns above are every path
-	// that hands no seat out.
+	// that hands no seat out, and a watcher is not a seat being handed out.
 	if s.joined != nil {
 		s.joined(code, answered.Seat, hello.Name)
 	}
-	return answered.Seat, true
+	return answered.Admission, true
+}
+
+// watched is a welcomed watcher: the cap, the welcome, everything the match has
+// recorded so far, and a place at the table.
+//
+// The caller holds exchange, which is what makes the order below a property
+// rather than a hope. Three things happen under one lock — the room is asked for
+// its whole record, that record goes down this socket, and the connection is
+// added to the table — and every body recorded after this point is produced by
+// an exchange that has to take the same lock. So a watcher joining mid-match is
+// handed the record from nought **before** it can be handed anything new, and
+// the first fan-out that reaches it starts exactly where its catch-up stopped:
+// nothing twice, nothing skipped, and not by arranging the calls carefully but
+// because no other body can be recorded while this runs.
+//
+// ⚠️ **The cap is checked after the room has answered, and the welcome it
+// produced is then dropped.** The gate's order is version, password, and only
+// then anything about how full anything is — so a watcher on a stale build hears
+// about the build rather than about a queue — and a welcome followed by a
+// refusal would be two answers to one hello. → wire.CodeTooManyWatchers.
+func (s *Server) watched(ctx context.Context, stop func(), code wire.RoomCode, entry *table,
+	peer *connection, answered room.Answer) (room.Admission, bool) {
+	if entry.full() {
+		// The transport's own refusal, because the cap is the transport's own
+		// fact: the room keeps no count of watchers and could not answer this.
+		// It is still a code and not a sentence — nothing here words a refusal.
+		s.failed(peer.refuse(ctx, wire.CodeTooManyWatchers))
+		return room.Admission{}, false
+	}
+	s.send(ctx, entry, peer, answered.Out)
+	// Nought, always: the one cursor this transport ever hands a room. → the
+	// watcher's own cursor, and room.Answer.Watched, for why a cursor of its own
+	// could reach a room that had been reissued the code and panic on that room's
+	// goroutine.
+	recorded, cursor, known := s.rooms.Since(code, 0)
+	if !known {
+		// The match ended between the welcome and the read, which is the same
+		// ordinary race a seated peer's deliver reads as "the room has gone".
+		// There is nothing to say about it: this connection has no match to be
+		// told the result of, and the room is not there to be asked again.
+		peer.bye(websocket.StatusNormalClosure, "the match is over")
+		return room.Admission{}, false
+	}
+	if len(recorded) > 0 {
+		if err := peer.send(ctx, recorded...); err != nil {
+			if !ended(err) {
+				s.failed(fmt.Errorf("hand a watcher the %d recorded bodies of room %s: %w",
+					len(recorded), code, err))
+			}
+			return room.Admission{}, false
+		}
+	}
+	entry.admit(peer, cursor, stop)
+	return answered.Admission, true
+}
+
+// forward hands every watching connection the bodies an exchange recorded.
+//
+// ⚠️ **The bodies come off the answer to the input that recorded them, not from
+// a read taken afterwards, and that is the one thing about this design that is
+// not obvious.** A room retires its own entry the moment its match ends, so the
+// exchange that records a match's last wire.Turn is the exchange that takes the
+// record away: a transport that answered its players and then asked for the
+// record was asking a room that had already gone. Measured before it was
+// changed — every run of a whole match handed a reader 62 of its 63 turns, with
+// no race to lose, because retiring beats a socket write every time. →
+// room.Answer.Watched.
+//
+// The caller holds exchange, so the order bodies reach a watcher is the order the
+// room produced them in — the same guarantee the two seats get, from the same
+// lock.
+//
+// ⚠️ **A watcher whose cursor is not where the record says it should be is ended
+// rather than caught up**, and that is what stands in for the range guard the
+// room deliberately does not have. Room.Since panics on a cursor its record
+// cannot answer, on the room's own goroutine, because answering an out-of-range
+// cursor with an empty read would make a consumer that has got ahead look exactly
+// like one that is up to date. The same reasoning applies one layer out with a
+// different remedy: this transport never hands a room a cursor, so it can neither
+// panic nor be caught up quietly — a watcher out of step is a watcher reading a
+// match this table is no longer serving, and the honest answer is to end it.
+func (s *Server) forward(ctx context.Context, entry *table, answered room.Answer) {
+	if len(answered.Watched) == 0 || len(entry.watchers) == 0 {
+		return
+	}
+	from := answered.Cursor - len(answered.Watched)
+	// Filtered in place, which is safe because the write index never runs ahead
+	// of the read one: whoever is ended here is dropped from the table now, and
+	// its own departure finds nothing left to give back.
+	kept := entry.watchers[:0]
+	for _, watching := range entry.watchers {
+		if watching.cursor != from {
+			s.failed(fmt.Errorf("a watcher stands at %d of a record that reaches %d, so it is "+
+				"reading a match this table is no longer serving", watching.cursor, from))
+			watching.stop()
+			continue
+		}
+		if err := watching.peer.send(ctx, answered.Watched...); err != nil {
+			if !ended(err) {
+				s.failed(fmt.Errorf("hand a watcher %d recorded bodies: %w", len(answered.Watched), err))
+			}
+			watching.stop()
+			continue
+		}
+		watching.cursor = answered.Cursor
+		kept = append(kept, watching)
+	}
+	entry.watchers = kept
+}
+
+// endWatching lets go of every watcher on a table, which is what a match ending
+// does to the cursors it leaves behind.
+//
+// ⚠️ **A cursor must not outlive its room**, and this is where that is paid: a
+// finished room gives its code back to the lowest-free-byte allocator, and a
+// table is keyed by code and outlives its match by however long the sockets take
+// to close — so a watcher left attached could be handed a *fresh* room's bodies
+// at a cursor that was never about it. Ending them here is the first of the two
+// answers to that; the second is forward's check, which catches it if this is
+// ever missed on a path nobody thought of.
+//
+// It cancels rather than closing, so no socket is written to under the exchange
+// lock: each watcher's own goroutine finds its read unblocked, tidies its
+// connection up and gives its place back through the departure that runs behind
+// every connection. Whatever was written to it before this line was written
+// while the room was still there, which is the whole final turn of the match.
+//
+// ⚠️ **Measured: deleting the call on the *finished* path alone reddens
+// nothing**, and that is worth knowing before somebody deletes it on purpose.
+// Both players leave the moment a match ends, and their own departures reach
+// here through `left` finding the room unknown — a few milliseconds later. What
+// the finished path buys is that the drop is **prompt and its own** rather than
+// a consequence of two sockets closing, and the case where the difference is
+// real is a match ended by a *timeout* with both peers still connected and
+// silent: nothing closes those sockets, so nothing would reach `left` either.
+// Making this whole function a no-op does redden — the whole-match test waits
+// out its bound — so what is untested is the promptness, not the drop.
+func (s *Server) endWatching(entry *table) {
+	for _, watching := range entry.watchers {
+		watching.stop()
+	}
+	entry.watchers = nil
 }
 
 // pump is the connection's read loop: one message in, the room's answer out.
-func (s *Server) pump(ctx context.Context, code wire.RoomCode, entry *table, peer *connection, seat wire.Seat) {
+//
+// ⚠️ **A watcher reads the same loop, and what it sends goes to the room like
+// anything else.** room.Deliver already refuses a peer with no seat, with
+// wire.CodeNotYourTurn, and that refusal leaves the prompt open and the battle
+// where it was — so a transport that dropped a watcher's act itself, or answered
+// it here, would be declaring a rule the room owns for a second time.
+func (s *Server) pump(ctx context.Context, code wire.RoomCode, entry *table, peer *connection,
+	admitted room.Admission) {
 	for {
 		body, err := peer.read(ctx)
 		switch {
@@ -261,11 +456,11 @@ func (s *Server) pump(ctx context.Context, code wire.RoomCode, entry *table, pee
 			continue
 		default:
 			if !ended(err) {
-				s.failed(fmt.Errorf("read from %s of room %s: %w", seat, code, err))
+				s.failed(fmt.Errorf("read from %s of room %s: %w", speaking(admitted), code, err))
 			}
 			return
 		}
-		if over := s.deliver(ctx, code, entry, peer, seat, body); over {
+		if over := s.deliver(ctx, code, entry, peer, admitted, body); over {
 			// The match ended, so this connection's work is done: the peer has
 			// computed the same ending from its own battle, and the close frame
 			// is what says so on the wire.
@@ -277,15 +472,31 @@ func (s *Server) pump(ctx context.Context, code wire.RoomCode, entry *table, pee
 
 // deliver hands the room one message and reports whether the match ended with
 // it.
-func (s *Server) deliver(ctx context.Context, code wire.RoomCode, entry *table, peer *connection, seat wire.Seat, body wire.Body) bool {
+//
+// ⚠️ **A watcher's message reaches the room and nothing else here changes**, with
+// one exception that is the whole of what "a watcher cannot disturb the match"
+// means at this layer: the allowance is **not** re-armed for it. Every exchange a
+// *seat* has re-arms the clock on whoever the room is waiting for, which is
+// right — the room's own reading is what the clock is set from — but a watcher's
+// exchange changes nothing about the room, so re-arming would hand the seat on
+// turn a fresh allowance for somebody else's message. A spectator sending an act
+// a turn could then keep a stalling player alive for ever, and nothing in a
+// suite whose clients answer would see it. → allowance.armed.
+func (s *Server) deliver(ctx context.Context, code wire.RoomCode, entry *table, peer *connection,
+	admitted room.Admission, body wire.Body) bool {
 	entry.exchange.Lock()
 	defer entry.exchange.Unlock()
-	answered, err := s.rooms.Deliver(code, seat, body)
+	answered, err := s.rooms.Deliver(code, admitted.Seat, body)
 	if err != nil {
-		s.failed(fmt.Errorf("deliver a %s from %s of room %s: %w", body.Kind(), seat, code, err))
+		s.failed(fmt.Errorf("deliver a %s from %s of room %s: %w",
+			body.Kind(), speaking(admitted), code, err))
+		s.endWatching(entry)
 		return true
 	}
 	if !answered.Known {
+		// The room has gone, so every cursor this table holds is about a record
+		// that no longer exists. → endWatching.
+		s.endWatching(entry)
 		// ⚠️ **Not forwarded**, and this is the same division `left` draws.
 		// wire.CodeRoomUnknown is the registry's refusal for a **joiner** — a
 		// code naming no room this process is running — and this peer was
@@ -296,7 +507,13 @@ func (s *Server) deliver(ctx context.Context, code wire.RoomCode, entry *table, 
 		return true
 	}
 	s.send(ctx, entry, peer, answered.Out)
-	s.settled(ctx, code, entry, answered)
+	if !admitted.Watching {
+		s.settled(ctx, code, entry, answered)
+	}
+	s.forward(ctx, entry, answered)
+	if answered.Reading.Finished {
+		s.endWatching(entry)
+	}
 	return answered.Reading.Finished
 }
 
@@ -324,7 +541,8 @@ func (s *Server) timedOut(ctx context.Context, code wire.RoomCode, entry *table,
 	if !answered.Known {
 		// The room went away between the timer being armed and it firing, which
 		// is an ordinary race: a match that ended is a match nobody is waiting
-		// on.
+		// on. Its watchers' cursors go with it. → endWatching.
+		s.endWatching(entry)
 		return
 	}
 	if refusedAlone(answered.Out, wire.CodeNotYourTurn) {
@@ -337,6 +555,11 @@ func (s *Server) timedOut(ctx context.Context, code wire.RoomCode, entry *table,
 	// addressed to "whoever asked".
 	s.send(ctx, entry, nil, answered.Out)
 	s.settled(ctx, code, entry, answered)
+	// A timeout resolves a turn like a decision does, so it records like one.
+	s.forward(ctx, entry, answered)
+	if answered.Reading.Finished {
+		s.endWatching(entry)
+	}
 }
 
 // left tells the room a peer went away, which with no rejoin is a match ending.
@@ -359,6 +582,7 @@ func (s *Server) left(code wire.RoomCode, entry *table, peer *connection, seat w
 		// match finished, the room retired its entry, and this is the socket
 		// closing behind it. The wire.CodeRoomUnknown in that answer is for a
 		// *joiner* and must not be forwarded to a peer that was seated.
+		s.endWatching(entry)
 		return
 	}
 	// A departure's own context is the connection's, and that has been cancelled
@@ -366,6 +590,14 @@ func (s *Server) left(code wire.RoomCode, entry *table, peer *connection, seat w
 	// the write timeout like every other message.
 	s.send(context.Background(), entry, nil, answered.Out)
 	s.settled(context.Background(), code, entry, answered)
+	// ⚠️ **A departure is the one ending a watcher cannot compute**, which is why
+	// the room records its wire.Closed{ClosureLeft} beside the one it addresses
+	// to the seat still there: a match played out to its end needs no message,
+	// and this one has no Ended event and no further wire.Start behind it.
+	s.forward(context.Background(), entry, answered)
+	if answered.Reading.Finished {
+		s.endWatching(entry)
+	}
 }
 
 // settled is what happens after every batch: the allowance is re-armed off the
@@ -622,6 +854,22 @@ func (s *Server) stopping(ctx context.Context) {
 			// before this end's socket is ever read again.
 			seated.peer.drop()
 		}
+		// And everybody watching, after the two playing and in the order they
+		// arrived. It is a walk over a collection where the seats are a
+		// fixed-size array, which is the difference between the two: a room has
+		// exactly two seats and any number of watchers up to MaxWatchers, so
+		// there is no pair of names to walk here and no count to state twice.
+		//
+		// They are told the same thing for the same reason — a socket that simply
+		// dies leaves a person staring at a dead connection — and dropped the same
+		// way, because a shutdown must not depend on the peer's cooperation.
+		for _, watching := range entry.watchers {
+			if err := watching.peer.send(ctx, wire.Closed{Reason: wire.ClosureStopped}); err != nil && !ended(err) {
+				s.failed(fmt.Errorf("tell a watcher of room %s the host stopped: %w", held.code, err))
+			}
+			watching.peer.drop()
+		}
+		entry.watchers = nil
 		entry.exchange.Unlock()
 	}
 }

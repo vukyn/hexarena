@@ -1001,6 +1001,16 @@ const (
 	// a line telling a player to fix it would send them to check levels and forms
 	// that are all fine. It says the room drafts and to come back with no squad.
 	RefusalSquadUnwanted
+	// RefusalTooManyWatchers is a spectator turned away because the match already
+	// carries as many watchers as the transport holds, and it is worth its own
+	// wording for RefusalSquadUnwanted's reason: RefusalRoomFull is the nearest
+	// line and every clause of it is wrong here. It says two players have the
+	// board — which says nothing to somebody who asked for no seat — and it then
+	// advises waiting for their match to finish or opening a room of your own,
+	// when the whole point is watching *this* match. So this one says the match
+	// is full of watchers and names the two things that do work: wait for one to
+	// leave, or share a screen with somebody already in.
+	RefusalTooManyWatchers
 	ClosedNone
 	ClosedLeft
 	ClosedStopped
