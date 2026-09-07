@@ -40,6 +40,7 @@ func (l Lang) Refusal(name string) string {
 		"illegal_action":    RefusalIllegalAction,
 		"unknown_message":   RefusalUnknownMessage,
 		"squad_unwanted":    RefusalSquadUnwanted,
+		"too_many_watchers": RefusalTooManyWatchers,
 	}
 	if key, known := worded[name]; known {
 		return l.Text(key)

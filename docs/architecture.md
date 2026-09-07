@@ -709,10 +709,23 @@ its own mirror opened the turn rather than anything this package tells it — th
 wordings (a `wire.Code` and a
 `wire.Closure` travel as ids precisely so the sentence lives at the client's far
 end — `socket.Refusal` carries the code and words nothing), the seat token and the
-rejoin, writing a finished match out as a `battle.Log`, spectators, TLS (→
+rejoin, writing a finished match out as a `battle.Log`, TLS (→
 `README.md` § *Not in the first version*), and **the host binary** — which is
 `cmd/hexarena-host` and is built: nothing here opens a listener, picks a port,
 decides which address a room code carries, reads a flag or prints a word.
+
+⚠️ **Spectators left that list on 2026-09-07 and only half of them did.** A
+table carries **watching connections** now — welcomed by the room with no seat,
+handed everything the match has recorded so far at the moment they join, and then
+every body as it is recorded, off the answer to the input that recorded it rather
+than off a read taken afterwards (a room retires its entry the moment its match
+ends, so a read afterwards misses the final turn — measured, 62 of 63). They are
+capped per table at `socket.MaxWatchers`, the one over the cap is refused
+`wire.CodeTooManyWatchers`, and `seatsPerTable` is still 2: a watcher is a
+collection beside the seats and never one of them, because the order the two
+seats are visited in reaches the roster and the roster's order decides who wins a
+speed tie. What is still elsewhere is the watching **client** and the host's flag
+— → `TODO.md` § *Spectators*, steps 5 and 6.
 
 **⚠️ `Server.Shutdown` is the one thing that crossed back, and it had to.**
 `http.Server.Shutdown` waits for connections it can still see finish a *request*,

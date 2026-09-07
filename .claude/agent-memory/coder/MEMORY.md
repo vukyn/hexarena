@@ -32,6 +32,8 @@
 - [Normalised upstream cannot discriminate](feedback_normalised_upstream_cannot_discriminate.md) — Build.Stage is resolved by the parser (28/28) and every form is reached at LevelCap, so both guards count everything
 - [A two-element map range is a coin flip](feedback_two_element_map_range_is_a_coin_flip.md) — 17/20 not 20/20; read one state 64× · and label a release nothing can observe (0/10) as such
 - [A mutation must hit the arm you claim](feedback_a_mutation_must_hit_the_arm_you_claim.md) — a blunt one died on table row 1; a full room hid a stolen seat; decoy a method to test a walk
+- [A read after the exchange misses the last body](feedback_a_read_after_the_exchange_misses_the_last_body.md) — the room retires with it (62/63); the answer to the input must carry it
+- [Three guards a neighbour already covered](feedback_three_guards_a_neighbour_already_covered.md) — one bound stated twice, a branch room.Left tolerates, a prompt action a departure repeats
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam

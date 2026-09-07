@@ -1,6 +1,10 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"net/http/httptest"
+	"net/netip"
 	"slices"
 	"strings"
 	"testing"
@@ -37,8 +41,9 @@ import (
 // that is the half that makes this able to fail. A join screen will happily word
 // any code handed to it and so will a live battle, so a table pairing codes with
 // screens could be permuted freely and every drawing assertion would still pass.
-// So both sets are **produced out of a real room.Room**: seven refusals a gate
-// can answer a *join* with, and three a room can answer a seated peer with. The
+// So both sets are **produced out of a real room.Room**, and one of them out of a
+// real socket.Server: eight refusals a gate can answer a *join* with, and three a
+// room can answer a seated peer with. The
 // two are then held **disjoint and total** against wire.CodeCount, and the walk
 // has a default arm — so a code moved from one set to the other lands in neither
 // and this goes red naming it.
@@ -332,10 +337,16 @@ func aMatchClosedBy(m model, closure wire.Closure) model {
 //
 // ⚠️ **This is the whole reason the test above can fail.** Both screens will
 // word any code handed to them, so a declared table pairing codes with screens
-// could be permuted freely and nothing would notice. Seven real refusals out of a
-// real room.Room and a real room.Registry is a set nobody wrote down.
+// could be permuted freely and nothing would notice. Eight real refusals out of a
+// real room.Room, a real room.Registry and a real socket.Server is a set nobody
+// wrote down.
 //
-// What it cannot see: a seventh way the gate could refuse that this file does
+// ⚠️ **The eighth does not come out of a room at all**, and that is a fact about
+// the feature rather than a shortcut here: a room keeps no count of who is
+// watching it, so the cap on watchers — and the refusal that carries it — belongs
+// to whatever holds the connections. → aWatcherOverTheCap.
+//
+// What it cannot see: a ninth way the gate could refuse that this file does
 // not think to provoke. The count is logged for that reason — a gate that grew
 // one would leave that code being checked on the battle screen, which is a
 // failure of *this* helper rather than of the claim.
@@ -417,19 +428,70 @@ func theGateAnswers(t *testing.T) map[wire.Code]bool {
 	drafting := config()
 	drafting.Drafts = true
 	answers[refusedBy(t, drafting, deps, hello())] = true
+	// 8. A spectator arriving at a match that already has as many people
+	//    watching as the transport carries — the one refusal at a gate that comes
+	//    out of a **server** rather than a room. → aWatcherOverTheCap.
+	watching := hello()
+	watching.Watch = true
+	answers[aWatcherOverTheCap(t, config(), deps, watching)] = true
 
 	delete(answers, wire.CodeNone)
-	if len(answers) != 7 {
+	if len(answers) != 8 {
 		named := make([]string, 0, len(answers))
 		for code := range answers {
 			named = append(named, code.String())
 		}
 		slices.Sort(named)
-		t.Fatalf("seven ways of being turned away at a gate produced %d distinct codes (%v), "+
+		t.Fatalf("eight ways of being turned away at a gate produced %d distinct codes (%v), "+
 			"so two of the cases above are answering with the same refusal and one code is "+
 			"being checked on the wrong screen", len(answers), named)
 	}
 	return answers
+}
+
+// aWatcherOverTheCap is the eighth way of being turned away, and the only one
+// here that no room.Room can produce.
+//
+// ⚠️ **The cap on watchers is the transport's own fact.** A room keeps no count
+// of who is watching it, no list and no limit — which is exactly what keeps its
+// two seats, its roster and its result untouched by anybody watching — so the
+// only thing that can refuse the watcher over the cap is whatever holds the
+// connections. That is internal/socket, so this case needs a real server over a
+// real listener where the other seven need only a room. → wire.CodeTooManyWatchers.
+//
+// It fills the table to socket.MaxWatchers and dials one more. The refusal comes
+// back through Dial, which is the very path the join screen's own refusal takes.
+func aWatcherOverTheCap(t *testing.T, configuration room.Config, deps room.Deps, watching wire.Hello) wire.Code {
+	t.Helper()
+	rooms := room.NewRegistry()
+	listening := httptest.NewServer(socket.NewServer(rooms, socket.Options{}))
+	t.Cleanup(func() {
+		listening.Close()
+		rooms.CloseAll()
+		rooms.Wait()
+	})
+	at, err := netip.ParseAddrPort(listening.Listener.Addr().String())
+	if err != nil {
+		t.Fatalf("read the listener's address: %v", err)
+	}
+	code, err := rooms.Open(netip.AddrPortFrom(at.Addr().Unmap(), at.Port()), configuration, deps)
+	if err != nil {
+		t.Fatalf("open a room behind a listener: %v", err)
+	}
+	for filled := range socket.MaxWatchers {
+		client, err := socket.Dial(context.Background(), code, watching, deps.Books, socket.ClientOptions{})
+		if err != nil {
+			t.Fatalf("watcher %d of %d was turned away: %v", filled+1, socket.MaxWatchers, err)
+		}
+		t.Cleanup(client.Close)
+	}
+	_, err = socket.Dial(context.Background(), code, watching, deps.Books, socket.ClientOptions{})
+	var refusal *socket.Refusal
+	if !errors.As(err, &refusal) {
+		t.Fatalf("the watcher over a cap of %d was turned away with %v, want a refusal carrying "+
+			"a code", socket.MaxWatchers, err)
+	}
+	return refusal.Code
 }
 
 // refusedBy opens a room, offers it one hello, and hands back the code it was

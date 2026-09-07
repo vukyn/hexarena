@@ -165,47 +165,76 @@ func TestTheProtocolMintsExactlyTwoSeats(t *testing.T) {
 	t.Logf("scanned %d source files; %d seats declared, %d valid", scanned, len(declared), valid)
 }
 
-// TestAWatcherIsRefusedByNoCodeOfItsOwn is the "no new code" half of this step,
-// and it is written as the decision rather than as a pinned count.
+// TestTheOnlyCodeAboutAWatcherIsTheCap is the "no new code" half of step one,
+// written as the decision rather than as a pinned count — and ⚠️ **the decision
+// it holds is narrower than the one it used to claim**.
 //
-// A watcher's squad is **ignored**, not refused: CodeSquadUnwanted exists
-// because a squad quietly dropped would be a player watching the side they spent
-// an evening building fail to appear, and a watcher expects no side of its own,
-// so nothing fails to appear. Answering it would misdirect — its wording says
-// the room drafts and to join again with no squad chosen — which is the exact
-// failure its own doc says it exists to avoid. → Hello.Watch.
+// It was TestAWatcherIsRefusedByNoCodeOfItsOwn and it banned *any* code named
+// after watching, which reads as one rule and is two. The rule step one decided
+// is about **admitting** a watcher: a watcher's squad is **ignored**, not
+// refused, because CodeSquadUnwanted exists for a squad quietly dropped — a
+// player watching the side they spent an evening building fail to appear — and a
+// watcher expects no side of its own, so nothing fails to appear and answering
+// it would misdirect. That rule is untouched. What the flat ban also forbade,
+// with no argument behind it, was a refusal for a watcher that **cannot be let
+// in at all**: the transport carries a bounded number of connections per table,
+// and CodeRoomFull cannot say so — both books word it about the two seats and
+// then advise opening a room of your own, which is nonsense advice for somebody
+// who came to watch this match. CodeRoomFull's own comment predicted this code
+// before it existed. → CodeTooManyWatchers, and TODO.md § *Spectators* step 4.
+//
+// So the walk is an allowlist of exactly one rather than a flat none, and it
+// still fails on the code step one was about — anything named for a watcher's
+// squad, its side or its admission.
 //
 // ⚠️ **This deliberately does not pin CodeCount, and the reason is worth
 // knowing.** Two tests outside this package already make a code impossible to
 // add quietly: internal/i18n/protocol_test.go walks CodeCount against both word
 // books, and cmd/hexarena-tui/shown_test.go holds `gate + inMatch + owed ==
-// CodeCount-1` against codes produced out of a real room. So an added code is
-// already loud. A literal count on top of those would be a figure pinned twice,
-// where the second copy sits somewhere that reads like a safety check and gets
-// bumped rather than read — which is a mistake this repository has already made
-// once and written down. What is *not* implied by those two is the decision this
-// walk holds: that no code is minted **about a watcher**.
-func TestAWatcherIsRefusedByNoCodeOfItsOwn(t *testing.T) {
+// CodeCount-1` against codes produced out of a real room and a real server. So
+// an added code is already loud. A literal count on top of those would be a
+// figure pinned twice, where the second copy sits somewhere that reads like a
+// safety check and gets bumped rather than read — which is a mistake this
+// repository has already made once and written down.
+func TestTheOnlyCodeAboutAWatcherIsTheCap(t *testing.T) {
 	// The words a code for a watcher would be named with. A name is what a peer
 	// reads, so a code about watching cannot avoid saying so in its name.
 	about := []string{"watch", "spectat", "viewer", "observ"}
+	// The one that is allowed to, with the reason it is not the mistake above.
+	allowed := map[Code]string{
+		CodeTooManyWatchers: "the transport's cap on how many connections one " +
+			"table carries, which no code about a seat can say",
+	}
+	found := 0
 	for value := range CodeCount {
-		name := codeNames[value]
+		code, name := Code(value), codeNames[value]
 		for _, word := range about {
-			if strings.Contains(name, word) {
-				t.Errorf("the protocol declares the refusal %q: a watcher's squad is ignored "+
-					"rather than refused, because a watcher expects no side of its own, so "+
-					"nothing fails to appear — → Hello.Watch", name)
+			if !strings.Contains(name, word) {
+				continue
 			}
+			if because, spared := allowed[code]; spared {
+				found++
+				t.Logf("the refusal %q is named for a watcher and is allowed to be: %s", name, because)
+				continue
+			}
+			t.Errorf("the protocol declares the refusal %q: a watcher's squad is ignored "+
+				"rather than refused, because a watcher expects no side of its own, so "+
+				"nothing fails to appear — → Hello.Watch", name)
 		}
 	}
-	// Non-vacuity: the walk above passes over an empty table, and the words it
-	// looks for have to be findable in the first place.
+	// Non-vacuity, three ways: the walk above passes over an empty table, the
+	// words it looks for have to be findable in the first place, and an
+	// allowlist whose entry the walk never reaches is an entry that has stopped
+	// meaning anything.
 	if CodeCount == 0 {
 		t.Fatal("there are no codes to walk")
 	}
 	if !strings.Contains("a watcher", about[0]) {
 		t.Fatalf("the walk looks for %q, which matches nothing it would need to match", about[0])
+	}
+	if found != len(allowed) {
+		t.Errorf("the walk spared %d of the %d codes the allowlist names, so an entry in it "+
+			"names a code that is gone or has been renamed out of the words above", found, len(allowed))
 	}
 }
 

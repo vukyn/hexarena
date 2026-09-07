@@ -882,3 +882,126 @@ func TestManyWatchersReadOneRoomWhileItIsPlayed(t *testing.T) {
 	t.Logf("%d watchers were handed %d bodies between them while %d decisions were played through "+
 		"the same room", readers, total, played.steps)
 }
+
+// TestEveryInputAnswersWithWhatItRecorded is the reason the record read rides
+// home on an input's own answer rather than on a Since taken afterwards, and it
+// holds the measurement that forced it.
+//
+// ⚠️ **The exchange that records a match's last wire.Turn is the exchange that
+// finishes the room**, and a finished room retires its own entry at once — so a
+// consumer that answered its players and *then* asked for the record was asking a
+// room that had already gone. This test asserts both halves: the whole stream is
+// complete when it is accumulated off the answers, and the Since taken after the
+// finishing decision reports **no room to read**. Without the second half a
+// reader would take the first for tidiness rather than for necessity.
+//
+// It also holds the arithmetic every consumer of this needs: an answer's Cursor
+// is where the record now stands, so the bodies it carries start exactly where
+// the last answer left off. A consumer with its own cursor can check its place
+// against that and never has to hand a cursor back to a room — which is what
+// makes Room.Since's deliberate panic on an out-of-range cursor unreachable from
+// a transport. → Registry.Since, and TODO.md's spectator step 4.
+func TestEveryInputAnswersWithWhatItRecorded(t *testing.T) {
+	dependencies := deps(t)
+	registry := room.NewRegistry()
+	configuration := config(11, 1)
+	code, err := registry.Open(theOneListener, configuration, dependencies)
+	if err != nil {
+		t.Fatalf("open a room: %v", err)
+	}
+	defer func() { registry.CloseAll(); registry.Wait() }()
+
+	clients := newTable(t, dependencies, configuration.TurnCap)
+	host, guest := squadPair(t, dependencies, 0)
+	cursor, carried := 0, []wire.Body{}
+	// take accumulates one answer's recorded bodies and checks that they follow
+	// on from the last one.
+	take := func(what string, answered room.Answer) {
+		t.Helper()
+		if want := cursor + len(answered.Watched); answered.Cursor != want {
+			t.Fatalf("%s carried %d bodies from cursor %d and says the record now reaches %d, "+
+				"want %d: an answer's bodies have to be the ones between the two cursors",
+				what, len(answered.Watched), cursor, answered.Cursor, want)
+		}
+		carried = append(carried, answered.Watched...)
+		cursor = answered.Cursor
+	}
+
+	var answered room.Answer
+	for _, joining := range []struct {
+		squad placement.Squad
+		name  string
+	}{{host, "Host"}, {guest, "Guest"}} {
+		answered, err = registry.Join(code, hello(t, joining.squad, joining.name))
+		if err != nil {
+			t.Fatalf("%s joins: %v", joining.name, err)
+		}
+		if !answered.Known || !answered.Seat.Valid() {
+			t.Fatalf("%s was not seated: %+v", joining.name, answered)
+		}
+		clients.deliver(t, answered.Out)
+		take(joining.name+"'s join", answered)
+	}
+	// The second seat's join is what opens the battle, so it is the input that
+	// recorded the wire.Start — and the first join recorded nothing at all.
+	if len(carried) != 1 {
+		t.Fatalf("two joins recorded %d bodies, want the one wire.Start the second one opens",
+			len(carried))
+	}
+	if _, isStart := carried[0].(wire.Start); !isStart {
+		t.Fatalf("the body a join recorded is a %s, want a start", carried[0].Kind())
+	}
+
+	reading, decisions := answered.Reading, 0
+	for !reading.Finished {
+		if !reading.Waiting {
+			t.Fatalf("after %d decisions the room waits on nobody and the match is not over", decisions)
+		}
+		answered, err = registry.Deliver(code, reading.Awaiting, clients.at(reading.Awaiting).answer())
+		if err != nil {
+			t.Fatalf("decision %d from %s: %v", decisions, reading.Awaiting, err)
+		}
+		if !answered.Known {
+			t.Fatalf("the room went away after %d decisions with the match unfinished", decisions)
+		}
+		clients.deliver(t, answered.Out)
+		take(fmt.Sprintf("decision %d", decisions), answered)
+		reading = answered.Reading
+		decisions++
+		if decisions > configuration.Battles*configuration.TurnCap {
+			t.Fatalf("the match took more than %d decisions, so something is not progressing", decisions)
+		}
+	}
+
+	// A turn a decision, a start a battle, and the last of them is the one this
+	// whole arrangement exists for.
+	starts, turns := 0, 0
+	for _, body := range carried {
+		switch body.(type) {
+		case wire.Start:
+			starts++
+		case wire.Turn:
+			turns++
+		default:
+			t.Errorf("the record carries a %s, and it holds starts, turns and a closure", body.Kind())
+		}
+	}
+	if turns != decisions {
+		t.Errorf("%d decisions were played and the answers carried %d turns", decisions, turns)
+	}
+	if starts != len(reading.Played) {
+		t.Errorf("%d battles were played and the answers carried %d starts", len(reading.Played), starts)
+	}
+
+	// ⚠️ And the half that says why: the room is **gone** by the time anybody
+	// could ask it for that last turn. A reader that took a Since after each
+	// decision would have every turn but the final one, which is the turn the
+	// match ends on.
+	if _, _, known := registry.Since(code, 0); known {
+		t.Fatal("the room is still readable after the decision that finished the match, so the " +
+			"reading below measures nothing and a Since taken afterwards would have done")
+	}
+	t.Logf("%d decisions and %d battles: the answers carried %d bodies (%d starts, %d turns), "+
+		"the last of them from an input the room did not survive",
+		decisions, len(reading.Played), len(carried), starts, turns)
+}
