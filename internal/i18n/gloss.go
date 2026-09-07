@@ -142,6 +142,11 @@ var (
 		"bedrock":    "nền đá",
 		"tailwind":   "gió xuôi",
 		"galvanise":  "dẫn điện",
+		// A noun, and a tree's rather than a plant's. Grass buys a bigger frame
+		// rather than a faster or a harder one, so the word is the heartwood a
+		// trunk thickens with — the standing bulk of the thing — and not "sinh
+		// trưởng", which is the growing rather than what was grown.
+		"heartwood": "lõi gỗ",
 		// The three formation columns, named as the depths they are rather than as
 		// the numbers they are counted by: a bonus line reading "three of 2" says
 		// nothing, and the board's own header already calls them back, middle and

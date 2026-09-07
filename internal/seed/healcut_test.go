@@ -269,7 +269,7 @@ func TestTheShippedHealCutIsDeliveredByACast(t *testing.T) {
 		}
 		// The healer is kept alive, because fire_fang is meant to be cast many
 		// times and a corpse cannot be festered.
-		healer.HP = healer.MaxHP()
+		healer.HP = fight.MaxHP(healer)
 		if prompt.Skipped {
 			continue
 		}

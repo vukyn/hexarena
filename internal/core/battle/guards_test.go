@@ -299,7 +299,7 @@ func TestATraitSparesAHealthCostAtBothSites(t *testing.T) {
 func TestASplitMovesMaximumHealthIntoTheCopy(t *testing.T) {
 	fight := splitting(t)
 	mine, _ := fight.Unit("me")
-	wasMax, wasHP := mine.MaxHP(), mine.HP
+	wasMax, wasHP := fight.MaxHP(mine), mine.HP
 	cast(t, fight, "split", mine.Cell)
 
 	moved := int64(0)
@@ -308,9 +308,9 @@ func TestASplitMovesMaximumHealthIntoTheCopy(t *testing.T) {
 		switch event.Kind {
 		case battle.Split:
 			moved = event.Amount
-			if event.Remaining != mine.MaxHP() {
+			if event.Remaining != fight.MaxHP(mine) {
 				t.Errorf("the log says the caster's maximum is now %d and it is %d",
-					event.Remaining, mine.MaxHP())
+					event.Remaining, fight.MaxHP(mine))
 			}
 		case battle.Summoned:
 			copies = append(copies, event.Target)
@@ -325,7 +325,7 @@ func TestASplitMovesMaximumHealthIntoTheCopy(t *testing.T) {
 	}
 	// The maximum, which is the claim. A caster whose maximum was untouched has
 	// paid a cost rather than split, however its current health reads.
-	if got, want := mine.MaxHP(), wasMax-moved; got != want {
+	if got, want := fight.MaxHP(mine), wasMax-moved; got != want {
 		t.Errorf("the caster's maximum is %d after giving away %d of %d, want %d",
 			got, moved, wasMax, want)
 	}
@@ -342,8 +342,8 @@ func TestASplitMovesMaximumHealthIntoTheCopy(t *testing.T) {
 	if !standing {
 		t.Fatal("the copy is not on the board")
 	}
-	if copied.MaxHP() != moved {
-		t.Errorf("the copy holds %d health and %d left the caster", copied.MaxHP(), moved)
+	if fight.MaxHP(copied) != moved {
+		t.Errorf("the copy holds %d health and %d left the caster", fight.MaxHP(copied), moved)
 	}
 	// ⚠️ Named apart from the health above, because the two come from different
 	// halves of the declaration and only one of them is the split: `share: 900`

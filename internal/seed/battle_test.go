@@ -910,7 +910,7 @@ func replayReport(seedValue uint64, lines int) string {
 			state = "dead"
 		}
 		fmt.Fprintf(&b, "  %-18s%-7s%-6s%6d / %-6d hp   %s\n",
-			unit.ID, unit.Side, state, unit.HP, unit.MaxHP(), unit.Affinity)
+			unit.ID, unit.Side, state, unit.HP, fight.MaxHP(unit), unit.Affinity)
 	}
 	return b.String()
 }

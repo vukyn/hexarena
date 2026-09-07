@@ -120,8 +120,8 @@ func TestASummonsShareIsFrozenAtTheCast(t *testing.T) {
 		t.Errorf("the copy has %d attack, want %d — half of the caster's 800",
 			copied.Base[progression.Attack], want)
 	}
-	if want := int64(1500); copied.MaxHP() != want {
-		t.Errorf("the copy has %d health, want %d", copied.MaxHP(), want)
+	if want := int64(1500); fight.MaxHP(copied) != want {
+		t.Errorf("the copy has %d health, want %d", fight.MaxHP(copied), want)
 	}
 
 	weaken, err := fight.Books().Statuses.Lookup("weaken")
@@ -199,9 +199,9 @@ func TestAFixedStatLineIgnoresItsCallerEntirely(t *testing.T) {
 		t.Fatalf("the call summoned %d units, want one", len(came))
 	}
 	toad := unitByID(t, fight, came[0].Target)
-	if toad.MaxHP() != 900 || toad.Base[progression.Attack] != 300 {
+	if fight.MaxHP(toad) != 900 || toad.Base[progression.Attack] != 300 {
 		t.Errorf("the toad stands at %d health and %d attack, want the declared 900 and 300",
-			toad.MaxHP(), toad.Base[progression.Attack])
+			fight.MaxHP(toad), toad.Base[progression.Attack])
 	}
 	// And its own element, which is what lets a summon be a different creature
 	// rather than a smaller copy.

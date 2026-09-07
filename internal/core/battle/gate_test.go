@@ -136,7 +136,7 @@ func TestAGatedGrantIsOffUntilItsHolderIsHurt(t *testing.T) {
 		}
 	}
 	if !ally.Statuses.Has("toughened") {
-		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, ally.MaxHP())
+		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, fight.MaxHP(ally))
 	}
 
 	held := find(fight.Drain(), battle.PassiveHeld)
@@ -173,7 +173,7 @@ func TestAGatedGrantGoesOffAgainWhenItsHolderIsHealed(t *testing.T) {
 		}
 	}
 	if !ally.Statuses.Has("toughened") {
-		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, ally.MaxHP())
+		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, fight.MaxHP(ally))
 	}
 	fight.Drain()
 
@@ -186,7 +186,7 @@ func TestAGatedGrantGoesOffAgainWhenItsHolderIsHealed(t *testing.T) {
 	}
 	if ally.Statuses.Has("toughened") {
 		t.Fatalf("the trait is still on at %d of %d, so the gate is a one way door",
-			ally.HP, ally.MaxHP())
+			ally.HP, fight.MaxHP(ally))
 	}
 
 	released := find(fight.Drain(), battle.PassiveReleased)
@@ -239,7 +239,7 @@ func TestAGatedTraitTouchingSpeedRetunesTheQueue(t *testing.T) {
 		events = append(events, fight.Drain()...)
 	}
 	if !ally.Statuses.Has("fleet") {
-		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, ally.MaxHP())
+		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, fight.MaxHP(ally))
 	}
 	after := fight.Stats(ally)[progression.Speed]
 	if after <= before {
@@ -295,7 +295,7 @@ func TestAGateIsReadEveryTimeHealthMovesAndNotOtherwise(t *testing.T) {
 		}
 	}
 	if !ally.Statuses.Has("toughened") && !ally.Dead {
-		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, ally.MaxHP())
+		t.Fatalf("the trait never came on; the holder is at %d of %d", ally.HP, fight.MaxHP(ally))
 	}
 	if held != 1 {
 		t.Errorf("the trait was announced %d times while its holder kept falling, want once", held)
@@ -366,7 +366,7 @@ func TestATraitDoesNotComeOnAsItsHolderDies(t *testing.T) {
 	}
 	if !ally.Dead {
 		t.Fatalf("the holder survived the blow at %d of %d, so the killing hit is not the one being measured",
-			ally.HP, ally.MaxHP())
+			ally.HP, fight.MaxHP(ally))
 	}
 	for _, event := range fight.Drain() {
 		if event.Actor != "a" {
@@ -400,7 +400,7 @@ func TestADeadHolderIsNotReconsidered(t *testing.T) {
 	}
 	if !ally.Dead {
 		t.Fatalf("the holder survived at %d of %d, so there is no corpse to re-read",
-			ally.HP, ally.MaxHP())
+			ally.HP, fight.MaxHP(ally))
 	}
 	events := fight.Drain()
 	died := -1

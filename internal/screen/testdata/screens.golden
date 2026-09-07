@@ -924,6 +924,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
   metal_ward      cùng thép       sharers
   dark_edge       cùng bóng tối   sharers
   water_tide      cùng dòng nước  sharers
+  grass_growth    cùng cỏ         sharers
   same_element    đồng hệ         sharers
 
   đếm hệ mà các thành viên mang
@@ -1241,7 +1242,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
-chiêu này gây hiệu ứng gì  1/42
+chiêu này gây hiệu ứng gì  1/43
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -2731,6 +2732,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
   metal_ward      cùng thép       sharers
   dark_edge       cùng bóng tối   sharers
   water_tide      cùng dòng nước  sharers
+  grass_growth    cùng cỏ         sharers
   same_element    đồng hệ         sharers
 
   đếm hệ mà các thành viên mang
@@ -3256,7 +3258,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
-chiêu này gây hiệu ứng gì  1/42
+chiêu này gây hiệu ứng gì  1/43
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -3298,6 +3300,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        keenedge    lưỡi sắc · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        tidewell    mạch nguồn · tăng máu hồi vào · vĩnh viễn · tối đa 2 cộng dồn
        phalanx     trận thế · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       heartwood   lõi gỗ · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        kinship     đồng khí · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        sundered    đã tách · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        burrowed    độn thổ · tăng chỉ số · 2 lượt · 1 cộng dồn
@@ -3341,6 +3344,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   ironhide     giáp trụ
   keenedge     lưỡi sắc
   phalanx      trận thế
+  heartwood    lõi gỗ
   kinship      đồng khí
   sundered     đã tách
   burrowed     độn thổ
@@ -3357,7 +3361,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   absorb       lá chắn, thấm sát thương cho tới khi cạn
   aegis        lá chắn
   bastion      thành trì
-  reserve      dồn lại cho chính người mang tiêu
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -4592,6 +4595,7 @@ squad bonuses  what a side is paid for what its units share
   metal_ward        sharers
   dark_edge         sharers
   water_tide        sharers
+  grass_growth      sharers
   same_element      sharers
 
   counts the elements the units carry
@@ -4900,7 +4904,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
-the statuses this skill inflicts  1 of 42
+the statuses this skill inflicts  1 of 43
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison      damages every turn · 3 turns · up to 3 stacks
@@ -6378,6 +6382,7 @@ squad bonuses  what a side is paid for what its units share
   metal_ward        sharers
   dark_edge         sharers
   water_tide        sharers
+  grass_growth      sharers
   same_element      sharers
 
   counts the elements the units carry
@@ -6894,7 +6899,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
-the statuses this skill inflicts  1 of 42
+the statuses this skill inflicts  1 of 43
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison      damages every turn · 3 turns · up to 3 stacks
@@ -6936,6 +6941,7 @@ space chooses a status · type the chance in parts per thousand
        keenedge    raises a stat · always in force · up to 2 stacks
        tidewell    raises healing received · always in force · up to 2 stacks
        phalanx     raises a stat · always in force · up to 2 stacks
+       heartwood   raises a stat · always in force · up to 2 stacks
        kinship     raises a stat · always in force · up to 2 stacks
        sundered    raises a stat · always in force · up to 2 stacks
        burrowed    raises a stat · 2 turns · 1 stack
@@ -6979,6 +6985,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   ironhide     
   keenedge     
   phalanx      
+  heartwood    
   kinship      
   sundered     
   burrowed     
@@ -6995,7 +7002,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   absorb       soaks up damage until it is used up
   aegis        
   bastion      
-  reserve      builds up for its holder to spend
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.

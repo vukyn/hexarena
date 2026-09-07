@@ -66,7 +66,7 @@ func TestADispelIsPricedForEachOfTheThreeThingsAStripCanTake(t *testing.T) {
 				t.Fatal("no enemy on the board")
 			}
 			if row.hurt {
-				theirs.HP = theirs.MaxHP() / 2
+				theirs.HP = fight.MaxHP(theirs) / 2
 			}
 			for _, id := range row.holding {
 				kind, err := fight.Books().Statuses.Lookup(id)

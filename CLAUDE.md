@@ -598,13 +598,18 @@ when passives arrived every skill edit in the repository began failing with
 book": a re-parse missing a book refuses on the missing book instead of on the
 edit, and names a preset the author never touched.
 
-**A health modifier on a status is refused.** It has always done nothing —
-`Unit.MaxHP` reads the *base* line and nothing reads the modified health at all —
-so the status would apply, appear in the log and change no visible number. It is
-refused rather than fixed because raising a maximum mid-battle has to decide
-whether current health follows it up, and lowering one has to decide what happens
-to a unit already above the new maximum. A passive is what makes this reachable:
-"more health" is the most obvious trait anybody would write.
+**A health modifier on a status is allowed, and a maximum only ever rises.**
+`Battle.MaxHP` resolves the health line through the modifiers, the way every
+other stat resolves — it used to read `Unit.Base` and a health term was therefore
+a number nothing read, which is why one used to be refused outright. Three
+refusals replace the blanket one, and together they are what lets current health
+stay put when a maximum moves: a health term may sit only on a **permanent**
+status (`status.ParseBook`), may only be **positive** (same), and may not be
+granted by a **gated** trait, whose gate closing would take the raise back off
+(`passive.ParseBook`). What follows is the design: at enlistment current health
+is set to the maximum *after* the traits and the bonuses are on, so a squad that
+built for a health bonus starts holding it; after that a rise opens room and
+never fills it. `grass_growth` is the one thing that ships on this.
 
 **A form's art is optional, and the fallback has one home.**
 `progression.Stage.Image` is a stage's own picture and most stages declare none;

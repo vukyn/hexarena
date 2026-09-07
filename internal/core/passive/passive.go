@@ -26,6 +26,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -586,6 +587,25 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			return fail("grants %q, which is timed: it would wear off on the holder's own turns and a passive is granted only once",
 				kind.ID)
 		}
+		// The third leg of the health rule, and the only one visible from here.
+		//
+		// status.ParseBook lets a health term sit on a permanent status because a
+		// permanent status is the one thing nothing can take back off — Remove
+		// refuses one, which is what stops a dispel turning a trait off. A *gated*
+		// trait is the exception it cannot see: reconsider calls Release when the
+		// gate closes, so a gated trait carrying a health term would raise its
+		// holder's maximum when the gate opened and drop it again when it shut.
+		// A unit healed into that room would then be standing above its own
+		// maximum, for a change no event accounts for, and the toggling itself is
+		// the shape the rule was written to refuse.
+		//
+		// Only the gate is refused, not the term. An ungated trait granting more
+		// health is a trait that raises the maximum once, at enlistment, and never
+		// moves it again — which is exactly what a composition bonus does.
+		if declared.While != nil && carriesHealth(kind) {
+			return fail("is gated and grants %q, which raises health: a gate that closed would take the raise back off, and a holder healed into the room it opened would be left standing above its own maximum",
+				kind.ID)
+		}
 		// An unstated stack count is one, the way a skill's unstated strike count
 		// is one.
 		stacks := max(grant.Stacks, 1)
@@ -999,4 +1019,18 @@ func (b *Book) Marshal() ([]byte, error) {
 		return nil, fmt.Errorf("encode passive book: %w", err)
 	}
 	return append(out, '\n'), nil
+}
+
+// carriesHealth reports whether a status raises its holder's maximum health.
+//
+// It exists because the health rule is enforced in two books — status.ParseBook
+// owns the two halves it can see, this file owns the gate — and a second reading
+// of "does this touch health" is how the two halves come to disagree.
+func carriesHealth(kind status.Kind) bool {
+	for _, term := range kind.Modifiers {
+		if term.Target == modifier.HP {
+			return true
+		}
+	}
+	return false
 }

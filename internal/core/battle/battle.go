@@ -201,8 +201,36 @@ type Unit struct {
 	Passives []string
 }
 
-// MaxHP is the health the unit started with.
-func (u *Unit) MaxHP() int64 { return u.Base[progression.HP] }
+// MaxHP is the unit's health ceiling right now: its base line with every term a
+// status carries applied to it, resolved through the same saturation every other
+// stat goes through.
+//
+// ⚠️ It is a method on the battle rather than on the unit, and that is the whole
+// change. It used to read `u.Base[progression.HP]` — the *authored* line — which
+// made a health term on a status a number nothing anywhere read, and status.
+// ParseBook refused one on exactly that ground. A unit cannot resolve its own
+// stats: saturation needs the progression ceilings and the modifier bounds, and
+// both live in the books. Storing the resolved figure on the unit instead was
+// the other way out and is the way Base's own comment rules out — a stored stat
+// is a stat that can go stale.
+//
+// What follows from it is the design, and it is the design because raising a
+// maximum has to say what current health does:
+//
+//   - At enlistment current health is set to this, after the traits and the
+//     bonuses are on. A squad that built for a health bonus starts the battle
+//     holding it, rather than starting a fraction short of a maximum it can
+//     never reach.
+//   - Mid-battle a rise in the maximum does NOT drag current health up with it.
+//     The room appears; filling it is what healing is for.
+//   - Nothing lowers a maximum. A health term may only sit on a permanent status
+//     and may only be positive, and a gated trait may not grant one, so the
+//     maximum a unit ends a battle with is never below the one it started with.
+//     Those three refusals are in status.ParseBook and passive.ParseBook, and
+//     together they are what keeps current health from ever sitting above it.
+func (b *Battle) MaxHP(unit *Unit) int64 {
+	return b.Stats(unit)[progression.HP]
+}
 
 // Battle is one fight in progress.
 type Battle struct {
@@ -379,6 +407,14 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 	if err := b.award(unit); err != nil {
 		return nil, err
 	}
+	// Current health is set here rather than beside Base above, and the two lines
+	// between is the whole reason. A trait or a composition bonus may raise the
+	// maximum, and a unit filled to its *authored* line would then walk onto the
+	// board already short of a ceiling it never fell from — a squad that built for
+	// a health bonus starting the battle wounded by it. See Battle.MaxHP: at
+	// enlistment current health is the maximum, and after enlistment a rise in the
+	// maximum leaves current health where it is.
+	unit.HP = b.MaxHP(unit)
 	// The buffed speed, and the traits are on by the line above. That ordering is
 	// the whole of this: a wait is 1_000_000/speed, so a trait touching speed has
 	// to be in force before the first one is computed, or turn one is already
@@ -477,11 +513,21 @@ func (b *Battle) grant(unit *Unit, ids []string) error {
 			return fmt.Errorf("unit %q holds the passive %q twice", unit.ID, held.ID)
 		}
 		unit.Passives = append(unit.Passives, held.ID)
+		// ⚠️ Refilled before the gate is read, every time round, and it is the
+		// sentence below that makes this necessary rather than tidy. A gate is a
+		// *ratio* — below_health of 333 asks whether health is under a third of
+		// the maximum — so a trait already granted that raised the maximum would
+		// leave this unit reading as wounded by the raise, and a trait gated on
+		// being hurt would come on at enlistment. Which traits landed first is
+		// the order the roster happens to list them in, so the bug would be an
+		// authoring order deciding whether a trait starts on.
+		//
 		// A gate is read here rather than assumed open, and at enlistment a unit
 		// is at full health — so a trait gated on being hurt starts off, and
 		// turns on the first time it is. Checking the gate rather than
 		// special-casing enlistment is what keeps one rule: a trait is on when
 		// its condition holds, from the first moment to the last.
+		unit.HP = b.MaxHP(unit)
 		if !b.inForce(unit, held) {
 			continue
 		}

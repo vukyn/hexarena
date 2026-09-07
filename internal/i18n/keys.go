@@ -576,6 +576,10 @@ const (
 	BlurbSideAlly
 	BlurbSideSelf
 	BlurbSideAll
+	// The health line. It sat unnamed until a status could raise one, and an
+	// unnamed stat falls back to its id — a blurb reading "Raises hp by 10%"
+	// beside one reading "Raises defence by 10%".
+	BlurbStatHealth
 	BlurbStatAttack
 	BlurbStatDefense
 	BlurbStatSpeed

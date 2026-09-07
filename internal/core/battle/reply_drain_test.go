@@ -177,16 +177,16 @@ func TestAReplysDrainNeverPassesFullHealth(t *testing.T) {
 		t.Fatal("the trait did not answer, so this test measures nothing")
 	}
 	holder := unitByID(t, fight, "a")
-	if holder.HP >= holder.MaxHP() {
+	if holder.HP >= fight.MaxHP(holder) {
 		t.Fatalf("the holder is on %d of %d health, so it was never hurt",
-			holder.HP, holder.MaxHP())
+			holder.HP, fight.MaxHP(holder))
 	}
 	// It was hurt by the strike it answered, so there IS room — the point is
 	// that the room is what bounds the payout, and the assertion below is that
 	// the log never claims more than landed.
 	for _, paid := range drains(events) {
-		if paid.Remaining > holder.MaxHP() {
-			t.Errorf("a drain left the holder on %d of %d", paid.Remaining, holder.MaxHP())
+		if paid.Remaining > fight.MaxHP(holder) {
+			t.Errorf("a drain left the holder on %d of %d", paid.Remaining, fight.MaxHP(holder))
 		}
 	}
 }

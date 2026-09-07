@@ -67,6 +67,8 @@ func books(t *testing.T) battle.Books {
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 500}]},
 	    {"id": "toughened", "category": "buff", "max_stacks": 2, "duration": 0, "permanent": true,
 	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]},
+	    {"id": "swollen", "category": "buff", "max_stacks": 2, "duration": 0, "permanent": true,
+	     "modifiers": [{"target": "hp", "mode": "percent", "amount": 200}]},
 	    {"id": "mending", "category": "regen", "max_stacks": 3, "duration": 3, "tick_power": 400},
 	    {"id": "crawl", "category": "stat_debuff", "max_stacks": 1, "duration": 3,
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": -400}]},
@@ -295,6 +297,9 @@ func books(t *testing.T) battle.Books {
 	passives, err := passive.ParseBook([]byte(`{"passives":[
 	  {"id":"swift","name":"nhanh nhẹn","grants":[{"status":"fleet","stacks":1}]},
 	  {"id":"hardy","grants":[{"status":"toughened","stacks":2}]},
+	  {"id":"broad","grants":[{"status":"swollen","stacks":1}]},
+	  {"id":"nearly_whole","while":{"below_health":900},
+	   "grants":[{"status":"toughened","stacks":1}]},
 	  {"id":"projecting","grants":[{"status":"bastion","stacks":1,"power":500,"scaling":"attack"}]},
 	  {"id":"carapaced","grants":[{"status":"bastion","stacks":1,"power":500,"scaling":"defense"}]},
 	  {"id":"rending","grants":[],"converts":250},
@@ -1995,29 +2000,29 @@ func TestAConditionReadsTheTargetsHealthAndNotTheCasters(t *testing.T) {
 		t.Error("the condition held against a target at full health")
 	}
 	foe, _ := fight.Unit("f")
-	if foe.HP*2 <= foe.MaxHP() {
+	if foe.HP*2 <= fight.MaxHP(foe) {
 		t.Fatalf("the target is already at %d of %d health, so this proves nothing",
-			foe.HP, foe.MaxHP())
+			foe.HP, fight.MaxHP(foe))
 	}
 
 	// Drive the target under half while the caster stays untouched.
 	for range 20 {
 		act("strike")
 		foe, _ = fight.Unit("f")
-		if foe.Dead || foe.HP*2 <= foe.MaxHP() {
+		if foe.Dead || foe.HP*2 <= fight.MaxHP(foe) {
 			break
 		}
 	}
 	if foe.Dead {
 		t.Fatal("the target died before it could be measured under half health")
 	}
-	if foe.HP*2 > foe.MaxHP() {
-		t.Fatalf("the target is at %d of %d health, never under half", foe.HP, foe.MaxHP())
+	if foe.HP*2 > fight.MaxHP(foe) {
+		t.Fatalf("the target is at %d of %d health, never under half", foe.HP, fight.MaxHP(foe))
 	}
 	caster, _ := fight.Unit("a")
-	if caster.HP*2 <= caster.MaxHP() {
+	if caster.HP*2 <= fight.MaxHP(caster) {
 		t.Fatalf("the caster fell to %d of %d health, so a reading from it could hold too",
-			caster.HP, caster.MaxHP())
+			caster.HP, fight.MaxHP(caster))
 	}
 
 	amplified := find(act("finish"), battle.Amplified)
@@ -2145,9 +2150,9 @@ func TestAGatedDrainIsOffUntilItsHolderIsHurt(t *testing.T) {
 			// paid out; reading it afterwards would let a trait that healed its
 			// holder over the line look as though it had fired while off.
 			before := caster.HP - event.Amount
-			if before*10 > caster.MaxHP()*4 {
+			if before*10 > fight.MaxHP(caster)*4 {
 				t.Fatalf("the gated trait drained at %d of %d health, over its four tenths",
-					before, caster.MaxHP())
+					before, fight.MaxHP(caster))
 			}
 			drained = true
 		}
