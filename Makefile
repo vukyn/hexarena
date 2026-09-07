@@ -4,7 +4,7 @@
 # -update is declared only in the packages that own golden files, so
 # `go test ./... -update` fails on every other package.
 
-.PHONY: build install run auto play-tui forge forge-tui forge-tui-en test golden fmt vet check clean
+.PHONY: build install run auto play-tui forge forge-tui forge-tui-en host test golden fmt vet check clean
 
 build:
 	@go build -o bin/ ./cmd/hexarena ./cmd/hexarena-tui ./cmd/hexforge ./cmd/hexforge-tui ./cmd/hexarena-host
@@ -55,6 +55,11 @@ forge-tui-en:
 # `make host ARGS="-advertise 10.0.0.7"` says which address the code carries on a
 # machine where that is ambiguous (a container bridge looks exactly like a LAN),
 # and `make host ARGS="-battles 3 -password nhaminh"` is a bo3 behind a gate.
+#
+# `make host ARGS="-watch"` lets spectators in. They paste the SAME code the two
+# players do, which is why watching is a flag here rather than a second kind of
+# code — the joiner says which it means. Without it a watcher is refused
+# watching_closed, because -watch is off by default. → TODO.md § Spectators.
 host:
 	@go run ./cmd/hexarena-host $(ARGS)
 
