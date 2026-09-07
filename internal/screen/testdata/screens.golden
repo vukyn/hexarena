@@ -1389,6 +1389,52 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | watching a battle =====
+trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 12-16/16
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+A2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+A3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+E2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+
+next: E1 A2 E2 A3 E3 A1
+
+    E2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    E3  Machamp enters at 3,0 on the enemy side with 3300 health, ground
+    E3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+  
+  A1  turn 1
+
+đang xem — hai bên đang nghĩ
+----- footer -----
+[/] cuộn · esc thôi xem
+===== vi | 120x24 | watching a battle over =====
+trận đấu  seed 0
+cửa sổ quá ngắn cho: diễn biến
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Mew                  fallen                     110   evasive (always)
+E1   Mew                  [##........]   966/3600    110   evasive (always), expose (1t)
+
+next: E1 E1 E1 E1 E1 E1
+
+phe bạn ngã
+----- footer -----
+[/] cuộn · esc xem kết quả
 ===== vi | 160x60 | a battle =====
 trận đấu  seed 1
 
@@ -3517,6 +3563,108 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | watching a battle =====
+trận đấu  seed 1  lượt A 1:12 · E 1:30
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+A2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+A3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+E2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+
+next: E1 A2 E2 A3 E3 A1
+
+    A1  Mew enters at 2,0 on the ally side with 3600 health, neutral
+    A1   holds elusive <huyền ảo>: evasive <khinh công> x1
+    A1   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    A3  Machamp enters at 2,2 on the ally side with 3300 health, ground
+    A3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    E1  Mew enters at 3,2 on the enemy side with 3600 health, neutral
+    E1   holds elusive <huyền ảo>: evasive <khinh công> x1
+    E1   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    E3  Machamp enters at 3,0 on the enemy side with 3300 health, ground
+    E3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+  
+  A1  turn 1
+
+đang xem — hai bên đang nghĩ
+----- footer -----
+[/] cuộn · esc thôi xem
+===== vi | 160x60 | watching a battle over =====
+trận đấu  seed 0  diễn biến 451-486/486
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Mew                  fallen                     110   evasive (always)
+E1   Mew                  [##........]   966/3600    110   evasive (always), expose (1t)
+
+next: E1 E1 E1 E1 E1 E1
+
+  
+  E1  turn 50
+    E1  uses body_slam <lấy thịt đè người> at 2,0
+    E1   hits A1 for 312, 211 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  A1  turn 51
+    A1  expose <phá giáp> wears off
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  E1  turn 51
+    E1  uses dream_eater <nuốt mộng> at 2,0
+    E1   hits A1 for 156, 55 left
+    E1  drains 109, 70% of what it dealt, 1480 hp left
+  
+  A1  turn 52
+    A1  uses dream_eater <nuốt mộng> at 3,2
+    A1   hits E1 for 156, 1324 left
+    A1  drains 109, 70% of what it dealt, 164 hp left
+  
+  E1  turn 52
+    E1  loses the turn (nothing usable)
+  
+  A1  turn 53
+    A1  uses psychic <niệm lực> at 3,2
+    A1   hits E1 for 358, 966 left
+    A1   expose <phá giáp> x1 on E1, now 1
+  
+  E1  turn 53
+    E1  uses body_slam <lấy thịt đè người> at 2,0
+    E1   hits A1 for 268, 0 left
+    E1   A1 resists stun <choáng> (25%)
+    A1  falls at 2,0
+  
+  the enemy side wins
+
+phe bạn ngã
+----- footer -----
+[/] cuộn · esc xem kết quả
 ===== en | 120x24 | a battle =====
 the battle  seed 1  log 16-16/16
 the window is too short for: board
@@ -4886,6 +5034,52 @@ species  the declared kinds, and where each line is drawn
   no character is one
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | watching a battle =====
+the battle  seed 1  A on turn 1:12 · E 1:30  log 12-16/16
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+A2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+A3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+E2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+
+next: E1 A2 E2 A3 E3 A1
+
+    E2   3 of column2: phalanx x2 (same_column)
+    E3  Machamp enters at 3,0 on the enemy side with 3300 health, ground
+    E3   3 of column2: phalanx x2 (same_column)
+  
+  A1  turn 1
+
+watching — the two of them are deciding
+----- footer -----
+[/] scroll · esc stop watching
+===== en | 120x24 | watching a battle over =====
+the battle  seed 0
+the window is too short for: log
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Mew                  fallen                     110   evasive (always)
+E1   Mew                  [##........]   966/3600    110   evasive (always), expose (1t)
+
+next: E1 E1 E1 E1 E1 E1
+
+your side falls
+----- footer -----
+[/] scroll · esc the result
 ===== en | 160x60 | a battle =====
 the battle  seed 1
 
@@ -6986,3 +7180,105 @@ species  the declared kinds, and where each line is drawn
   no character is one
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | watching a battle =====
+the battle  seed 1  A on turn 1:12 · E 1:30
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+A2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+A3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
+E2   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E3   Machamp              [##########]  3300/3300     85   phalanx x2 (always)
+
+next: E1 A2 E2 A3 E3 A1
+
+    A1  Mew enters at 2,0 on the ally side with 3600 health, neutral
+    A1   holds elusive: evasive x1
+    A1   3 of column2: phalanx x2 (same_column)
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A2   3 of column2: phalanx x2 (same_column)
+    A3  Machamp enters at 2,2 on the ally side with 3300 health, ground
+    A3   3 of column2: phalanx x2 (same_column)
+    E1  Mew enters at 3,2 on the enemy side with 3600 health, neutral
+    E1   holds elusive: evasive x1
+    E1   3 of column2: phalanx x2 (same_column)
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E2   3 of column2: phalanx x2 (same_column)
+    E3  Machamp enters at 3,0 on the enemy side with 3300 health, ground
+    E3   3 of column2: phalanx x2 (same_column)
+  
+  A1  turn 1
+
+watching — the two of them are deciding
+----- footer -----
+[/] scroll · esc stop watching
+===== en | 160x60 | watching a battle over =====
+the battle  seed 0  log 451-486/486
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Mew                  fallen                     110   evasive (always)
+E1   Mew                  [##........]   966/3600    110   evasive (always), expose (1t)
+
+next: E1 E1 E1 E1 E1 E1
+
+  
+  E1  turn 50
+    E1  uses body_slam at 2,0
+    E1   hits A1 for 312, 211 left
+    E1   stun x1 on A1, now 1
+  
+  A1  turn 51
+    A1  expose wears off
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  E1  turn 51
+    E1  uses dream_eater at 2,0
+    E1   hits A1 for 156, 55 left
+    E1  drains 109, 70% of what it dealt, 1480 hp left
+  
+  A1  turn 52
+    A1  uses dream_eater at 3,2
+    A1   hits E1 for 156, 1324 left
+    A1  drains 109, 70% of what it dealt, 164 hp left
+  
+  E1  turn 52
+    E1  loses the turn (nothing usable)
+  
+  A1  turn 53
+    A1  uses psychic at 3,2
+    A1   hits E1 for 358, 966 left
+    A1   expose x1 on E1, now 1
+  
+  E1  turn 53
+    E1  uses body_slam at 2,0
+    E1   hits A1 for 268, 0 left
+    E1   A1 resists stun (25%)
+    A1  falls at 2,0
+  
+  the enemy side wins
+
+your side falls
+----- footer -----
+[/] scroll · esc the result

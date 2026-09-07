@@ -57,9 +57,17 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // that share no line, two of which are also states neither sweep could draw (a
 // save's own note, and a battle with no pairing to open on) — in **both**
 // languages at **two** sizes: the MinWidth x MinHeight floor, where the Room
-// helpers bite, and 160x60, where nothing is squeezed — **248 renders, 6270
-// lines**. The entry names are the client's own, so a reader holding both diffs
-// is looking at the same words.
+// helpers bite, and 160x60, where nothing is squeezed. The entry names are the
+// client's own, so a reader holding both diffs is looking at the same words.
+//
+// ⚠️ **The counts in the paragraph above are stale and are not being restated
+// here**, which is a decision rather than an omission: measured 2026-09-07 the
+// record holds **72 entries, 288 renders, 7262 lines** against the "fifty-three"
+// and "248 renders, 6270 lines" written above, so the figures had drifted by a
+// third before anybody noticed — a number in a comment beside a file that grows
+// on most commits is a number that is wrong most of the time. What is worth
+// keeping is *which screens and which states*, which the prose does say; the
+// count a reader wants is `grep -c '^=====' testdata/screens.golden`.
 //
 // ⚠️ **Two of the works entries are states the client's fixture cannot reach at
 // all**, which is the same kind of finding as the three squad entries above and
@@ -334,12 +342,36 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		// The two states live mode adds, which differ from every entry above in
 		// a footer and in a body line — exactly the class this golden sees. It
 		// is what caught #205 (a status column a cell wider, whole package
-		// green) and #222 (a squad id column, whole client suite green), and a
-		// live battle is drawn by no other golden in the repository: the lobby
-		// screens live in cmd/hexarena-tui, so this is the only record of the
-		// PvP drawing itself.
+		// green) and #222 (a squad id column, whole client suite green).
+		//
+		// ⚠️ **This used to end "a live battle is drawn by no other golden in the
+		// repository", and it is not true any more**: cmd/hexarena-tui's own sweep
+		// registers `a live battle`, `a live battle waiting on the other player`
+		// and `aiming in a live battle`. The two records are the ordinary pair the
+		// file comment describes — this one the drawing, that one the framing —
+		// and the sentence was a claim about a moment rather than about a design.
 		"a live battle":         aLiveBattle(t, c),
 		"a live battle waiting": aLiveBattleWaiting(t, c),
+		// The **third** reading of the same screen: mirrored like the two above
+		// and never asked, which is what a spectator has. It differs from them in
+		// a footer, in the tail row and in the clock — three lines, all of them
+		// wordings that address the reader as one of the two players in the live
+		// pair and cannot here.
+		//
+		// ⚠️ **Two entries rather than one**, for the reason the live pair is two:
+		// the over state's footer is the one live wording a watcher keeps, and the
+		// only way to say that is to record it. It is also the first time either
+		// golden holds a live battle that has **ended** — the live pair above is
+		// a turn and a wait — so the tail it draws is recorded here for the first
+		// time as well.
+		//
+		// ⚠️ **They are built from the same fixture the live pair is** —
+		// atABattleOf over battleCast — deliberately: that selection is
+		// order-independent by construction (TestTheBattleFixtureIgnoresTheCastFileOrder)
+		// and is already what these entries' neighbours move with, so this adds no
+		// second source of churn to a record that has one.
+		"watching a battle":      aWatchedBattleEntry(t, c),
+		"watching a battle over": aWatchedBattleOverEntry(t, c),
 	}
 	// The **thirteenth screen**: the ban and pick, in each of the twelve states
 	// of it that draw a line no other state draws.
@@ -431,6 +463,45 @@ func aLiveBattleWaiting(t *testing.T, c Context) PlayScreen {
 	drawn, _ := p.View(c)
 	if !strings.Contains(drawn, c.Text(i18n.PlayLiveWaiting)) {
 		t.Fatalf("the waiting live battle says nothing about waiting:\n%s", drawn)
+	}
+	return p
+}
+
+// aWatchedBattleEntry is the golden's copy of the watching screen: the same
+// board, roster, queue and log the live entries draw, under the footer, the tail
+// and the clock a spectator gets instead.
+//
+// Each of the three is asserted here rather than left to the record, which is the
+// rule every hand-built entry in this file is under: a registered state that
+// renders none of what it exists for passes every sweep over it.
+func aWatchedBattleEntry(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p := aWatchedBattle(t, c, 3)
+	drawn, footer := p.View(c)
+	if footer != c.Text(i18n.PlayWatchFooter) {
+		t.Fatalf("the watched battle draws %q, so this records a live battle twice", footer)
+	}
+	if !strings.Contains(drawn, c.Text(i18n.PlayWatchWaiting)) {
+		t.Fatalf("the watched battle says nothing about being watched:\n%s", drawn)
+	}
+	if clock := p.clocks(c); clock == "" {
+		t.Fatal("the watched battle draws no countdown, so its two wordings are unrecorded")
+	}
+	return p
+}
+
+// aWatchedBattleOverEntry is the same screen on a battle that has ended, which is
+// the one live wording a spectator keeps: both keys the over footer names are
+// there and esc really does lead to the result.
+func aWatchedBattleOverEntry(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p := aWatchedBattleOver(t, c)
+	drawn, footer := p.View(c)
+	if footer != c.Text(i18n.PlayLiveOverFooter) {
+		t.Fatalf("the finished watched battle draws %q, want the live over footer", footer)
+	}
+	if strings.Contains(drawn, c.Text(i18n.PlayWatchWaiting)) {
+		t.Fatalf("a finished watched battle says it is waiting on somebody:\n%s", drawn)
 	}
 	return p
 }

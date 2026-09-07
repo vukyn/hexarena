@@ -64,6 +64,25 @@ type joinScreen struct {
 	Squads []placement.Squad
 	Squad  int
 
+	// Watch is this join asking to **watch** the match rather than play in it,
+	// which becomes wire.Hello.Watch and comes back as a welcome with no seat.
+	//
+	// ⚠️ **It is a toggle on THIS screen rather than a flag or a menu entry, and
+	// the reason is the refusal.** A client cannot know a room is full — or that
+	// it drafts — until it has been welcomed, so the commonest way anybody reaches
+	// this at all is: type the code, press enter, be refused `room_full`, and want
+	// to watch instead. The code and the password are already in the fields here,
+	// so the second attempt is one chord and one enter. A flag would need the
+	// program restarted and a menu entry would need the code typed again — and a
+	// flag would also make the whole session a spectator, where a reader who
+	// watches one match may want to play the next.
+	//
+	// ⚠️ **It survives Refresh, like Squad and unlike everything else there.**
+	// What Refresh clears is the last attempt's *outcome*; this is a choice the
+	// reader made, and somebody watching one room of an evening's matches is
+	// joining several in a row.
+	Watch bool
+
 	// Dialling is a room being called, and At the code that is being called.
 	// A screen that said nothing while a network round trip was in flight would
 	// look like a key that did nothing.
@@ -244,6 +263,18 @@ func (j joinScreen) Update(c draw.Context, message tea.KeyPressMsg) (joinScreen,
 	case "right":
 		j.Squad = (j.Squad + 1) % (len(j.Squads) + 1)
 		return j, draw.Action{}, nil
+	// ⚠️ **A chord rather than a letter, and it is not a style choice.** Every
+	// key this switch does not answer falls through to the focused text field, so
+	// a bare `w` here would be a `w` typed into the room code. That is the same
+	// reason model.key answers ctrl+v itself, one layer out.
+	//
+	// ⚠️ **The cost is that bubbles' own ctrl+w — delete the word before the
+	// cursor — no longer reaches either field**, and it is paid deliberately: the
+	// two values are a twelve-character code and a password, neither of which has
+	// a word in it, and the chord is where a reader would look for `watch`.
+	case "ctrl+w":
+		j.Watch = !j.Watch
+		return j, draw.Action{}, nil
 	case "enter":
 		return j.submit(), draw.Action{}, nil
 	}
@@ -378,6 +409,10 @@ func (j joinScreen) View(c draw.Context) (string, string) {
 	out.WriteString(j.row(c, width, joinFieldPassword, i18n.JoinPasswordLabel,
 		placeholder(j.Password, c.Text(i18n.JoinPasswordPlaceholder))))
 	out.WriteString("  " + draw.Pad(c.Text(i18n.JoinSquadLabel), width) + " " + j.squadValue(c) + "\n")
+	// Drawn in both states rather than only when it is on: a toggle whose off
+	// state draws nothing is one a reader cannot tell they have not pressed. →
+	// i18n.JoinWatchOn.
+	out.WriteString("  " + draw.Pad(c.Text(i18n.JoinWatchLabel), width) + " " + j.watchValue(c) + "\n")
 
 	out.WriteString("\n")
 	switch {
@@ -463,12 +498,25 @@ func (j joinScreen) squadValue(c draw.Context) string {
 	return fmt.Sprintf(draw.ChoiceFormat, chosen.Name, c.Style.Dim.Render(chosen.ID))
 }
 
-// joinLabelWidth is the column the three labels sit in, measured over the
+// watchValue is the toggle row's answer: whether this join is going out to watch
+// rather than to play.
+//
+// The "on" wording says what watching costs — no seat — because that is the whole
+// of the difference and it is the part a reader cannot guess from the word.
+func (j joinScreen) watchValue(c draw.Context) string {
+	if j.Watch {
+		return c.Style.Emphasis.Render(c.Text(i18n.JoinWatchOn))
+	}
+	return c.Style.Dim.Render(c.Text(i18n.JoinWatchOff))
+}
+
+// joinLabelWidth is the column the four labels sit in, measured over the
 // language in front for the reason menuLabelWidth is measured: one number for
 // two languages is only right for both by luck.
 func joinLabelWidth(c draw.Context) int {
 	widest := 0
-	for _, key := range []i18n.Key{i18n.JoinCodeLabel, i18n.JoinPasswordLabel, i18n.JoinSquadLabel} {
+	for _, key := range []i18n.Key{i18n.JoinCodeLabel, i18n.JoinPasswordLabel,
+		i18n.JoinSquadLabel, i18n.JoinWatchLabel} {
 		if width := lipgloss.Width(c.Text(key)); width > widest {
 			widest = width
 		}
@@ -497,13 +545,29 @@ func (w waitingScreen) View(c draw.Context) (string, string) {
 	}
 	out.WriteString("\n")
 	out.WriteString("  " + c.Style.Dim.Render(c.Text(i18n.WaitingRoom, w.Code)) + "\n")
-	out.WriteString("  " + c.Style.Dim.Render(
-		c.Text(i18n.WaitingSeat, c.Lang.Seat(string(w.Seat)))) + "\n")
+	out.WriteString("  " + c.Style.Dim.Render(w.seatRow(c)) + "\n")
 	if w.Seated {
 		out.WriteString("  " + c.Style.Dim.Render(c.Text(i18n.WaitingFormat,
 			w.Welcome.Format, w.Welcome.Battles, w.Welcome.Allowance)) + "\n")
 	}
 	return out.String(), c.Text(i18n.WaitingFooter)
+}
+
+// seatRow is which of the room's places this client took, and the line a
+// **spectator** gets instead.
+//
+// ⚠️ **It asks wire.Welcome.Watching rather than reading the empty seat**, which
+// is the one derivation of that question in the repository — and it is gated on
+// the welcome having arrived, because a zero wire.Welcome names no seat either
+// and a client that has been told nothing is not a watcher. Without the branch a
+// watcher reads `seat ` with nothing after it: Lang.Seat hands back what it was
+// given for a name it does not know, so the row would look like the program had
+// failed to find something.
+func (w waitingScreen) seatRow(c draw.Context) string {
+	if w.Seated && w.Welcome.Watching() {
+		return c.Text(i18n.WaitingNoSeat)
+	}
+	return c.Text(i18n.WaitingSeat, c.Lang.Seat(string(w.Seat)))
 }
 
 // resultScreen is how a match ended: the standing this client's own engine

@@ -44,7 +44,8 @@ that owns the subject wins and the note is the thing to fix.
 - [⚠️ mirror một chiều: ĐÃ VÁ](memory/one-way-mirror-not-a-measurement.md) — aims duyệt ô TUYỆT ĐỐI mà Place xoay 180° → hai nửa ngược thứ tự
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
-- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1…5c xong (còn cờ host); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire ko nói phòng đủ người, cũng ko báo sắp xếp đã tới
+- ["phe của tôi" có thể là phe người khác](memory/a-reading-called-my-side-can-be-somebody-elses.md) — ⚠️ Mirror.side của spectator LÀ phe host → mọi lượt host bị đọc là lượt mình; chặn ở MỘT chỗ dẫn xuất
+- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — draft 1…5c xong; spectator 1…5 xong (còn cờ host + xem draft); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire ko nói phòng đủ người, cũng ko báo sắp xếp đã tới
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [4 đội starter, dùng được ngay](memory/hexarena-starter-squads.md) — ⚠️ Rate() BỎ trận Endless khỏi mẫu số: healer gặp healer hoà mãi mà vẫn khoe 85%
 - [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ danh sách import ≠ danh sách đồng hồ (context.WithTimeout)

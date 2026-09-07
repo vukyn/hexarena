@@ -297,6 +297,11 @@ var namedKeys = map[string]tea.KeyPressMsg{
 	// through the tea.PasteMsg the command it returns produces, never through
 	// the keystroke.
 	"ctrl+v": {Code: 'v', Mod: tea.ModCtrl},
+	// ⚠️ ctrl+w is the join screen's watch toggle, and it belongs in every sweep
+	// that presses everything for the reason ctrl+v does: it is a chord this
+	// client answers itself, so a sweep without it would leave the one key that
+	// decides whether a join takes a seat unpressed on every other screen.
+	"ctrl+w": {Code: 'w', Mod: tea.ModCtrl},
 }
 
 // everyKeyPressed is every keystroke this suite can send, which is what the

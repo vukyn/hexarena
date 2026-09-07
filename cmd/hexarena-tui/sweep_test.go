@@ -206,6 +206,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	screens["a live battle"] = aLiveBattle(t, m)
 	screens["a live battle waiting on the other player"] = aLiveBattleWaiting(t, m)
 	screens["aiming in a live battle"] = aimingInALiveBattle(t, m)
+	screens["watching a battle"] = watchingABattle(t, m)
 	screens["a finished match"] = aFinishedMatch(t, m)
 	screens["a match the other player left"] = aMatchTheOtherPlayerLeft(t, m)
 	// The ban and pick, in the states of it this client's framing has something
@@ -720,6 +721,51 @@ func aimingInALiveBattle(t *testing.T, m model) model {
 		t.Fatalf("the aiming live battle draws no aim list:\n%s", drawnBody(live))
 	}
 	return live
+}
+
+// watchingABattle is the battle screen as a **spectator** reads it: the same
+// mirrored engine as the two entries above, with no turn of this client's and
+// none coming.
+//
+// ⚠️ **It is handed no Asking at all**, because that is the only reading
+// socket.Mirror produces for a watcher — Mirror.asking refuses one at the single
+// declaration there is. A fixture that handed over a prompt and a flag beside it
+// would be recording a state the program cannot reach.
+//
+// What this entry adds over internal/screen's record of the same screen is the
+// **framing**: the header, the blank, the footer and the clip, composed into one
+// window. → the note at the head of everyScreen, and lobby.go on the two goldens.
+func watchingABattle(t *testing.T, m model) model {
+	t.Helper()
+	m = withAFullLog(t, m.enter(screenBattle))
+	if m.battle.Fight == nil {
+		t.Fatalf("the battle opened on nothing to watch: %v", m.battle.Err)
+	}
+	const whole, spent = 90, 72
+	m.battle = draw.NewPlayScreen().Attach(m.ctx(), draw.PlayLive{
+		Fight: m.battle.Fight, Side: m.battle.Side, Seed: m.battle.Seed,
+		Watching: true,
+		// The ally half on turn, part way through its allowance: the two numbers
+		// differ so the record can see them put the wrong way round, which is
+		// aCountdown's own reasoning one package down.
+		Clock: draw.PlayClock{Waiting: draw.PlayClockYou, Yours: spent, Theirs: whole},
+	})
+	m.screen = screenBattle
+	if !m.battle.Live || !m.battle.Watching {
+		t.Fatalf("the battle screen came back live=%v watching=%v",
+			m.battle.Live, m.battle.Watching)
+	}
+	if m.battle.Pending != nil {
+		t.Fatal("a watched battle holds a turn of its own")
+	}
+	body, footer := m.parts()
+	if footer != m.text(i18n.PlayWatchFooter) {
+		t.Fatalf("the watched battle draws %q, so this records a live battle twice", footer)
+	}
+	if !strings.Contains(body, m.text(i18n.PlayWatchWaiting)) {
+		t.Fatalf("the watched battle says nothing about being watched:\n%s", body)
+	}
+	return m
 }
 
 // attachedTo turns a local battle screen into a live one over the same engine,
