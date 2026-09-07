@@ -858,6 +858,22 @@ const (
 // assertion in this file is about.
 func drawnBody(m model) string { return m.screenContent() }
 
+// belowHeader is a drawn screen without the line naming the data directory.
+//
+// It is what a test comparing TWO models has to compare. Each one is built by its
+// own call to start, so the two stand in two scratch directories differing in one
+// digit — which the header prints. Whether that digit is on screen comes down to
+// whether the path clears the clip at minWidth, which the random component of a
+// temp directory decides, so a whole-screen comparison is green or red by luck.
+// The goldens leave the header out for the same reason.
+func belowHeader(m model) string {
+	drawn := m.screenContent()
+	if _, rest, found := strings.Cut(drawn, "\n"); found {
+		return rest
+	}
+	return drawn
+}
+
 // raisedFrom presses a raising key and asserts the client arrived, which is the
 // half a sweep entry cannot state about itself: a raise that declined leaves the
 // reader on the screen behind, and that screen renders perfectly well.

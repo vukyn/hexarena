@@ -352,7 +352,14 @@ func TestAnAbsentPlayerFileIsSilentAndTheShippedSidesStillWork(t *testing.T) {
 		// every assertion above.
 		plain, _ := startCarrying(t, i18n.Vi, "")
 		for name, view := range map[string]screen{"the catalogue": screenSquads, "the join screen": screenJoin} {
-			if with, without := drawnBody(m.enter(view)), drawnBody(plain.enter(view)); with != without {
+			// Below the header, because the two models are built by two calls to
+			// startCarrying and therefore stand in two scratch directories — and
+			// the header names the data directory. Whether the digit that differs
+			// is on screen comes down to whether the path clears the clip at
+			// minWidth, which the random component of a temp directory decides,
+			// so comparing the whole drawing compared the fixture rather than the
+			// player file. Both goldens drop that line for the same reason.
+			if with, without := belowHeader(m.enter(view)), belowHeader(plain.enter(view)); with != without {
 				t.Errorf("%s is drawn differently with %s:\nwith\n%s\nwithout\n%s",
 					name, about, with, without)
 			}
@@ -658,7 +665,14 @@ func TestThePlayerSquadPathIsBuiltRatherThanRead(t *testing.T) {
 	if got := forge.PlayerSquadsPath(""); got != "" {
 		t.Errorf("with no configuration directory the path is %q, want none", got)
 	}
-	const anywhere = "/somewhere/a-machine-keeps-configuration"
+	// ⚠️ **Built with filepath.Join rather than written as a POSIX literal.**
+	// PlayerSquadsPath joins, and Join normalises to the platform's own
+	// separator — so a literal `/somewhere/…` comes back `\somewhere\…` on
+	// Windows and the prefix below never matches, which is this test failing on
+	// a fact about the machine rather than about the code. It is the same shape
+	// as memory/windows-sets-no-term.md, one directory over. The path is
+	// fictional either way; nothing here touches a disk.
+	anywhere := filepath.Join(string(filepath.Separator), "somewhere", "a-machine-keeps-configuration")
 	got := forge.PlayerSquadsPath(anywhere)
 	if !strings.HasPrefix(got, anywhere+string(filepath.Separator)) {
 		t.Errorf("the player's file is at %q, which is not under %q", got, anywhere)

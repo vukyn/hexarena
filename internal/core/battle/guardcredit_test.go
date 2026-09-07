@@ -73,7 +73,9 @@ func TestAGuardedMirrorDoesNotStandStill(t *testing.T) {
 			t.Errorf("%s still holds %d of pool after six hundred turns: nobody is throwing "+
 				"anything at it, so the board cannot resolve", id, pool)
 		}
-		if unit.HP == unit.MaxHP() {
+		// Through the battle rather than the unit: a maximum is resolved against
+		// the modifiers in force, so it is a question only the fight can answer.
+		if unit.HP == fight.MaxHP(unit) {
 			t.Errorf("%s stands at full health after six hundred turns: the guard was spent "+
 				"and the blows behind it still went nowhere", id)
 		}

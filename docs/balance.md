@@ -1487,6 +1487,51 @@ is and priced +0.2% and **−1.7%** — a cheap skill given a crit gets cast *mo
 and crowds out a better one, which is the `outrage` lesson wearing a different
 hat.
 
+### Two numbers, and why there is no grid
+
+`weigh` prices **one** field against a control. The obvious next tool is a grid
+over two, and there is exactly one pair in the book that could want it: the two
+terms a caster brings to its own blow. `combat.Swung(power, bonus, share)` is the
+only place they meet — the **bonus** is `self_requires`', the **share** is
+`self_gradient`'s — and it composes them as
+
+    (power + bonus) × (1000 + share) ÷ 1000
+
+one product, one truncation. So **per blow the pair is rank one**: the answer is a
+function of the product alone, and every cell on a hyperbola is the same cell.
+At a power of a thousand, `bonus 0 / share 1000`, `bonus 1000 / share 0`,
+`bonus 250 / share 600` and `bonus 600 / share 250` are one figure — and the
+identity survives the truncation, because the division is taken once, of the
+product. `TestSwungIsAProductAndNotASurface` holds it, and
+`TestSwungReadsBothTermsAtAll` holds the mutation under it: a row of equal
+products is also satisfied by an expression that ignores one of the two terms.
+
+The two other reads of either number are **event fields** — `turn.go` puts the
+share on `SkillUsed` and the bonus on `Amplified`, and a renderer prints both.
+Neither reaches the battle, so there is nowhere else for an interaction to hide.
+
+⚠️ **The honest limit.** `self_gradient` declares `at_empty` and the *realised*
+share is a function of the caster's health, so at battle level the two are not
+interchangeable. A grid could still draw a shape — but the shape would be the
+**feedback loop** (a wounded caster hits harder, so it wins sooner, so it is less
+wounded), which is a property of the board. A grid over two skill fields would be
+attributing it to the fields.
+
+⚠️ **And the pair has no shipped subject anyway.** Re-taken 2026-09-08: **2**
+skills carry a gradient (`comeback`, `reversal`), **12** carry a `self_requires`,
+of which **5** declare a bonus (`outrage` 1200, `flare` 550, `thorn_volley` 650,
+`bloom_burst` 2200, `tide_break` 3800) — and **none** carries both. The pairing is
+legal: `resolveGradient` refuses a gradient only beside a condition that reads
+**health** ("two curves off one number is a skill nobody can price"), and a
+status threshold composes fine.
+
+**What the pair needed was the missing line, not a surface.** The gradient was
+weighable and the bonus was not, so `self_bonus` shipped: it reads and writes
+`SelfRequires.BonusPower`, and ⚠️ `set` **copies the condition** rather than
+building one — which status it reads, how many stacks it wants, whether it gates,
+whether it consumes are all the skill, and a weighing that reset any of them
+would price a different skill and look identical doing it.
+
 ## Fighting two ratings: `forge.Bout`, and the exact control it rests on
 
 A roster win rate cannot see a rating. Both sides use `Suggest`, so a change that

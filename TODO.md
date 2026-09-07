@@ -79,13 +79,14 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-001` | shipped | Engine |
 | `ENG-002` | shipped | Traits |
 | `ENG-003` | done | A one-way mirror rate stopped being a measurement above one unit a side — FOU… |
-| `ENG-004` | open | The two-number surface is a different pair, and no skill in the book can carr… |
+| `ENG-004` | done | The two-number surface is a different pair — CLOSED. The grid is REFUSED and… |
 | `ENG-005` | done | A field inside a `modifier` was dropped silently in all three books — DONE, a… |
 | `ENG-006` | open | A gate at the top of the health bar — `passive.Condition.AboveHealth` |
 | `ENG-007` | open | Four ways of playing the board that the engine cannot express yet |
 | `ENG-008` | refused | Re-rolling the turn-order tie-break from the seed |
 | `ENG-009` | refused | A ceiling on `Skill.Power` |
 | `ENG-010` | refused | The queue as a third tie-break key |
+| `ENG-011` | done | `main` did not build, and no conflict was raised |
 | `RAT-001` | shipped | The opponent |
 | `RAT-002` | shipped | Measuring the opponent |
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
@@ -113,6 +114,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-007` | done | The battle screen says how many cells a shape catches and never which — DONE |
 | `SCR-008` | done | The cast listing draws every row, so the detail pane shrinks as the cast grow… |
 | `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
+| `SCR-010` | done | Two client tests measured the machine rather than the code |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -3671,7 +3673,107 @@ is only so the shape is readable.
             (decision 6), so the first version of this screen draws **two** rungs
             and has to not look broken when it later draws four.
 
-- [ ] `ENG-004` **The two-number surface is a different pair, and no skill in the book can
+- [x] `ENG-011` **`main` did not build, and no conflict was raised — found
+      2026-09-08 by branching a worktree off it.** `guardcredit_test.go` (`RAT-004`,
+      PR #358) calls `unit.MaxHP()`; another PR moved that reading to
+      `Battle.MaxHP(unit)`, because a maximum is resolved against the modifiers in
+      force and only the fight can answer it. The two changes touch **different
+      files**, so the squash merge was textually clean and semantically broken.
+      ⚠️ **`go build ./...` is not a gate for this**: it does not compile `_test.go`,
+      so a test calling a moved API is invisible to it — `go build` passed while
+      `go vet ./internal/core/battle` did not. `make check` runs `go vet ./...`,
+      which does catch it; the gap is that neither was run between the merge and
+      the next branch off it.
+      Fixed in place: the call reads `fight.MaxHP(unit)` now.
+
+- [x] `SCR-010` **Two client tests measured the machine rather than the code —
+      found 2026-09-08 on the way through `ENG-004`.** Both are in
+      `cmd/hexarena-tui/player_test.go` and both were red on this Windows box
+      before anything in that branch was touched.
+
+      **`TestAnAbsentPlayerFileIsSilentAndTheShippedSidesStillWork`** compared two
+      **whole drawn screens** built by two calls to `startCarrying`, so the two
+      stood in two scratch directories differing in one character — which the
+      header line names. Whether that character was on screen came down to whether
+      the path cleared the clip at `minWidth`, which the random part of a temp
+      directory decides. It compares below the header now (`belowHeader`), for the
+      reason both goldens already drop that line. ⚠️ **This is the third time this
+      exact shape has been fixed** — `TestABracketScrollsWhereverAPageKeyDoes` was
+      the second, earlier the same week — so the rule is worth stating plainly: a
+      test comparing two whole drawn screens must drop the header, because the
+      header names a directory the test itself made up.
+
+      **`TestThePlayerSquadPathIsBuiltRatherThanRead`** wrote its directory as a
+      POSIX literal and asserted the built path began with it. `PlayerSquadsPath`
+      joins, and `filepath.Join` normalises to the platform separator, so a
+      slash-shaped literal came back backslash-shaped on Windows and the prefix
+      never matched. It builds the directory with `filepath.Join` now — the same
+      shape as `memory/windows-sets-no-term.md`, one directory over.
+
+- [x] `ENG-004` **The two-number surface is a different pair — CLOSED. The grid is
+      REFUSED and the missing half of the pair shipped.** `self_bonus` is a
+      weighable field now, so both of the two numbers can be priced along a line;
+      the two-axis report is refused, and the reason is arithmetic rather than
+      cost.
+
+      ⚠️ **The pair has no interaction for a grid to show.** The two numbers meet
+      in exactly one expression — `combat.Swung(power, bonus, share)`, which is
+      `(power + bonus) × (1000 + share) ÷ 1000`: one product, one truncation. So
+      per blow the surface is **rank one**, and every cell on a hyperbola is the
+      same cell: `bonus 0 / share 1000`, `bonus 1000 / share 0`, `bonus 250 /
+      share 600` and `bonus 600 / share 250` are one figure at a power of a
+      thousand, and the identity survives the truncation because the division is
+      taken once, of the product. Held by
+      `TestSwungIsAProductAndNotASurface` and, under it,
+      `TestSwungReadsBothTermsAtAll` — a row of equal products is also satisfied
+      by an expression that ignores one of the two terms.
+
+      **The two other reads of either number are event fields.** `turn.go` puts
+      the share on `SkillUsed` as `Gradient` and the bonus on `Amplified` as
+      `Power`; a renderer prints both and neither reaches the battle. So there is
+      nowhere else for an interaction to hide.
+
+      ⚠️ **The honest limit of that, stated rather than left for somebody to
+      find.** `self_gradient` declares `at_empty` and the *realised* share is a
+      function of the caster's health, so at BATTLE level the two are not
+      interchangeable. A grid could therefore still draw a shape — but the shape
+      would be the feedback loop (a wounded caster hits harder, so it wins
+      sooner, so it is less wounded), which is a property of the board. A grid
+      over two skill fields would be attributing it to the fields, which is the
+      same shape of number this file has been burnt by twice.
+
+      **What shipped instead: `self_bonus`.** The gradient was weighable and the
+      bonus was not, so of the pair only one axis had a line at all. The field
+      reads and writes `SelfRequires.BonusPower`, and ⚠️ `set` **copies the
+      condition** rather than building one — which status it reads, how many
+      stacks, whether it gates, whether it consumes are the skill, and a weighing
+      that reset any of them would price a different skill and look identical
+      doing it (`TestMovingASelfBonusLeavesTheRestOfTheConditionAlone`).
+
+      ⚠️ **The bench could DECLARE the mechanic and not reach it**, which is the
+      fixture trap this repository keeps a list of. `vent` is the bench's only
+      enemy-aimed powered skill with a condition of its own, it gates on three
+      stacks of `swelter`, and **nothing in the bench applies one** — so the
+      first end-to-end run cast it nought times and the weighing refused the row,
+      correctly and in its own words. The fuel is authored into the scratch
+      library by the test (`stokesSwelter`) rather than added to the bench, on
+      the same terms as `bringsTheGradient`: the bench is what a hundred goldens
+      draw.
+      ⚠️ A bonus the size of `vent`'s own 2400 power **saturates** the board and
+      is refused — *one slot wins 100.0% of what it decides and the other 100.0%*
+      — so the test prices 400. That refusal is the instrument working.
+
+      ⚠️ **The counts in the original entry were stale in BOTH directions**, which
+      is why they are re-taken here: **2** skills carry a gradient (`comeback`,
+      `reversal`) and not 1, **12** carry a `self_requires` and not 7, of which
+      **5** declare a bonus (`outrage` 1200, `flare` 550, `thorn_volley` 650,
+      `bloom_burst` 2200, `tide_break` 3800). The intersection is still **empty**,
+      and the pairing is legal — `resolveGradient` refuses a gradient only beside
+      a condition that reads **health**, and says so.
+
+      The original entry:
+
+      ⚠️ **The two-number surface is a different pair, and no skill in the book can
       carry it.** `combat.Swung(power, bonus, share)` is the one place two of
       these compose: the **bonus** is `self_requires`', the **share** is
       `self_gradient`'s. `resolveGradient` already refuses a gradient beside a
@@ -3702,6 +3804,7 @@ is only so the shape is readable.
       has already been burnt by twice.
       → `internal/core/skill/skill.go` (`resolveGradient`),
       `internal/forge/weigh.go` (`WeighField`).
+
 
 - [x] `RAT-003` ⚠️ **A declined turn makes a slow board slower — RE-TAKEN, and every
       statement in the old entry was wrong.** The figures were dated 2026-09-03,

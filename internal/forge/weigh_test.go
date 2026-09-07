@@ -212,6 +212,7 @@ func TestASynthesisedVariantDiffersInExactlyOneField(t *testing.T) {
 		{weighSkill, WeighCrit, 250},
 		{weighSkill, WeighCooldown, 3},
 		{gradientSkill, WeighSelfGradient, 1500},
+		{bonusSkill, WeighSelfBonus, 700},
 	} {
 		shipped, err := lib.Skills().Lookup(test.skill)
 		if err != nil {
@@ -996,8 +997,16 @@ func TestEveryWeighableFieldIsOneBoundedNumber(t *testing.T) {
 func declaringSkill(t *testing.T, lib *Library, field WeighField) skill.Skill {
 	t.Helper()
 	id := weighSkill
-	if field == WeighSelfGradient {
+	switch field {
+	case WeighSelfGradient:
 		id = gradientSkill
+	case WeighSelfBonus:
+		// The same exception for the same reason, one field over: a condition is
+		// a nil pointer when it is absent, so `set` has nothing to put back and
+		// the inverse is a claim about a skill that declares one. `vent` is the
+		// bench's, and it declares the condition with **no** bonus — which is
+		// the nought two thirds of the shipped subjects give.
+		id = bonusSkill
 	}
 	shipped, err := lib.Skills().Lookup(id)
 	if err != nil {
