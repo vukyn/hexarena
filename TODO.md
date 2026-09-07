@@ -1212,6 +1212,107 @@ is only so the shape is readable.
             either the room hands out a second kind of code or a joiner says
             which it means. The second is cheaper and is a wire change, not a
             code change.
+            **The six steps this breaks into, and ⚠️ step 1 shipped without
+            recording itself here.** The parent stays open until step 6: a
+            watcher that the room can serve and nothing can seat is a read path
+            with no reader.
+            - [x] **The wire vocabulary — step 1. Done 2026-09-07, PR #331.**
+                  `Hello.Watch` is the **joiner** saying which of the two it
+                  means, which is the decision the ⚠️ above asks for: the code a
+                  watcher pastes is the same twelve characters a player pastes,
+                  and one flag is cheaper than a second code space, a second
+                  thing for a host to print and a second thing to mistype. The
+                  answer is an **empty `Welcome.Seat`** — "you are watching" is
+                  exactly the absence of a seat — read through
+                  `Welcome.Watching()`, which is derived and never stored so that
+                  the room, the transport and the screen cannot each write the
+                  condition out differently. **No new refusal code**, and a
+                  watcher's squad is ignored rather than refused: a squad brought
+                  to a *drafting* room is `CodeSquadUnwanted` because a side
+                  somebody built would silently fail to appear, and a watcher
+                  expects no side of its own, so there is nothing to misread.
+            - [x] **The room's read path — step 2. Done 2026-09-07.**
+                  `internal/room` only. The room keeps an **append-only record of
+                  bodies** (`Room.watched`, → `internal/room/watch.go`) and a
+                  watcher reads it with `Room.Since(cursor) ([]wire.Body, int)` —
+                  the same shape `battle.Since` and `draft.Since` already have,
+                  a three-index view, a panic on an out-of-range cursor, and
+                  **not** a `Drain`, for the reason `internal/draft`'s record
+                  gives: a single-consumer cursor that emptied what it read would
+                  let whichever consumer read first decide what the others never
+                  see. Three append sites and no more, each a line away from the
+                  room already sending the same body to the two players: the
+                  `wire.Start` of each battle in `begin`, each `wire.Turn` in
+                  `resolved`, and the `wire.Closed{ClosureLeft}` in `abandon`.
+                  ⚠️ **The recorded `wire.Start` carries the HOST's side**, stated
+                  rather than left to fall out of a loop: `Side` is the half of
+                  the board *this client plays* and a watcher plays neither, so it
+                  watches from the host's chair — and a `Start` with no side would
+                  be a `hex.Side` zero that reads as `SideAlly` downstream.
+                  ⚠️ **What did NOT change is the payoff.** `other()` is still
+                  "the other one" — this item predicted it "stops being" that and
+                  it does not, because a watcher takes its closure off the record
+                  instead of out of an `Outbound` — `seats`, the roster and
+                  `seatCount = 2` are all untouched, and `Outbound` still
+                  addresses nothing but a seat. ⚠️ **`Deliver` needed no change
+                  either**: it already refuses an unseated sender with
+                  `CodeNotYourTurn`, so what step 2 owed that was a test naming
+                  the watcher case, and the half that matters is that the refusal
+                  leaves the prompt open and the battle where it was.
+                  ⚠️ **Memory is bounded and the answer is written down**: at most
+                  `Battles × (1 + TurnCap)` bodies plus one closure, and `Battles`
+                  is 1 or 3.
+                  ⚠️ **A watcher of a DRAFTING room still sees nothing**, and that
+                  is recorded rather than left to be discovered:
+                  `internal/room/draft.go`'s `wire.Drafted` and its
+                  `ClosureDraftExpired` are deliberately not on the record,
+                  because watching a draft is **step 7** and belongs to the *Ban
+                  and pick* item below. Such a watcher reads an empty record until
+                  the draft closes and then gets the whole battle from its
+                  `wire.Start` — the mid-joiner path, late by a phase.
+                  The net the whole step exists for is
+                  `TestAMatchPlayedWithAWatcherReadingIsTheSameMatch`: the same
+                  seed and the same decisions played twice, once with watcher
+                  reads interleaved and once with none, compared on every
+                  decision, every digest, the result, the battles played and the
+                  prompts skipped. ⚠️ **A third seat passes everything else** —
+                  the roster stays legal and two peers who both hold the watcher
+                  agree on every digest — so a comparison against a match played
+                  *without* one is the only shape that can see it.
+            - [ ] **The registry seats a watcher — step 3.** `Registry` is what
+                  turns a room code into a room, so it is where a hello carrying
+                  `Watch` has to end up somewhere other than `Room.Join`. What it
+                  hands back is not a seat: it is the room's record and a cursor
+                  starting at nought, which is why the read landed first.
+                  ⚠️ `internal/room/registry.go` already says which layer owns
+                  what — *"a third seat is a room change, not a registry one"* —
+                  and step 2 is the answer to that: there is no third seat to
+                  make, so this step is a registry change and nothing else.
+            - [ ] **The transport holds watcher connections — step 4.**
+                  `internal/socket`. ⚠️ **`Outbound` cannot address a watcher and
+                  must not be taught to**: `Outbound.To` is a `wire.Seat` and
+                  `Server.send` reads an invalid `To` as "the connection this was
+                  read from", so a body aimed at a watcher would be delivered to
+                  whichever player last spoke. The transport therefore *pulls* —
+                  a cursor per watching connection over `Room.Since` — rather
+                  than the room pushing. `seatsPerTable = 2` is the other two of
+                  the three twos and stays two for the reason `seatCount` does; a
+                  watching connection is not a seat at a table.
+            - [ ] **A watching TUI — step 5.** A client welcomed with no seat
+                  builds the same mirror off the recorded `wire.Start` and applies
+                  the same `wire.Turn`s, so the battle screen is the one that is
+                  already there. What is new is that **no key answers**:
+                  `Welcome.Watching()` is the switch, the prompt is never this
+                  client's, and the footer has to say so rather than offering a
+                  chooser nothing will take. The countdown is still drawable — it
+                  is the seat on turn's allowance and a watcher can see whose it
+                  is — and ⚠️ `playFit`'s budget is already over its rows at 5v5,
+                  which is its own open item above.
+            - [ ] **The host's flag — step 6.** `cmd/hexarena-host`, which is the
+                  one place in the repository a room's configuration is chosen, so
+                  a room that accepts watchers is a flag there and nowhere else —
+                  the shape `-draft` took for the ban and pick. This is what
+                  closes the parent.
       - [ ] **Ban and pick, and a spectator watching it.** Before a match, the
             two sides take turns banning a character and picking one, out of a
             **shared pool**, so a 3v3 fields six different characters and a 5v5

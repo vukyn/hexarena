@@ -16,6 +16,17 @@ import (
 // and a wire.Start is a wire.Start. The room's draft state is confined to this
 // file and to the two fields on Room.
 //
+// ⚠️ **Nothing in this file reaches the watcher's record, deliberately.** The
+// two bodies below are the ban and pick's own — wire.Drafted, and the
+// wire.Closed a pick clock produces — and neither is written to Room.watched, so
+// a watcher of a drafting room reads an empty record until the draft closes and
+// then gets the whole battle from its wire.Start. Watching a *draft* is its own
+// step and belongs to TODO.md § *Ban and pick, and a spectator watching it*
+// (step 7), because it needs a decision this file cannot take on its own: a
+// wire.Drafted is a batch already paced by r.draftCursor, so a watcher's copy is
+// a second cursor over draft.Since rather than a third append here. → watch.go,
+// which says the same thing from the record's side.
+//
 // ⚠️ **The state machine itself is not here and must not be restated here.**
 // internal/draft owns whose decision is due, what the pool has left and every
 // refusal about it; this file decides which wire.Code a refusal travels as, which

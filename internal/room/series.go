@@ -9,13 +9,22 @@ import (
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
-// seatCount is how many seats a room has, and it is two: spectators are later
-// work and a third client is a full room today.
+// seatCount is how many seats a room has, and it is two: a third client is a
+// full room today.
 //
 // The seats are an array indexed by this rather than a map keyed by wire.Seat,
 // which is the engine's own rule applied one layer out — the order two seats are
 // visited in reaches the roster, and the roster's order decides which side wins
 // a speed tie. A map would randomise it.
+//
+// ⚠️ **A watcher does not change this number, and that is the point of the shape
+// it has instead.** This comment said "spectators are later work", which read as
+// though seating one would have to raise the count; it does not. A watcher takes
+// the match off an append-only record with a cursor of its own (→ watch.go), so
+// it does not exist to seats, to the roster or to other(), and the order the two
+// seats are visited in is exactly the order it was before anybody was watching.
+// Raising this to three would have shifted the roster and therefore changed who
+// wins a speed tie, with nothing in the suite able to see it.
 const seatCount = 2
 
 // seats is every seat a room hands out, in the order a room hands them out.
@@ -34,6 +43,12 @@ func indexOf(seat wire.Seat) (int, bool) {
 }
 
 // other is the seat that is not this one.
+//
+// ⚠️ **TODO.md predicted this "stops being 'the other one' the day a room holds
+// spectators", and it does not.** A watcher reads the match off the room's own
+// record instead of being addressed through an Outbound, so the only two things
+// this function is ever asked about are still the only two seats there are.
+// → watch.go.
 func other(seat wire.Seat) wire.Seat {
 	index, known := indexOf(seat)
 	if !known {
