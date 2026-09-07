@@ -40,6 +40,59 @@ const DeclinedReason = "nothing worth doing"
 // only marginal anyway.
 const summonHorizon = 4
 
+// guardCredit is the share of a blow a PERMANENT guard ate that the rating
+// counts as progress, in parts per thousand against scale.Base.
+//
+// ⚠️ **Without it the rating stops PLAYING, which hides better than mis-playing.**
+// `pastAWall` and `pastAPool` discount a blow by what a guard takes out of it,
+// and they were right to: before them the rating aimed at the softest target on
+// the board and could not land a point of it. But they discount to exactly
+// nought, and a permanent pool is never spent by anybody who never throws at it —
+// so two units carrying `carapace` stand at full health for six hundred turns
+// without either one acting, and the turn limit reports a long battle rather than
+// a broken one. Measured 1v1 on the fixture before this: six hundred turns, **not
+// one cast**, both pools untouched. A kit whose cheapest skill has no cooldown
+// escapes it through the fallback and nothing else, so the shape of the kit
+// decided whether the board could resolve.
+//
+// ⚠️ **PERMANENT is the load-bearing word, and a flat credit is not shippable.**
+// Crediting every guard was written first and measured: `pokemon.happiny` and
+// `pokemon.squirtle` against copies of themselves go from resolving every seed to
+// **40 of 40 endless**, which breaks `TestABothWaysMirrorIsExactlyEven` — a
+// fairness invariant, and the same one that refused a `stat_debuff` shield change.
+// No share buys a way out: the shipped mirrors need it at **10 or under** and the
+// guarded fixture needs it at **50 or over**, an empty intersection.
+//
+// What separates them is whether the guard comes back. `withdraw` puts up
+// `block`, which lasts two turns and is cast again, so a bite out of it buys the
+// turn it takes to return and nothing else; `carapace` grants `bastion`, which is
+// permanent, refused a second stack by Apply, and gone for good once it is empty.
+// Only the second is progress this rating can honestly call progress — which is
+// what `Set.PermanentPoolIn` exists to let a caller ask.
+//
+// **The window, swept at five per mille either way once the rule was narrowed:**
+//
+//	≤ 45   the guarded mirror stalls again
+//	  50   … through 999: every board in the suite holds
+//	  1000 a point of guard is worth a point of health
+//
+// The floor is a truncation rather than a preference: the credit is one division,
+// so on the fixture's twenty-one-point blow a share of 45 comes back nought and
+// the board it was meant to unstick stalls on exactly the cheapest option in the
+// kit. ⚠️ The entry that costed this fix swept only *does the board resolve* and
+// saw a step from a tenth upwards — which would have scored 45 a success, because
+// a step read for a maximum says nothing about where it began.
+//
+// The ceiling is a rule rather than a reading: at parity `take` keeps the first
+// aim it saw, so a target carrying a guard and a target standing bare are decided
+// by the aim walk, and `pastAPool`'s own finding — a rating preferring the enemy
+// it cannot empty — comes back through the other door.
+//
+// A hundred errs low inside that window, which is the direction every horizon in
+// this file errs in: over-pricing costs a kill, under-pricing costs a cast that
+// was marginal anyway.
+const guardCredit = 100
+
 // Choice is an action picked for a unit.
 type Choice struct {
 	Skill string
@@ -292,14 +345,37 @@ func (b *Battle) against(actor *Unit, actorStats progression.Values, declared sk
 	perStrike := b.books.Rules.ExpectedStrike(hit)
 	connecting := int64(hit.ExpectedStrikes()) * int64(b.books.Rules.Chance(hit)) /
 		combat.PermilleBase
-	landed := b.pastAWall(target, declared, perStrike, connecting,
-		combat.Scaled(perStrike, int(connecting)))
+	whole := combat.Scaled(perStrike, int(connecting))
+	past := b.pastAWall(target, declared, perStrike, connecting, whole)
 	// Damage past a target's remaining health is wasted, so a finishing blow is not
 	// rated above one that would kill twice over.
+	landed := past
 	if landed > target.HP {
 		landed = target.HP
 	}
-	return landed
+	// What a PERMANENT guard ate is progress, at a share; what a timed one ate is
+	// not. See guardCredit for the measurement that made the distinction
+	// necessary rather than tidy.
+	//
+	// The eaten damage is bounded by the permanent pool rather than split against
+	// it: a wall of charges and a timed pool can both be standing in front of the
+	// permanent one, so this credits at most what a permanent pool could have
+	// taken. It errs under, which is the direction this file errs in everywhere.
+	//
+	// The clamp above then applies to the pair rather than to the first half of
+	// it: a blow can never be worth more than the target's remaining health
+	// however it is composed, which is the same sentence the clamp was already
+	// making. It is also what keeps the sum off an overflow — a saturated `whole`
+	// produces a saturated credit, and the room left is at most a unit's health.
+	eaten := whole - past
+	if lasting := target.Statuses.PermanentPoolIn(absorbCategory); eaten > lasting {
+		eaten = lasting
+	}
+	credit := combat.Scaled(eaten, guardCredit)
+	if room := target.HP - landed; credit > room {
+		credit = room
+	}
+	return landed + credit
 }
 
 // pastAWall is what is left of a blow after a wall of block charges on the target

@@ -762,6 +762,47 @@ firing in real battles first, though — 60 squad battles put 354 barriers up an
 soaked 128,329 damage across 446 strikes — because a skill nothing casts is the
 failure mode this section already has one example of.
 
+### Spending a guard, and the word that made it shippable
+
+`pastAWall` and `pastAPool` discount a blow by what a guard takes out of it, and
+they discount it to exactly **nought** — so a blow a pool would absorb whole is
+worth nothing, `Suggest` passes rather than throwing it, and the pool is never
+depleted. Two units carrying `carapace` stand at full health for **six hundred
+turns without either one acting**, and the turn limit reports a long battle rather
+than a broken one. A kit whose cheapest skill has no cooldown escapes it through
+the fallback arm and nothing else, so the shape of the kit decided whether the
+board could resolve.
+
+`battle.guardCredit` counts what a guard ate as progress, at **100 per mille** —
+and only for a **permanent** guard.
+
+⚠️ **The flat version is not shippable, and it was measured rather than argued.**
+Crediting every guard turns `pokemon.happiny` and `pokemon.squirtle` against copies
+of themselves from resolving every seed into **40 of 40 endless**, which breaks
+`TestABothWaysMirrorIsExactlyEven` — the fairness invariant that also refused a
+`stat_debuff` shield change. No share buys a way out: the shipped mirrors need it
+at **10 or under** and the guarded fixture needs it at **50 or over**.
+
+What separates them is whether the guard comes back. `withdraw` puts up `block`
+(duration 2, cast again) and `brace` puts up `heft`; only `carapace`'s `bastion` is
+permanent — granted once, refused a second stack by `Apply`, gone for good once it
+is empty. A bite out of a renewable guard buys the turn it takes to return; a bite
+out of a permanent one is progress that keeps. `Set.PermanentPoolIn` is the reading
+that lets a caller tell them apart. ⚠️ All three shipped guard builds —
+`squirtle.fortress`, `squirtle.ram`, `machop.charge` — carry **timed** guards, so
+the balance radius of this change is **nothing**.
+
+⚠️ **The share is measurable, and the entry that costed this fix said it was not.**
+That sweep asked one question — does the guarded board resolve — and every value
+from a tenth up answered yes, identically: a **step**, not a curve, and a step read
+for a maximum says nothing about where it began. Asking a second board closes the
+window. Swept at five per mille either way: **≤ 45** the mirror stalls again (the
+credit is one truncating division, and 21 × 45 ÷ 1000 is nought — the resolve-only
+sweep would have scored 45 a success); **50 … 999** every board holds; **1000** a
+point of guard is worth a point of health, so a guarded target and a bare one tie
+and `take` keeps whichever the aim walk reached first. A hundred errs low inside
+that window, which is the direction every horizon in `price.go` errs in.
+
 ## Three new axes: a grant with a number, a share past defence, a price in health
 
 Shipped together because the first two are the wall and the third is what a

@@ -796,6 +796,28 @@ func (s *Set) Active() []string {
 // barrier it runs into: two kinds of absorb on one unit are one pool as far as an
 // arriving blow is concerned, and SpendPool drains them in the order they were
 // applied.
+// PermanentPoolIn is the part of a category's pool held by permanent stacks,
+// which is the part a battle can be rid of for good.
+//
+// The distinction is not cosmetic and it is the whole reason this exists beside
+// PoolIn. A timed guard is spent and then cast again — taking a bite out of one
+// buys the turn it takes to come back and nothing else — while a permanent guard
+// is granted once, is refused a second stack by Apply, and is never seen again
+// once it is empty. Only the second is progress that keeps, and only a caller
+// that can tell them apart may price one.
+func (s *Set) PermanentPoolIn(category Category) int64 {
+	total := int64(0)
+	for i := range s.entries {
+		if s.entries[i].kind.Category != category || !s.entries[i].kind.Permanent {
+			continue
+		}
+		for _, stack := range s.entries[i].stacks {
+			total += stack.Pool
+		}
+	}
+	return total
+}
+
 func (s *Set) PoolIn(category Category) int64 {
 	total := int64(0)
 	for i := range s.entries {
