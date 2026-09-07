@@ -133,8 +133,9 @@ var (
 		// not "nhanh nhẹn" or "cuồng nộ", which are things done to a unit for a
 		// few turns, but the standing fact of having kin of the same element on
 		// the board beside it.
-		"kinship": "đồng khí",
-		"phalanx": "trận thế",
+		"kinship":  "đồng khí",
+		"phalanx":  "trận thế",
+		"tidewell": "mạch nguồn",
 		// The three formation columns, named as the depths they are rather than as
 		// the numbers they are counted by: a bonus line reading "three of 2" says
 		// nothing, and the board's own header already calls them back, middle and

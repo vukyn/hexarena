@@ -18,6 +18,33 @@
       ]
     },
     {
+      "id": "water_tide",
+      "name": "cùng dòng nước",
+      "axis": "element",
+      "value": "water",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "tidewell",
+              "stacks": 1
+            }
+          ]
+        },
+        {
+          "at": 3,
+          "grants": [
+            {
+              "status": "tidewell",
+              "stacks": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "same_element",
       "name": "đồng hệ",
       "axis": "element",

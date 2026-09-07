@@ -798,6 +798,8 @@ func (p *pricing) granted(actor, target *Unit, from origin,
 			}
 		case status.Taunt:
 			value = p.taunting(target, kind)
+		case status.HealMend:
+			value = p.mended(target, kind, application.Stacks)
 		case status.Reserve:
 			// A reserve reaches this branch and a charge reaches inflictedOn's,
 			// which is the whole of the difference between them written where the
@@ -1290,6 +1292,39 @@ func (p *pricing) hidden(holder *Unit, kind status.Kind) int64 {
 		}
 	}
 	return denied * turnsOf(kind, buffHorizon)
+}
+
+// mended is what raising somebody's healing buys them, and it is `uncured`
+// reflected: one denies healing that was owed, the other adds to it.
+//
+// ⚠️ **Without it the category is worth nought and nothing would ever grant
+// one.** That is the burrow defect in a new coat — a status whose whole effect is
+// a number this file does not read prices at zero, and a rating that priced it at
+// zero would never spend a turn on it. The two heal categories therefore get two
+// arms in two switches: HealCut is harm and reaches inflictedOn, HealMend is a
+// gift and reaches granted.
+//
+// ⚠️ **Only the regeneration already ticking on the target is counted**, which is
+// deliberately less than the truth for the reason uncured gives: a boost applies
+// to every heal the holder receives, including a restore an ally has not cast yet.
+// Those need a lookahead this file does not have. Under-pricing costs a marginal
+// cast, which is the direction every cap here errs in.
+//
+// Clamped by worthHealing exactly as its twin is: health above the room there is
+// cannot be gained, and neither can health above what this side could lose.
+func (p *pricing) mended(target *Unit, kind status.Kind, stacks int) int64 {
+	owed := target.Statuses.PendingIn(status.Regen)
+	if owed <= 0 {
+		return 0
+	}
+	before, _ := healingFor(target, owed)
+	after, _ := healingFor(
+		p.fight.hypothetical(target, target.Statuses.With(kind, 0, stacks)), owed)
+	gained := after - before
+	if gained <= 0 {
+		return 0
+	}
+	return worthHealing(gained, target, p.threat(target))
 }
 
 // uncured is what cutting somebody's healing denies them, priced as the healing

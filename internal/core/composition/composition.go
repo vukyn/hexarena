@@ -164,6 +164,21 @@ type Bonus struct {
 	Name  string
 	Axis  Axis
 	Scope Scope
+	// Value is the one value on the axis this bonus counts, or empty for all of
+	// them.
+	//
+	// ⚠️ **Empty is a real answer and it is the older one.** `same_element` counts
+	// whichever element a side happens to share and hands out the same grant for
+	// any of them; a bonus naming a value is the narrower shape — "three of WATER
+	// heal better" — and the two are different designs rather than one with a
+	// default. A table of per-value bonuses says what each tribe is FOR, where the
+	// unnamed form says only that sharing is worth something.
+	//
+	// It is checked against the axis at parse: an element that is not on the chart
+	// is a bonus that could never fire, and a bonus that can never fire loads,
+	// draws and is silently dead — the one failure this package's Axis enum exists
+	// to prevent.
+	Value string
 	// Rungs are ascending by At, with no two the same. A count reaches at most
 	// one of them — the highest it satisfies — because rungs are a ladder rather
 	// than a set: three units sharing an element are not also two units sharing
@@ -303,6 +318,12 @@ func (b *Book) Awards(chart *element.Chart, members []Member) []Award {
 			counted = byColumn
 		}
 		for _, value := range counted {
+			// A bonus naming a value ignores every other tally, which is what makes
+			// a per-element table possible: eight bonuses walk the same tallies and
+			// each one answers for its own tribe.
+			if held.Value != "" && value.value != held.Value {
+				continue
+			}
 			rung, reached := held.Reached(value.count)
 			if !reached {
 				continue
@@ -417,6 +438,7 @@ type bonusFile struct {
 	ID    string     `json:"id"`
 	Name  string     `json:"name,omitempty"`
 	Axis  string     `json:"axis"`
+	Value string     `json:"value,omitempty"`
 	Scope string     `json:"scope"`
 	Rungs []rungFile `json:"rungs"`
 }
@@ -478,7 +500,35 @@ func parseBonus(entry bonusFile, deps Deps) (Bonus, error) {
 	if len(entry.Rungs) == 0 {
 		return Bonus{}, fmt.Errorf("bonus %q declares no rung, so nothing can reach it", entry.ID)
 	}
-	parsed := Bonus{ID: entry.ID, Name: entry.Name, Axis: axis, Scope: scope}
+	// A named value is checked against its axis, because a bonus that names a
+	// value the axis can never produce loads, draws and never fires — the exact
+	// failure the Axis enum exists to prevent, one level down.
+	value := strings.TrimSpace(entry.Value)
+	if value != "" {
+		switch axis {
+		case AxisElement:
+			member, err := element.Parse(value)
+			if err != nil {
+				return Bonus{}, fmt.Errorf("bonus %q counts %q, which is no element: %w",
+					entry.ID, value, err)
+			}
+			// An inert element forms no tribe — Awards skips it — so a bonus named
+			// after one could never fire, and saying so at parse is cheaper than a
+			// bonus nobody notices is dead.
+			if slices.Contains(deps.Chart.Inert(), member) {
+				return Bonus{}, fmt.Errorf("bonus %q counts %q, which is inert: sharing the "+
+					"element with no matchup is sharing the absence of one, and Awards "+
+					"never tallies it", entry.ID, value)
+			}
+			value = member.String()
+		case AxisColumn:
+			if !strings.HasPrefix(value, "column") {
+				return Bonus{}, fmt.Errorf("bonus %q counts %q, which is no column: a column "+
+					"is written as column0, column1 and so on", entry.ID, value)
+			}
+		}
+	}
+	parsed := Bonus{ID: entry.ID, Name: entry.Name, Axis: axis, Value: value, Scope: scope}
 	for _, rung := range entry.Rungs {
 		if rung.At < MinimumRung {
 			return Bonus{}, fmt.Errorf(
