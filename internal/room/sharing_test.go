@@ -87,6 +87,13 @@ func TestNoLockingFunctionSendsOnAChannel(t *testing.T) {
 			if !ok || body.Body == nil || body.Name == nil {
 				continue
 			}
+			// on is the name this function calls its receiver by, which is what
+			// tells a call ON it apart from a call THROUGH something it holds. A
+			// plain function has none and reaches nothing by that route.
+			on := ""
+			if body.Recv != nil && len(body.Recv.List) > 0 && len(body.Recv.List[0].Names) > 0 {
+				on = body.Recv.List[0].Names[0].Name
+			}
 			entry, known := functions[body.Name.Name]
 			if !known {
 				entry = &function{file: name, line: fileSet.Position(body.Pos()).Line}
@@ -111,7 +118,17 @@ func TestNoLockingFunctionSendsOnAChannel(t *testing.T) {
 								entry.locks = true
 								return true
 							}
-							entry.calls = append(entry.calls, selected.Name)
+							// ⚠️ **Only a call on the function's own receiver is an edge.**
+							// The map is keyed by a BARE NAME, so it cannot tell this package's
+							// Since from battle.Battle.Since -- and the moment the room grew a
+							// second cursor, `r.fight.Since(...)` bound to the registry's Since,
+							// which does send, and this walk reported a room method as reaching a
+							// channel it has never heard of. `r.watch(...)` is an edge and
+							// `r.fight.Since(...)` is not: the difference is calling something in
+							// this package against calling through a value it holds.
+							if receiver, ok := called.X.(*ast.Ident); ok && receiver.Name == on {
+								entry.calls = append(entry.calls, selected.Name)
+							}
 						}
 					}
 				}

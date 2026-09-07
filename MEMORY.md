@@ -43,6 +43,7 @@ that owns the subject wins and the note is the thing to fix.
 - [thế hoà = thứ tự roster](memory/hexarena-side-is-worth-60-points.md) — seq = slice order, CALLER quyết; +62% ở 1v1, +8.5pp ở 2v2
 - [⚠️ mirror một chiều: ĐÃ VÁ](memory/one-way-mirror-not-a-measurement.md) — aims duyệt ô TUYỆT ĐỐI mà Place xoay 180° → hai nửa ngược thứ tự
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
+- [consumer thứ hai cần cursor thứ hai](memory/hexarena-a-second-consumer-needs-a-second-cursor.md) — log PvP phải đọc từ 0; ⚠️ cursor phòng đặt SAU bàn mở → 291 ghi vs 300 re-run
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
 - ["phe của tôi" có thể là phe người khác](memory/a-reading-called-my-side-can-be-somebody-elses.md) — ⚠️ Mirror.side của spectator LÀ phe host → mọi lượt host bị đọc là lượt mình; chặn ở MỘT chỗ dẫn xuất
 - [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — draft 1…5c xong; spectator 1…5 xong (còn cờ host + xem draft); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire ko nói phòng đủ người, cũng ko báo sắp xếp đã tới

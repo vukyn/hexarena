@@ -136,6 +136,26 @@ type BattleResult struct {
 	// outcome already carries the draws" means: the series needs to know that
 	// neither seat won, and it needs no new way for a battle to end to know it.
 	Capped bool
+	// Log is the battle as `hexarena --replay --verify` reads one: the seed, the
+	// placement it was fought with, every decision and every event from the
+	// opening board.
+	//
+	// It is **composed here and written nowhere**, which is the room's I/O rule
+	// holding rather than an omission: a room has no filesystem, so the log
+	// travels out on Reading.Played like every other fact about a finished
+	// battle and whoever has a disk decides where it goes. → `cmd/hexarena-host`
+	// and its -logs flag.
+	//
+	// ⚠️ **A battle nobody finished carries none.** Only close builds a
+	// BattleResult, and a departure goes through abandon, which records no
+	// result — the engine concluded nothing about that battle, and a log of a
+	// fight that was interrupted would re-run to a different place than it
+	// stopped.
+	//
+	// ⚠️ **A capped battle carries one and it verifies**, which is worth knowing
+	// because the log has no Ended event: what makes it re-run is that the
+	// record stops on the capped turn's own turn_began. → Room.record.
+	Log battle.Log
 }
 
 // Draw reports whether the battle went to neither seat, which every ending but

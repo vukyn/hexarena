@@ -192,6 +192,26 @@ type Room struct {
 	// package comment on Drain.
 	cursor int
 
+	// record is the battle being written out as a battle.Log, and logCursor is
+	// its own read position — the second consumer the package comment says Since
+	// exists for.
+	//
+	// ⚠️ **It starts at nought and `cursor` does not**, which is the whole reason
+	// this is a separate position rather than a second use of the same one. The
+	// room's cursor is set to Recorded() after the opening board, because no
+	// wire.Turn carries the opening and a mirror produces it itself; a log has to
+	// carry it, because `--verify` re-runs from the seed and compares **every**
+	// event from the first.
+	//
+	// ⚠️ **Where it stops is load-bearing for a capped battle.** A capped log has
+	// no Ended event and it still verifies — but only when the record includes
+	// the capped turn's own turn_began, which is where this stands, because
+	// settle advanced into that turn before deciding not to ask about it and
+	// Replay advances into it too. Stopping one event earlier reads 43 recorded
+	// against 44 re-run and fails on the count. A "tidier" stop is wrong.
+	record    battle.Log
+	logCursor int
+
 	// prompt is the open turn and onTurn the seat whose answer is due, which is
 	// -1 whenever nobody is being asked anything.
 	prompt *battle.Prompt
@@ -517,6 +537,11 @@ func (r *Room) resolved(decision battle.Decision) ([]Outbound, error) {
 	}
 	events, next := r.fight.Since(r.cursor)
 	r.cursor = next
+	// The log's own position, read here rather than off `events` above: the two
+	// cursors stand in different places, so the slice one of them just took is
+	// not the slice the other is owed. → the record field.
+	r.record.Choices = append(r.record.Choices, decision)
+	r.transcribe()
 	digest, err := wire.DigestEvents(events)
 	if err != nil {
 		return nil, fmt.Errorf("digest the events of %q's turn: %w", decision.Unit, err)
@@ -600,6 +625,12 @@ func (r *Room) begin() ([]Outbound, error) {
 	r.home = r.config.HomeFor(r.index)
 	r.seed = r.config.SeedFor(r.index)
 	r.turns, r.capped, r.cursor = 0, false, 0
+	// A fresh Log rather than slices truncated to nought, so the battle just
+	// finished keeps the arrays it was handed out on: BattleResult carries the
+	// log by value and Reading copies the slice of results, and a room appending
+	// into an array a caller is reading is the one thing that copy exists to
+	// prevent.
+	r.record, r.logCursor = battle.Log{Seed: r.seed}, 0
 
 	// Home first, which is the sixty-point line: atb.Queue.Add assigns seq in
 	// the order battle.New is handed its roster and seq is the last tie-break in
@@ -623,6 +654,7 @@ func (r *Room) begin() ([]Outbound, error) {
 		return nil, fmt.Errorf("open battle %d of %d: %w", r.index, r.config.Battles, err)
 	}
 	r.fight = fight
+	r.record.Roster = roster
 	fight.Begin()
 
 	out := make([]Outbound, 0, seatCount)
@@ -657,6 +689,7 @@ func (r *Room) begin() ([]Outbound, error) {
 		return out, err
 	}
 	r.cursor = r.fight.Recorded()
+	r.transcribe()
 	if r.capped {
 		more, err := r.close()
 		if err != nil {
@@ -667,12 +700,32 @@ func (r *Room) begin() ([]Outbound, error) {
 	return out, nil
 }
 
+// transcribe takes whatever the battle has produced since the log last read it.
+//
+// It is called wherever the room's own cursor moves and nowhere else, which is
+// what keeps the two positions describing the same moment: the room reads after
+// settle has carried the battle as far as it goes, so the log stops on the same
+// event — including, for a capped battle, the capped turn's own turn_began.
+//
+// A room with no battle in front of it transcribes nothing rather than being a
+// state the callers have to check for: close clears the fight before the series
+// moves on, and abandon clears it without a result at all.
+func (r *Room) transcribe() {
+	if r.fight == nil {
+		return
+	}
+	events, next := r.fight.Since(r.logCursor)
+	r.record.Events = append(r.record.Events, events...)
+	r.logCursor = next
+}
+
 // close records the battle that has just ended, moves the series on, and opens
 // the next battle or finishes the match.
 func (r *Room) close() ([]Outbound, error) {
 	result := BattleResult{
 		Battle: r.index, Home: r.home, Seed: r.seed,
 		Outcome: r.fight.Outcome(), Turns: r.turns, Capped: r.capped,
+		Log: r.record,
 	}
 	if side, decided := r.fight.Winner(); decided {
 		result.Winner = r.seatOnSide(side)

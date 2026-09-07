@@ -8,6 +8,7 @@
 //	hexarena-host -battles 3            a best of three
 //	hexarena-host -password nhaminh     a gate against strangers on the network
 //	hexarena-host -advertise 10.0.0.7   say exactly which address the code carries
+//	hexarena-host -logs ./logs          write each finished battle out, replayable
 //	hexarena-host -version              say what this binary is, and host nothing
 //
 // Everything it decides is here, because internal/socket decides none of it: a
@@ -44,8 +45,12 @@
 //     all behind one listener, but a host binary that opened several would need a
 //     way to say which one finished and which code to print for each, and this is
 //     the tool for two friends playing one match.
-//   - **It writes no battle log.** A finished match is already a battle.Log the
-//     day the room writes one out, and it does not yet. → TODO.md.
+//   - **It writes a battle log only when asked.** -logs names a directory and
+//     each finished battle lands in it as a `battle.Log`, replayable with
+//     `hexarena --replay FILE --verify`. Without the flag it writes nothing:
+//     the room composes the log either way, because it costs a cursor, but a
+//     binary that filled a directory on every match would be doing something
+//     nobody typed.
 package main
 
 import (
@@ -61,11 +66,13 @@ import (
 	"net/netip"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"syscall"
 	"time"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/room"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/socket"
@@ -163,6 +170,21 @@ type settings struct {
 	// refuses one by name (wire.CodeWatchingClosed) rather than letting them in
 	// quietly. → room.Config.Watchable.
 	watch bool
+	// logs is the directory each finished battle is written into as a
+	// `battle.Log`, and empty writes nothing.
+	//
+	// ⚠️ **Off by default, because writing files is not what a host was asked
+	// to do.** A room hands the log out whether anybody wants it or not — it
+	// costs a cursor — and this flag is the only thing that turns it into a file.
+	// A binary that quietly filled a directory on every match would be a
+	// side effect nobody typed.
+	//
+	// What lands there re-runs: `hexarena --replay <file> --verify` rebuilds the
+	// battle from the log's own seed and roster and checks every event. That is
+	// the whole point of the flag, and it is why the log carries the placement
+	// rather than a reference to one — a PvP squad is built on a player's own
+	// machine and is in no book this binary could look it up in.
+	logs string
 	// version is the ask that is answered instead of hosting anything: print
 	// what this binary is and exit. Everything else in this struct configures a
 	// room, and this one says no room is wanted.
@@ -172,8 +194,8 @@ type settings struct {
 // String is the settings as a line, with the password redacted through the type
 // that owns the redaction. → the note on the struct, for why this exists at all.
 func (s settings) String() string {
-	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, watch %t, version %t",
-		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.watch, s.version)
+	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, watch %t, logs %q, version %t",
+		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.watch, s.logs, s.version)
 }
 
 // GoString is the same for %#v, which does not go through String.
@@ -261,6 +283,7 @@ func flags(chosen *settings) *flag.FlagSet {
 	set.Uint64Var(&chosen.seed, "seed", 0, "the match's seed; 0 draws one and prints it")
 	set.BoolVar(&chosen.draft, "draft", false, "ban and pick from one shared pool instead of bringing squads; join with NO squad")
 	set.BoolVar(&chosen.watch, "watch", false, "let spectators watch; they paste the SAME code the players do")
+	set.StringVar(&chosen.logs, "logs", "", "write each finished battle here; replay one with `hexarena --replay FILE --verify`")
 	// The same sentence cmd/hexarena-tui's flag shows in English, and the same
 	// three numbers. That client takes its descriptions from internal/i18n
 	// because it has two languages to keep honest; this binary has one and reads
@@ -437,6 +460,9 @@ type hosted struct {
 	// finished carries the room's own last reading, once. Buffered so the
 	// transport's goroutine never blocks on a main that has not got there yet.
 	finished chan room.Reading
+	// logs is the directory finished battles are written into, and empty writes
+	// none. → the settings field of the same name.
+	logs string
 }
 
 // open binds the listener, opens the room behind it and starts serving.
@@ -530,6 +556,7 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 		rooms:    room.NewRegistry(),
 		listener: listener,
 		finished: make(chan room.Reading, 1),
+		logs:     chosen.logs,
 	}
 	held.server = socket.NewServer(held.rooms, socket.Options{
 		Report: func(err error) { fmt.Fprintf(errs, "hexarena-host: %v\n", err) },
@@ -682,6 +709,12 @@ func (held *hosted) serve(out, errs io.Writer) error {
 	select {
 	case reading := <-held.finished:
 		report(reading, out)
+		// After the result and not before it: the match is what the host is
+		// waiting for, and a directory that will not take a file is a thing to
+		// be told about rather than a reason to withhold the result.
+		if err := held.write(reading, out); err != nil {
+			fmt.Fprintf(errs, "%s: %v\n", programName, err)
+		}
 	case <-notified:
 		fmt.Fprintf(out, "\nstopping. ctrl-c again to stop without waiting.\n")
 	}
@@ -720,6 +753,52 @@ func (held *hosted) stop() error {
 		err = fmt.Errorf("close the listener: %w", closed)
 	}
 	return err
+}
+
+// write puts each finished battle into the -logs directory as a `battle.Log`,
+// and does nothing at all when no directory was named.
+//
+// ⚠️ **The name is the room's code, the battle number and the seed**, and it is
+// deliberately not the shape internal/forge writes under `data/battles/`. That
+// one is `<home>-vs-<away>-seed<N>.json`, and it can be: a spar is between two
+// squads the library holds by id. A PvP match is between two people whose squads
+// were built on their own machines and are in no book here — the seats are
+// "host" and "guest" every time — so naming a file after them would put the same
+// two words on every file this binary ever wrote. The code and the battle number
+// are what tell one match's files from another's.
+//
+// ⚠️ **A battle nobody finished is in no reading**, so nothing here has to decide
+// whether to write one: an abandoned match records no BattleResult at all, which
+// is the room's rule and not a second one here. → room.BattleResult.Log.
+//
+// The directory is created if it is missing, because -logs names where the files
+// go rather than an existing place, and a host who typed a path should not have
+// to make it first.
+func (held *hosted) write(reading room.Reading, out io.Writer) error {
+	if held.logs == "" {
+		return nil
+	}
+	if len(reading.Played) == 0 {
+		return nil
+	}
+	if err := os.MkdirAll(held.logs, 0o755); err != nil {
+		return fmt.Errorf("make %s to write the logs into: %w", held.logs, err)
+	}
+	for _, fought := range reading.Played {
+		raw, err := battle.MarshalLog(fought.Log)
+		if err != nil {
+			return fmt.Errorf("encode battle %d: %w", fought.Battle, err)
+		}
+		name := filepath.Join(held.logs,
+			fmt.Sprintf("%s-battle%d-seed%d.json", held.code, fought.Battle, fought.Seed))
+		if err := os.WriteFile(name, raw, 0o600); err != nil {
+			return fmt.Errorf("write %s: %w", name, err)
+		}
+		fmt.Fprintf(out, "wrote %s (%d events, %d choices)\n",
+			name, len(fought.Log.Events), len(fought.Log.Choices))
+	}
+	fmt.Fprintf(out, "replay one with: hexarena --replay FILE --verify\n")
+	return nil
 }
 
 // report is the match, as the room's own last reading had it.
