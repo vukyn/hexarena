@@ -147,7 +147,7 @@ func TestTheAimListNamesTheCellsAnAreaSkillAlsoCatches(t *testing.T) {
 		// And whoever is standing there, which is the half a count could never
 		// carry: "3 ô" is three cells and says nothing about whether any of them
 		// holds an ally.
-		if held := p.occupant(cell); held != "" && !strings.Contains(drawn, held) {
+		if held := p.occupant(p.read(), cell); held != "" && !strings.Contains(drawn, held) {
 			t.Errorf("the aim list names the cell %s but not %q standing in it:\n%s",
 				cell, held, drawn)
 		}

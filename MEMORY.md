@@ -120,6 +120,7 @@ that owns the subject wins and the note is the thing to fix.
 - [Mew + Mewtwo](memory/hexarena-mew-and-mewtwo.md) — hệ trơ + dark; ⚠️ status 1 lượt ko làm mồi được; tốc độ là đồng tiền
 - [hexarena all-sided + scarcity](memory/hexarena-allsided-and-scarcity.md) — #127 all-sided priced BOTH halves; đo AI đối xứng phải HEAD-TO-HEAD
 - [đổi 2 số cùng lúc phải đo bằng spar](memory/hexarena-two-field-rebalance.md) — weigh chỉ đo 1 field vs control; copy data dir + spar overall
+- [redraw không được đọc battle của mirror](memory/hexarena-a-redraw-may-not-read-the-mirrors-battle.md) — luật viết cho Attach, mất ở View; ⚠️ phải ÉP chồng lấn mới thấy; đọc theo reading RẺ hơn theo draw (130 vs 202)
 
 ## General — engineering and workflow lessons that apply here
 
