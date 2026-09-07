@@ -85,6 +85,7 @@ that owns the subject wins and the note is the thing to fix.
 - [clause mới cần MỌI chỗ đánh giá](memory/hexarena-a-new-clause-needs-every-site-that-evaluates-it.md) — gate có 2 chỗ: options + Act
 - [strict JSON dừng ở custom unmarshaller](memory/hexarena-strict-json-stops-at-a-custom-unmarshaller.md) — DisallowUnknownFields mù bên trong modifier.Modifier
 - [golden không giữ được luật phím](memory/hexarena-a-golden-cannot-hold-a-keystroke-rule.md) — mọi fixture gán p.Aiming=true; vòng lặp `&& Aiming` dung thứ cả hai đáp án
+- [baseline mutation lấy từ git](memory/hexarena-a-mutation-baseline-must-come-from-git.md) — copy file đang dirty làm backup → chạy lỗi thành edit vĩnh viễn
 - [nhánh summon bỏ qua giá](memory/hexarena-the-summon-branch-skips-the-price.md) — continue nên không tới prices.rate; ⚠️ probe trước khi kết luận
 - [counter có hạn ≠ trần cả trận](memory/hexarena-a-timed-counter-is-not-a-lifetime-cap.md) — phải permanent + category không ai strip
 - [hai cửa sổ không phủ hết list](memory/hexarena-two-windows-do-not-cover-a-growing-list.md) — vỡ 3 lần; duyệt hết con trỏ

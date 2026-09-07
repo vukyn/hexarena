@@ -43,3 +43,16 @@ independently. A `for … && screen.<flag>` loop in a screen test is a loop writ
 to be robust against the rule it walks past; treat every one as a place where a
 rule may be held by nothing. See [[fixture-hidden-branch]] for the same
 failure arriving from the other direction.
+
+**Swept 2026-09-07, and the sweep found one more.** Eight keystroke rules on
+`PlayScreen` were reverted one at a time and all eight reddened, so none was
+unheld — but five redden only `TestTheLiveFootersNameNoKeyTheScreenIgnores`,
+which sees that a key did *something* and says in its own doc that it cannot see
+whether a named key does the right thing. For "does nothing on a live screen"
+that is the correct holder. The exception was the guard that stops a live screen
+answering twice: its named assertion was `if action.Kind != Stay`, and a screen
+that had forgotten it answered satisfies that by **opening the aim list** — so
+the assertion stopped distinguishing "dropped" from "started the turn again" on
+the very day the list began opening every time. **A change to one rule can blunt
+another rule's assertion without touching it**; that is the second-order version
+of this note and the reason to re-mutate the neighbours of anything you change.

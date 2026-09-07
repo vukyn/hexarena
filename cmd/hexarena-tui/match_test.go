@@ -338,9 +338,17 @@ func TestAJoinedMatchPlaysToItsEndOverALoopbackListener(t *testing.T) {
 		for _, message := range fake.take() {
 			m = send(t, m, message)
 		}
-		// A turn asks up to two questions — which skill, and then where — so
-		// two presses at most, and the second bound is what stops a screen that
-		// never answers turning this into a spin.
+		// A turn asks exactly two questions — which skill, and then where — so
+		// two presses, and the bound is what stops a screen that never answers
+		// turning this into a spin.
+		//
+		// ⚠️ **This is a DRIVER and holds nothing.** The break makes it agree with
+		// one press, two, or none, so it says nothing about how many questions a
+		// turn asks; it is here to reach the result screen. The count itself is
+		// held in internal/screen by TestTheAimListOpensForASkillWithOneLegalCell
+		// and its live twin. Said out loud because the same shape, written as an
+		// assertion rather than as a driver, is what left the live aim rule
+		// unmeasured for a release.
 		for range 2 {
 			if m.screen != screenBattle || !m.battle.Live ||
 				m.battle.Pending == nil || m.battle.Answered {

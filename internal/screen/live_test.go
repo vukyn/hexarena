@@ -137,12 +137,24 @@ func TestALiveBattleTakesNoTurnOfItsOwn(t *testing.T) {
 	// And the two that DO answer: an Action carrying the decision, and still no
 	// step.
 	option := live.Pending.Options[live.Option]
-	struck, action := asking(t, c, live, "enter")
-	for action.Kind == Stay && struck.Aiming {
-		// A skill with several cells asks where first, which is the same two
-		// questions the local screen asks. The second enter is the decision.
-		struck, action = asking(t, c, struck, "enter")
+	// Exactly two presses, asserted rather than looped over. Choosing a skill
+	// opens the aim list — every skill, however few cells it may be pointed at —
+	// and the second enter is the decision.
+	//
+	// ⚠️ **This used to be `for action.Kind == Stay && struck.Aiming`, and that
+	// loop was the reason nothing in the repository held the rule.** It reaches an
+	// Answer whether the list opened once, twice or not at all, so it asserts a
+	// decision arrives eventually and says nothing about how many questions were
+	// asked on the way: reverting PlayScreen.answer to "one cell does not ask"
+	// left the whole suite green. A loop written to be robust against a rule
+	// cannot measure it.
+	opened, action := asking(t, c, live, "enter")
+	if action.Kind != Stay || !opened.Aiming {
+		t.Fatalf("choosing a skill on a live battle asked for a %v and left Aiming=%v; the "+
+			"first keystroke opens the aim list, it does not answer the turn",
+			action.Kind, opened.Aiming)
 	}
+	struck, action := asking(t, c, opened, "enter")
 	if action.Kind != Answer {
 		t.Fatalf("enter on a live battle asked for a %v, want an Answer", action.Kind)
 	}
@@ -184,12 +196,29 @@ func TestALiveBattleTakesNoTurnOfItsOwn(t *testing.T) {
 	}
 
 	// A second press in the same turn is dropped, which is what Answered is for.
+	//
+	// ⚠️ **`action.Kind != Stay` alone does not say that**, and the day the aim
+	// list began opening on every skill it stopped saying much at all: a screen
+	// that had forgotten it answered would open the list on this press and still
+	// return Stay, so the assertion below passed on the one behaviour it exists to
+	// refuse. Dropping the `p.Live && p.Answered` clause from Update's guard left
+	// this test green — the only thing that reddened was the footer sweep, which
+	// says out loud that it cannot see whether a named key does the *right* thing.
+	// So the press has to be measured by what it did NOT do: no action, and a
+	// screen that did not move.
 	again, action := asking(t, c, passed, "enter")
 	if action.Kind != Stay {
 		t.Errorf("a second enter in the same turn asked for a %v; one decision per turn",
 			action.Kind)
 	}
-	_ = again
+	if again.Aiming {
+		t.Error("a second enter in the same turn opened the aim list, so the screen is " +
+			"taking the turn again from the top; one decision per turn")
+	}
+	if again.Option != passed.Option || again.Answered != passed.Answered {
+		t.Errorf("a second enter in the same turn moved the screen (option %d→%d, "+
+			"answered %v→%v)", passed.Option, again.Option, passed.Answered, again.Answered)
+	}
 }
 
 // TestALiveBattleReadsTheRecordWithoutDrainingIt is the second cursor.
