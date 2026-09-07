@@ -789,6 +789,13 @@ func (p *pricing) granted(actor, target *Unit, from origin,
 			value = p.guarded(actor, target, from, kind, application.Stacks)
 		case status.Buff:
 			value = p.standing(target, kind, application.Stacks)
+			// Added to the stat reading rather than replacing it, so a hiding
+			// status that also carried a term would be worth both. `burrowed`
+			// carries none today, which is exactly why standing returned nought
+			// and the whole skill was invisible to the rating.
+			if kind.ID == burrowStatus {
+				value += p.hidden(target, kind)
+			}
 		case status.Taunt:
 			value = p.taunting(target, kind)
 		case status.Reserve:
@@ -1200,12 +1207,86 @@ func (p *pricing) inflictedOn(actor, target *Unit, from origin,
 func (p *pricing) taunting(holder *Unit, kind status.Kind) int64 {
 	denied := int64(0)
 	for _, other := range p.fight.units {
+		// The side test is a shortcut rather than the rule, exactly as it is in
+		// taunting: `aims` offers an enemy-aimed skill nothing but enemy cells, so
+		// bestAgainst between two units of one side is nought anyway and a
+		// mutation deleting this line changes no figure. It is here to skip the
+		// work and to say out loud whose options are being read.
 		if other.Dead || other.Side == holder.Side {
 			continue
 		}
 		best := p.strike(other)
 		if narrowed := p.fight.bestAgainst(other, holder); best > narrowed {
 			denied += best - narrowed
+		}
+	}
+	return denied * turnsOf(kind, buffHorizon)
+}
+
+// hidden is what taking a unit off the board is worth: the attacks its enemies
+// can no longer aim at it.
+//
+// ⚠️ **Without it a burrow is worth exactly nothing and no rating ever casts
+// one.** What a turn is worth to this file is damage done, health restored and
+// statuses landed, and hiding is none of the three — it is worth the damage that
+// does *not* arrive, a quantity nothing else in the engine has ever had to
+// compute. `burrowed` is a buff carrying no modifier, so it reached `standing`,
+// which read its terms, found none and returned nought. The skill worked, its
+// test passed, and the auto-battle simply never chose it.
+//
+// It is `taunting` pointed the other way and that is the precedent it copies: a
+// taunt is priced by what it *forces* an enemy to do, this by what it *stops*
+// them doing, and both ask the question about the enemy's options rather than
+// about the holder's danger.
+//
+// ⚠️ **What is denied is the DIFFERENCE, not the attack.** An enemy whose best
+// blow was aimed at somebody else loses nothing when this unit vanishes — it hits
+// that somebody else, exactly as it was going to. So each enemy contributes what
+// its best blow *on this holder* beats its best blow on anyone else by, and an
+// enemy that never wanted this target contributes nought. Pricing the whole
+// attack instead would have a squad's rear line burrowing to deny blows that were
+// never coming at it.
+//
+// ⚠️ **It is not read off the holder's health, and that is deliberate.** The
+// cheap wrong answer is "the damage I would take this turn", which peaks exactly
+// when the holder is one point from dead — the moment a turn spent hiding is
+// worth least, because the turn would have been better spent killing something
+// and the holder is on one point either way. The same trap is written on
+// spentHealth for a health cost and the answer is the same: read what the skill
+// asks, not what the moment happens to make it worth.
+//
+// ⚠️ **Two known inexactnesses, in opposite directions, and neither is computed.**
+// It is an over-estimate because a burrowed unit is still caught by splash —
+// TestABurrowedUnitCannotBeAimedAtButIsStillSplashed is the shipped statement of
+// that — so some of the denied blow arrives anyway from the cell next door. And it
+// is an under-estimate because the status also refuses every application thrown at
+// its holder, which is not priced at all, exactly as `taunting` prices no status
+// either. Measuring either would need a second pass over the enemy's whole option
+// list per cell; what is here is one pass over its skills.
+func (p *pricing) hidden(holder *Unit, kind status.Kind) int64 {
+	denied := int64(0)
+	for _, other := range p.fight.units {
+		if other.Dead || other.Side == holder.Side {
+			continue
+		}
+		against := p.fight.bestAgainst(other, holder)
+		if against <= 0 {
+			continue
+		}
+		// The best this enemy could do to anybody else on the holder's side, which
+		// is what it does instead. Its own side is skipped by the outer loop's
+		// reading of sides, so this is every ally of the holder but the holder.
+		elsewhere := int64(0)
+		for _, victim := range p.fight.units {
+			if victim.Dead || victim == holder || victim.Side != holder.Side {
+				continue
+			}
+			if value := p.fight.bestAgainst(other, victim); value > elsewhere {
+				elsewhere = value
+			}
+		}
+		if against > elsewhere {
+			denied += against - elsewhere
 		}
 	}
 	return denied * turnsOf(kind, buffHorizon)
