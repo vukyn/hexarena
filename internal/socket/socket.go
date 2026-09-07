@@ -65,15 +65,18 @@
 //   - **Writing a finished match out as a battle.Log.** Another cursor over the
 //     battle, which is why the room reads its own that way.
 //   - **TLS** (→ README.md § Not in the first version).
-//   - **A watching client, and the flag that lets a host open a room to
-//     watchers.** ⚠️ This bullet used to say spectators were not here at all,
-//     and half of that has moved in: a table carries watching connections now
-//     (→ table.watchers, Server.forward, MaxWatchers), so a welcomed watcher is
-//     kept, handed everything the match has recorded and then every body as it
-//     is recorded. What is still elsewhere is the *client* — a mirror driven by
-//     a welcome with no seat, and a battle screen where no key answers — and the
-//     host's flag, which is the one place a room's configuration is chosen.
-//     → TODO.md § *Spectators*, steps 5 and 6.
+//   - **A watching client.** ⚠️ This bullet used to say spectators were not here
+//     at all, and most of that has moved in: a table carries watching
+//     connections now (→ table.watchers, Server.forward, MaxWatchers), so a
+//     welcomed watcher is kept, handed everything the match has recorded and
+//     then every body as it is recorded. ⚠️ **Whether a room takes watchers at
+//     all is not this package's question either**, and it is answered now: it is
+//     one field of the room's configuration (room.Config.Watchable, chosen by
+//     cmd/hexarena-host's -watch), so a watcher of a room that was never opened
+//     to spectators is refused by the *room* and this package forwards that
+//     refusal like any other. What is still elsewhere is the *client* — a mirror
+//     driven by a welcome with no seat, and a battle screen where no key
+//     answers. → TODO.md § *Spectators*, step 5.
 //
 // # A connection finds its room in the URL, not in a message
 //

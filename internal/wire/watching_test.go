@@ -183,9 +183,22 @@ func TestTheProtocolMintsExactlyTwoSeats(t *testing.T) {
 // who came to watch this match. CodeRoomFull's own comment predicted this code
 // before it existed. → CodeTooManyWatchers, and TODO.md § *Spectators* step 4.
 //
-// So the walk is an allowlist of exactly one rather than a flat none, and it
-// still fails on the code step one was about — anything named for a watcher's
-// squad, its side or its admission.
+// ⚠️ **That paragraph said "its admission" and step six made it false.** The
+// flat ban was narrowed once to let the cap in, and the sentence describing what
+// was left still read that a code named for a watcher's *admission* was
+// forbidden — which would forbid the second entry below as well, on the same
+// no-argument-behind-it grounds the first narrowing threw out. Whether a room
+// takes watchers at all is a host's choice (room.Config.Watchable), and a room
+// that never opened to spectators cannot be worded by the cap: the cap's own
+// sentence tells the reader to wait for one of the current watchers to leave,
+// which is false rather than merely unhelpful where nobody is watching and
+// nobody can. → CodeWatchingClosed, and TODO.md § *Spectators* step 6.
+//
+// So the allowlist is exactly two, both of them the same kind of refusal — a
+// watcher that **cannot be let in**, for a reason no code about a seat can
+// state — and what the walk still fails on is the code step one was about: a
+// refusal named for a watcher's **squad or its side**, which is ignored rather
+// than refused because a watcher expects no side of its own.
 //
 // ⚠️ **This deliberately does not pin CodeCount, and the reason is worth
 // knowing.** Two tests outside this package already make a code impossible to
@@ -204,6 +217,9 @@ func TestTheOnlyCodeAboutAWatcherIsTheCap(t *testing.T) {
 	allowed := map[Code]string{
 		CodeTooManyWatchers: "the transport's cap on how many connections one " +
 			"table carries, which no code about a seat can say",
+		CodeWatchingClosed: "the room never having been opened to spectators, " +
+			"which the cap cannot say either — its wording tells the reader to " +
+			"wait for a watcher to leave, and there are none",
 	}
 	found := 0
 	for value := range CodeCount {

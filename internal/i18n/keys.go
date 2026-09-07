@@ -1027,6 +1027,17 @@ const (
 	// is full of watchers and names the two things that do work: wait for one to
 	// leave, or share a screen with somebody already in.
 	RefusalTooManyWatchers
+	// RefusalWatchingClosed is a spectator turned away because the room does not
+	// take watchers at all — the host chose that when the room was opened.
+	//
+	// ⚠️ **RefusalTooManyWatchers is the nearest line and it is not merely
+	// unhelpful here, it is false.** It tells the reader to wait for one of the
+	// current watchers to leave and paste the code again; nobody is watching this
+	// room and nobody can, so that advice sends somebody to wait for a queue that
+	// will never move. This one says the host did not open the room to
+	// spectators and names the one thing that works: ask them to host again with
+	// watching turned on.
+	RefusalWatchingClosed
 	ClosedNone
 	ClosedLeft
 	ClosedStopped

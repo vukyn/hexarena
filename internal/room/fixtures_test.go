@@ -74,6 +74,20 @@ func draftingConfig(seed uint64) room.Config {
 	return out
 }
 
+// watchable is a configuration a watcher may join, which is **not** the default.
+//
+// It is a wrapper over a configuration rather than a variant of config, because
+// watching is orthogonal to everything else a room is set up with — a drafting
+// room may be watchable too — and because leaving config as the default keeps
+// the default visible: a test that wants a watcher has to say so, which is the
+// same shape draftingConfig has. → room.Config.Watchable, and
+// TestAWatcherIsRefusedByARoomThatWasNotOpenedToSpectators, which is the test
+// that would pass vacuously if this were folded into config.
+func watchable(cfg room.Config) room.Config {
+	cfg.Watchable = true
+	return cfg
+}
+
 // newRoom is a room over the shipped data, so a test refuses to start rather
 // than reporting a data problem as a room problem.
 func newRoom(t *testing.T, cfg room.Config) *room.Room {

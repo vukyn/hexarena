@@ -1176,7 +1176,7 @@ is only so the shape is readable.
             both languages.
 
       **Later, deliberately**
-      - [ ] **Spectators**, which the cursor above makes nearly free — the
+      - [x] **Spectators**, which the cursor above makes nearly free — the
             *reading* half is already built and the *seating* half is not.
             **Done already, and it is the expensive half**: `battle.Since` over
             an append-only record, so the two players, a spectator who joined
@@ -1561,11 +1561,84 @@ is only so the shape is readable.
                   `battleCast`, which is the same order-independent fixture the two
                   live entries already use, so they add **no second source** of the
                   churn TODO.md L2395 records.
-            - [ ] **The host's flag — step 6.** `cmd/hexarena-host`, which is the
-                  one place in the repository a room's configuration is chosen, so
-                  a room that accepts watchers is a flag there and nowhere else —
-                  the shape `-draft` took for the ban and pick. This is what
-                  closes the parent.
+            - [x] **The host's flag — step 6. Done 2026-09-07.**
+                  `-watch`, off by default, in `cmd/hexarena-host` — the one
+                  place in the repository a room's configuration is chosen, and
+                  the shape `-draft` took for the ban and pick. It travels
+                  `settings.watch` → `room.Config.Watchable` → the gate, and
+                  `internal/socket` needed no change at all: it already forwards
+                  whatever the room answered.
+                  ⚠️ **This makes watching opt-in where step 4 shipped it on for
+                  every room**, which is what the entry decided and what cost the
+                  most: every step-4 test that watches had to say so. Seventeen
+                  went **red** rather than quietly stopping — six in
+                  `internal/room`, nine in `internal/socket`, one in
+                  `internal/wire` and one in `cmd/hexarena-tui` — because each of
+                  them either asserts a watcher was welcomed or dials one. The
+                  fixtures are a
+                  `watchable(cfg)` wrapper in each package's `fixtures_test.go`,
+                  a wrapper rather than a variant of `config` so the default stays
+                  visible and a drafting room can be watchable too.
+                  ⚠️ **A new refusal code, `wire.CodeWatchingClosed`, and the
+                  whole chain paid.** `CodeTooManyWatchers` could not be reused
+                  and the objection is stronger than the one that separated it
+                  from `CodeRoomFull`: both books word the cap as *wait for one of
+                  the current watchers to leave and paste the code again*, which
+                  is **false** rather than merely unhelpful where nobody is
+                  watching and nobody can — the reader waits for a queue that will
+                  never move. So: the constant **declared last** with the "declared
+                  last" comment moved onto it, `codeNames`, `internal/i18n/keys.go`,
+                  a line in **both** books, `internal/i18n/protocol.go`, and the
+                  **ninth** entry of `gate` in `cmd/hexarena-tui/shown_test.go`
+                  (`gate + inMatch + owed == CodeCount-1` now reads 9 + 3 + 0 = 12).
+                  `owed` stays empty: the gate answers this code the moment the
+                  constant exists.
+                  ⚠️ **`internal/wire`'s own allowlist had to be widened and its
+                  doc corrected.** `TestTheOnlyCodeAboutAWatcherIsTheCap` was
+                  narrowed at step 4 from *any* code named after watching to an
+                  allowlist of one, and the sentence describing what was left read
+                  that a code named for a watcher's *admission* is still forbidden
+                  — which would forbid this one on exactly the no-argument-behind-it
+                  grounds that narrowing threw out. The allowlist is two now, both
+                  of them a watcher that **cannot be let in**; what stays banned is
+                  a code about a watcher's **squad or side**.
+                  ⚠️ **`socket.MaxWatchers` stayed in the transport**, and the
+                  reason is the one its own comment already gives: it bounds a
+                  fan-out that happens inside the room's `exchange` lock, over
+                  connections only the transport holds. Whether a room may be
+                  watched and how many may watch it are different questions, and
+                  moving the cap onto `room.Config` would have put a number about
+                  watchers on a room that cannot count them.
+                  ⚠️ **Configuration is not state, and the line is where it was.**
+                  `Watchable` is read in exactly one place — the gate, on one
+                  hello — and is the same value for the life of the room. No
+                  count, no list, no cap anywhere in `internal/room`, so
+                  `seatCount` is still 2, `other()` is still "the other one" and
+                  the roster is in the order it would have been in. It also
+                  deliberately does **not** ride on `wire.Welcome`, unlike
+                  `Drafts`: a welcome carries what a client needs in order to
+                  behave correctly, and a client learns this one by being welcomed
+                  or refused.
+                  ⚠️ **The gate's own step-3 comment said the watcher's exit was
+                  "not a check at all", and this made that false** — corrected in
+                  place, and the branch now asks one question about the *room*
+                  before welcoming.
+                  The host prints `watch  yes — spectators paste the SAME 12
+                  characters the players do`, drawn only when the flag is on for
+                  the draft line's reason, and the twelve comes from
+                  `wire.RoomCodeLength` rather than from the sentence.
+                  The nets: `TestARoomTakesWatchersOnlyWhenItWasOpenedToThem` (two
+                  arms differing by one field, on a **full** room mid-match, with
+                  the whole `roomState` compared either side of the join),
+                  two new cases in `TestTheGateRefusesInItsOwnOrder` (the password
+                  before this refusal, and this refusal before the seat — the
+                  second is step 3's ordering read from the other side),
+                  `TestARoomThatTakesWatchersIsOpenedAndSaysSo` (⚠️ the vacuity
+                  guard is `len(held.code)`, not the word "twelve": a line
+                  asserting its own sentence could never fail) and
+                  `TestTheWatchFlagIsWhatTheRoomIsOpenedWith` (through the **flag
+                  set**, because setting `chosen.watch` directly proves nothing
+                  about a flag that was never registered).
       - [ ] **Ban and pick, and a spectator watching it.** Before a match, the
             two sides take turns banning a character and picking one, out of a
             **shared pool**, so a 3v3 fields six different characters and a 5v5

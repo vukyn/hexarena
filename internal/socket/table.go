@@ -29,9 +29,16 @@ const seatsPerTable = 2
 //
 // It is exported because the cap is a fact about the transport that its callers
 // need: a host printing how many people are watching, a client wording
-// wire.CodeTooManyWatchers, and the test that fills a table up. → TODO.md
-// § *Spectators*, step 6, where a host's flag decides whether a room takes
-// watchers at all — this decides how many, and the two are different questions.
+// wire.CodeTooManyWatchers, and the test that fills a table up.
+//
+// ⚠️ **It stayed here when the host's flag landed, and that is a decision.**
+// Whether a room takes watchers at all is the room's own configuration
+// (room.Config.Watchable, chosen by cmd/hexarena-host's -watch, refused at the
+// gate with wire.CodeWatchingClosed); how many may watch it at once is this,
+// and the two are different questions with different answers. Moving this onto
+// room.Config would put a number about watchers on a struct whose whole point is
+// that the room counts none of them — and the cost this bounds is paid here,
+// inside the room's exchange lock, over connections only this package holds.
 const MaxWatchers = 8
 
 // watcher is one connection reading the room's record: a socket, its own place

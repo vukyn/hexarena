@@ -212,6 +212,34 @@ func TestTheGateRefusesInItsOwnOrder(t *testing.T) {
 			},
 			want: wire.CodeRoomFull, over: wire.CodeSquadRefused,
 		},
+		{
+			// The watcher's branch is below the password for the same reason
+			// everything else is: a peer wrong about two things is told about
+			// the earlier one, and a spectator on the wrong password has no
+			// business learning anything about the room's settings.
+			name: "the password before watching being closed",
+			hello: func(t *testing.T) wire.Hello {
+				out := watchingHello(t, "Both", legal)
+				out.Password = fixturePassword + "!"
+				return out
+			},
+			want: wire.CodeBadPassword, over: wire.CodeWatchingClosed,
+		},
+		{
+			// ⚠️ **The half step 3's ordering exists for, read from the other
+			// side.** A watcher is answered before freeSeat, so a room that was
+			// never opened to spectators says *that* rather than "the room is
+			// full" — which would be the one refusal a spectator can do nothing
+			// with, since a full room is exactly the room worth watching.
+			name: "watching being closed before the seat",
+			fill: true,
+			hello: func(t *testing.T) wire.Hello {
+				out := watchingHello(t, "Both", legal)
+				out.Password = fixturePassword
+				return out
+			},
+			want: wire.CodeWatchingClosed, over: wire.CodeRoomFull,
+		},
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			configuration := config(7, 1)

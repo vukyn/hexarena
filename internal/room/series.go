@@ -112,6 +112,30 @@ type Config struct {
 	// ⚠️ What Validate **can** say about it is that the series is a bo1, which is
 	// below.
 	Drafts bool
+	// Watchable says a client that asked to **watch** (→ wire.Hello.Watch) is
+	// welcomed rather than turned away. It is **off by default**, which is the
+	// shape Drafts above has: a room is for the two people in it unless the host
+	// said otherwise, and the flag that says otherwise is cmd/hexarena-host's
+	// -watch — the one place in the repository a room's configuration is chosen.
+	//
+	// ⚠️ **It is configuration and NOT watcher state, and the distinction is the
+	// whole reason this is a bool on this struct.** Every field here is a
+	// decision taken before anybody joins and never written again, and this one
+	// is read in exactly one place — the gate — to answer one hello. The room
+	// still keeps no count of watchers, no list of them and no cap, which is
+	// what leaves seatCount at 2, other() honestly "the other one" and the
+	// roster in the order it would have been in with nobody watching. How many
+	// are watching, and whether there is room for one more, remains the
+	// transport's (socket.MaxWatchers). → watch.go, and Join.
+	//
+	// ⚠️ **It deliberately does NOT ride on wire.Welcome**, unlike Drafts. A
+	// welcome is the settings a client needs in order to *behave correctly*, and
+	// Drafts is one of those because it tells a client not to bring a squad. A
+	// client learns this one by being answered: it asked to watch and was either
+	// welcomed or refused wire.CodeWatchingClosed, which is the whole of what it
+	// can do about it. Putting it on the welcome would be telling every seated
+	// player a fact about a feature they are not using. → welcomeTo.
+	Watchable bool
 }
 
 // DefaultTurnCap is the backstop a host has no reason to change: about eight

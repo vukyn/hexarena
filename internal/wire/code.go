@@ -141,13 +141,36 @@ const (
 	// than about a queue it was never going to join. The welcome such a
 	// connection provoked is dropped rather than sent — a welcome followed by a
 	// refusal would be two answers to one hello.
+	CodeTooManyWatchers
+	// CodeWatchingClosed is a watcher turned away because the room it came to
+	// watch does not take watchers at all. Whether a room may be watched is a
+	// **room's configuration** — one field on room.Config, chosen by the host
+	// before anybody joins (→ cmd/hexarena-host's -watch) — so unlike the cap
+	// above this is the room's own refusal and is answered at the gate.
+	//
+	// ⚠️ **CodeTooManyWatchers cannot say it, and reusing it would be the worse
+	// kind of wrong answer.** Both books word that code as the match already
+	// carrying as many watchers as it can and then advise waiting for one of
+	// them to leave and pasting the code again — advice that is *false* here
+	// rather than merely unhelpful, because nobody is watching and nobody ever
+	// will be, so the reader would sit waiting for a queue that does not exist.
+	// CodeRoomFull is no nearer for its own reason (→ CodeRoomFull): it is about
+	// the two seats, and this client asked for none. What a player can actually
+	// do is ask the host to open a room with watching turned on, which is what
+	// this code's wording says and what neither of the others could.
+	//
+	// ⚠️ **It is refused BEFORE the seat check**, in the same place the welcome
+	// would have been handed out, so a watcher told this is told it about the
+	// room rather than about the two people already in it — and after the
+	// version and the password, so a peer wrong about two things still hears
+	// about the earlier one. → room.Room.Join, where the order is the answer.
 	//
 	// Declared last, which is the rule this enum shares with Kind and with
 	// battle.Kind: a code serialises by name, so appending cannot reinterpret a
 	// refusal a peer already knows how to word. ⚠️ **The comment moves with the
-	// last constant** — left on CodeSquadUnwanted it would say something false
+	// last constant** — left on CodeTooManyWatchers it would say something false
 	// about this file.
-	CodeTooManyWatchers
+	CodeWatchingClosed
 )
 
 // CodeCount is the number of codes, and it exists so a test can walk them rather
@@ -168,11 +191,12 @@ const (
 // yet and that the drawing test held an `owed` set of exactly one; a room drafts
 // now, so the entry went and the set is empty. CodeTooManyWatchers arrived with
 // its producer already written — the transport refuses the watcher over its cap
-// — so it never joined that set either. The mechanism is what to keep: a value
-// declared ahead of anything that answers it belongs in `owed` with the step
-// that owes it, because a code nothing produces is a wording no player ever
-// reads.
-const CodeCount = int(CodeTooManyWatchers) + 1
+// — so it never joined that set either, and neither did CodeWatchingClosed,
+// which the gate answers the moment the constant exists. The mechanism is what
+// to keep: a value declared ahead of anything that answers it belongs in `owed`
+// with the step that owes it, because a code nothing produces is a wording no
+// player ever reads.
+const CodeCount = int(CodeWatchingClosed) + 1
 
 // codeNames is the wire form of every code, and it is the format: renaming an
 // entry breaks every peer built before the rename.
@@ -189,6 +213,7 @@ var codeNames = [CodeCount]string{
 	CodeUnknownMessage:   "unknown_message",
 	CodeSquadUnwanted:    "squad_unwanted",
 	CodeTooManyWatchers:  "too_many_watchers",
+	CodeWatchingClosed:   "watching_closed",
 }
 
 func (c Code) String() string {

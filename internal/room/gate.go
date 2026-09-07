@@ -56,10 +56,16 @@ type Admission struct {
 //  2. **The password**, in constant time, through wire.Password.Equal. Before
 //     the seat, so that a stranger with the wrong password learns nothing about
 //     how full the room is.
-//  3. **The watcher's exit**, which is not a check at all: a hello that asked to
-//     watch is welcomed here and leaves, so none of the three below is consulted
-//     about it. It sits *after* the two above and *before* the two below, and
-//     both halves of that are decisions → the branch itself.
+//  3. **The watcher's exit**, where a hello that asked to watch is answered and
+//     leaves, so none of the three below is consulted about it. It sits *after*
+//     the two above and *before* the two below, and both halves of that are
+//     decisions → the branch itself. ⚠️ **This used to say "not a check at
+//     all", and watching being opt-in made that false**: the branch asks one
+//     question, Config.Watchable, and refuses wire.CodeWatchingClosed if the
+//     host did not open the room to spectators. It is a question about the
+//     room's configuration rather than about the hello, and it is asked here so
+//     that the answer is about the room rather than about the two people who may
+//     already have the seats.
 //  4. **The seat.** Before the squad, because a squad check on a full room is
 //     work done to reach an answer that was already decided — and because
 //     "your squad is illegal" is a worse thing to tell somebody who was never
@@ -83,7 +89,10 @@ func (r *Room) Join(hello wire.Hello) (Admission, []Outbound, error) {
 	//   - **The room being full does not refuse it**, which is the whole point of
 	//     the feature: the match worth watching is the one already being played,
 	//     so a gate that ran freeSeat first would refuse every watcher that
-	//     mattered and admit only the ones with nothing to see.
+	//     mattered and admit only the ones with nothing to see. The one thing
+	//     that *does* refuse it is the room never having been opened to
+	//     spectators, which is the check immediately below and is a fact about
+	//     the room's configuration rather than about how full it is.
 	//   - **The version and the password still apply**, because they are above
 	//     this line rather than because anything here says so. A watcher is a
 	//     client of this room like any other — it reads the same bodies and needs
@@ -116,6 +125,23 @@ func (r *Room) Join(hello wire.Hello) (Admission, []Outbound, error) {
 	// late by a phase. → watch.go, where the same thing is written from the
 	// record's end.
 	if hello.Watch {
+		// ⚠️ **Watching is opt-in and off by default**, so this is the one thing
+		// the branch does ask before welcoming — and it asks about the *room*
+		// rather than about the watcher. A host opens a room for the two people
+		// in it unless they said otherwise (→ Config.Watchable, and
+		// cmd/hexarena-host's -watch), and a room that was not opened to
+		// spectators has to say so in a sentence that is true: neither the
+		// transport's cap nor CodeRoomFull is, which is why this refusal has a
+		// code of its own. → wire.CodeWatchingClosed.
+		//
+		// ⚠️ **Reading a configuration field is not holding watcher state.**
+		// Nothing here counts, lists or bounds anybody — this is the same field
+		// on every hello for the life of the room, fixed before the first one
+		// arrived — so every one of the things the paragraph above says the room
+		// keeps nothing of is still nothing.
+		if !r.config.Watchable {
+			return Admission{}, r.refuseConnection(wire.CodeWatchingClosed), nil
+		}
 		return Admission{Watching: true}, r.welcomeTo(""), nil
 	}
 	index, free := r.freeSeat()

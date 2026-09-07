@@ -227,7 +227,7 @@ func sameStream(t *testing.T, first, second *spectator) {
 // battle and a bo1 cannot tell a start-per-battle from a start-per-match.
 func TestAWatcherIsHandedTheStartAndEveryTurnOfAWholeMatch(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 3, room.DefaultAllowance)
+	configuration := watchable(config(11, 3, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -332,7 +332,7 @@ func TestAWatcherIsHandedTheStartAndEveryTurnOfAWholeMatch(t *testing.T) {
 // count asserted at the moment it joins is for.
 func TestAWatcherJoiningHalfwayIsHandedTheWholeMatchAndThenKeepsUp(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 1, room.DefaultAllowance)
+	configuration := watchable(config(11, 1, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -402,7 +402,7 @@ func TestAWatcherJoiningHalfwayIsHandedTheWholeMatchAndThenKeepsUp(t *testing.T)
 // same complete stream, having started from three different places in it.
 func TestTwoWatchersAtDifferentPositionsEachGetEverythingTheyAreOwed(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 1, room.DefaultAllowance)
+	configuration := watchable(config(11, 1, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -471,7 +471,7 @@ func TestNoAllowanceIsEverArmedForAWatcher(t *testing.T) {
 	held := listening(t, Timings{})
 	// A long allowance: this test is about the clock being armed, never about it
 	// firing.
-	code := held.open(t, config(11, 1, 600), dependencies)
+	code := held.open(t, watchable(config(11, 1, 600)), dependencies)
 
 	// Nobody plays: both seats are dialled and neither answers, so the room sits
 	// waiting on the host with its allowance armed.
@@ -604,7 +604,7 @@ func refusedWith(t *testing.T, watching *spectator, code wire.Code) {
 func TestTheWatcherOverTheCapIsRefusedAndTheRestAreUndisturbed(t *testing.T) {
 	dependencies := deps(t)
 	held := listening(t, Timings{})
-	code := held.open(t, config(11, 1, room.DefaultAllowance), dependencies)
+	code := held.open(t, watchable(config(11, 1, room.DefaultAllowance)), dependencies)
 
 	watchers := make([]*spectator, 0, MaxWatchers)
 	for at := range MaxWatchers {
@@ -738,7 +738,7 @@ type playedOut struct {
 func aWatchedMatch(t *testing.T, watchers int) playedOut {
 	t.Helper()
 	dependencies := deps(t)
-	configuration := config(11, 1, room.DefaultAllowance)
+	configuration := watchable(config(11, 1, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -798,7 +798,7 @@ func aWatchedMatch(t *testing.T, watchers int) playedOut {
 func TestAWatchersActIsRefusedAndTheMatchIsWhereItWas(t *testing.T) {
 	dependencies := deps(t)
 	held := listening(t, Timings{})
-	code := held.open(t, config(11, 1, 600), dependencies)
+	code := held.open(t, watchable(config(11, 1, 600)), dependencies)
 
 	watching := held.watch(t, code, "the.talkative.watcher", dependencies)
 	held.dial(t, code, hello(t, theHostSquad(t, dependencies.Characters), "Host", ""), dependencies.Books)
@@ -866,7 +866,7 @@ func dropRefusals(bodies []wire.Body) []wire.Body {
 func TestAShutdownTellsEveryWatcher(t *testing.T) {
 	dependencies := deps(t)
 	held := listening(t, Timings{})
-	code := held.open(t, config(11, 1, room.DefaultAllowance), dependencies)
+	code := held.open(t, watchable(config(11, 1, room.DefaultAllowance)), dependencies)
 
 	watchers := []*spectator{
 		held.watch(t, code, "watcher.0", dependencies),
@@ -915,7 +915,7 @@ func TestAShutdownTellsEveryWatcher(t *testing.T) {
 // verdict from the board rather than room.VerdictAbandoned.
 func TestAWatcherLeavingEndsNothing(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 1, room.DefaultAllowance)
+	configuration := watchable(config(11, 1, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 

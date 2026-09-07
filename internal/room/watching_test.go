@@ -34,7 +34,7 @@ import (
 // only difference between them is the flag.
 func TestAWatcherIsWelcomedIntoAFullRoom(t *testing.T) {
 	dependencies := deps(t)
-	opened, _ := openMatch(t, config(11, 1))
+	opened, _ := openMatch(t, watchable(config(11, 1)))
 	if _, waiting := opened.Awaiting(); !waiting {
 		t.Fatal("the room is not waiting on anybody, so the match is not under way and this measures nothing")
 	}
@@ -94,7 +94,7 @@ func TestAWatcherIsWelcomedIntoAFullRoom(t *testing.T) {
 // as a divergence a hundred decisions later.
 func TestAWatchingJoinLeavesTheRoomExactlyWhereItWas(t *testing.T) {
 	dependencies := deps(t)
-	opened, clients := openMatch(t, config(11, 3))
+	opened, clients := openMatch(t, watchable(config(11, 3)))
 	spare := squadOf(t, dependencies.Characters, "spare.squad",
 		"pokemon.mew", "pokemon.poliwag", "pokemon.magnemite")
 
@@ -259,7 +259,7 @@ type playedThrough struct {
 // seat or spending a turn would show.
 func playWithWatchersJoining(t *testing.T, admitting bool) playedThrough {
 	t.Helper()
-	configuration := config(11, 3)
+	configuration := watchable(config(11, 3))
 	opened, clients := openMatch(t, configuration)
 
 	out := playedThrough{}
@@ -320,6 +320,7 @@ func TestAWatchersWelcomeIsAPlayersWithTheSeatTakenOut(t *testing.T) {
 			name: "a room that takes squads",
 			configuration: room.Config{
 				Format: wire.Format3v3, Battles: 3, Allowance: 45, Seed: 11, TurnCap: 137,
+				Watchable: true,
 			},
 			joining: func(t *testing.T) wire.Hello {
 				return hello(t, squadOf(t, dependencies.Characters, "player.squad",
@@ -332,7 +333,7 @@ func TestAWatchersWelcomeIsAPlayersWithTheSeatTakenOut(t *testing.T) {
 			// about a draft is a watcher that would draw a battle screen over a
 			// ban and pick.
 			name:          "a room that drafts",
-			configuration: draftingConfig(11),
+			configuration: watchable(draftingConfig(11)),
 			joining:       func(t *testing.T) wire.Hello { return helloWithNoSquad(t, "Player") },
 		},
 	} {
@@ -455,7 +456,12 @@ func TestAWatchingHelloIsRefusedForTheSameThingsAPlayersIs(t *testing.T) {
 				{"a player", func(t *testing.T) wire.Hello { return hello(t, legal, "Player") }},
 				{"a watcher", func(t *testing.T) wire.Hello { return watchingHello(t, "Watcher", legal) }},
 			} {
-				configuration := config(7, 1)
+				// Watchable, so the fault under test is the ONLY thing wrong with
+				// the watching hello. A room that refused every watcher would
+				// leave the watcher arm carrying two faults, and the claim being
+				// made — that the two are refused identically — would then rest on
+				// the gate's ordering rather than on the refusal under test.
+				configuration := watchable(config(7, 1))
 				configuration.Password = fixturePassword
 				opened := newRoom(t, configuration)
 				joining := one.wrong(who.joining(t))
@@ -520,8 +526,8 @@ func TestAWatchersSquadIsIgnoredWhateverItBrought(t *testing.T) {
 		// is the arm that makes the drafting room worth testing at all.
 		unwanted wire.Code
 	}{
-		{name: "a room that takes squads", configuration: config(11, 1), unwanted: wire.CodeSquadRefused},
-		{name: "a room that drafts", configuration: draftingConfig(11), unwanted: wire.CodeSquadUnwanted},
+		{name: "a room that takes squads", configuration: watchable(config(11, 1)), unwanted: wire.CodeSquadRefused},
+		{name: "a room that drafts", configuration: watchable(draftingConfig(11)), unwanted: wire.CodeSquadUnwanted},
 	} {
 		t.Run(kind.name, func(t *testing.T) {
 			// The room really does refuse this squad from a player, or the
@@ -584,7 +590,7 @@ func TestAWatchersSquadIsIgnoredWhateverItBrought(t *testing.T) {
 // still unopened.
 func TestWatchersDoNotStartTheMatch(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 1)
+	configuration := watchable(config(11, 1))
 	opened := newRoom(t, configuration)
 	host := squadOf(t, dependencies.Characters, "host.squad",
 		"pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")
@@ -1004,4 +1010,116 @@ func TestEveryInputAnswersWithWhatItRecorded(t *testing.T) {
 	t.Logf("%d decisions and %d battles: the answers carried %d bodies (%d starts, %d turns), "+
 		"the last of them from an input the room did not survive",
 		decisions, len(reading.Played), len(carried), starts, turns)
+}
+
+// TestARoomTakesWatchersOnlyWhenItWasOpenedToThem is step 6's half at this
+// layer: watching is **opt-in**, so the same hello that is welcomed by a room a
+// host opened to spectators is turned away by one they did not.
+//
+// ⚠️ **The two arms differ by one field and nothing else** — the same seed, the
+// same five decisions taken first, the same watching hello — so a gate that
+// stopped reading Config.Watchable fails one of them whichever way it stopped
+// reading it. A test with only the refusing arm would pass on a room that
+// refused every watcher, and one with only the welcoming arm is the test that
+// shipped in step 3.
+//
+// ⚠️ **The refusal is CodeWatchingClosed and specifically not CodeRoomFull**,
+// which this room genuinely is: both seats are taken by the time a watcher
+// arrives, so the nearest true-sounding refusal is available and is the wrong
+// one. A spectator told the room is full has been told the one thing it can do
+// nothing about — a full room is exactly the room worth watching. It is not
+// CodeTooManyWatchers either, whose two books tell the reader to wait for one of
+// the current watchers to leave; there are none, so that advice cannot come
+// true. → wire.CodeWatchingClosed.
+//
+// ⚠️ **"The room is otherwise untouched" is the whole roomState either side of
+// the join, not a field or two.** A refusal that spent the open prompt, moved
+// the seat on turn or appended to the watcher's record would be a refusal that
+// changed the match it refused, and the seat on turn answering afterwards is
+// what says the prompt is really open rather than merely reported open.
+func TestARoomTakesWatchersOnlyWhenItWasOpenedToThem(t *testing.T) {
+	// ⚠️ Read off a zero Config rather than assumed: if watching were on by
+	// default the refusing arm below would be measuring a room nobody can open.
+	if (room.Config{}).Watchable {
+		t.Fatal("a room takes watchers before any host asks for it, so watching is not opt-in " +
+			"and the arm below that expects a refusal cannot be reached")
+	}
+	dependencies := deps(t)
+	for _, one := range []struct {
+		name     string
+		opening  func(room.Config) room.Config
+		welcomed bool
+	}{
+		{
+			name:     "a room the host opened to spectators",
+			opening:  watchable,
+			welcomed: true,
+		},
+		{
+			name:     "a room the host did not",
+			opening:  func(configuration room.Config) room.Config { return configuration },
+			welcomed: false,
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			opened, clients := openMatch(t, one.opening(config(11, 3)))
+			spare := squadOf(t, dependencies.Characters, "spare.squad",
+				"pokemon.mew", "pokemon.poliwag", "pokemon.magnemite")
+			for step := 0; step < 5; step++ {
+				answerFor(t, opened, clients, "")
+			}
+
+			before := stateOf(t, opened, spare)
+			if before.probe != wire.CodeRoomFull {
+				t.Fatalf("the room answers a player %q rather than %q, so it is not the full room "+
+					"this test is about", before.probe, wire.CodeRoomFull)
+			}
+			admitted, out, err := opened.Join(watchingHello(t, "Watcher", placement.Squad{}))
+			if err != nil {
+				t.Fatalf("a watcher joins: %v", err)
+			}
+			if admitted.Seat.Valid() {
+				t.Errorf("a watcher was given the %q seat", admitted.Seat)
+			}
+			if admitted.Watching != one.welcomed {
+				t.Fatalf("the watcher was %s and it should have been %s: the only thing that "+
+					"decides is room.Config.Watchable, and it is %t here",
+					welcomedOrNot(admitted.Watching), welcomedOrNot(one.welcomed),
+					opened.Config().Watchable)
+			}
+			if one.welcomed {
+				if !onlyWelcome(t, out).Watching() {
+					t.Error("the watcher's welcome names a seat, so its own client reads it as a player's")
+				}
+			} else if code := onlyCode(t, out); code != wire.CodeWatchingClosed {
+				t.Errorf("a watcher of a room that takes none was answered %q, want %q: %q is "+
+					"about the two seats and this client asked for neither, and %q tells the "+
+					"reader to wait for a watcher to leave when there are none",
+					code, wire.CodeWatchingClosed, wire.CodeRoomFull, wire.CodeTooManyWatchers)
+			}
+
+			if after := stateOf(t, opened, spare); before != after {
+				t.Fatalf("the watching join moved the room:\n before %+v\n after  %+v", before, after)
+			}
+			onTurn, answered := answerFor(t, opened, clients, "")
+			if onTurn != before.awaiting {
+				t.Errorf("the seat on turn after the watching join is %q and was %q", onTurn, before.awaiting)
+			}
+			if len(answered) == 0 {
+				t.Error("the turn after the watching join produced nothing at all")
+			}
+			t.Logf("Watchable=%t: the watcher was %s, and the room was identical either side of "+
+				"it with %d bodies on the record",
+				opened.Config().Watchable, welcomedOrNot(admitted.Watching), before.recorded)
+		})
+	}
+}
+
+// welcomedOrNot is one word for what the gate did with a watching hello, so the
+// two messages above read as sentences rather than as booleans.
+func welcomedOrNot(watching bool) string {
+	if watching {
+		return "welcomed"
+	}
+	return "turned away"
 }

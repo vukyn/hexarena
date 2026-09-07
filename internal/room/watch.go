@@ -36,6 +36,13 @@ import (
 // exactly that, because the way a watcher would *start* changing a battle is an
 // innocent `if len(r.watched) > 0` appearing in one of the paths below.
 //
+// ⚠️ **The one thing the room does know about watching is whether it takes any,
+// and that is configuration rather than state.** Config.Watchable is fixed
+// before anybody joins, read in exactly one place — the gate, to answer one
+// hello — and never written; it is not a count, a list or a cap, so everything
+// below about the room keeping nothing is unchanged by it. → gate.go, and
+// cmd/hexarena-host's -watch.
+//
 // ⚠️ **Outbound cannot address a watcher and must not try.** Outbound.To is a
 // wire.Seat and Server.send reads an invalid To as "the connection this was read
 // from", so a body addressed to a watcher would be delivered to whichever player

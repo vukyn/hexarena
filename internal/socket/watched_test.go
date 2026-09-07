@@ -208,7 +208,7 @@ func aWatchedBo3(t *testing.T, held *listener, dependencies room.Deps,
 //     ever observed would pass with the guard deleted.
 func TestAWatchingClientIsNeverAskedOnAnyTurn(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 3, room.DefaultAllowance)
+	configuration := watchable(config(11, 3, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -276,7 +276,7 @@ func TestAWatchingClientIsNeverAskedOnAnyTurn(t *testing.T) {
 // that recorded no refusals at all.
 func TestAWatchingClientSendsNothingForAWholeMatch(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 3, room.DefaultAllowance)
+	configuration := watchable(config(11, 3, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -330,7 +330,7 @@ func TestAWatchingClientSendsNothingForAWholeMatch(t *testing.T) {
 // the count is the other half: a client that checked nothing returns nil too.
 func TestAWatchersDigestsAgreeWithTheRoomsForEveryTurn(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 3, room.DefaultAllowance)
+	configuration := watchable(config(11, 3, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -393,7 +393,7 @@ func asDivergence(err error, into **Divergence) bool {
 // — plus the series each of them settled.
 func TestAWatcherJoiningMidMatchEndsOnTheSameBoard(t *testing.T) {
 	dependencies := deps(t)
-	configuration := config(11, 1, room.DefaultAllowance)
+	configuration := watchable(config(11, 1, room.DefaultAllowance))
 	held := listening(t, Timings{})
 	code := held.open(t, configuration, dependencies)
 
@@ -492,7 +492,7 @@ func TestAWatcherSurvivesBothEndings(t *testing.T) {
 	dependencies := deps(t)
 
 	t.Run("a match that finishes", func(t *testing.T) {
-		configuration := config(11, 3, room.DefaultAllowance)
+		configuration := watchable(config(11, 3, room.DefaultAllowance))
 		held := listening(t, Timings{})
 		code := held.open(t, configuration, dependencies)
 		watching := held.watching(t, code, "the.watcher", dependencies)
@@ -515,7 +515,7 @@ func TestAWatcherSurvivesBothEndings(t *testing.T) {
 	})
 
 	t.Run("a match somebody walked out of", func(t *testing.T) {
-		configuration := config(11, 3, room.DefaultAllowance)
+		configuration := watchable(config(11, 3, room.DefaultAllowance))
 		held := listening(t, Timings{})
 		code := held.open(t, configuration, dependencies)
 		watching := held.watching(t, code, "the.watcher", dependencies)
