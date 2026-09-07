@@ -845,6 +845,12 @@ const (
 	PlayLogRange
 	PlayYourTurn
 	PlayAimAt
+	// The splash cells the aim under the cursor also reaches, named once above
+	// the list rather than on every row: the mark is the same one the shape
+	// diagram uses for the same thing, so a reader who has seen one screen has
+	// seen the other, and repeating the sentence per row would spend three lines
+	// saying what one says.
+	PlayAimSplash
 	// Why an option on the turn in front cannot be taken, one wording per
 	// battle.Block that can reach a screen.
 	//

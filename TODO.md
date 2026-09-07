@@ -3149,22 +3149,31 @@ is only so the shape is readable.
       screen is actually measuring (a unit with a trait, a unit at an evolved
       stage), which would move only when that property moves.
 
-- [ ] **The battle screen says how many cells a shape catches and never which.**
-      A skill's blurb reaches the aim list, but the list prints one cell and its
-      occupant, and the summary beside it prints a count — `3 ô`. Neither says who
-      an area skill is about to reach, so the one thing worth knowing before
-      spending a turn is the one thing a player has to hold in their head.
-      ⚠️ **The drawing already exists and cannot be reused as it stands.**
-      `shapeBoard` in `internal/screen/skills.go` renders a footprint from
-      `forge.ShapeCoverage`, and it is anchored to `ShapeDiagramCell` — the fixed
-      `{4, 1}` chosen so eight of the nine shipped shapes draw in full. That is
-      right for the authoring screen, which is describing a *shape*, and wrong for
-      a battle screen, which is asking about *this aim on this board*: coverage has
-      to be resolved through `pattern.Targets` from the cell under the cursor, then
-      the units standing in the result named. A footprint drawn from the diagram
-      cell would be a picture of a different board.
-      Worth doing with the item below — they are one complaint, that the screen
-      will not show what a turn is about to do before it is spent.
+- [x] **The battle screen says how many cells a shape catches and never which —
+      DONE.** The aim list now draws, under the aim the cursor is on, every other
+      cell that aim catches and whoever is standing in it, marked with the same
+      `..` the shape diagram uses for the same thing and explained on the heading
+      only when a row carries it. At most two extra rows, because `max_targets`
+      is three.
+      The coverage comes from a second entry point rather than a second walk:
+      `forge.AimCoverage(id, aim)` returns the same `ShapeCoverage` values from
+      the cell under the cursor, and takes the crossing decision off the skill —
+      `declared.Target.CrossesSides()`, the predicate `battle.covers` reads — so
+      the cells drawn are the cells the resolution would walk. ⚠️ It answers about
+      CELLS and not about damage: a burrowed unit standing in a splash cell takes
+      nothing, so the screen says what an aim reaches and not what it will hit.
+      ⚠️ **The feature was invisible to the whole suite when it landed, and that
+      is the part worth keeping.** The cast `battleCast` picks brings four
+      `single` skills, so every existing test and every golden drove a screen on
+      which the new rows are correctly absent — and would go on passing with the
+      rows deleted. Twenty-one area skills ship in builds.json. So the fixtures
+      here choose their character **by property** (the first whose furthest kit
+      carries a shape covering more than one cell) and there is a second golden
+      entry, `aiming at an area skill`, which is what makes the mutation
+      "the rows are not drawn at all" redden a picture as well as a test.
+      ⚠️ One mutation is held by a test alone and not by the golden — reading
+      `Aims[0]` instead of the cursor — because the golden's cursor sits on the
+      first aim that catches anything, which is often index nought.
 
 - [x] **A golden holds a state and says nothing about the path to it — SWEPT,
       and the one rule the sweep found held by nothing is now held.** The first

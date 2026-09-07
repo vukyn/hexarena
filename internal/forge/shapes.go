@@ -108,6 +108,49 @@ func (l *Library) ShapeCoverage(shape, target string) (ShapeCoverage, error) {
 	return coverage, nil
 }
 
+// AimCoverage is what a skill catches when it is aimed at one cell of a real
+// board — the same values ShapeCoverage carries, resolved from the aim rather
+// than from the diagram's fixed cell.
+//
+// ⚠️ **It is a second entry point and not a second walk.** ShapeCoverage answers
+// "what is this *shape*", which is a question about a shape and is therefore
+// asked from one chosen cell; this answers "what does this *aim* catch", which is
+// a question about a board and can only be asked from the cell under the cursor.
+// A screen drawing the diagram's footprint over a battle would be drawing a
+// picture of a different board — the shape loses its far cell near an edge, and
+// which edge depends entirely on where the player is pointing.
+//
+// The side comes off the skill rather than being passed in, because the skill is
+// what decides it: battle.covers reads known.Target.CrossesSides() and so does
+// this, so the cells drawn are the cells the resolution would walk. Same
+// predicate, three callers, one declaration — skill.Side.CrossesSides.
+//
+// ⚠️ It answers about CELLS and not about damage. A cell in the result may hold
+// a unit the resolution then refuses — a burrowed target takes nothing off a
+// splash it is standing in — so a caller may say "this reaches these cells" and
+// may not say "these will be hit".
+func (l *Library) AimCoverage(id string, aim hex.Offset) (ShapeCoverage, error) {
+	declared, err := l.skills.Lookup(id)
+	if err != nil {
+		return ShapeCoverage{}, err
+	}
+	shape, err := l.LookupPattern(declared.Pattern)
+	if err != nil {
+		return ShapeCoverage{}, err
+	}
+	cells := shape.Targets(aim)
+	if declared.Target.CrossesSides() {
+		cells = shape.TargetsAcross(aim)
+	}
+	coverage := ShapeCoverage{
+		Shape: shape.Name, AimedAt: declared.Target, Primary: aim, Max: shape.MaxTargets(),
+	}
+	if len(cells) > 0 {
+		coverage.Splash = append(coverage.Splash, cells[1:]...)
+	}
+	return coverage, nil
+}
+
 // SplashShare is the share of a skill's power a splash cell takes, as a reader
 // thinks of it. The primary always takes the whole.
 func (l *Library) SplashShare() string { return Percent(l.patterns.SplashPower) }
