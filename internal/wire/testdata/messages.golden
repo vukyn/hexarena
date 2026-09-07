@@ -46,7 +46,8 @@
       ]
     },
     "name": "Fixture Player",
-    "password": "the-cat-sat-on-the-mat"
+    "password": "the-cat-sat-on-the-mat",
+    "watch": false
   }
 }
 

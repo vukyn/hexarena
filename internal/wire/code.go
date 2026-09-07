@@ -45,8 +45,14 @@ const (
 	// gone or was never here. A room code carries its own address (see
 	// RoomCode), so this is what a restarted host looks like.
 	CodeRoomUnknown
-	// CodeRoomFull is both seats taken. Spectators are deliberately later work,
-	// so today a third client is a full room rather than a watcher.
+	// CodeRoomFull is both **seats** taken, and it means that and nothing wider: a
+	// client that came to play arriving at a room two players are already in.
+	//
+	// ⚠️ It does not stretch to a watcher, because a watcher takes no seat (→
+	// Hello.Watch, Welcome.Watching) and the seats being full therefore says
+	// nothing about whether one may join. Whether a room caps its watchers at
+	// all, and what turns away the one over the cap, is the room's decision and
+	// the transport's rather than this constant's — → TODO.md § *Spectators*.
 	CodeRoomFull
 	// CodeSquadRefused is a squad that did not pass the gate: Squad.Validate,
 	// then Take (which is already the loadout check), then the format's size and
@@ -101,6 +107,16 @@ const (
 	// gives: a squad quietly ignored is a player watching their side fail to
 	// appear with nothing saying why. And it is answerable at the *gate*,
 	// unlike the draft's own refusals, because it is a fact about the hello.
+	//
+	// ⚠️ **It does not stretch to a squad a watcher brought, and the same
+	// sentence is why.** A client that asked to watch (→ Hello.Watch) expects no
+	// side of its own, so nothing fails to appear and a dropped squad costs it
+	// nothing it came for — the reason this code exists simply is not present. And
+	// answering it there would misdirect exactly as answering CodeSquadRefused
+	// here would: the wording says the room drafts and to join again with no squad
+	// chosen, which sends somebody who never wanted a side to fix something that
+	// is not wrong. A watcher's squad is therefore ignored, by this code and by no
+	// new one.
 	//
 	// Declared last, which is the rule this enum shares with Kind and with
 	// battle.Kind: a code serialises by name, so appending cannot reinterpret a
