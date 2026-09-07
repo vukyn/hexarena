@@ -8,6 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/clipboard"
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
@@ -257,6 +258,19 @@ type model struct {
 	waiting waitingScreen
 	result  resultScreen
 
+	// player is the sides out of the player's own squad file, read once when the
+	// program started and handed down on every Context.
+	//
+	// ⚠️ **Read once, and unlike the catalogue it is NOT re-read on the way into
+	// a screen.** The catalogue is re-read because the authoring tool may have
+	// been run beside this client and written squads.json; nothing writes this
+	// file at all yet — the client that could is the next item in TODO.md — so
+	// there is nothing for a re-read to find. It is also what keeps the refusal
+	// unswallowable: a malformed file stops the binary before a screen exists,
+	// where a re-read would have to put a parse error somewhere on a drawing.
+	// → forge.PlayerSquads and run in main.go.
+	player []placement.Squad
+
 	// session is the PvP side: the socket, the goroutine running Play, and the
 	// two channels between it and this model.
 	//
@@ -270,7 +284,7 @@ type model struct {
 	session *session
 }
 
-func newModel(lib *forge.Library, lang i18n.Lang, sess *session) model {
+func newModel(lib *forge.Library, lang i18n.Lang, sess *session, player []placement.Squad) model {
 	style := newPalette()
 	// Two of these screens are built from a Context rather than from a library
 	// alone, because they dress text fields and internal/screen may not read the
@@ -285,11 +299,12 @@ func newModel(lib *forge.Library, lang i18n.Lang, sess *session) model {
 	// which is the reading a client that cannot write falls into without
 	// declaring anything — so there is nothing to forget. See the field's own
 	// comment for why the safe half is the zero.
-	ctx := draw.Context{Lib: lib, Lang: lang, Style: style}
+	ctx := draw.Context{Lib: lib, Lang: lang, Style: style, Player: player}
 	return model{
 		lib:      lib,
 		lang:     lang,
 		style:    style,
+		player:   player,
 		cast:     draw.NewBrowseScreen(lib),
 		skills:   draw.NewSkillsScreen(ctx),
 		traits:   draw.NewPassivesScreen(lib),
@@ -317,10 +332,11 @@ func (m model) Init() tea.Cmd { return nil }
 // lives.
 func (m model) ctx() draw.Context {
 	return draw.Context{
-		Lib:   m.lib,
-		Lang:  m.lang,
-		Style: m.style,
-		Width: m.width, Height: m.height,
+		Lib:    m.lib,
+		Lang:   m.lang,
+		Style:  m.style,
+		Player: m.player,
+		Width:  m.width, Height: m.height,
 	}
 }
 

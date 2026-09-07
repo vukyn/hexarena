@@ -124,6 +124,8 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena all-sided + scarcity](memory/hexarena-allsided-and-scarcity.md) — #127 all-sided priced BOTH halves; đo AI đối xứng phải HEAD-TO-HEAD
 - [đổi 2 số cùng lúc phải đo bằng spar](memory/hexarena-two-field-rebalance.md) — weigh chỉ đo 1 field vs control; copy data dir + spar overall
 - [redraw không được đọc battle của mirror](memory/hexarena-a-redraw-may-not-read-the-mirrors-battle.md) — luật viết cho Attach, mất ở View; ⚠️ phải ÉP chồng lấn mới thấy; đọc theo reading RẺ hơn theo draw (130 vs 202)
+- [guard suite mù với field nó không set](memory/a-guard-suite-is-blind-to-a-field-it-never-sets.md) — cả 5 test readonly XANH với `Authoring: len(m.player) > 0`; fixture chỉ chạy MỘT cấu hình
+- [mã đội phải duy nhất vì raise gọi theo mã](memory/a-squad-id-must-be-unique-because-a-raise-names-one.md) — landSquad lấy khớp ĐẦU TIÊN → trỏ dòng 2 mà ra sân dòng 1; nối 2 danh sách đo được lỗi này
 
 ## General — engineering and workflow lessons that apply here
 

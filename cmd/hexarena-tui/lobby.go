@@ -495,7 +495,16 @@ func (j joinScreen) squadValue(c draw.Context) string {
 		// reading "…" would say the screen had failed to find one.
 		return c.Style.Dim.Render(c.Text(i18n.JoinBringNone))
 	}
-	return fmt.Sprintf(draw.ChoiceFormat, chosen.Name, c.Style.Dim.Render(chosen.ID))
+	// Whose side it is, beside the id, because this is the **other** place a
+	// player picks one and the mark has to be on both. A player's side wins the
+	// id it shares with a shipped one (forge.SquadsOffered), and a chooser that
+	// showed the id alone would be offering two different squads under one
+	// spelling with nothing to tell them apart. → draw.Context.PlayerSquad.
+	id := chosen.ID
+	if c.PlayerSquad(chosen.ID) {
+		id += " " + c.Text(i18n.SquadMine)
+	}
+	return fmt.Sprintf(draw.ChoiceFormat, chosen.Name, c.Style.Dim.Render(id))
 }
 
 // watchValue is the toggle row's answer: whether this join is going out to watch

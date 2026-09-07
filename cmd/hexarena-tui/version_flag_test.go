@@ -126,14 +126,14 @@ func TestVersionIsAnsweredBeforeTheTerminalCheck(t *testing.T) {
 // package would exist in one language only and
 // TestNoScreenHoldsItsOwnWording would be the only thing that noticed.
 func TestTheVersionFlagIsParsedAndDescribedInBothLanguages(t *testing.T) {
-	parsed, err := parseOptions([]string{"-version"}, "", io.Discard)
+	parsed, err := parseOptions([]string{"-version"}, "", "", io.Discard)
 	if err != nil {
 		t.Fatalf("parse -version: %v", err)
 	}
 	if !parsed.version {
 		t.Error("-version was parsed and did not reach options, so the flag is registered and unread")
 	}
-	plain, err := parseOptions(nil, "", io.Discard)
+	plain, err := parseOptions(nil, "", "", io.Discard)
 	if err != nil {
 		t.Fatalf("parse no flags: %v", err)
 	}
@@ -144,7 +144,7 @@ func TestTheVersionFlagIsParsedAndDescribedInBothLanguages(t *testing.T) {
 		var shown bytes.Buffer
 		// -h is not a failure; flag reports it as ErrHelp after printing the
 		// descriptions, which is what is being read here.
-		if _, err := parseOptions([]string{"-h"}, lang.String(), &shown); err == nil {
+		if _, err := parseOptions([]string{"-h"}, lang.String(), "", &shown); err == nil {
 			t.Fatalf("-h in %s returned no error, so flag did not print its usage", lang)
 		}
 		usage := shown.String()

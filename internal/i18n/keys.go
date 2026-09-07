@@ -21,6 +21,15 @@ const (
 	NoArguments
 	NotATerminal
 	DataFlagUsage
+	// SquadsFlagUsage describes the flag that names the player's **own** squad
+	// file, which is a different file from the game's own squads.json and the
+	// only one a player may write in.
+	//
+	// It has the same shape DataFlagUsage's flag has — a path, overriding a
+	// default — and its default is the one thing about it a binary works out for
+	// itself: os.UserConfigDir resolves differently on every platform, so the
+	// path is settled at the binary's edge and handed down. → forge.PlayerSquads.
+	SquadsFlagUsage
 	LanguageFlagUsage
 	// VersionFlagUsage describes the flag that prints what the binary is and
 	// exits: the build string it announces, the protocol number it speaks and
@@ -753,6 +762,17 @@ const (
 	SquadColumnID
 	SquadColumnMembers
 	SquadMemberCount
+	// SquadMine marks a side that came out of the player's own file rather than
+	// out of the game's data, and it is drawn in **two** places — the catalogue's
+	// rows and the join screen's squad chooser — because those are the two places
+	// a player picks a side.
+	//
+	// ⚠️ **It is the visible half of a rule, not a decoration.** A player's side
+	// wins the id it shares with a shipped one (forge.SquadsOffered), and a
+	// substitution nobody can see would be a player picking one squad and
+	// fielding another. This word is how they tell which `s01` is in front of
+	// them.
+	SquadMine
 	SquadHeading
 	SquadEditFooter
 	SquadFieldID

@@ -69,6 +69,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -132,6 +133,50 @@ type Context struct {
 	// one nobody was told about, which is the rule picker.go states and the one
 	// this flag has to keep on three footers at once.
 	Authoring bool
+
+	// Player is the sides out of the player's **own** squad file, which is a
+	// different file from the game's and the only one a player may write in. It
+	// is what a client brings rather than something read from Lib — a Library is
+	// one data directory, and a player's file is not one: forge.Load wants the
+	// cast, the skills and the origins beside the squads, and a player has none
+	// of those. → forge.PlayerSquads.
+	//
+	// Two things read it, and only these two. forge.SquadsOffered lays it over
+	// Lib.Squads() to make the list a player picks from, which SquadsScreen does
+	// on every Refresh; and PlayerSquad below answers which of the merged rows
+	// came out of it, which is how a row says whose side it is.
+	//
+	// ⚠️ **Nil is the game-only reading, for exactly the reason Authoring's
+	// nought is the read-only one.** The safe half of a field a client may forget
+	// to declare has to be the half that changes nothing, and here that is a
+	// catalogue holding only what shipped. cmd/hexforge-tui therefore declares
+	// nothing: the authoring tool edits the game's data and a player's file is
+	// none of its business, which is the same sentence forge/player.go's head
+	// states pointing the other way.
+	Player []placement.Squad
+}
+
+// PlayerSquad reports whether the side of this id came out of the player's own
+// file rather than out of the game's data.
+//
+// ⚠️ **It is asked by id rather than by row, and that is only sound because
+// forge.SquadsOffered makes ids unique.** Two rows under one id would make this
+// answer about whichever of them the merge happened to keep, which is the same
+// ambiguity that would already have made the row a player pointed at and the
+// side they fielded two different squads.
+//
+// What it is for is the visible half of the collision rule: a player's side wins
+// the id it shares with a shipped one, and a substitution nobody can see would
+// be the silent collision that rule may not be. So a marked row is not
+// decoration — it is how a player tells which of the two `s01`s is about to take
+// the field.
+func (c Context) PlayerSquad(id string) bool {
+	for _, squad := range c.Player {
+		if squad.ID == id {
+			return true
+		}
+	}
+	return false
 }
 
 // Footer picks between a screen's two footers: the one naming the keys that

@@ -251,7 +251,7 @@ func joining(t *testing.T, held *aRoom, library *forge.Library, lang i18n.Lang) 
 	fake := newFakeSender()
 	sess := newSession()
 	sess.attach(fake)
-	m := newModel(library, lang, sess)
+	m := newModel(library, lang, sess, nil)
 	m.width, m.height = 120, 44
 	m = m.enter(screenJoin)
 	if len(m.join.Squads) == 0 {
