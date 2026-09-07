@@ -1047,3 +1047,32 @@ func TestAPierceShareAccumulatesAndIsBounded(t *testing.T) {
 		t.Errorf("three stacks pierce %d, want it capped at %d", got, scale.Base)
 	}
 }
+
+// TestWardsMultiplyRatherThanAdd is the arithmetic, and it is the half a
+// description gets wrong first.
+//
+// Two stacks of six hundred leave sixteen per cent through rather than nothing:
+// sources compose by multiplying what each lets THROUGH, which is the reading
+// battle.resist already gives a trait's shares. Adding them would make two stacks
+// a total refusal, and a status that cannot be landed at all is the one thing this
+// share may not be — a single declared full thousand still reaches it, which is
+// the author's door and never a stack's.
+func TestWardsMultiplyRatherThanAdd(t *testing.T) {
+	kind := status.Kind{
+		ID: "shroud", Category: status.Buff, MaxStacks: 3, Duration: 3, WardShare: 600,
+	}
+	var set status.Set
+	if got := set.WardShare(); got != 0 {
+		t.Errorf("an empty set wards %d, want none", got)
+	}
+	set = set.With(kind, 0, 1)
+	if got := set.WardShare(); got != 600 {
+		t.Errorf("one stack wards %d, want 600", got)
+	}
+	set = set.With(kind, 0, 1)
+	// 1000 - (1000 × 400/1000 × 400/1000) = 1000 - 160 = 840.
+	if got := set.WardShare(); got != 840 {
+		t.Errorf("two stacks ward %d, want 840: the shares are being added rather than "+
+			"multiplied, which at 600 each would read as a total refusal", got)
+	}
+}

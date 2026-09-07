@@ -1975,10 +1975,25 @@ func (b *Battle) inForce(unit *Unit, held passive.Passive) bool {
 // with nothing lost, so the chance takes a single truncation. That is the common
 // case, and the one worth being exact in.
 func (b *Battle) resist(target *Unit, statusID string, chance int) (effective, refused int) {
-	if chance <= 0 || len(target.Passives) == 0 || b.books.Passives == nil {
+	if chance <= 0 {
 		return chance, 0
 	}
 	surviving := scale.Base
+	// ⚠️ **A status the target is CARRYING refuses too, and it is read before the
+	// traits rather than beside them.** The guard above used to leave early when a
+	// unit held no passive at all, which was right while a trait was the only thing
+	// that could refuse anything — and would have made a warding status do nothing
+	// on exactly the units most likely to hold one, because a squad's composition
+	// bonus is granted to units that may carry no trait.
+	//
+	// It multiplies into the same running total, so a ward and a trait compose the
+	// way two traits do rather than by a second rule.
+	if ward := target.Statuses.WardShare(); ward > 0 {
+		surviving = surviving * (scale.Base - ward) / scale.Base
+	}
+	if len(target.Passives) == 0 || b.books.Passives == nil {
+		return finishResist(chance, surviving)
+	}
 	for _, id := range target.Passives {
 		held, err := b.books.Passives.Lookup(id)
 		if err != nil {
@@ -2004,18 +2019,34 @@ func (b *Battle) resist(target *Unit, statusID string, chance int) (effective, r
 	// dropped a vulnerability on the floor, because a trait that invites a status
 	// leaves *more* than the base surviving and would have taken this door out
 	// with the chance untouched.
+	return finishResist(chance, surviving)
+}
+
+// finishResist turns a surviving share into the pair resist reports.
+//
+// It is a function because resist now has two exits — a unit with no traits still
+// reaches it, since a warding status refuses on its own — and the reading below is
+// exactly the sort that drifts when it is written twice.
+//
+// Only the exact base is nothing happening. It used to be `>=`, which was right
+// while a share could only refuse — and is the line that would have dropped a
+// vulnerability on the floor, because a trait that invites a status leaves *more*
+// than the base surviving and would have taken this door out with the chance
+// untouched.
+//
+// Refused is signed, and that is the decision this feature turned on. It is the
+// share the target took off the chance, so a share it *added* is a negative — and
+// the event it lands on is already named for the application failing rather than
+// for a resistance existing (a unit with no traits at all emits it with a nought).
+// Reading "refused -300" as "invited 30%" is the same sentence the field already
+// carries, in the other direction.
+//
+// The alternative was a second field, which would have been two names for one
+// number and left every reader to check both.
+func finishResist(chance int, surviving int) (effective, refused int) {
 	if surviving == scale.Base {
 		return chance, 0
 	}
-	// Refused is signed, and that is the decision this feature turned on. It is
-	// the share the target took off the chance, so a share it *added* is a
-	// negative — and the event it lands on is already named for the application
-	// failing rather than for a resistance existing (a unit with no traits at all
-	// emits it with a nought). Reading "refused -300" as "invited 30%" is the
-	// same sentence the field already carries, in the other direction.
-	//
-	// The alternative was a second field, which would have been two names for one
-	// number and left every reader to check both.
 	return chance * surviving / scale.Base, scale.Base - surviving
 }
 

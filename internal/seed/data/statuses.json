@@ -329,6 +329,14 @@
       ]
     },
     {
+      "id": "ironhide",
+      "category": "buff",
+      "max_stacks": 2,
+      "duration": 0,
+      "permanent": true,
+      "ward_share": 200
+    },
+    {
       "id": "keenedge",
       "category": "buff",
       "max_stacks": 2,

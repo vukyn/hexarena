@@ -1055,6 +1055,11 @@ Tăng tốc 12% mỗi cộng dồn.
 Tối đa là 60%.
 Tăng chỉ số · 2 lượt · tối đa 5 cộng dồn.
 
+[status] ironhide
+Bên mang chặn 20% mọi hiệu ứng ném vào mình, mỗi cộng dồn, là hiệu ứng gì cũng vậy.
+Tối đa là 36%.
+Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
+
 [status] keenedge
 Đòn của bên mang bỏ qua thêm 15% giáp trước mặt, mỗi cộng dồn.
 Tối đa là 30%.
@@ -2187,6 +2192,11 @@ Raises a stat · always in force · 1 stack.
 Raises speed by 12% per stack.
 At its cap that is 60%.
 Raises a stat · 2 turns · up to 5 stacks.
+
+[status] ironhide
+The holder refuses 20% of every status aimed at it, per stack, whatever it is.
+At its cap that is 36%.
+Raises a stat · always in force · up to 2 stacks.
 
 [status] keenedge
 The holder's blows ignore 15% more of the defence in front of them, per stack.

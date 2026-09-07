@@ -59,6 +59,7 @@ func books(t *testing.T) battle.Books {
 	    {"id": "taunting", "category": "taunt", "max_stacks": 1, "duration": 2},
 	    {"id": "block", "category": "shield", "max_stacks": 3, "duration": 2},
 	    {"id": "sunder", "category": "buff", "max_stacks": 2, "duration": 3, "pierce_share": 400},
+	    {"id": "shroud", "category": "buff", "max_stacks": 2, "duration": 3, "ward_share": 400},
 	    {"id": "wellspring", "category": "heal_mend", "max_stacks": 2, "duration": 3, "heal_share": 500},
 	    {"id": "aegis", "category": "absorb", "max_stacks": 2, "duration": 3, "pool_power": 900},
 	    {"id": "bastion", "category": "absorb", "max_stacks": 1, "duration": 0, "permanent": true, "pool_power": 900},
