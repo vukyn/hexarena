@@ -3711,6 +3711,13 @@ nothing reads, which is the shape this repository refuses everything else in —
 what is kept is this table, and the design note that a duration gate is the only kind
 of cost left that could decouple the two.
 
+⚠️ **The mechanism is sound and the trait was the wrong subject**, which is why it is
+on the roadmap rather than in the *decided against* list: what it needs is a trait
+authored *for* a cost that lapses as its holder is worn down, not a trait being
+rescued with one. → `TODO.md` § *A gate at the top of the health bar*, which carries
+what it costs to build and the one defect in `price.go` that only appears once the
+term exists.
+
 ### What re-taking the whole thing on a working `withdraw` was worth
 
 ⚠️ **A premise of every paragraph above was sixty-five points stale, and its own test
