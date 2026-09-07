@@ -775,20 +775,50 @@ is only so the shape is readable.
             deciding not to ask about it and the re-run advances into it too. One
             event earlier is 43 recorded against 44 re-run and `--verify` fails
             on the count.
-      - [ ] Write each finished match out as a `battle.Log`, which makes every
-            PvP match `--replay --verify`-able for nothing. ⚠️ The room holds no
-            second copy of the events for it — a log writer is another cursor
-            over `Battle.Since`, which is exactly why the room reads it that way.
-            ⚠️ **Where it stops is load-bearing for a capped battle, and it has
-            been measured.** A capped log has **no `Ended` event** and it does
-            verify — but only when the record includes the capped turn's own
-            `turn_began`, which is where the room's own cursor already stands,
-            because `settle` advanced into that turn before deciding not to ask
-            about it and `Replay` advances into it too. Stopping one event
-            earlier reads 43 recorded against 44 re-run and fails on the count.
-            The room's cursor is therefore the right place to write from and a
-            "tidier" stop is not.
+      - [x] Write each finished match out as a `battle.Log` — **done**. Every
+            PvP battle is `--replay --verify`-able: `room.BattleResult.Log`
+            carries it and `hexarena-host -logs DIR` writes it.
 
+            **The room composes it and writes nothing**, which is the I/O rule
+            holding rather than an omission — the log travels out on
+            `Reading.Played` like every other fact about a finished battle, and
+            whoever has a disk decides where it goes.
+
+            ⚠️ **It needed its own cursor and that is the whole finding.** The
+            room's cursor is set to `Recorded()` **after** the opening board,
+            because no `wire.Turn` carries the opening and a mirror produces it
+            by calling Begin itself. A log written from that cursor re-runs to a
+            LONGER event list than it recorded: measured, 291 logged against 300
+            re-run on battle 1 and 345 against 354 on battle 2.
+            `TestALoggedBattleStartsAtTheOpeningBoard` names that cause rather
+            than reporting it as "the events differ".
+
+            ⚠️ **A capped battle logs no `Ended` and still verifies**, because
+            the record stops on the capped turn's own `turn_began` — where the
+            room's cursor already stands, since `settle` advanced into that turn
+            before deciding not to ask about it and `Replay` advances into it
+            too. A "tidier" stop reads 43 recorded against 44 re-run.
+
+            ⚠️ **An abandoned battle is logged by nobody**, and that falls out of
+            the room rather than being a second rule: only `close` builds a
+            `BattleResult` and a departure goes through `abandon`.
+
+            ⚠️ **The file name is NOT `internal/forge`'s.** That one is
+            `<home>-vs-<away>-seed<N>.json`, which works for a spar between two
+            squads the library holds by id; PvP seats are "host" and "guest"
+            every time, so the code and the battle number are what tell one
+            match's files from another's.
+
+            ⚠️ **It reddened `TestNoLockingFunctionSendsOnAChannel`, and the test
+            was right to be looked at rather than silenced.** That AST walk keys
+            functions by a **bare name**, so `r.fight.Since(...)` in the new
+            reader bound to the registry's own `Since`, which does send, and the
+            walk reported a room method as reaching a channel it has never heard
+            of. It counts a selector call as an edge only when the receiver is
+            the function's own now — `r.watch(...)` is an edge and
+            `r.fight.Since(...)` is not. Reachable sends fell 23 → 8 and the
+            mutation still bites: a locking function made to call a sending one
+            reddens it.
       **The wire**
       - [x] WebSocket transport, the dependency confined to one boundary.
             **Done** — `internal/socket`, and the dependency is

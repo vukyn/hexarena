@@ -485,6 +485,40 @@ its own. ⚠️ Dropping that check reddens **one test only**
 (`TestANonCanonicalRoomCodeIsRefused`) — nothing else in the repository notices —
 so it is the whole net for a map key.
 
+### A finished battle is a `battle.Log`, and it needed its own cursor
+
+Every PvP battle comes out of the room as a `battle.Log` on
+`room.BattleResult.Log` — the seed, the placement it was fought with, every
+decision and every event — so `hexarena --replay FILE --verify` re-runs it and
+checks the lot. The room **composes it and writes nothing**: it has no
+filesystem, so the log travels out on `Reading.Played` like every other fact
+about a finished battle and `hexarena-host -logs DIR` is what turns it into a
+file.
+
+⚠️ **It is a second cursor and not a second use of the room's.** The room's
+position is set to `Recorded()` **after** the opening board, because no
+`wire.Turn` carries the opening and a mirror produces it by calling `Begin`
+itself. A log written from there re-runs to a *longer* event list than it
+recorded — measured, **291 logged against 300 re-run** on the first battle of a
+bo3 and 345 against 354 on the second. That is exactly the multi-consumer case
+`Battle.Since` exists for, and it is why `Drain` is never called in this package.
+
+⚠️ **Where it stops is load-bearing for a capped battle.** A capped log carries
+no `Ended` event at all and still verifies — but only because the record includes
+the capped turn's own `turn_began`, which is where the room already stands, since
+`settle` advanced into that turn before deciding not to ask about it and `Replay`
+advances into it too. A "tidier" stop reads 43 recorded against 44 re-run.
+
+⚠️ **A battle nobody finished is logged by nobody**, and that falls out of the
+room rather than being a second rule: only `close` builds a `BattleResult`, and a
+departure goes through `abandon`, which records none. A log of an interrupted
+fight would re-run past the point it stopped.
+
+⚠️ **The file name is deliberately not `internal/forge`'s.** That one is
+`<home>-vs-<away>-seed<N>.json`, which works for a spar between two squads the
+library holds by id. PvP seats are `host` and `guest` in every match, so the room
+code and the battle number are what tell one match's files from another's.
+
 ## The transport: `internal/socket`, the one boundary the WebSocket crosses
 
 `internal/socket` is the PvP transport: an `http.Handler` around

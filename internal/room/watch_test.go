@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"reflect"
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/hex"
@@ -152,7 +153,12 @@ func TestAMatchPlayedWithAWatcherReadingIsTheSameMatch(t *testing.T) {
 			len(watched.played), len(alone.played))
 	}
 	for index := range watched.played {
-		if watched.played[index] != alone.played[index] {
+		// DeepEqual rather than !=, because a BattleResult carries the battle's
+		// log and a log is slices. ⚠️ That widens the claim rather than weakening
+		// it: the two matches now have to produce the same **events** as well as
+		// the same outcome, which is the strongest form of "a watcher changes
+		// nothing" this test can make.
+		if !reflect.DeepEqual(watched.played[index], alone.played[index]) {
 			t.Errorf("battle %d differs: watched %+v, unwatched %+v",
 				index+1, watched.played[index], alone.played[index])
 		}
