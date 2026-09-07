@@ -3648,7 +3648,60 @@ is only so the shape is readable.
       including the negative one, so the day a mirror starts resolving the
       condition says so instead of guarding nothing.
 
-- [ ] **A guarded mirror never resolves, because the rating will not spend a
+- [x] **A guarded mirror never resolves, because the rating will not spend a
+      guard — DONE, and the fix this entry costed is NOT the one that shipped.**
+      `battle.guardCredit` counts what a **permanent** guard ate as progress, at
+      100 per mille. `Set.PermanentPoolIn` is the new reading it needs.
+
+      ⚠️ **The flat credit this entry recommended is not shippable, measured.**
+      Crediting every guard was written first: `pokemon.happiny` and
+      `pokemon.squirtle` against copies of themselves go from resolving every seed
+      to **40 of 40 endless**, which breaks `TestABothWaysMirrorIsExactlyEven` — a
+      fairness invariant, and the same one that refused the `stat_debuff` shield
+      change. No share buys a way out: the shipped mirrors need it at **10 or
+      under** and the guarded fixture needs it at **50 or over**, an empty
+      intersection. That is the "blast radius" this entry named, arriving as a red
+      invariant rather than as moved figures.
+
+      **What separates the two is whether the guard COMES BACK**, and the shipped
+      book makes the split cleanly: `withdraw` puts up `block` (duration 2, cast
+      again), `brace` puts up `heft`, and only `carapace`'s `bastion` is permanent —
+      granted once, refused a second stack, gone for good once empty. A bite out of
+      a renewable guard buys the turn it takes to return; a bite out of a permanent
+      one is the only progress the rating can honestly call progress.
+      ⚠️ So the three shipped guard builds this entry worried about —
+      `squirtle.fortress`, `squirtle.ram`, `machop.charge` — are **untouched**: all
+      three carry timed guards. The blast radius came out at nothing, and
+      `./...` moved no golden and no balance test.
+
+      ⚠️ **The share IS measurable, and this entry said it was not.** That sweep
+      asked one question — does the guarded board resolve — and every value from a
+      tenth up answered yes identically, which is a step and not a curve. Asking a
+      second board closes it. Swept at five per mille either way, once the rule was
+      narrowed to permanent guards: **≤ 45** the mirror stalls again (the credit is
+      one truncating division and 21 × 45 ÷ 1000 is nought — the resolve-only sweep
+      would have scored 45 a success); **50 … 999** every board holds; **1000** a
+      point of guard is worth a point of health, the guarded and the bare target
+      tie, and `take` keeps whichever the aim walk reached first. 100 errs low
+      inside that, which is the direction every horizon in this file errs in.
+
+      ⚠️ **A flat credit had a fourth edge that vanished with it**, kept here
+      because it is the shape of the mistake: at 200 an `unblockable` blow stopped
+      being the answer behind a barrier, because the ten-times-heavier blow the
+      barrier ate whole out-rated it. Narrowing to permanent guards took that board
+      off the share entirely — `aegis` is timed.
+
+      Held by four tests: `TestAGuardedMirrorDoesNotStandStill` (the defect),
+      `TestABlowThatTakesHealthOutratesOneThatOnlyTakesGuard` (the ceiling),
+      `TestOnlyAGuardThatStaysSpentEarnsCredit` (the distinction) and
+      `TestTheGuardCreditSitsInsideItsMeasuredWindow` (where the number came from).
+      ⚠️ **Two of the three board tests were vacuous first and the fixtures record
+      it**: with the guarded enemy in the slot the aim walk reaches second, the tie
+      fell the right way by accident and both were green with the rule deleted.
+
+      The original entry:
+
+      ⚠️ **A guarded mirror never resolves, because the rating will not spend a
       guard.** Split out of the entry above, where it is measured. A blow a pool
       would absorb whole rates **nought**, so `Suggest` passes rather than throwing
       it, so the pool is never depleted — a unit with a `bastion` and an opponent
@@ -3678,6 +3731,7 @@ is only so the shape is readable.
       board outcome, so the sweep cannot choose one — the argument has to come from
       what destroying a guard is *worth*, the way `shielded` prices a charge from
       the defender's side.
+
 
 - [x] ⚠️ **A `hexforge new` churned `screens.golden` — DONE, by the third option
       this entry named and had not tried.** `aSquadOfSide` picks by a **property

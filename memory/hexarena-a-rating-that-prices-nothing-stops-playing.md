@@ -1,6 +1,6 @@
 ---
 name: hexarena-a-rating-that-prices-nothing-stops-playing
-description: hexarena — a blow a guard would absorb whole rates nought, so Suggest passes rather than spending the guard; two guarded units stand at full health for 600 turns without acting, and it looks like a long battle rather than a broken one
+description: "hexarena — ĐÃ VÁ: blow bị guard nuốt trọn định giá 0 nên Suggest bỏ lượt mãi; credit chỉ cho guard PERMANENT (credit phẳng làm 40/40 mirror ship Endless), share 100‰ trong cửa sổ đo được 50..999"
 metadata:
   type: feedback
 ---
@@ -36,8 +36,32 @@ and a pass rule; both were wrong, and a plain **1v1** reproduces it.
   guard. That is also the right shape for measuring what a guard is worth, so the
   board that works and the board that answers the question are the same board.
 
-⚠️ The fix — crediting `whole - landed` at a share — fixes the pool mirror at any
-share from 10% up, identically at 10/25/50/100%. **A step, not a curve**, which is
-the signature of an option that was reading exactly nought: it only has to become
-positive. A sweep like that cannot choose the share, so the number has to come from
-an argument about what destroying a guard is worth.
+⚠️ **ĐÃ VÁ, và không phải bằng cách entry đề xuất.** `battle.guardCredit` = 100‰,
+tính công cho phần một guard **PERMANENT** nuốt — `Set.PermanentPoolIn` là phép đọc
+mới cho việc đó.
+
+⚠️ **Credit phẳng (mọi guard) KHÔNG ship được, đo ra chứ không suy ra.** Bản viết
+trước làm đúng như entry đề xuất: `pokemon.happiny` và `pokemon.squirtle` đấu bản
+sao của chính nó chuyển từ kết thúc mọi seed sang **40/40 Endless** →
+`TestABothWaysMirrorIsExactlyEven` đỏ, đúng bất biến công bằng đã từng bác bỏ vụ cho
+`stat_debuff` xuyên shield. **Không share nào cứu được**: mirror roster ship cần
+**≤10**, fixture guard cần **≥50** — giao rỗng.
+
+**Thứ phân biệt là guard có QUAY LẠI hay không.** `withdraw`→`block` (2 lượt, cast
+lại), `brace`→`heft`; chỉ `carapace`→`bastion` là permanent — cấp một lần, `Apply`
+từ chối stack thứ hai, cạn là mất hẳn. Gặm guard tái tạo chỉ mua được đúng số lượt nó
+quay lại; gặm guard permanent mới là tiến triển. ⚠️ Ba build guard đang ship
+(`squirtle.fortress`, `squirtle.ram`, `machop.charge`) đều mang guard **có hạn** →
+bán kính ảnh hưởng bằng **không**.
+
+⚠️ **Share ĐO ĐƯỢC, và ghi chú cũ ở đây nói ngược.** Sweep cũ chỉ hỏi *bàn có kết
+thúc không* — mọi giá trị từ 10% lên đều "có", giống hệt nhau: một **bậc thang**, mà
+bậc thang thì không đọc ra được cực đại. Hỏi thêm một bàn thứ hai là đóng được cửa sổ.
+Quét bước 5‰ sau khi thu hẹp về guard permanent: **≤45** mirror đứng im lại (credit là
+MỘT phép chia truncate, 21×45÷1000 = 0 — sweep chỉ-hỏi-kết-thúc sẽ chấm 45 là đạt);
+**50…999** mọi bàn xanh; **1000** một điểm guard bằng một điểm máu, mục tiêu có guard
+hoà với mục tiêu trần và `take` giữ cái aim walk gặp trước.
+
+⚠️ **Hai trong ba test bàn ban đầu VÔ NGHĨA**, và fixture ghi lại: đặt kẻ có guard vào
+ô aim walk duyệt **sau**, thế hoà rơi đúng chiều một cách tình cờ và cả hai đều xanh
+kể cả khi xoá luật. Đổi ô mới thấy.
