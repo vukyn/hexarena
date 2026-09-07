@@ -154,6 +154,21 @@ Rules for anything added to that file:
   used to judge it were blind — the shipped roster carries no guard, and the
   wall-heavy board built for it does not resolve — so the gain read as nothing.
   Build a wall board that FINISHES before quoting a figure about a guard.
+  ⚠️ **And here is how, because that instruction had no method under it for a
+  release.** Only **one** side may carry the guard. Measured 2026-09-07, 200 seeds
+  at a 600-turn limit on Blastoise stat lines: `withdraw` against a plain kit is
+  **0% endless at ~104 turns**, `carapace` against a plain kit **0% at ~67**, and
+  either of them **mirrored is 100% endless** — at 1v1 as well as 2v2, so squad
+  size is not a term in it. The mirror carrying no guard at all resolves every seed
+  in 66 turns, which is what makes that a statement about the guard. An asymmetric
+  board is also the right shape for the question: what a guard is worth is what it
+  buys against a side that is not carrying one.
+  `TestAGuardBoardResolvesOnlyWhenOneSideCarriesIt` holds all three rows.
+  ⚠️ The two mirrors stall for **different** reasons and only one is a defect: a
+  blow a pool would eat whole is priced at nought so the rating passes for ever and
+  the pool is never spent, while `withdraw` simply restores 500 every four turns
+  against blows worth 146 and nobody can die. → `TODO.md` § *A guarded mirror never
+  resolves*.
 - **A discharge is priced on the turn that fires it, not only on the turn that
   charges.** `pricing.discharged` walks `chainFrom` — the same function the
   resolution walks, so the aim gates it identically — and prices each carrier at
