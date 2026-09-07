@@ -134,6 +134,14 @@ var (
 		// few turns, but the standing fact of having kin of the same element on
 		// the board beside it.
 		"kinship": "đồng khí",
+		"phalanx": "trận thế",
+		// The three formation columns, named as the depths they are rather than as
+		// the numbers they are counted by: a bonus line reading "three of 2" says
+		// nothing, and the board's own header already calls them back, middle and
+		// front.
+		"column0": "tuyến sau",
+		"column1": "tuyến giữa",
+		"column2": "tuyến trước",
 		// A buff, so a noun. It is not haste ("nhanh nhẹn") and not veil
 		// ("mờ ảo"): those two are speed and a timed blur, and this is the
 		// standing quality of being hard to land a blow on.

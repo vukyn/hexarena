@@ -1,6 +1,23 @@
 {
   "bonuses": [
     {
+      "id": "same_column",
+      "name": "cùng tuyến",
+      "axis": "column",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 3,
+          "grants": [
+            {
+              "status": "phalanx",
+              "stacks": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "same_element",
       "name": "đồng hệ",
       "axis": "element",

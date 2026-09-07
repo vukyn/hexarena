@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/element"
@@ -32,9 +33,9 @@ import (
 
 // Axis is the thing a bonus counts.
 //
-// One today. It is an enum rather than a string so an unknown axis is refused
-// at parse instead of counting nothing at run time — a bonus whose axis nobody
-// implements would otherwise load, draw, and quietly never fire.
+// It is an enum rather than a string so an unknown axis is refused at parse
+// instead of counting nothing at run time — a bonus whose axis nobody implements
+// would otherwise load, draw, and quietly never fire.
 type Axis int
 
 const (
@@ -44,6 +45,25 @@ const (
 	AxisNone Axis = iota
 	// AxisElement counts the elements the fielded units carry.
 	AxisElement
+	// AxisColumn counts the formation column the fielded units stand in.
+	//
+	// ⚠️ **It is where a unit STANDS, not the column its archetype prefers**, and
+	// that distinction decided the whole shape of this axis. The roadmap named the
+	// archetype's column as the best-shaped candidate on reachability alone; the
+	// engine cannot see it. Roster carries no archetype on purpose — "settled
+	// before a battle and leaves nothing behind but numbers" — so counting the
+	// preset would have meant widening the roster, the wire and every log, to say
+	// something weaker than what the slot already says.
+	//
+	// The slot is the better half of the same idea anyway. An archetype's column
+	// is where a character *wants* to stand; the slot is where the player *put*
+	// it, which is the decision a composition bonus is supposed to reward.
+	//
+	// ⚠️ **Rungs above three are unreachable here and always will be.** A column
+	// holds hex.FormationRows units and that is a property of the board rather
+	// than of the format, so this is not the "wait for 5v5" case the element axis
+	// has: a fourth rung on a column would be dead on every board this game has.
+	AxisColumn
 )
 
 // String is the name an axis is declared under.
@@ -51,6 +71,8 @@ func (a Axis) String() string {
 	switch a {
 	case AxisElement:
 		return "element"
+	case AxisColumn:
+		return "column"
 	}
 	return "none"
 }
@@ -60,6 +82,8 @@ func ParseAxis(name string) (Axis, error) {
 	switch name {
 	case "element":
 		return AxisElement, nil
+	case "column":
+		return AxisColumn, nil
 	}
 	return AxisNone, fmt.Errorf("no axis is called %q", name)
 }
@@ -171,13 +195,17 @@ func (b Bonus) Top() int {
 
 // Member is one fielded unit, as much of it as counting needs.
 //
-// An id and an affinity, and nothing else: a bonus is settled before the first
-// turn, where the roster is still a slice of facts rather than a board, and
-// handing this package a battle unit would tie a counting rule to a state
+// An id, an affinity and a column, and nothing else: a bonus is settled before
+// the first turn, where the roster is still a slice of facts rather than a board,
+// and handing this package a battle unit would tie a counting rule to a state
 // machine it must never read.
 type Member struct {
 	ID       string
 	Affinity element.Affinity
+	// Column is the formation column the unit was placed in, from its own side's
+	// point of view — the authored slot rather than the cell on the shared board,
+	// so the two sides count the same shape as the same shape.
+	Column int
 }
 
 // Award is one unit's share of one bonus that fired.
@@ -266,41 +294,20 @@ func (b *Book) Awards(chart *element.Chart, members []Member) []Award {
 	if b == nil || chart == nil || len(members) == 0 {
 		return nil
 	}
-	inert := chart.Inert()
-	// Values in first-appearance order, with the count and the sharers beside
-	// each. A slice rather than a map because both the order and the membership
-	// reach the result.
-	type tally struct {
-		value   element.Element
-		count   int
-		sharers []string
-	}
-	var tallies []tally
-	for _, member := range members {
-		for _, carried := range member.Affinity.Elements() {
-			if slices.Contains(inert, carried) {
-				continue
-			}
-			at := slices.IndexFunc(tallies, func(t tally) bool { return t.value == carried })
-			if at < 0 {
-				tallies = append(tallies, tally{value: carried, count: 1, sharers: []string{member.ID}})
-				continue
-			}
-			tallies[at].count++
-			tallies[at].sharers = append(tallies[at].sharers, member.ID)
-		}
-	}
+	byElement := elementTallies(chart, members)
+	byColumn := columnTallies(members)
 	var awards []Award
 	for _, held := range b.bonuses {
-		if held.Axis != AxisElement {
-			continue
+		counted := byElement
+		if held.Axis == AxisColumn {
+			counted = byColumn
 		}
-		for _, counted := range tallies {
-			rung, reached := held.Reached(counted.count)
+		for _, value := range counted {
+			rung, reached := held.Reached(value.count)
 			if !reached {
 				continue
 			}
-			receiving := counted.sharers
+			receiving := value.sharers
 			if held.Scope == ScopeSquad {
 				receiving = make([]string, 0, len(members))
 				for _, member := range members {
@@ -309,14 +316,91 @@ func (b *Book) Awards(chart *element.Chart, members []Member) []Award {
 			}
 			for _, unit := range receiving {
 				awards = append(awards, Award{
-					Unit: unit, Bonus: held.ID, Value: counted.value.String(),
-					Count: counted.count, Scope: held.Scope, Grants: slices.Clone(rung.Grants),
+					Unit: unit, Bonus: held.ID, Value: value.value,
+					Count: value.count, Scope: held.Scope, Grants: slices.Clone(rung.Grants),
 				})
 			}
 		}
 	}
 	return awards
 }
+
+// tally is one value of one axis: what was shared, how many shared it, and who.
+//
+// The value is a string because that is what an Award carries and what a log
+// line prints, and because the two axes have nothing else in common — an element
+// and a column are not the same kind of thing and a shared numeric type would be
+// a coincidence rather than a meaning.
+type tally struct {
+	value   string
+	count   int
+	sharers []string
+}
+
+// counted adds one member's value to a running list, in first-appearance order.
+//
+// A slice rather than a map because both the order and the membership reach the
+// result, which is the rule internal/core is written under: a map's iteration
+// order may not decide an output.
+func counted(tallies []tally, value, member string) []tally {
+	at := slices.IndexFunc(tallies, func(t tally) bool { return t.value == value })
+	if at < 0 {
+		return append(tallies, tally{value: value, count: 1, sharers: []string{member}})
+	}
+	tallies[at].count++
+	tallies[at].sharers = append(tallies[at].sharers, member)
+	return tallies
+}
+
+// elementTallies counts the elements a side brought.
+//
+// ⚠️ **An inert element forms no tribe.** Sharing the element that has no
+// strengths and no weaknesses is sharing the absence of one, and a bonus for it
+// would be handed to any pair of unaligned characters for standing next to each
+// other. Which elements those are is read off the chart rather than named here,
+// so a chart that gives the inert element a matchup makes it count without this
+// file being edited.
+func elementTallies(chart *element.Chart, members []Member) []tally {
+	inert := chart.Inert()
+	var tallies []tally
+	for _, member := range members {
+		for _, carried := range member.Affinity.Elements() {
+			if slices.Contains(inert, carried) {
+				continue
+			}
+			tallies = counted(tallies, carried.String(), member.ID)
+		}
+	}
+	return tallies
+}
+
+// columnTallies counts the formation columns a side stood in.
+//
+// ⚠️ **There is no inert column.** Every element bonus has to skip the element
+// that means nothing, and the mirror of that rule here would be a column that
+// means nothing — there is none: standing at the back is as much a decision as
+// standing at the front, and a squad that stacks the back rank has made the same
+// kind of choice as one that stacks the front. The asymmetry between the two
+// axes is real and is why they are two functions rather than one with a flag.
+//
+// One value per member rather than one per element: a unit stands in exactly one
+// column, where it may carry two elements, so the counts here can never exceed
+// the squad size and the element ones can.
+func columnTallies(members []Member) []tally {
+	var tallies []tally
+	for _, member := range members {
+		tallies = counted(tallies, columnValue(member.Column), member.ID)
+	}
+	return tallies
+}
+
+// columnValue is the name a column is counted and logged under.
+//
+// Named rather than the bare number, because the value reaches a log line and a
+// screen through the same slot an element's name does: "three of 2" is a sentence
+// nobody can read, and a reader who cannot tell which axis a bonus counted cannot
+// reproduce it from the data.
+func columnValue(column int) string { return "column" + strconv.Itoa(column) }
 
 // Deps are the books a bonus is checked against.
 //

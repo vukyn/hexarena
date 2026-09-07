@@ -169,6 +169,34 @@ Rules for anything added to that file:
   the pool is never spent, while `withdraw` simply restores 500 every four turns
   against blows worth 146 and nobody can die. → `TODO.md` § *A guarded mirror never
   resolves*.
+- **A squad is paid for what it shares, on two axes.** `same_element` counts what
+  a side IS and `same_column` counts where it STANDS, and the two are counted by
+  two functions rather than one with a flag, because the rules differ: an element
+  bonus skips the **inert** element — sharing the absence of a matchup is not a
+  tribe — and there is no inert column, since standing at the back is as much a
+  decision as standing at the front.
+  ⚠️ **The column is the SLOT and not the archetype's preferred column.** The
+  roadmap asked for the preset; `battle.Roster` carries no archetype on purpose,
+  so counting it would have widened the roster, the wire and every log to say
+  something weaker. Where the player *put* a unit is the decision a composition
+  bonus rewards; where its archetype would rather stand is not.
+  ⚠️ **One rung, at three, and the rung at two was measured and dropped.** A rung
+  at two fires on any board standing a pair in one column, which is most
+  constructed fixtures here — they choose skills and traits deliberately and slots
+  carelessly — and it reddened two unrelated balance tests. Spreading those
+  fixtures was tried and was the *wrong* fix: it moved a unit between columns,
+  which changes reach, and re-baselined two measurements for a reason unrelated to
+  the bonus. Measured worth of the rung that ships: **+126‰**, **+59‰** and
+  **+8‰** against the three shipped squads, mirror **500‰** exactly.
+  ⚠️ **It does not pay for the shape.** A squad re-slotted into one column reads
+  464‰ against s01 *with* the bonus where it reads 677‰ spread out — stacking
+  costs about 213‰ and the bonus returns 126‰ — so it softens a real sacrifice
+  without making the degenerate formation correct.
+  ⚠️ **The grant is 100‰ because 150‰ was measured and is not bigger.** At 150 it
+  is worth more against two squads and *less* against the third; more defence
+  lengthens a battle and a longer battle can change who wins it. A win rate is
+  non-monotone in a stat, so a sweep cannot choose the number by taking the
+  largest — the same finding `swiftness` produced.
 - **A discharge is priced on the turn that fires it, not only on the turn that
   charges.** `pricing.discharged` walks `chainFrom` — the same function the
   resolution walks, so the aim gates it identically — and prices each carrier at
