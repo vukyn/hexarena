@@ -531,21 +531,21 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
-> same_column   cùng tuyến      sharers
-  metal_ward    cùng thép       sharers
-  dark_edge     cùng bóng tối   sharers
-  water_tide    cùng dòng nước  sharers
-  same_element  đồng hệ         sharers
+> same_column     cùng tuyến      sharers
+  fire_forge      cùng lửa        sharers
+  ground_root     cùng đất        sharers
+  wind_gust       cùng gió        sharers
+  electric_surge  cùng điện       sharers
+  metal_ward      cùng thép       sharers
+  dark_edge       cùng bóng tối   sharers
+  water_tide      cùng dòng nước  sharers
+  same_element    đồng hệ         sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
   3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
-
-
-
-
 
 
 
@@ -1150,20 +1150,20 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/38
+chiêu này gây hiệu ứng gì  1/42
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
->  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
-       burn       bỏng · sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn
-       weaken     suy yếu · giảm chỉ số · 3 lượt · tối đa 3 cộng dồn
-       expose     phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       blind      mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       mire       sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       stun       choáng · khống chế, mất lượt · 1 lượt · 1 cộng dồn
-       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · 1 cộng dồn
-       fury       cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
-       haste      nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
-       focus      tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+>  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
+       burn        bỏng · sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn
+       weaken      suy yếu · giảm chỉ số · 3 lượt · tối đa 3 cộng dồn
+       expose      phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       blind       mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       mire        sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       stun        choáng · khống chế, mất lượt · 1 lượt · 1 cộng dồn
+       taunting    bị khiêu khích · ép chọn mục tiêu · 2 lượt · 1 cộng dồn
+       fury        cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
+       haste       nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+       focus       tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
 
   poison
 
@@ -2670,21 +2670,21 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
-> same_column   cùng tuyến      sharers
-  metal_ward    cùng thép       sharers
-  dark_edge     cùng bóng tối   sharers
-  water_tide    cùng dòng nước  sharers
-  same_element  đồng hệ         sharers
+> same_column     cùng tuyến      sharers
+  fire_forge      cùng lửa        sharers
+  ground_root     cùng đất        sharers
+  wind_gust       cùng gió        sharers
+  electric_surge  cùng điện       sharers
+  metal_ward      cùng thép       sharers
+  dark_edge       cùng bóng tối   sharers
+  water_tide      cùng dòng nước  sharers
+  same_element    đồng hệ         sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
   3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
-
-
-
-
 
 
 
@@ -4261,55 +4261,55 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/38
+chiêu này gây hiệu ứng gì  1/42
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
->  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
-       burn       bỏng · sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn
-       weaken     suy yếu · giảm chỉ số · 3 lượt · tối đa 3 cộng dồn
-       expose     phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       blind      mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       mire       sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       stun       choáng · khống chế, mất lượt · 1 lượt · 1 cộng dồn
-       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · 1 cộng dồn
-       fury       cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
-       haste      nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
-       focus      tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
-       toughened  kiên cường · tăng chỉ số · vĩnh viễn · 1 cộng dồn
-       veil       mờ ảo · tăng chỉ số · 2 lượt · tối đa 2 cộng dồn
-       block      đỡ đòn · khiên, chặn một nhát · 2 lượt · tối đa 3 cộng dồn
-       regrowth   tái sinh · hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn
-       unleashed  bộc phát · tăng chỉ số · vĩnh viễn · 1 cộng dồn
-       bare       trần trụi · giảm chỉ số · vĩnh viễn · 1 cộng dồn
-       kindled    bùng cháy · tăng chỉ số · vĩnh viễn · 1 cộng dồn
-       fortified  kiên cố · tăng chỉ số · vĩnh viễn · 1 cộng dồn
-       quickened  gia tốc · tăng chỉ số · vĩnh viễn · 1 cộng dồn
-       encumber   nặng nề · giảm chỉ số · vĩnh viễn · 1 cộng dồn
-       fester     lở loét · giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn
-       evasive    khinh công · tăng chỉ số · vĩnh viễn · 1 cộng dồn
-       charge     nhiễm điện · tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn
-       aegis      lá chắn · lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn
-       bastion    thành trì · lá chắn, thấm sát thương cho tới khi cạn · vĩnh viễn · 1 cộng dồn
-       swelter    sóng nhiệt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
-       verdure    xum xuê · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
-       moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
-       heft       sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
-       stoked     nóng máy · tăng chỉ số · 2 lượt · tối đa 5 cộng dồn
-       ironhide   giáp trụ · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
-       keenedge   lưỡi sắc · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
-       tidewell   mạch nguồn · tăng máu hồi vào · vĩnh viễn · tối đa 2 cộng dồn
-       phalanx    trận thế · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
-       kinship    đồng khí · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
-       sundered   đã tách · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
-       burrowed   độn thổ · tăng chỉ số · 2 lượt · 1 cộng dồn
+>  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
+       burn        bỏng · sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn
+       weaken      suy yếu · giảm chỉ số · 3 lượt · tối đa 3 cộng dồn
+       expose      phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       blind       mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       mire        sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       stun        choáng · khống chế, mất lượt · 1 lượt · 1 cộng dồn
+       taunting    bị khiêu khích · ép chọn mục tiêu · 2 lượt · 1 cộng dồn
+       fury        cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
+       haste       nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+       focus       tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+       toughened   kiên cường · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       veil        mờ ảo · tăng chỉ số · 2 lượt · tối đa 2 cộng dồn
+       block       đỡ đòn · khiên, chặn một nhát · 2 lượt · tối đa 3 cộng dồn
+       regrowth    tái sinh · hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn
+       unleashed   bộc phát · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       bare        trần trụi · giảm chỉ số · vĩnh viễn · 1 cộng dồn
+       kindled     bùng cháy · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       fortified   kiên cố · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       quickened   gia tốc · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       encumber    nặng nề · giảm chỉ số · vĩnh viễn · 1 cộng dồn
+       fester      lở loét · giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn
+       evasive     khinh công · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       charge      nhiễm điện · tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn
+       aegis       lá chắn · lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn
+       bastion     thành trì · lá chắn, thấm sát thương cho tới khi cạn · vĩnh viễn · 1 cộng dồn
+       swelter     sóng nhiệt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
+       verdure     xum xuê · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
+       moisture    ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
+       heft        sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
+       stoked      nóng máy · tăng chỉ số · 2 lượt · tối đa 5 cộng dồn
+       emberheart  tim lửa · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       bedrock     nền đá · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       tailwind    gió xuôi · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       galvanise   dẫn điện · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       ironhide    giáp trụ · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       keenedge    lưỡi sắc · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       tidewell    mạch nguồn · tăng máu hồi vào · vĩnh viễn · tối đa 2 cộng dồn
+       phalanx     trận thế · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       kinship     đồng khí · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       sundered    đã tách · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
+       burrowed    độn thổ · tăng chỉ số · 2 lượt · 1 cộng dồn
 
   poison
 
   cơ hội trúng  300      30%
-
-
-
-
 
 
 
@@ -4346,6 +4346,10 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   quickened    gia tốc
   evasive      khinh công
   stoked       nóng máy
+  emberheart   tim lửa
+  bedrock      nền đá
+  tailwind     gió xuôi
+  galvanise    dẫn điện
   ironhide     giáp trụ
   keenedge     lưỡi sắc
   phalanx      trận thế
@@ -4366,10 +4370,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   aegis        lá chắn
   bastion      thành trì
   reserve      dồn lại cho chính người mang tiêu
-  swelter      sóng nhiệt
-  verdure      xum xuê
-  moisture     ẩm ướt
-  heft         sức nặng
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -5205,21 +5205,21 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 
 squad bonuses  what a side is paid for what its units share
 
-> same_column     sharers
-  metal_ward      sharers
-  dark_edge       sharers
-  water_tide      sharers
-  same_element    sharers
+> same_column       sharers
+  fire_forge        sharers
+  ground_root       sharers
+  wind_gust         sharers
+  electric_surge    sharers
+  metal_ward        sharers
+  dark_edge         sharers
+  water_tide        sharers
+  same_element      sharers
 
   counts the elements the units carry
   goes to only the units that share it
   3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
-
-
-
-
 
 
 
@@ -5824,20 +5824,20 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
 
-the statuses this skill inflicts  1 of 38
+the statuses this skill inflicts  1 of 42
 space chooses a status · type the chance in parts per thousand
 
->  1   poison     damages every turn · 3 turns · up to 3 stacks
-       burn       damages every turn · 2 turns · up to 2 stacks
-       weaken     lowers a stat · 3 turns · up to 3 stacks
-       expose     lowers a stat · 2 turns · up to 2 stacks
-       blind      lowers a stat · 2 turns · up to 2 stacks
-       mire       lowers a stat · 2 turns · up to 2 stacks
-       stun       costs a turn · 1 turn · 1 stack
-       taunting   costs a choice of target · 2 turns · 1 stack
-       fury       raises a stat · 3 turns · up to 3 stacks
-       haste      raises a stat · 3 turns · up to 2 stacks
-       focus      raises a stat · 3 turns · up to 2 stacks
+>  1   poison      damages every turn · 3 turns · up to 3 stacks
+       burn        damages every turn · 2 turns · up to 2 stacks
+       weaken      lowers a stat · 3 turns · up to 3 stacks
+       expose      lowers a stat · 2 turns · up to 2 stacks
+       blind       lowers a stat · 2 turns · up to 2 stacks
+       mire        lowers a stat · 2 turns · up to 2 stacks
+       stun        costs a turn · 1 turn · 1 stack
+       taunting    costs a choice of target · 2 turns · 1 stack
+       fury        raises a stat · 3 turns · up to 3 stacks
+       haste       raises a stat · 3 turns · up to 2 stacks
+       focus       raises a stat · 3 turns · up to 2 stacks
 
   poison
 
@@ -7344,21 +7344,21 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 
 squad bonuses  what a side is paid for what its units share
 
-> same_column     sharers
-  metal_ward      sharers
-  dark_edge       sharers
-  water_tide      sharers
-  same_element    sharers
+> same_column       sharers
+  fire_forge        sharers
+  ground_root       sharers
+  wind_gust         sharers
+  electric_surge    sharers
+  metal_ward        sharers
+  dark_edge         sharers
+  water_tide        sharers
+  same_element      sharers
 
   counts the elements the units carry
   goes to only the units that share it
   3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
-
-
-
-
 
 
 
@@ -8935,55 +8935,55 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
 
-the statuses this skill inflicts  1 of 38
+the statuses this skill inflicts  1 of 42
 space chooses a status · type the chance in parts per thousand
 
->  1   poison     damages every turn · 3 turns · up to 3 stacks
-       burn       damages every turn · 2 turns · up to 2 stacks
-       weaken     lowers a stat · 3 turns · up to 3 stacks
-       expose     lowers a stat · 2 turns · up to 2 stacks
-       blind      lowers a stat · 2 turns · up to 2 stacks
-       mire       lowers a stat · 2 turns · up to 2 stacks
-       stun       costs a turn · 1 turn · 1 stack
-       taunting   costs a choice of target · 2 turns · 1 stack
-       fury       raises a stat · 3 turns · up to 3 stacks
-       haste      raises a stat · 3 turns · up to 2 stacks
-       focus      raises a stat · 3 turns · up to 2 stacks
-       toughened  raises a stat · always in force · 1 stack
-       veil       raises a stat · 2 turns · up to 2 stacks
-       block      blocks one strike · 2 turns · up to 3 stacks
-       regrowth   restores every turn · 3 turns · up to 3 stacks
-       unleashed  raises a stat · always in force · 1 stack
-       bare       lowers a stat · always in force · 1 stack
-       kindled    raises a stat · always in force · 1 stack
-       fortified  raises a stat · always in force · 1 stack
-       quickened  raises a stat · always in force · 1 stack
-       encumber   lowers a stat · always in force · 1 stack
-       fester     cuts healing received · 2 turns · up to 2 stacks
-       evasive    raises a stat · always in force · 1 stack
-       charge     builds up to be spent · 4 turns · up to 999 stacks
-       aegis      soaks up damage until it is used up · 3 turns · up to 2 stacks
-       bastion    soaks up damage until it is used up · always in force · 1 stack
-       swelter    builds up for its holder to spend · 5 turns · up to 999 stacks
-       verdure    builds up for its holder to spend · 5 turns · up to 999 stacks
-       moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
-       heft       builds up for its holder to spend · 4 turns · up to 5 stacks
-       stoked     raises a stat · 2 turns · up to 5 stacks
-       ironhide   raises a stat · always in force · up to 2 stacks
-       keenedge   raises a stat · always in force · up to 2 stacks
-       tidewell   raises healing received · always in force · up to 2 stacks
-       phalanx    raises a stat · always in force · up to 2 stacks
-       kinship    raises a stat · always in force · up to 2 stacks
-       sundered   raises a stat · always in force · up to 2 stacks
-       burrowed   raises a stat · 2 turns · 1 stack
+>  1   poison      damages every turn · 3 turns · up to 3 stacks
+       burn        damages every turn · 2 turns · up to 2 stacks
+       weaken      lowers a stat · 3 turns · up to 3 stacks
+       expose      lowers a stat · 2 turns · up to 2 stacks
+       blind       lowers a stat · 2 turns · up to 2 stacks
+       mire        lowers a stat · 2 turns · up to 2 stacks
+       stun        costs a turn · 1 turn · 1 stack
+       taunting    costs a choice of target · 2 turns · 1 stack
+       fury        raises a stat · 3 turns · up to 3 stacks
+       haste       raises a stat · 3 turns · up to 2 stacks
+       focus       raises a stat · 3 turns · up to 2 stacks
+       toughened   raises a stat · always in force · 1 stack
+       veil        raises a stat · 2 turns · up to 2 stacks
+       block       blocks one strike · 2 turns · up to 3 stacks
+       regrowth    restores every turn · 3 turns · up to 3 stacks
+       unleashed   raises a stat · always in force · 1 stack
+       bare        lowers a stat · always in force · 1 stack
+       kindled     raises a stat · always in force · 1 stack
+       fortified   raises a stat · always in force · 1 stack
+       quickened   raises a stat · always in force · 1 stack
+       encumber    lowers a stat · always in force · 1 stack
+       fester      cuts healing received · 2 turns · up to 2 stacks
+       evasive     raises a stat · always in force · 1 stack
+       charge      builds up to be spent · 4 turns · up to 999 stacks
+       aegis       soaks up damage until it is used up · 3 turns · up to 2 stacks
+       bastion     soaks up damage until it is used up · always in force · 1 stack
+       swelter     builds up for its holder to spend · 5 turns · up to 999 stacks
+       verdure     builds up for its holder to spend · 5 turns · up to 999 stacks
+       moisture    builds up for its holder to spend · 5 turns · up to 999 stacks
+       heft        builds up for its holder to spend · 4 turns · up to 5 stacks
+       stoked      raises a stat · 2 turns · up to 5 stacks
+       emberheart  raises a stat · always in force · up to 2 stacks
+       bedrock     raises a stat · always in force · up to 2 stacks
+       tailwind    raises a stat · always in force · up to 2 stacks
+       galvanise   raises a stat · always in force · up to 2 stacks
+       ironhide    raises a stat · always in force · up to 2 stacks
+       keenedge    raises a stat · always in force · up to 2 stacks
+       tidewell    raises healing received · always in force · up to 2 stacks
+       phalanx     raises a stat · always in force · up to 2 stacks
+       kinship     raises a stat · always in force · up to 2 stacks
+       sundered    raises a stat · always in force · up to 2 stacks
+       burrowed    raises a stat · 2 turns · 1 stack
 
   poison
 
   chance  300      30%
-
-
-
-
 
 
 
@@ -9020,6 +9020,10 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   quickened    
   evasive      
   stoked       
+  emberheart   
+  bedrock      
+  tailwind     
+  galvanise    
   ironhide     
   keenedge     
   phalanx      
@@ -9040,10 +9044,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   aegis        
   bastion      
   reserve      builds up for its holder to spend
-  swelter      
-  verdure      
-  moisture     
-  heft         
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.

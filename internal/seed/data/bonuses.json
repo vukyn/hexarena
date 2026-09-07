@@ -18,6 +18,87 @@
       ]
     },
     {
+      "id": "fire_forge",
+      "name": "cùng lửa",
+      "axis": "element",
+      "value": "fire",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "emberheart",
+              "stacks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ground_root",
+      "name": "cùng đất",
+      "axis": "element",
+      "value": "ground",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "bedrock",
+              "stacks": 1
+            }
+          ]
+        },
+        {
+          "at": 3,
+          "grants": [
+            {
+              "status": "bedrock",
+              "stacks": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wind_gust",
+      "name": "cùng gió",
+      "axis": "element",
+      "value": "wind",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "tailwind",
+              "stacks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electric_surge",
+      "name": "cùng điện",
+      "axis": "element",
+      "value": "electric",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "galvanise",
+              "stacks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "metal_ward",
       "name": "cùng thép",
       "axis": "element",
