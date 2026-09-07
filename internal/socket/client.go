@@ -184,8 +184,19 @@ func (c *Client) handshake(ctx context.Context, hello wire.Hello) error {
 // Code is the canonical code this client is connected under.
 func (c *Client) Code() wire.RoomCode { return c.code }
 
-// Seat is which of the room's two places this client took, for the match.
+// Seat is which of the room's two places this client took, for the match, and
+// the empty seat for a client the room welcomed to watch. → Watching, which is
+// the reading to branch on rather than this one.
 func (c *Client) Seat() wire.Seat { return c.mirror.Seat() }
+
+// Watching is the room having welcomed this client to watch rather than to play.
+//
+// ⚠️ **The handshake needed no change for it and that was measured rather than
+// assumed.** NewMirror("") starts seatless, handshake calls takeSeat off the
+// welcome before Receive, and welcomed's check is `welcome.Seat != m.seat` — so a
+// welcome naming no seat is taken by a mirror that has just been told it has
+// none, and the two agree. → Mirror.Watching for the one derivation.
+func (c *Client) Watching() bool { return c.mirror.Watching() }
 
 // Mirror is this client's own battle. → Mirror, on why a client cannot be
 // thinner than one.
@@ -209,6 +220,14 @@ func (c *Client) Close() { c.conn.bye(websocket.StatusNormalClosure, "leaving") 
 // typing; a real client hands in the player's keystrokes instead. A **draft**
 // decision is answered by ClientOptions.Draft, which is a different question and
 // is why this signature did not have to grow one.
+//
+// ⚠️ **A WATCHER needs no chooser and one passed here cannot make it act.** The
+// loop below is the whole of what a spectator runs — it reads, mirrors and checks
+// every digest like any other client — and the only thing it does not do is
+// answer, because Mirror.Asking is false for a watching mirror on every turn
+// including the host's. So a nil chooser is legal here for a watcher and a
+// non-nil one is never reached: answer returns before it, at the one derivation.
+// → Mirror.asking.
 //
 // ⚠️ **It answers before the first read as well as after every message, and that
 // is what makes a drafting room joinable at all.** A room that drafts announces

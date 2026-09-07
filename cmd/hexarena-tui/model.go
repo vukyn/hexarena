@@ -514,7 +514,12 @@ func liveOf(sight socket.Sight, clock draw.PlayClock) draw.PlayLive {
 		Asking: sight.Asking,
 		Side:   sight.Side,
 		Seed:   sight.Seed,
-		Clock:  clock,
+		// ⚠️ **Carried off the reading and never re-derived here.** A watching
+		// mirror's Side is the *host's* half, so this client could not work the
+		// answer out of anything else on a Sight without getting it wrong — and
+		// socket.Mirror.Watching is the one derivation, off wire.Welcome.Watching.
+		Watching: sight.Watching,
+		Clock:    clock,
 	}
 	if len(sight.Refusals) > 0 {
 		live.Refusal = sight.Refusals[len(sight.Refusals)-1].String()
@@ -778,6 +783,18 @@ func (m model) dialling(next joinScreen) tea.Cmd {
 		Version:  version,
 		Squad:    squad,
 		Password: wire.Password(next.Password.Value()),
+		// ⚠️ **The joiner is what says which of the two it means**, which is the
+		// whole reason wire.Hello.Watch exists: the twelve characters a watcher
+		// pastes are the twelve a player pastes, so a second kind of code would be
+		// a second thing for a host to print and a second thing to mistype.
+		//
+		// ⚠️ **The squad above goes out unchanged, and blanking it here would be
+		// wrong rather than tidy.** A watcher's squad is *ignored by the room* —
+		// step 1's decision, and internal/room's own test — so a client that
+		// emptied the field would be restating that rule at this end, where it
+		// could then disagree with the room's version of it. The row on the screen
+		// says what is being brought and the room says what it does with it.
+		Watch: next.Watch,
 	}, books, characters)
 }
 

@@ -148,6 +148,40 @@ type PlayScreen struct {
 	// own battle and sit for ever, while a live screen that quietly went local
 	// would play the opponent's turns for them.
 	Live bool
+	// Watching says this client is a **spectator** of the live battle rather than
+	// one of the two people in it, and it is a third reading of this screen rather
+	// than a fourteenth screen.
+	//
+	// ⚠️ **A mode and not a screen of its own, which is the opposite of the
+	// decision ArrangeScreen took, and the two differ in what they SHARE.** The
+	// arrangement is a cursor over a 3x3 where the draft is a cursor over a list:
+	// no key, no section and no budget in common, so a mode there would have been
+	// two screens in one type. A spectator shares **everything** — the board, the
+	// roster, the queue line, the log and the frame the log is read through, the
+	// heading, the notice and the whole priority in playFit — and differs only by
+	// **absence**. Two copies of that budget is the defect this screen's own row
+	// arithmetic was written to stop, and the second copy is the one that would
+	// silently stop matching.
+	//
+	// ⚠️ **What makes "a watcher is never asked" hold is NOT this field, and that
+	// is deliberate.** It is Pending being nil, which is socket.Mirror.Asking
+	// being false for a watching mirror at the one derivation there is — so every
+	// key that spends a turn is already behind the `p.Pending == nil` return in
+	// Update, which is a guard that was there before spectators existed and is
+	// exercised on every turn of every match. A second guard reading this field
+	// would be a guard a mutation could delete for free, which is the mistake
+	// recorded on battle.healingFor's single floor.
+	//
+	// So what this field decides is only what is **said**: three wordings that
+	// address the reader as one of the two players are replaced by three that do
+	// not. That is Context.Footer's rule, and here the difference is a whole
+	// match — → View, the tail in drawings, and clocks.
+	//
+	// Nought is the reading a forgotten declaration falls into and it is the safe
+	// half: a spectator that quietly went back to being a player would be offered
+	// a turn it can never answer, and a player that quietly went to watching would
+	// be told to press keys that are not there.
+	Watching bool
 	// Cursor is this screen's own read position in a battle it does not own.
 	//
 	// ⚠️ **Live mode may not call Drain.** Drain is Since(b.drained) over an
@@ -319,6 +353,11 @@ func (p PlayScreen) Attach(c Context, live PlayLive) PlayScreen {
 		}
 	}
 	p.Side, p.Seed = live.Side, live.Seed
+	// Taken on every reading rather than only when the battle changes, like the
+	// refusal and the clock below: it is a fact about the connection this reading
+	// came off, and a screen that kept an earlier answer would be a screen whose
+	// mode outlived the match it was told about.
+	p.Watching = live.Watching
 	p.LiveRefusal = live.Refusal
 	// Taken on every reading like the refusal is, because it is a reading rather
 	// than a state: the client counts it down and this is called on every redraw.
@@ -383,6 +422,15 @@ type PlayLive struct {
 	// they arrive on every reading rather than being set once.
 	Side hex.Side
 	Seed uint64
+	// Watching is this client watching the match rather than playing in it, which
+	// is socket.Sight.Watching and therefore wire.Welcome.Watching.
+	//
+	// ⚠️ **Side above is then the HOST's half rather than this client's**, because
+	// a spectator plays neither and the wire.Start on the room's record carries the
+	// host's. So the board a watcher reads is the board the host reads, and the two
+	// halves are the same `A` and `E` on both screens — which is what lets the
+	// clocks be worded off those letters. → PlayScreen.Watching.
+	Watching bool
 	// Refusal is the name of the latest protocol refusal, empty when there has
 	// been none. → PlayScreen.LiveRefusal for why it is a name.
 	Refusal string
@@ -722,6 +770,21 @@ func (p PlayScreen) undo(c Context) PlayScreen {
 //
 // esc, ?, ↑/↓ and the log's own keys are unchanged: reading and scrolling touch
 // no turn, and a Back is still the client's to interpret.
+//
+// # A watcher, and why it needed no seventh guard
+//
+// ⚠️ **A spectator presses every key here and changes nothing, and it is the
+// `p.Pending == nil` return below that says so rather than a guard of its own.**
+// A watching mirror is never asking — socket.Mirror.asking refuses one at the one
+// derivation there is — so Pending is nil on every turn of the match including
+// the host's, and ↑/↓, enter, space, `?`, `a` and `p` all fall past that return
+// without reaching the switch under it. The six live guards above cover the rest:
+// `n`, `u` and the save key are behind `!p.Live`, and a watcher is Live.
+//
+// A seventh guard reading PlayScreen.Watching would be a second declaration of
+// one invariant, and the note on battle.healingFor's single floor is what says
+// what that costs: with two floors, deleting either reddens nothing. What
+// Watching decides is the **wording** — → View, waiting, clocks.
 func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Action) {
 	// Saving is asked before the switch because it answers to more than one
 	// keystroke; IsSaveKey is the single declaration of which.
@@ -1339,7 +1402,7 @@ func (p PlayScreen) drawings(c Context) playDrawn {
 		// It covers the answered turn as well as the empty one, because from
 		// this side of the wire they are one state: the decision has gone and
 		// the board is waiting on the other end. → the Answered field.
-		drawn.tail = []string{c.Style.Dim.Render(c.Text(i18n.PlayLiveWaiting))}
+		drawn.tail = []string{c.Style.Dim.Render(c.Text(p.waiting()))}
 	case p.Pending != nil:
 		drawn.tail = drawnRows(p.choices(c, read))
 	}
@@ -1400,6 +1463,16 @@ func (p PlayScreen) View(c Context) (string, string) {
 	if p.Live {
 		footer = c.Text(i18n.PlayLiveFooter)
 	}
+	// ⚠️ **A watcher's footer names the scroll keys and the way out, and nothing
+	// else, because nothing else is there.** The live footer names ↑/↓, enter, ?
+	// and p — four keys a watching screen ignores, every one of them behind the
+	// `p.Pending == nil` return in Update — and Context.Footer's own rule is that
+	// a footer naming a key the screen ignores is the program promising something
+	// it does not do. Here what it would be promising is a turn of somebody else's
+	// match.
+	if p.Watching {
+		footer = c.Text(i18n.PlayWatchFooter)
+	}
 	if p.Aiming {
 		footer = c.Text(i18n.PlayAimFooter)
 		if p.Live {
@@ -1415,7 +1488,7 @@ func (p PlayScreen) View(c Context) (string, string) {
 		// would be this screen answering a question nobody asked.
 		if p.Live {
 			return p.heading(c, "") + "\n\n  " +
-				c.Style.Dim.Render(c.Text(i18n.PlayLiveWaiting)), footer
+				c.Style.Dim.Render(c.Text(p.waiting())), footer
 		}
 		return p.heading(c, "") + "\n\n  " + c.Text(i18n.SquadsEmpty), footer
 	}
@@ -1462,6 +1535,25 @@ func (p PlayScreen) View(c Context) (string, string) {
 	return strings.Join(body, "\n"), footer
 }
 
+// waiting is the line a live screen draws where a player's option list goes,
+// which is the one row live mode adds to the drawing.
+//
+// ⚠️ **One declaration for the two sites that draw it.** It is drawn between
+// battles (the whole body, with no battle to show) and between turns (the tail
+// row), and the two sentences it can be have to agree: a screen that said
+// *"waiting on the other player"* in one place and *"watching"* in the other
+// would be telling the reader they were in the match on one screen and not on the
+// next.
+//
+// A watcher is waiting on **both** of them, which is why this is a different
+// sentence rather than the live one with a word swapped.
+func (p PlayScreen) waiting() i18n.Key {
+	if p.Watching {
+		return i18n.PlayWatchWaiting
+	}
+	return i18n.PlayLiveWaiting
+}
+
 // heading is the screen's title row, and the log's position in the history when
 // there is one.
 //
@@ -1495,15 +1587,27 @@ func (p PlayScreen) heading(c Context, position string) string {
 // countdown is the room's allowance running out; a local battle has no room, no
 // allowance and nobody waiting, and a live battle between turns has no open turn
 // to count. → PlayClock.Waiting, whose nought is that reading.
+// ⚠️ **A WATCHER gets the same two numbers under different words**, and the
+// numbers needed no change at all: the client counts down for whichever side the
+// open turn belongs to and PlayClockYou is *the half this screen is drawn from*,
+// which on a watching mirror is the host's — so `Yours` is the ally half's clock
+// and `Theirs` the enemy half's, already, and only the label was a lie. The
+// wording names the halves `A` and `E`, which are the labels tui.Tags puts on
+// every row of the board and the roster the reader is looking at; a spectator has
+// no `you`, and the seat words are on neither.
 func (p PlayScreen) clocks(c Context) string {
 	if !p.Live {
 		return ""
 	}
 	yours, theirs := playClock(p.Clock.Yours), playClock(p.Clock.Theirs)
-	switch p.Clock.Waiting {
-	case PlayClockYou:
+	switch {
+	case p.Clock.Waiting == PlayClockYou && p.Watching:
+		return c.Text(i18n.PlayWatchTurnAlly, yours, theirs)
+	case p.Clock.Waiting == PlayClockThem && p.Watching:
+		return c.Text(i18n.PlayWatchTurnEnemy, yours, theirs)
+	case p.Clock.Waiting == PlayClockYou:
 		return c.Text(i18n.PlayClockYours, yours, theirs)
-	case PlayClockThem:
+	case p.Clock.Waiting == PlayClockThem:
 		return c.Text(i18n.PlayClockTheirs, yours, theirs)
 	}
 	return ""

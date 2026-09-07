@@ -1112,6 +1112,12 @@ const (
 	WaitingForPeer
 	WaitingRoom
 	WaitingSeat
+	// WaitingNoSeat is the row WaitingSeat becomes for a spectator, and it is a
+	// wording rather than an empty seat drawn through the one above: Lang.Seat
+	// hands back whatever it was given for a name it does not know, so a watcher
+	// would read `seat ` with nothing after it — a row that looks like the program
+	// failed to find something rather than like a fact about this client.
+	WaitingNoSeat
 	WaitingFormat
 	WaitingFooter
 
@@ -1152,6 +1158,30 @@ const (
 	// nobody can watch.
 	PlayClockYours
 	PlayClockTheirs
+
+	// The battle screen as a **spectator** reads it: a footer, the line where a
+	// player's option list goes, and the two halves' clocks.
+	//
+	// ⚠️ **Four wordings rather than the live four with the second person taken
+	// out**, which is the rule the live footers themselves are written under.
+	// Every live wording says *you* — `waiting on the other player`, `your turn`,
+	// `esc leave the match` — and a watcher is neither of the two people those
+	// sentences are about, so the difference is whole clauses rather than a blank.
+	//
+	// ⚠️ **The two clocks name the halves the board already labels, `A` and `E`.**
+	// A watcher has no `you`, and the seat words — host and guest — are not on the
+	// board anywhere: what a spectator is looking at is tui.Tags' own letters, so
+	// naming the sides by them is naming what is in front of the reader. → the
+	// battle screen's clocks, and the test that holds these letters against
+	// tui.Tags so a rename there reddens rather than drifting.
+	//
+	// They take the two clocks in the same order as the pair above, the ally half
+	// first, for that pair's own reason: a number that changes position when the
+	// turn changes is a number nobody can watch.
+	PlayWatchWaiting
+	PlayWatchFooter
+	PlayWatchTurnAlly
+	PlayWatchTurnEnemy
 
 	// The composition-bonus reference: what a squad is paid for what it shares.
 	//
@@ -1307,6 +1337,20 @@ const (
 	// the hello carrying the squad goes first. → joinScreen.Squad, and
 	// wire.CodeSquadUnwanted.
 	JoinBringNone
+	// The join screen's watch toggle: the row's label and the two answers it
+	// shows.
+	//
+	// ⚠️ **Two answers rather than one line drawn when the toggle is on.** A
+	// toggle whose off state draws nothing is a toggle a reader cannot tell they
+	// have not pressed, and the footer naming the key is then the only evidence
+	// the mode exists at all.
+	//
+	// The "on" answer says what it costs — no seat — because that is the whole
+	// difference and it is not guessable from the word: a client that watches is
+	// welcomed into a room that is already full, and it is never asked for a turn.
+	JoinWatchLabel
+	JoinWatchOn
+	JoinWatchOff
 	// The four footers, one per thing this screen can be doing. The reading one
 	// names no decision key at all, because the decision is not this player's to
 	// take — a footer naming a key the screen ignores is the failure

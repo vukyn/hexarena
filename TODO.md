@@ -1438,16 +1438,129 @@ is only so the shape is readable.
                   `TestAWatchersActIsRefusedAndTheMatchIsWhereItWas`,
                   `TestAShutdownTellsEveryWatcher`, `TestAWatcherLeavingEndsNothing`
                   and `TestATableIsStillTwoSeatsAndAFixedWalk`.
-            - [ ] **A watching TUI — step 5.** A client welcomed with no seat
-                  builds the same mirror off the recorded `wire.Start` and applies
-                  the same `wire.Turn`s, so the battle screen is the one that is
-                  already there. What is new is that **no key answers**:
-                  `Welcome.Watching()` is the switch, the prompt is never this
-                  client's, and the footer has to say so rather than offering a
-                  chooser nothing will take. The countdown is still drawable — it
-                  is the seat on turn's allowance and a watcher can see whose it
-                  is — and ⚠️ `playFit`'s budget is already over its rows at 5v5,
-                  which is its own open item above.
+            - [x] **A watching TUI — step 5. Done 2026-09-07.** A client
+                  welcomed with no seat builds the same mirror off the recorded
+                  `wire.Start` and applies the same `wire.Turn`s, so the battle
+                  screen is the one that is already there — and the handshake
+                  needed **no change at all**, which was checked rather than
+                  assumed: `NewMirror("")` starts seatless, `Client.handshake`
+                  calls `takeSeat` off the welcome before `Receive`, so
+                  `welcomed`'s `welcome.Seat != m.seat` compares two empty seats
+                  and agrees.
+                  ⚠️ **This item said *"the prompt is never this client's"* as
+                  though it already held, and it did not — that sentence was the
+                  bug.** `Mirror.asking` derives the turn from
+                  `unit.Side != m.side`, and `m.side` comes off `wire.Start`,
+                  which for a watcher is the **host's** side because that is what
+                  step 2 records and a spectator plays neither half. So a watcher
+                  believed it was being asked on every one of the host's turns:
+                  `Play` called the chooser and sent a `wire.Act`, the room
+                  refused it (`CodeNotYourTurn`, step 2), and a spectator was a
+                  machine that spammed refusals at a match it came to look at.
+                  Measured with the guard deleted: **119 of a two-battle match's
+                  turns**, 138 refusals down one watcher's socket.
+                  ⚠️ **Fixed at ONE declaration**, `Mirror.asking`, which is the
+                  single derivation of "I am being asked" that `Decide`, `Play`'s
+                  `answer` and `Sight.Asking` all come through — and it asks
+                  `Mirror.watching()` (`m.seated && m.welcome.Watching()`) rather
+                  than comparing `m.seat` against `SeatHost`, for the reason step
+                  1 gives. Nothing re-derives the question: `Sight.Watching`
+                  carries it to the client and `PlayLive.Watching` to the screen.
+                  ⚠️ **A mode of `PlayScreen`, not a fourteenth screen, and that
+                  is the OPPOSITE of step 5c's answer for the arrangement — the
+                  two differ in what they share.** The arrangement is a cursor
+                  over a 3x3 where the draft is a cursor over a list: no key, no
+                  section and no budget in common. A spectator shares
+                  **everything** — board, roster, queue line, log, log frame,
+                  heading, notice and the whole priority in `playFit` — and
+                  differs only by absence, so a screen of its own would be that
+                  budget written twice with the second copy free to stop
+                  matching.
+                  ⚠️ **What holds "a watcher is never asked" on the screen is NOT
+                  a flag**, deliberately: `Pending` is nil because `Asking` is,
+                  so every decision key is already behind `Update`'s
+                  `p.Pending == nil` return — a guard that predates spectators and
+                  runs on every turn of every match. A second guard reading
+                  `PlayScreen.Watching` would be the two-floors mistake recorded
+                  on `battle.healingFor`. What the flag decides is only what is
+                  **said**, which is `Context.Footer`'s rule and here the
+                  difference is a whole match: `PlayWatchFooter` (`[/]` and `esc`
+                  only, where the live footer names `↑/↓`, `enter`, `?` and `p`),
+                  `PlayWatchWaiting` in place of *"waiting on the other player"*,
+                  and the clock.
+                  ⚠️ **The countdown prediction was half right.** The **numbers**
+                  needed no change — `clockOf` counts down for whichever side the
+                  open turn belongs to and `PlayClockYou` is *the half this screen
+                  is drawn from*, which on a watching mirror is the host's — but
+                  the two **wordings** are `your turn` and `their turn`, and a
+                  spectator has no `you`. So it takes a second pair,
+                  `PlayWatchTurnAlly`/`Enemy`, naming the halves `A` and `E`
+                  because those are the labels `tui.Tags` already puts on every
+                  row of the board and the roster in front of the reader;
+                  `TestTheWatchingClockNamesTheHalvesTheBoardLabels` is what makes
+                  a rename in `tui` reach them.
+                  ⚠️ **`playFit` is not tighter for a watcher and is looser**: the
+                  tail is the one waiting row rather than an option list, which is
+                  the section every other one is budgeted around. The 5v5 item
+                  above is untouched.
+                  **How it is reached: a `ctrl+w` toggle on the join screen**, and
+                  the reason is the refusal rather than taste. A client cannot
+                  know a room is full — or that it drafts — until it has been
+                  **welcomed**, so the way anybody arrives at this is *typed the
+                  code, pressed enter, was told `room_full`*; the code and the
+                  password are still in the fields at that moment, so the second
+                  attempt is one chord and one enter. A flag would need the
+                  program restarted **and** would make the whole session a
+                  spectator; a menu entry would need the code typed again. It is a
+                  **chord** because every key the join screen does not answer falls
+                  through to the focused text field, so a bare `w` would be a `w`
+                  typed into the room code — which is why `model.key` answers
+                  `ctrl+v` itself one layer out. ⚠️ The cost is that bubbles'
+                  own `ctrl+w` (delete the word before the cursor) no longer
+                  reaches either field, paid deliberately: the two values are a
+                  twelve-character code and a password, neither of which has a
+                  word in it. The row is drawn in **both** states, because a
+                  toggle whose off state draws nothing is one a reader cannot tell
+                  they have not pressed, and the squad row goes out unchanged — a
+                  watcher's squad is *ignored by the room* (step 1), so a client
+                  that blanked it would be restating that rule at this end.
+                  ⚠️ **A watcher of a DRAFTING room is out of scope and does not
+                  crash**: `Mirror.draftAsking` compares `onTurn != m.seat` and an
+                  empty seat is never either of the two, so such a client is asked
+                  nothing there either — it lands on the draft screen with nothing
+                  recorded until the draft closes, which is step 7's to draw.
+                  The nets: `TestAWatchingClientIsNeverAskedOnAnyTurn` (a real
+                  spectator over a real socket, the chooser a **trap** that
+                  answers rather than refusing, with the count of readings on which
+                  the *host's* unit was on turn asserted as the premise — 76 of 173
+                  — because "never asked" is trivially true of a client that never
+                  saw one), `TestAWatchingClientSendsNothingForAWholeMatch`
+                  (measured at the far end through `Mirror.Refusals`, with a second
+                  watcher sending one act by hand so an empty list cannot be an
+                  instrument that reads nothing),
+                  `TestAWatchersDigestsAgreeWithTheRoomsForEveryTurn` (the same
+                  count as both players — a spectator is a mirror and checks every
+                  digest), `TestAWatcherJoiningMidMatchEndsOnTheSameBoard` (the
+                  client's half of step 4's same-bodies claim: same cells, health
+                  and deaths, which the same bodies applied in the wrong order
+                  would not give), `TestAWatcherSurvivesBothEndings` (a match that
+                  finishes sends nothing and the client computes it; one abandoned
+                  arrives as the record's `wire.Closed{ClosureLeft}` — the third
+                  append site's only reader), `TestNoKeyAWatcherPressesReachesTheMatch`
+                  and `TestTheWatchingFootersNameNoKeyTheScreenIgnores` in
+                  `internal/screen` (56 keys, counted), and
+                  `TestAMatchIsWatchedFromTheJoinScreenToTheResultOverALoopbackListener`
+                  in `cmd/hexarena-tui` (59 keys, counted; the whole vertical
+                  through the keys a reader presses) beside
+                  `TestTheWatchToggleSurvivesARefusalAndIsSentOnTheNextTry`.
+                  ⚠️ **The goldens: `internal/screen` gained two entries and moved
+                  nothing** (296 lines added, 0 removed), and `cmd/hexarena-tui`
+                  gained one and moved the three join entries by exactly the four
+                  rows and the footer the toggle changed (60 lines, all of them the
+                  join screen's). The new entries are built from `atABattleOf` over
+                  `battleCast`, which is the same order-independent fixture the two
+                  live entries already use, so they add **no second source** of the
+                  churn TODO.md L2395 records.
             - [ ] **The host's flag — step 6.** `cmd/hexarena-host`, which is the
                   one place in the repository a room's configuration is chosen, so
                   a room that accepts watchers is a flag there and nowhere else —

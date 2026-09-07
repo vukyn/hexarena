@@ -199,7 +199,37 @@ func (m *Mirror) Welcome() (wire.Welcome, bool) {
 	return m.welcome, m.seated
 }
 
+// Watching reports whether the room welcomed this client to **watch** rather
+// than to play, which is exactly the absence of a seat.
+//
+// ⚠️ **It is one derivation off wire.Welcome.Watching and there must not be a
+// second.** That function is already this repository's single declaration of the
+// condition — the room, the transport and the screen each have to ask it — and it
+// is deliberately not `Seat != SeatHost`, which is the same answer today and
+// stops being one the moment anything else can sit down. So nothing here compares
+// m.seat against anything, and nothing outside this file re-derives the question:
+// what a caller gets is this reading, or Sight.Watching beside it.
+func (m *Mirror) Watching() bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.watching()
+}
+
+// watching is Watching with the lock already held. → over, for why the pair
+// exists.
+//
+// The seated check is what keeps a client that has not been welcomed out of it:
+// the zero wire.Welcome names no seat, so an unwelcomed mirror would read as a
+// watcher rather than as a client that has been told nothing.
+func (m *Mirror) watching() bool { return m.seated && m.welcome.Watching() }
+
 // Side is the half of the board this client plays in the battle in progress.
+//
+// ⚠️ **For a WATCHER this is the host's half and not this client's**, because a
+// watcher plays neither: the wire.Start on the room's record carries the host's
+// side, so a spectator watches from the host's chair. That is what makes it the
+// wrong thing to compare a prompt's unit against — → asking, which is where that
+// comparison lives and where a watcher is refused before it is reached.
 func (m *Mirror) Side() hex.Side {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -340,7 +370,24 @@ func (m *Mirror) Asking() (*battle.Prompt, bool) {
 }
 
 // asking is Asking with the lock already held. → over, for why the pair exists.
+//
+// ⚠️ **A watcher is never asked, and this is the ONE place that is declared.**
+// The comparison below is against m.side, which for a spectator is the *host's*
+// half — that is what the room records on wire.Start, because a watcher plays
+// neither half and has to watch from somebody's chair. So without this line a
+// watcher believes it is being asked every time the host's unit is on turn: Play
+// would call the chooser and send a wire.Act, the room would refuse it with
+// wire.CodeNotYourTurn, and a spectator would be a machine that spams refusals at
+// a match it came to look at.
+//
+// It is placed at the one derivation rather than at each reader — Decide, Play's
+// answer and Sight.Asking all come through here — and it asks Watching rather
+// than comparing m.seat to SeatHost, for the reason wire.Welcome.Watching's own
+// comment gives.
 func (m *Mirror) asking() (*battle.Prompt, bool) {
+	if m.watching() {
+		return nil, false
+	}
 	if m.fight == nil || m.prompt == nil || m.capped {
 		return nil, false
 	}
@@ -373,6 +420,15 @@ type Sight struct {
 	// finished by this client's own arithmetic.
 	Seated bool
 	Over   bool
+	// Watching is the room having welcomed this client to watch rather than to
+	// play, which is Mirror.Watching and therefore wire.Welcome.Watching.
+	//
+	// ⚠️ **A renderer reads this and never re-derives it.** Side is the *host's*
+	// half on a watching mirror, so "am I the one being asked" is not a question a
+	// screen may answer from the reading it draws — Asking is already nil here,
+	// and this is what a screen needs in order to say so instead of offering keys
+	// nothing will take.
+	Watching bool
 	// Capped is the battle in progress having stopped at the room's turn cap,
 	// which is the one state where the battle still holds an open prompt that
 	// **nobody is being asked about** — the room stops asking on the same turn.
@@ -424,6 +480,7 @@ func (m *Mirror) Read(fn func(Sight)) {
 		Index:    m.index,
 		Seated:   m.seated,
 		Over:     m.over(),
+		Watching: m.watching(),
 		Capped:   m.capped,
 		Welcome:  m.welcome,
 		Closure:  m.closure,
