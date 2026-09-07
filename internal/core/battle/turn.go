@@ -1292,7 +1292,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		MaxStrikes:    known.MaxStrikes,
 		Affinity:      multiplier,
 		Defense:       targetStats[progression.Defense],
-		Pierce:        known.Pierce,
+		Pierce:        b.pierces(actor, known),
 		Convert:       b.converts(actor),
 		Crit:          known.Crit,
 		SkillAccuracy: known.Accuracy,
@@ -1340,7 +1340,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			event := Event{
 				At: turn.At, Turn: turn.Number, Actor: actor.ID, Target: target.ID,
 				Skill: known.ID, Strike: strike + 1, Chance: chance,
-				Multiplier: multiplier, Power: power, Pierce: known.Pierce,
+				Multiplier: multiplier, Power: power, Pierce: b.pierces(actor, known),
 				Remaining: target.HP,
 			}
 			switch attempt.Outcome {
@@ -1591,6 +1591,30 @@ func (b *Battle) converts(actor *Unit) int {
 		return scale.Base
 	}
 	return total
+}
+
+// pierces is what one blow ignores of its target's defence: the skill's own share
+// plus whatever the caster is carrying.
+//
+// ⚠️ **It is read off the ACTOR, which is what makes it the same shape as
+// `converts`.** The note at that function's call site in ai.go says why such a
+// field cannot be left out of a rating's hit: a rating that built its blow without
+// it would price every strike a piercing unit throws as smaller than the one it
+// lands, and against an armoured target — the exact board the effect is for — it
+// would prefer the wrong skill. One function, read at all three sites that fill a
+// Hit, so the resolution, the log line and the price cannot disagree.
+//
+// Added to the skill's own share rather than replacing it, and a skill that
+// pierces nothing is still raised.
+//
+// ⚠️ **No cap here, and there was one until a mutation could not break it.** The
+// sum of a skill's share and its holder's can cross the base where neither did,
+// which looks like it needs clamping — and combat.Pierced already reads anything
+// at or past the base as "resolve against no defence at all", so a clamp here
+// changes no figure anywhere. A clause no mutation can break is a clause that is
+// not doing anything, which is the rule pastAWall is written under.
+func (b *Battle) pierces(actor *Unit, known skill.Skill) int {
+	return known.Pierce + actor.Statuses.PierceShare()
 }
 
 // drainShare bounds a total drain at the base. See the note at its call site for

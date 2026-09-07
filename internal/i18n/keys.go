@@ -675,6 +675,11 @@ const (
 	// operator reads as a sentence in neither language.
 	BlurbStatusMendsHealing
 	BlurbStatusMendsHealingOnce
+	// What a pierce share lets its holder's blows ignore. Two wordings for the
+	// reason every pair here is two, and the "per stack" half only exists where a
+	// second stack can.
+	BlurbStatusPierces
+	BlurbStatusPiercesOnce
 	BlurbStatusRaises
 	BlurbStatusLowers
 	BlurbStatusRaisesOnce

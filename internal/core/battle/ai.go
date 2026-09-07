@@ -438,7 +438,7 @@ func (b *Battle) hitAgainst(actor *Unit, actorStats progression.Values, declared
 		MaxStrikes: declared.MaxStrikes,
 		Affinity:   multiplier,
 		Defense:    targetStats[progression.Defense],
-		Pierce:     declared.Pierce,
+		Pierce:     b.pierces(actor, declared),
 		// The actor's own conversion, read here for the reason this whole
 		// function exists: a rating that built its hit without it would price
 		// every blow a converting unit throws as smaller than the one it lands,
