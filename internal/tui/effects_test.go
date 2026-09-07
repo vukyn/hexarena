@@ -7,7 +7,7 @@ import (
 
 // The effects column had no bound at all until a squad could hold three
 // composition bonuses at once. One unit carrying `phalanx x2 (always)`,
-// `tidewell x2 (always)`, `kinship x2 (always)` and a poison draws 124 cells into
+// `tidewell x2 (always)`, `heartwood x2 (always)` and a poison draws 126 cells into
 // a row that has 60, and `TestEveryWordingFitsTheMinimumWidth` is what said so.
 //
 // ⚠️ Bonuses stack by design and a per-element table is eight more of them, so
@@ -17,7 +17,7 @@ import (
 
 func TestTheEffectsColumnStaysInsideItsRoom(t *testing.T) {
 	many := []string{
-		"phalanx x2 (always)", "tidewell x2 (always)", "kinship x2 (always)",
+		"phalanx x2 (always)", "tidewell x2 (always)", "heartwood x2 (always)",
 		"poison x3 (2t)", "burn (3t)",
 	}
 	drawn := elided(many, effectsRoom)

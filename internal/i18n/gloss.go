@@ -129,11 +129,10 @@ var (
 		// rather than the mechanism: what the holder has is a sore that will not
 		// close, and "less healing received" is the arithmetic under it.
 		"fester": "lở loét",
-		// A buff, so a noun. It is what a squad gets for standing with its own:
-		// not "nhanh nhẹn" or "cuồng nộ", which are things done to a unit for a
-		// few turns, but the standing fact of having kin of the same element on
-		// the board beside it.
-		"kinship":    "đồng khí",
+		// The composition bonuses. A buff each, so a noun each: what a squad gets
+		// for standing with its own is a standing fact about the board, not
+		// something done to a unit for a few turns — so none of them is worded
+		// like "nhanh nhẹn" or "cuồng nộ".
 		"phalanx":    "trận thế",
 		"tidewell":   "mạch nguồn",
 		"keenedge":   "lưỡi sắc",

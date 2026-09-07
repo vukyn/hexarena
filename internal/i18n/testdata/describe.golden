@@ -1095,11 +1095,6 @@ Tăng máu 10% mỗi cộng dồn.
 Tối đa là 20%.
 Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
 
-[status] kinship
-Tăng công 10% mỗi cộng dồn.
-Tối đa là 20%.
-Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
-
 [status] sundered
 Chỉ nằm đó, không làm gì.
 Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
@@ -2255,11 +2250,6 @@ Raises a stat · always in force · up to 2 stacks.
 
 [status] heartwood
 Raises health by 10% per stack.
-At its cap that is 20%.
-Raises a stat · always in force · up to 2 stacks.
-
-[status] kinship
-Raises attack by 10% per stack.
 At its cap that is 20%.
 Raises a stat · always in force · up to 2 stacks.
 

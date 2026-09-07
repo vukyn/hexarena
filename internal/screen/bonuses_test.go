@@ -70,13 +70,13 @@ func TestTheBonusCaveatIsDrawnOnceRatherThanPerRow(t *testing.T) {
 func TestTheBonusRoomLeavesTheWidestDescriptionItsRows(t *testing.T) {
 	c, _ := start(t, i18n.Vi)
 	small := []composition.Bonus{{ID: "one", Rungs: []composition.Rung{
-		{At: 2, Grants: []composition.Grant{{Status: "kinship", Stacks: 1}}},
+		{At: 2, Grants: []composition.Grant{{Status: "heartwood", Stacks: 1}}},
 	}}}
 	big := []composition.Bonus{{ID: "one", Rungs: []composition.Rung{
-		{At: 2, Grants: []composition.Grant{{Status: "kinship", Stacks: 1}}},
-		{At: 3, Grants: []composition.Grant{{Status: "kinship", Stacks: 2}}},
-		{At: 4, Grants: []composition.Grant{{Status: "kinship", Stacks: 3}}},
-		{At: 5, Grants: []composition.Grant{{Status: "kinship", Stacks: 4}}},
+		{At: 2, Grants: []composition.Grant{{Status: "heartwood", Stacks: 1}}},
+		{At: 3, Grants: []composition.Grant{{Status: "heartwood", Stacks: 2}}},
+		{At: 4, Grants: []composition.Grant{{Status: "heartwood", Stacks: 3}}},
+		{At: 5, Grants: []composition.Grant{{Status: "heartwood", Stacks: 4}}},
 	}}}
 	narrow, wide := bonusesRoom(c, small), bonusesRoom(c, big)
 	if wide >= narrow {
