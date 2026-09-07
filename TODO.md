@@ -3491,6 +3491,90 @@ is only so the shape is readable.
       auto-battle simply never chooses it — which also means every squad
       measurement that includes it is measuring a unit one skill short.
 
+- [ ] **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
+      Built and measured on 2026-09-07 while closing the `reckless` item, reverted
+      because that trait is not the one that wants it, and kept here because the
+      *mechanism* is sound and is the only cost shape this engine cannot currently
+      express.
+
+      **Why it is worth having.** Every dial a trait offers today is a **stat**,
+      and a stat cannot separate two matchups: both gates it moves are the same
+      event — a strike crossing a kill threshold — so every amount moves the long
+      grind and the short rout together. That is the wall all three of `reckless`'s
+      own dials hit. **Duration is not a stat.** A trait behind `below_health`
+      arrives when its holder is losing; one behind `above_health` *leaves* then —
+      so it costs a great deal in a battle that goes long and nothing at all in one
+      that is over while the holder is healthy. Nothing else in the book can say
+      that.
+
+      ⚠️ **Do not resurrect it for `reckless`.** It was measured there and the size
+      is not there: best rung **29.7%** against a floor of **36.9%**, and the curve
+      is not monotone. → `README.md` § *What gating `reckless` was worth* for the
+      table. What this needs is a trait authored *for* it — a big grant whose
+      author wants it to lapse as its holder is worn down — rather than a trait
+      being rescued with it.
+
+      **What it costs to build**, from having done it once:
+      - `scale.AtOrAboveShare`, the twin of `AtOrBelowShare`. The two overlap at
+        exactly one point on purpose — a value on the threshold satisfies both —
+        so a pair of traits either side of one number covers the whole bar with
+        nobody falling through.
+      - `passive.Condition` gains the term; the file schema gains `above_health`;
+        `ParseBook` refuses **both ends at once** (a band is two rules wearing one
+        clause, and every screen words a gate as one clause) and refuses a `while`
+        holding no threshold at all. ⚠️ That second refusal **changes an existing
+        message**: `below_health: 0` used to be "want a share in parts per
+        thousand" and becomes "no threshold in it", which is a case in
+        `TestConditionRejections`.
+      - `Marshal` carries the new term, or a round-trip drops it.
+      - Wording: a second key beside `BlurbTraitWhile` in both languages, a branch
+        in `describe.go`, and the gate column in `cmd/hexforge/list.go`, which
+        hard-codes the word "under".
+
+      **The first subject, as asked for: a guard that holds while its holder is
+      fresh.** Raise defence by X%, and while the holder is above Y% health raise
+      it by Z% instead. It is the polarity `reckless` wanted turned around — a
+      *benefit* that lapses as its holder is worn down rather than a *cost* that
+      does — and it decouples the same way and for the same reason: worth a great
+      deal in a rout that ends at full health, worth almost nothing in a grind. It
+      is also the natural counterpart to `blaze`, which grows as its holder falls,
+      so the two would read as a pair rather than as one idea twice.
+
+      ⚠️ **The whole-trait gate cannot express it, and this is the schema question
+      to settle first.** `While` gates the *trait*, so what is expressible today is
+      one tier — "+Z% while above Y, nothing below" — and the two-tier shape needs
+      a **per-grant** `while`: an ungated grant carrying X and a gated one carrying
+      the difference. Splitting it across two traits is not the answer, because a
+      character has trait slots and one idea may not cost two of them. So the work
+      is `Grant` gaining its own optional condition, with the trait-level one kept
+      for the whole-trait case — and the existing refusal carried down with it, since
+      an Absorb grant behind a gate is refilled every time the gate reopens and that
+      rule is about the *grant* rather than about the trait.
+
+      ⚠️ **Two tiers do not add up to the sum of their faces.** `modifier.Set.Stat`
+      saturates a change towards a floor rather than applying it — a −400‰ term on a
+      base of 400 fights at 290, not 240 — so an author writing X and Z and reading
+      them as percentages will be charged noticeably less than the arithmetic says,
+      and the second tier is worth less than the first because it is applied into an
+      already-moved stat. Price both tiers by measurement, not by addition; see
+      § *What softening `bare`'s defence was worth* for how short that dial turned
+      out to be.
+
+      ⚠️ **And one real defect that only appears once the term exists.**
+      `price.go`'s reply pricing reads the gate on the holder **as the board
+      stands**, with a comment arguing the imprecision is safe because
+      `passive.Condition` carries nothing but `BelowHealth` — so a gate can only
+      turn *on* as its holder is hurt, and the miss falls in the direction every
+      cap in that file errs in. **That reasoning dies the day this term lands**: a
+      gate at the top of the bar turns **off** as its holder is hurt, so the same
+      line would charge for a reply that will never be made — the one direction
+      that file does not err in. The fix is one expression: read the gate against
+      `holder.HP - dealt`, which is exactly where `answer` reads it, so the two
+      agree exactly instead of approximately. No shipped trait carries a `while`
+      and a `replies` at once (`blaze` and `last_gasp` gate; `venom_blood`,
+      `thorns`, `ballast` and `static` reply), so nothing changes on today's data —
+      but the *rule* would allow one, and this is the site that would be wrong.
+
 - [ ] **Four ways of playing the board that the engine cannot express yet.**
       Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four
       canonical Alakazam mechanics turned out to have no home. They are listed
