@@ -9,6 +9,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/i18n"
+	"github.com/vukyn/hexarena/internal/tui"
 )
 
 // # The battle screen over a battle it does not drive
@@ -672,5 +673,53 @@ func TestACountdownReadsAsAClock(t *testing.T) {
 		if len(seen) != 1 {
 			t.Errorf("minute %d is drawn at %d different widths", minute, len(seen))
 		}
+	}
+}
+
+// TestALiveRedrawDrawsTheBattleAsItStandsNow is the other half of the rule that
+// keeps a redraw off the mirror's battle.
+//
+// A live screen draws a reading rather than the battle, so the reading has to be
+// taken on **every** attach: taken once, when the battle pointer first arrives,
+// it would be the opening board for the whole match — a screen that is wrong
+// about every number on it while every event in the log underneath is right.
+//
+// ⚠️ **Nothing else in the suite could see that.** The event history is read by
+// its own cursor and would go on growing correctly, the goldens attach once and
+// draw once, and the race reproducer in cmd/hexarena-tui only asks whether the
+// battle was touched — not whether what was drawn instead was current. So this
+// asserts the drawn roster **is** the battle's roster now, rather than that it
+// changed.
+//
+// *Sees:* the reading taken only when the battle pointer changes, as a stale
+// board.
+// *Cannot see:* a reading taken outside the lock, which is the reproducer's.
+func TestALiveRedrawDrawsTheBattleAsItStandsNow(t *testing.T) {
+	c, _ := start(t, i18n.En)
+	fight, prompt := aBattleNobodyHereDrives(t, c, 3)
+	live := NewPlayScreen().Attach(c, PlayLive{Fight: fight, Asking: prompt})
+
+	opening := strings.Join(live.drawings(c).roster, "\n")
+	if opening != tui.Roster(fight, live.Tags) {
+		t.Fatalf("the first attach draws a roster the battle does not agree with:\n%s", opening)
+	}
+
+	// The room takes some turns, which is the whole point: the screen is holding
+	// a pointer to a battle that has moved on underneath it.
+	for range 6 {
+		prompt = steppedByTheRoom(t, fight, prompt)
+		if prompt == nil {
+			break
+		}
+	}
+	now := tui.Roster(fight, live.Tags)
+	if now == opening {
+		t.Fatal("six turns moved nothing on the roster, so this test cannot tell a stale " +
+			"reading from a fresh one")
+	}
+
+	live = live.Attach(c, PlayLive{Fight: fight, Asking: prompt})
+	if got := strings.Join(live.drawings(c).roster, "\n"); got != now {
+		t.Errorf("a re-attached screen draws\n%s\nwhere the battle now reads\n%s", got, now)
 	}
 }

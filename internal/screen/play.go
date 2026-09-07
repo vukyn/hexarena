@@ -60,6 +60,18 @@ type PlayScreen struct {
 
 	// Fight is the battle in hand, and nil is a screen with no pairing to open
 	// one on.
+	//
+	// ⚠️ **On a LIVE screen this pointer is the mirror's own, and the drawing
+	// path may not touch it.** Another goroutine steps that battle every time a
+	// turn arrives, so a read taken while drawing is a read with no lock on it —
+	// which is a data race whatever it reads, and the detector caught the board
+	// and the roster doing exactly that. Live mode may dereference it in Attach
+	// and nowhere else: Attach runs inside socket.Mirror.Read, under the lock, so
+	// that is the one moment the battle is safe to ask anything. Everything a
+	// draw needs is taken there and carried in the reading field below.
+	//
+	// A **local** battle is this screen's own — nothing else holds it and nothing
+	// else steps it — so the local path reads it freely, as it always has. → read.
 	Fight *battle.Battle
 	// Roster is what the battle was built from, kept because a log records it:
 	// a log carrying the resolved placement is what makes it re-runnable across
@@ -175,6 +187,19 @@ type PlayScreen struct {
 	// Clock is what is left of the open turn's allowance on both sides, **handed
 	// in already counted**. → PlayClock.
 	Clock PlayClock
+
+	// reading is what a drawing needs of a live battle, taken while the mirror's
+	// read lock was held.
+	//
+	// ⚠️ **It is the reason a redraw of a match reads no battle at all**, and it
+	// is only meaningful while Live: a local screen owns its battle and reads it
+	// as it draws, so nothing is stored for it. → read, which is the one place
+	// that choice is made, and the Fight field for what went wrong without it.
+	//
+	// Unexported because it is not a knob. Every live screen in the repository is
+	// built by Attach, which is where the value comes from, and a caller able to
+	// set it could hand this screen a board its battle never held.
+	reading playReading
 }
 
 // PlayClock is the two countdowns a live battle draws, in **seconds**.
@@ -305,6 +330,14 @@ func (p PlayScreen) Attach(c Context, live PlayLive) PlayScreen {
 		p.Cursor = next
 		p.Events = append(p.Events, events...)
 	}
+	// ⚠️ **Everything a draw will read off the battle is read HERE**, because
+	// here is the only place a live screen is holding the lock. It is taken on
+	// every call rather than only when the battle pointer changes, for the reason
+	// the cursor is: the battle the mirror hands over is being stepped, so a
+	// reading kept from an earlier call would draw a board several turns stale.
+	// The comment above this block already knew the rule and said it about one
+	// call; it is the whole path. → the reading field.
+	p.reading = readBattle(p.Fight, p.Tags)
 	opened := live.Asking
 	switch {
 	case opened == nil:
@@ -357,6 +390,97 @@ type PlayLive struct {
 	// zero value is a turn nobody is being asked about. → PlayClock for why the
 	// arithmetic is not done here.
 	Clock PlayClock
+}
+
+// playReading is a battle as a drawing needs it: one value, taken at one moment.
+//
+// ⚠️ **This is socket.DraftSight's decision arriving one screen later.** That
+// type is a snapshot and never a *draft.Draft, and its own comment names
+// Sight.Fight beside it as the one deliberate exception — a renderer computes
+// the board by computing the battle, so the pointer had to reach this screen.
+// It still does, and Attach still dereferences it; what changed is that the
+// pointer stops there. A draw reads this instead, so there is nothing left on
+// the drawing goroutine that could be racing the goroutine stepping the match.
+//
+// It holds the three sections **already rendered** rather than the units they
+// were rendered from, because rendering them is the read: tui.Board, tui.Roster
+// and tui.Order each walk the units, the statuses and the queue, and a value
+// carrying those to be walked later would have moved the race rather than
+// removed it. The units are carried as well because two rows are assembled from
+// them here — whose turn it is, and who is standing on an aim.
+type playReading struct {
+	// board, roster and order are tui.Board, tui.Roster and tui.Order, unstyled:
+	// the palette is applied where the section is placed, exactly as before.
+	board, roster, order string
+	// finished, outcome and winner are how the battle stands, which is the
+	// question the turn in front is budgeted around. → drawings, ending.
+	finished bool
+	outcome  battle.Outcome
+	winner   hex.Side
+	// units is every unit on the board, in the battle's own order, flattened to
+	// the four facts a drawing asks about one.
+	units []playUnit
+}
+
+// playUnit is one unit as a drawing needs it.
+type playUnit struct {
+	ID, Name string
+	Cell     hex.Offset
+	Dead     bool
+}
+
+// readBattle takes a reading. A nil battle reads as the zero value, which is
+// the screen with nothing to draw.
+//
+// ⚠️ **Whoever calls this has to be allowed to read the battle.** For a live
+// screen that is Attach and only Attach, under the mirror's read lock; for a
+// local one it is any time, because nothing else holds the battle. → read.
+func readBattle(fight *battle.Battle, tags map[string]string) playReading {
+	if fight == nil {
+		return playReading{}
+	}
+	winner, _ := fight.Winner()
+	read := playReading{
+		board:    tui.Board(fight, tags),
+		roster:   tui.Roster(fight, tags),
+		order:    tui.Order(fight.Queue(), tags, 6),
+		finished: fight.Finished(),
+		outcome:  fight.Outcome(),
+		winner:   winner,
+	}
+	units := fight.Units()
+	read.units = make([]playUnit, 0, len(units))
+	for _, unit := range units {
+		read.units = append(read.units, playUnit{
+			ID: unit.ID, Name: unit.Name, Cell: unit.Cell, Dead: unit.Dead,
+		})
+	}
+	return read
+}
+
+// read is the battle as this screen is allowed to see it while drawing.
+//
+// The whole division is these three lines: a live screen has the reading Attach
+// took under the mirror's lock and may not go back to the battle for more, and a
+// local screen owns its battle and reads it on the spot. Taking a local reading
+// lazily rather than storing one is deliberate — a stored reading would have to
+// be refreshed at every site that steps the local battle, and a site missed
+// there draws a stale board with every test still green.
+func (p PlayScreen) read() playReading {
+	if p.Live {
+		return p.reading
+	}
+	return readBattle(p.Fight, p.Tags)
+}
+
+// unit is the unit an id names, and whether the board has one at all.
+func (r playReading) unit(id string) (playUnit, bool) {
+	for _, unit := range r.units {
+		if unit.ID == id {
+			return unit, true
+		}
+	}
+	return playUnit{}, false
 }
 
 // begin builds the battle from the pairing in front and runs it up to the
@@ -1189,16 +1313,21 @@ type playDrawn struct {
 }
 
 // drawings measures every section against the board as it stands.
+//
+// ⚠️ **One reading, taken once, and nothing here asks the battle anything.**
+// This function is called while drawing and again on a keystroke, and on a live
+// screen the battle underneath it is being stepped by another goroutine. → read.
 func (p PlayScreen) drawings(c Context) playDrawn {
 	var drawn playDrawn
+	read := p.read()
 	// The turn in front, read before anything else because it is what the rest of
 	// the screen is budgeted around. A finished battle first, because its ending
 	// is the answer to the question a prompt would have asked; then the prompt.
 	// With neither — between turns, where the engine's own units act — there is no
 	// question on the screen and nothing to reserve room for.
 	switch {
-	case p.Fight.Finished():
-		drawn.tail = []string{c.Style.Emphasis.Render(p.ending(c))}
+	case read.finished:
+		drawn.tail = []string{c.Style.Emphasis.Render(p.ending(c, read))}
 		drawn.over = true
 	case p.Live && (p.Pending == nil || p.Answered):
 		// ⚠️ **One drawn row that the local screen does not have, and it is not
@@ -1212,11 +1341,11 @@ func (p PlayScreen) drawings(c Context) playDrawn {
 		// the board is waiting on the other end. → the Answered field.
 		drawn.tail = []string{c.Style.Dim.Render(c.Text(i18n.PlayLiveWaiting))}
 	case p.Pending != nil:
-		drawn.tail = drawnRows(p.Choices(c))
+		drawn.tail = drawnRows(p.choices(c, read))
 	}
-	drawn.board = drawnRows(tui.Board(p.Fight, p.Tags))
-	drawn.roster = drawnRows(tui.Roster(p.Fight, p.Tags))
-	drawn.order = c.Style.Dim.Render(tui.Order(p.Fight.Queue(), p.Tags, 6))
+	drawn.board = drawnRows(read.board)
+	drawn.roster = drawnRows(read.roster)
+	drawn.order = c.Style.Dim.Render(read.order)
 	drawn.log = p.LogRows(c)
 	drawn.notes = p.Wrote(c)
 	// ⚠️ **A live battle's notes slot is the refusal**, and the two cannot both
@@ -1535,8 +1664,14 @@ func (p PlayScreen) logFrame(rows []string, room int) []string {
 
 // choices is the turn in front: whose it is, what they may do, and where it may
 // be pointed once a skill is picked.
-func (p PlayScreen) Choices(c Context) string {
-	unit, known := p.Fight.Unit(p.Pending.Unit)
+func (p PlayScreen) Choices(c Context) string { return p.choices(c, p.read()) }
+
+// choices is Choices over a reading already taken, which is what the drawing
+// path has: one reading serves the whole screen, and a second one taken here
+// would render the board, the roster and the order line again to answer a
+// question about the turn in front.
+func (p PlayScreen) choices(c Context, read playReading) string {
+	unit, known := read.unit(p.Pending.Unit)
 	if !known {
 		return ""
 	}
@@ -1599,7 +1734,7 @@ func (p PlayScreen) Choices(c Context) string {
 	for index, cell := range option.Aims {
 		marker := "  "
 		line := cell.String()
-		if held := p.occupant(cell); held != "" {
+		if held := p.occupant(read, cell); held != "" {
 			line += "  " + held
 		}
 		if index == p.Aim {
@@ -1615,7 +1750,7 @@ func (p PlayScreen) Choices(c Context) string {
 		}
 		for _, caught := range splash {
 			row := shapeSplashMark + " " + caught.String()
-			if held := p.occupant(caught); held != "" {
+			if held := p.occupant(read, caught); held != "" {
 				row += "  " + held
 			}
 			out.WriteString("    " + c.Style.Dim.Render(row) + "\n")
@@ -1756,8 +1891,8 @@ func OptionRefusal(c Context, option battle.Option) string {
 
 // occupant is the tag and name standing on a cell, so an aim reads as somebody
 // rather than as a coordinate.
-func (p PlayScreen) occupant(cell hex.Offset) string {
-	for _, unit := range p.Fight.Units() {
+func (p PlayScreen) occupant(read playReading, cell hex.Offset) string {
+	for _, unit := range read.units {
 		if unit.Dead || unit.Cell != cell {
 			continue
 		}
@@ -1767,11 +1902,10 @@ func (p PlayScreen) occupant(cell hex.Offset) string {
 }
 
 // ending is how the battle finished, in the words the game client uses for it.
-func (p PlayScreen) ending(c Context) string {
-	switch p.Fight.Outcome() {
+func (p PlayScreen) ending(c Context, read playReading) string {
+	switch read.outcome {
 	case battle.Victory:
-		winner, _ := p.Fight.Winner()
-		if winner == p.Side {
+		if read.winner == p.Side {
 			return c.Text(i18n.PlayWon)
 		}
 		return c.Text(i18n.PlayLost)
