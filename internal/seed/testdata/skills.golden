@@ -470,6 +470,10 @@ verdure     reserve           999       5            0      0               0   
 moisture    reserve           999       5            0      0               0          0   -
 heft        reserve             5       4            0      0               0          0   -
 stoked      buff                5       2            0      0               0          0   speed +12.0%
+emberheart  buff                2       0            0      0               0          0   attack +10.0%
+bedrock     buff                2       0            0      0               0          0   defense +10.0%
+tailwind    buff                2       0            0      0               0          0   dodge +10.0%
+galvanise   buff                2       0            0      0               0          0   speed +5.0%
 ironhide    buff                2       0            0      0               0          0   -
 keenedge    buff                2       0            0      0               0          0   -
 tidewell    heal_mend           2       0            0      0               0        250   -

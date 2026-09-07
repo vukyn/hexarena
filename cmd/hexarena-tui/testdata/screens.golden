@@ -1,15 +1,15 @@
 ===== vi | 120x24 | a battle =====
 
-trận đấu  seed 1  diễn biến 77-77/77
+trận đấu  seed 1  diễn biến 80-80/80
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -46,24 +46,24 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | a battle over =====
 
-trận đấu  seed 1  diễn biến 195-199/199
+trận đấu  seed 1  diễn biến 198-202/202
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [#########.]  2021/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [#########.]  2021/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
-next: E1 E2 E3 E1 E2 E3
+next: E2 E3 E1 E2 E3 E1
 
-    A3  takes 324 from poison <trúng độc> x3
+    E1  uses bolt <tia bắn> at 2,2
+    E1   hits A3 for 173, 0 left
     A3  falls at 2,2
   
   the enemy side wins
-    A3  loses the turn (died)
 
 phe bạn ngã
 n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
@@ -381,7 +381,7 @@ vào phòng đấu
   xem thay vì chơi chơi — vào phòng ngồi một ghế
 
 
-  máy này — data d9d85eb55681 · build 0123456789ab+dirty
+  máy này — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -406,7 +406,7 @@ vào phòng đấu
   chưa dựng đội nào. Phòng cấm-chọn tướng thì vốn không cần đội — hai bên chọn ngay ở đó — nhưng phòng thường sẽ không
   cho vào; dựng đội ở mục các đội đã dựng
 
-  máy này — data d9d85eb55681 · build 0123456789ab+dirty
+  máy này — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -414,16 +414,16 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · ctrl+w xem · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 120x24 | a live battle =====
 
-trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 77-77/77
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 80-80/80
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -437,16 +437,16 @@ A2 Example Adept, lượt 1
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 120x24 | a live battle waiting on the other player =====
 
-trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 73-77/77
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 76-80/80
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -499,7 +499,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data d9d85eb55681 · build 0123456789ab+dirty
+  máy này — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -513,9 +513,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -529,16 +529,16 @@ nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 81-81/120
+trận đấu  seed 1  diễn biến 84-84/123
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#####.....]  1740/3100     90   phalanx x2 (always), tidewell x2 (always) +1
 A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always) +3
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -575,16 +575,16 @@ vine_whip <roi dây leo>  1/178
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | a squeezed battle =====
 
-trận đấu  seed 1  diễn biến 77-77/77
+trận đấu  seed 1  diễn biến 80-80/80
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -651,8 +651,8 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 A2 Example Adept, lượt 1
   strike      100% công · tầm 1
@@ -674,8 +674,8 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 A2 Example Adept, lượt 1
   strike      100% công · tầm 1
@@ -784,21 +784,21 @@ chưa dựng đội nào; bấm n để bắt đầu
 
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
-> same_column   cùng tuyến      sharers
-  metal_ward    cùng thép       sharers
-  dark_edge     cùng bóng tối   sharers
-  water_tide    cùng dòng nước  sharers
-  same_element  đồng hệ         sharers
+> same_column     cùng tuyến      sharers
+  fire_forge      cùng lửa        sharers
+  ground_root     cùng đất        sharers
+  wind_gust       cùng gió        sharers
+  electric_surge  cùng điện       sharers
+  metal_ward      cùng thép       sharers
+  dark_edge       cùng bóng tối   sharers
+  water_tide      cùng dòng nước  sharers
+  same_element    đồng hệ         sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
   3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
-
-
-
-
 
 
 
@@ -1127,16 +1127,16 @@ nội tại  các nội tại đã khai báo, và ai mang
 ctrl+l English · esc rời phòng
 ===== vi | 120x24 | watching a battle =====
 
-trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 70-74/74
+trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 76-80/80
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), kinship x2 (always), poison (2t)
-A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), kinship x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), kinship x2 (always), poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -1173,7 +1173,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a battle =====
 
-trận đấu  seed 1  diễn biến 50-77/77
+trận đấu  seed 1  diễn biến 53-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1189,9 +1189,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -1291,7 +1291,7 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a battle over =====
 
-trận đấu  seed 1  diễn biến 168-199/199
+trận đấu  seed 1  diễn biến 171-202/202
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1307,11 +1307,11 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [#########.]  2021/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [#########.]  2021/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
-next: E1 E2 E3 E1 E2 E3
+next: E2 E3 E1 E2 E3 E1
 
     E1  uses venom_fang <nanh độc> at 2,2
     E1   hits A3 for 259, 1129 left
@@ -1339,12 +1339,12 @@ next: E1 E2 E3 E1 E2 E3
     E3  uses bolt <tia bắn> at 2,2
     E3   hits A3 for 173, 92 left
   
-  A3  turn 4
-    A3  takes 324 from poison <trúng độc> x3
+  E1  turn 9
+    E1  uses bolt <tia bắn> at 2,2
+    E1   hits A3 for 173, 0 left
     A3  falls at 2,2
   
   the enemy side wins
-    A3  loses the turn (died)
 
 phe bạn ngã
 n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
@@ -2130,7 +2130,7 @@ vào phòng đấu
   xem thay vì chơi chơi — vào phòng ngồi một ghế
 
 
-  máy này — data d9d85eb55681 · build 0123456789ab+dirty
+  máy này — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -2191,7 +2191,7 @@ vào phòng đấu
   chưa dựng đội nào. Phòng cấm-chọn tướng thì vốn không cần đội — hai bên chọn ngay ở đó — nhưng phòng thường sẽ không
   cho vào; dựng đội ở mục các đội đã dựng
 
-  máy này — data d9d85eb55681 · build 0123456789ab+dirty
+  máy này — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -2235,7 +2235,7 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · ctrl+w xem · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 160x60 | a live battle =====
 
-trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 50-77/77
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 53-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2251,9 +2251,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2294,7 +2294,7 @@ A2 Example Adept, lượt 1
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 160x60 | a live battle waiting on the other player =====
 
-trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 46-77/77
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 49-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2310,9 +2310,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2428,7 +2428,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data d9d85eb55681 · build 0123456789ab+dirty
+  máy này — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -2471,7 +2471,7 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · ctrl+w xem · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 160x60 | a saved battle =====
 
-trận đấu  seed 1  diễn biến 54-77/77
+trận đấu  seed 1  diễn biến 57-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2487,9 +2487,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2530,7 +2530,7 @@ nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 81-108/120
+trận đấu  seed 1  diễn biến 84-111/123
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2546,9 +2546,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#####.....]  1740/3100     90   phalanx x2 (always), tidewell x2 (always) +1
 A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always) +3
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -2648,7 +2648,7 @@ vine_whip <roi dây leo>  1/178
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a squeezed battle =====
 
-trận đấu  seed 1  diễn biến 50-77/77
+trận đấu  seed 1  diễn biến 53-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2664,9 +2664,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2825,7 +2825,7 @@ Mew  cấp 60
 ↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 160x60 | aiming =====
 
-trận đấu  seed 1  diễn biến 55-77/77
+trận đấu  seed 1  diễn biến 58-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2841,9 +2841,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2884,7 +2884,7 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | aiming in a live battle =====
 
-trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 55-77/77
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 58-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2900,9 +2900,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -3181,21 +3181,21 @@ chưa dựng đội nào; bấm n để bắt đầu
 
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
-> same_column   cùng tuyến      sharers
-  metal_ward    cùng thép       sharers
-  dark_edge     cùng bóng tối   sharers
-  water_tide    cùng dòng nước  sharers
-  same_element  đồng hệ         sharers
+> same_column     cùng tuyến      sharers
+  fire_forge      cùng lửa        sharers
+  ground_root     cùng đất        sharers
+  wind_gust       cùng gió        sharers
+  electric_surge  cùng điện       sharers
+  metal_ward      cùng thép       sharers
+  dark_edge       cùng bóng tối   sharers
+  water_tide      cùng dòng nước  sharers
+  same_element    đồng hệ         sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
   3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
-
-
-
-
 
 
 
@@ -3854,6 +3854,10 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   quickened    gia tốc
   evasive      khinh công
   stoked       nóng máy
+  emberheart   tim lửa
+  bedrock      nền đá
+  tailwind     gió xuôi
+  galvanise    dẫn điện
   ironhide     giáp trụ
   keenedge     lưỡi sắc
   phalanx      trận thế
@@ -3874,10 +3878,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   aegis        lá chắn
   bastion      thành trì
   reserve      dồn lại cho chính người mang tiêu
-  swelter      sóng nhiệt
-  verdure      xum xuê
-  moisture     ẩm ướt
-  heft         sức nặng
 
   Tăng thủ 15%.
   Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
@@ -4064,7 +4064,7 @@ nội tại  các nội tại đã khai báo, và ai mang
 ctrl+l English · esc rời phòng
 ===== vi | 160x60 | watching a battle =====
 
-trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 43-74/74
+trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 49-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4077,12 +4077,12 @@ trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 43-74/74
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), kinship x2 (always), poison (2t)
-A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), kinship x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), kinship x2 (always), poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4182,16 +4182,16 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== en | 120x24 | a battle =====
 
-the battle  seed 1  log 77-77/77
+the battle  seed 1  log 80-80/80
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4228,24 +4228,24 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | a battle over =====
 
-the battle  seed 1  log 195-199/199
+the battle  seed 1  log 198-202/202
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [#########.]  2021/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [#########.]  2021/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
-next: E1 E2 E3 E1 E2 E3
+next: E2 E3 E1 E2 E3 E1
 
-    A3  takes 324 from poison x3
+    E1  uses bolt at 2,2
+    E1   hits A3 for 173, 0 left
     A3  falls at 2,2
   
   the enemy side wins
-    A3  loses the turn (died)
 
 your side falls
 n another battle · [/] scroll · ctrl+s save it · esc back
@@ -4564,7 +4564,7 @@ join a room
   watch instead of play playing — this join takes a seat
 
 
-  this machine — data d9d85eb55681 · build 0123456789ab+dirty
+  this machine — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -4589,23 +4589,23 @@ join a room
   no squad has been built. A room that drafts wants none anyway — the two of you ban and pick there — but a room that
   does not will turn this join away; build a side under the squad catalogue
 
-  this machine — data d9d85eb55681 · build 0123456789ab+dirty
+  this machine — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
 tab next field · ←/→ squad · ctrl+w watch · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 120x24 | a live battle =====
 
-the battle  seed 1  your turn 1:12 · them 1:30  log 77-77/77
+the battle  seed 1  your turn 1:12 · them 1:30  log 80-80/80
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4619,16 +4619,16 @@ A2 Example Adept, turn 1
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 120x24 | a live battle waiting on the other player =====
 
-the battle  seed 1  you 1:30 · their turn 1:12  log 73-77/77
+the battle  seed 1  you 1:30 · their turn 1:12  log 76-80/80
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4682,7 +4682,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data d9d85eb55681 · build 0123456789ab+dirty
+  this machine — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 tab next field · ←/→ squad · ctrl+w watch · enter join · ctrl+l tiếng Việt · esc back
@@ -4695,9 +4695,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -4711,16 +4711,16 @@ the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a scrolled battle log =====
 
-the battle  seed 1  log 81-81/120
+the battle  seed 1  log 84-84/123
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#####.....]  1740/3100     90   phalanx x2 (always), tidewell x2 (always) +1
 A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always) +3
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -4757,16 +4757,16 @@ vine_whip  1 of 178
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | a squeezed battle =====
 
-the battle  seed 1  log 77-77/77
+the battle  seed 1  log 80-80/80
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4833,8 +4833,8 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 A2 Example Adept, turn 1
   strike      100% attack · range 1
@@ -4856,8 +4856,8 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 A2 Example Adept, turn 1
   strike      100% attack · range 1
@@ -4966,21 +4966,21 @@ nothing built yet; n starts one
 
 squad bonuses  what a side is paid for what its units share
 
-> same_column     sharers
-  metal_ward      sharers
-  dark_edge       sharers
-  water_tide      sharers
-  same_element    sharers
+> same_column       sharers
+  fire_forge        sharers
+  ground_root       sharers
+  wind_gust         sharers
+  electric_surge    sharers
+  metal_ward        sharers
+  dark_edge         sharers
+  water_tide        sharers
+  same_element      sharers
 
   counts the elements the units carry
   goes to only the units that share it
   3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
-
-
-
-
 
 
 
@@ -5309,16 +5309,16 @@ waiting for the second player
 ctrl+l tiếng Việt · esc leave the room
 ===== en | 120x24 | watching a battle =====
 
-the battle  seed 1  A on turn 1:12 · E 1:30  log 70-74/74
+the battle  seed 1  A on turn 1:12 · E 1:30  log 76-80/80
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), kinship x2 (always), poison (2t)
-A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), kinship x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), kinship x2 (always), poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -5355,7 +5355,7 @@ origins  the works the cast is borrowed from
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a battle =====
 
-the battle  seed 1  log 50-77/77
+the battle  seed 1  log 53-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5371,9 +5371,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -5473,7 +5473,7 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a battle over =====
 
-the battle  seed 1  log 168-199/199
+the battle  seed 1  log 171-202/202
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5489,11 +5489,11 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [#########.]  2021/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [#########.]  2021/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
-next: E1 E2 E3 E1 E2 E3
+next: E2 E3 E1 E2 E3 E1
 
     E1  uses venom_fang at 2,2
     E1   hits A3 for 259, 1129 left
@@ -5521,12 +5521,12 @@ next: E1 E2 E3 E1 E2 E3
     E3  uses bolt at 2,2
     E3   hits A3 for 173, 92 left
   
-  A3  turn 4
-    A3  takes 324 from poison x3
+  E1  turn 9
+    E1  uses bolt at 2,2
+    E1   hits A3 for 173, 0 left
     A3  falls at 2,2
   
   the enemy side wins
-    A3  loses the turn (died)
 
 your side falls
 n another battle · [/] scroll · ctrl+s save it · esc back
@@ -6313,7 +6313,7 @@ join a room
   watch instead of play playing — this join takes a seat
 
 
-  this machine — data d9d85eb55681 · build 0123456789ab+dirty
+  this machine — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -6374,7 +6374,7 @@ join a room
   no squad has been built. A room that drafts wants none anyway — the two of you ban and pick there — but a room that
   does not will turn this join away; build a side under the squad catalogue
 
-  this machine — data d9d85eb55681 · build 0123456789ab+dirty
+  this machine — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -6417,7 +6417,7 @@ join a room
 tab next field · ←/→ squad · ctrl+w watch · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | a live battle =====
 
-the battle  seed 1  your turn 1:12 · them 1:30  log 50-77/77
+the battle  seed 1  your turn 1:12 · them 1:30  log 53-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6433,9 +6433,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -6476,7 +6476,7 @@ A2 Example Adept, turn 1
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 160x60 | a live battle waiting on the other player =====
 
-the battle  seed 1  you 1:30 · their turn 1:12  log 46-77/77
+the battle  seed 1  you 1:30 · their turn 1:12  log 49-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6492,9 +6492,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -6611,7 +6611,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data d9d85eb55681 · build 0123456789ab+dirty
+  this machine — data 1b70b0d4b0f7 · build 0123456789ab+dirty
 
 
 
@@ -6653,7 +6653,7 @@ join a room
 tab next field · ←/→ squad · ctrl+w watch · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | a saved battle =====
 
-the battle  seed 1  log 54-77/77
+the battle  seed 1  log 57-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6669,9 +6669,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -6712,7 +6712,7 @@ the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a scrolled battle log =====
 
-the battle  seed 1  log 81-108/120
+the battle  seed 1  log 84-111/123
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6728,9 +6728,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#####.....]  1740/3100     90   phalanx x2 (always), tidewell x2 (always) +1
 A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always) +3
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -6830,7 +6830,7 @@ vine_whip  1 of 178
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a squeezed battle =====
 
-the battle  seed 1  log 50-77/77
+the battle  seed 1  log 53-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6846,9 +6846,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7007,7 +7007,7 @@ your formation  3 of 3 placed
 ↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 160x60 | aiming =====
 
-the battle  seed 1  log 55-77/77
+the battle  seed 1  log 58-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -7023,9 +7023,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7066,7 +7066,7 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | aiming in a live battle =====
 
-the battle  seed 1  your turn 1:12 · them 1:30  log 55-77/77
+the battle  seed 1  your turn 1:12 · them 1:30  log 58-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -7082,9 +7082,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
 A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7363,21 +7363,21 @@ nothing built yet; n starts one
 
 squad bonuses  what a side is paid for what its units share
 
-> same_column     sharers
-  metal_ward      sharers
-  dark_edge       sharers
-  water_tide      sharers
-  same_element    sharers
+> same_column       sharers
+  fire_forge        sharers
+  ground_root       sharers
+  wind_gust         sharers
+  electric_surge    sharers
+  metal_ward        sharers
+  dark_edge         sharers
+  water_tide        sharers
+  same_element      sharers
 
   counts the elements the units carry
   goes to only the units that share it
   3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
-
-
-
-
 
 
 
@@ -8036,6 +8036,10 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   quickened    
   evasive      
   stoked       
+  emberheart   
+  bedrock      
+  tailwind     
+  galvanise    
   ironhide     
   keenedge     
   phalanx      
@@ -8056,10 +8060,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   aegis        
   bastion      
   reserve      builds up for its holder to spend
-  swelter      
-  verdure      
-  moisture     
-  heft         
 
   Raises defence by 15%.
   Raises a stat · always in force · 1 stack.
@@ -8246,7 +8246,7 @@ waiting for the second player
 ctrl+l tiếng Việt · esc leave the room
 ===== en | 160x60 | watching a battle =====
 
-the battle  seed 1  A on turn 1:12 · E 1:30  log 43-74/74
+the battle  seed 1  A on turn 1:12 · E 1:30  log 49-80/80
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -8259,12 +8259,12 @@ the battle  seed 1  A on turn 1:12 · E 1:30  log 43-74/74
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), kinship x2 (always), poison (2t)
-A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), kinship x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), kinship x2 (always), poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
-E3   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship x2 (always)
+A1   Example Adept        [#.........]   574/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A2   Example Adept        [#######...]  2323/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+A3   Example Adept        [#########.]  2875/3100     90   phalanx x2 (always), tidewell x2 (always) +2
+E1   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    209   phalanx x2 (always), galvanise (always), kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 

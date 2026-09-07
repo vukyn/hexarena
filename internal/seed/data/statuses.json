@@ -329,6 +329,62 @@
       ]
     },
     {
+      "id": "emberheart",
+      "category": "buff",
+      "max_stacks": 2,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "attack",
+          "mode": "percent",
+          "amount": 100
+        }
+      ]
+    },
+    {
+      "id": "bedrock",
+      "category": "buff",
+      "max_stacks": 2,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "defense",
+          "mode": "percent",
+          "amount": 100
+        }
+      ]
+    },
+    {
+      "id": "tailwind",
+      "category": "buff",
+      "max_stacks": 2,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "dodge",
+          "mode": "percent",
+          "amount": 100
+        }
+      ]
+    },
+    {
+      "id": "galvanise",
+      "category": "buff",
+      "max_stacks": 2,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "speed",
+          "mode": "percent",
+          "amount": 50
+        }
+      ]
+    },
+    {
       "id": "ironhide",
       "category": "buff",
       "max_stacks": 2,
