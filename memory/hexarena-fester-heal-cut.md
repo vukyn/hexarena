@@ -1,6 +1,6 @@
 ---
 name: hexarena-fester-heal-cut
-description: "hexarena PR #190 — `fester`/`heal_cut`: the anti-sustain debuff, its two hook points, reduce-before-cap, the floor that was dead code, the full cost of a NEW status category, and ⚠️ no shipped placement can measure it"
+description: "hexarena PR #190 — `fester`/`heal_cut`: the anti-sustain debuff, its two hook points, reduce-before-cap, the floor that was dead code, the full cost of a NEW status category; ⚠️ the 'no shipped placement measures it' half is FIXED — `s05` fields it"
 metadata:
   type: project
 ---
@@ -31,7 +31,24 @@ The checklist, all of it load-bearing:
 - `ParseBook`: require the category's number and refuse it elsewhere, mirroring `tick_power`.
 - The `skills.golden` report needs a **new column**, or the status reads as a row of noughts — "a column missing from the golden report is a restriction the design record cannot show".
 
-## ⚠️ No shipped placement can measure it
+## ⚠️ No shipped placement could measure it — FIXED 2026-09-08
+
+`squads.json` now ships **`s05`**, whose back seat is Wigglytuff carrying
+`refrain` (arc_up 1200, `fester` at 400‰). That is the first *placement* to
+deliver the category, and `forge.FightSquads` fights squads, so the category
+finally has a number attached to it somewhere.
+
+⚠️ **A build was never enough and that is the lesson worth keeping.**
+`builds.json` already named two carriers (`gastly.unbind` via `curse`,
+`torchic.rush` via `fire_fang`) and it changed nothing: **a build is a catalogue
+and nothing fights it; only a squad is a placement.** The guard is
+`TestEveryHarmfulCategoryIsFieldedBySomeSquad` in `internal/seed/cast_test.go`,
+which reads squads rather than builds for exactly that reason — and it counts
+`self_applies` as well as `applies`, because `taunting` is a harmful category a
+unit puts on **itself** and the first version of that test reported `taunt` as
+unfielded while `s02` was fielding it.
+
+The measurements below predate the fix and stand as written.
 
 **6260 festers over 20,000 shipped battles and ZERO heals cut.** The only unit that ever heals is `foe.ivysaur` (965 heals, all `leech_seed` drain), and fester only ever lands on the ally side — **0 of 965 heals came from a unit that had ever held one.** Ally 497‰ → 499‰ inside a ±7‰ band. Third recorded instance of *a mechanism no shipped placement fields is a mechanism nothing measures.*
 

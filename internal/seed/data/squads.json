@@ -251,6 +251,69 @@
           ]
         }
       ]
+    },
+    {
+      "id": "s05",
+      "name": "át giọng",
+      "units": [
+        {
+          "id": "machamp",
+          "character": "pokemon.machop",
+          "level": 60,
+          "stage": "Machamp",
+          "slot": {
+            "col": 2,
+            "row": 1
+          },
+          "skills": [
+            "cross_chop",
+            "submission",
+            "seismic_toss",
+            "body_slam"
+          ],
+          "passives": [
+            "endurance"
+          ]
+        },
+        {
+          "id": "gengar",
+          "character": "pokemon.gastly",
+          "level": 60,
+          "stage": "Gengar",
+          "slot": {
+            "col": 1,
+            "row": 1
+          },
+          "skills": [
+            "shadow_claw",
+            "shadow_ball",
+            "night_shade",
+            "curse"
+          ],
+          "passives": [
+            "elusive"
+          ]
+        },
+        {
+          "id": "wigglytuff",
+          "character": "pokemon.igglybuff",
+          "level": 60,
+          "stage": "Wigglytuff",
+          "slot": {
+            "col": 0,
+            "row": 1
+          },
+          "skills": [
+            "refrain",
+            "dazzle",
+            "patter",
+            "plunge"
+          ],
+          "passives": [
+            "endurance"
+          ]
+        }
+      ]
     }
   ]
 }

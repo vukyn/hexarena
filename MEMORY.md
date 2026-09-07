@@ -64,7 +64,7 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena core design](memory/hexarena-core-design.md) — ATB wait=1e6/speed; 6x3 odd-q + 180° mirror; saturate-not-clamp
 - [range = rank depth](memory/hexarena-range-is-rank-depth.md) — ⚠️ `range` = OCCUPIED enemy ranks, NOT hex distance; empty rank free
 - [block vs the rider](memory/hexarena-block-cancels-the-rider.md) — ⚠️ #181 blocked strike lands `dot` ONLY; miss lands nothing
-- [fester / heal cut](memory/hexarena-fester-heal-cut.md) — #190 anti-sustain; reduce BEFORE cap; ⚠️ no shipped placement measures it
+- [fester / heal cut](memory/hexarena-fester-heal-cut.md) — #190 anti-sustain; reduce BEFORE cap; ⚠️ "ko placement nào đo" ĐÃ VÁ — s05 field nó, build ko tính
 - [hexarena cast authoring + TUI](memory/hexarena-cast-authoring.md) — character=definition vs roster=placement; CLASS DROPPED
 - [hexarena TUI i18n + glosses](memory/hexarena-tui-i18n.md) — vi default; data glosses may miss; label widths MEASURED
 - [hexarena log gloss](memory/hexarena-log-gloss.md) — #171 glosses skill/status/trait; ⚠️ skillGloss 0/43 shipped, names live in JSON
@@ -80,6 +80,7 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena shipping chars #182/#187/#189](memory/hexarena-poliwag-bruiser.md) — ⚠️ spar KHÔNG đo được support (dùng squad); hạ GIÁP mới kết mirror
 - [hexarena shipping a character](memory/hexarena-shipping-a-character.md) — 5 json + cast_test.go design table (hardcoded!); effHP<=11500
 - [hai số gặp nhau ở MỘT tích](memory/hexarena-two-numbers-that-meet-in-one-product.md) — ENG-004: Swung là hạng-1 nên grid bị TỪ CHỐI; ship `self_bonus` thay vì mặt hai trục
+- [kit toàn chiêu diện ko có đòn kết](memory/hexarena-an-area-kit-has-no-finisher.md) — igglybuff 0‰ vs mewtwo 1000‰ CÙNG GHẾ; ⚠️ spar 1v1 định giá column bằng MỘT mục tiêu → đo ra hình ngược
 - [pricing a new element pool](memory/hexarena-pricing-a-new-element-pool.md) — đo, đừng đoán; dpt = pw×hits×acc÷(cd+1); ⚠️ cần control cùng wrapper
 - [kit toàn hệ đu biên độ rộng](memory/hexarena-elemental-kits-swing-wider.md) — nhân hệ tính TỪNG chiêu; kit pha neutral né được khắc chế
 - [pool đầy ≠ hệ được chơi](memory/hexarena-a-full-pool-is-not-a-played-element.md) — 10 chiêu electric đều xoay quanh `charge` của Magnemite

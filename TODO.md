@@ -104,6 +104,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-004` | done | A golden holds a state and says nothing about the path to it — SWEPT, and the… |
 | `DAT-005` | done | `reckless` is the dragon build's 22.1% — CLOSED. All four levers are measured… |
 | `DAT-006` | refused | Rebalancing `reckless` |
+| `DAT-007` | open | The area axis is priced far below single-target burst, and a kit made of it h… |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
 | `SCR-001` | shipped | Reference screens |
@@ -116,6 +117,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-008` | done | The cast listing draws every row, so the detail pane shrinks as the cast grow… |
 | `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
+| `SCR-011` | open | `cmd/hexforge-tui` takes ~1300s and blows `go test`'s own timeout, because e… |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -291,6 +293,108 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [ ] `SCR-011` ⚠️ **`cmd/hexforge-tui` takes ~1300s, which is past `go test`'s own
+      600s default — so `make check` (`go test ./... -count=1`) is red at that
+      package for a reason that is not a test failing.**
+
+      Measured 2026-09-08: **719s** and **1295s** on two runs of the package alone,
+      and a run inside the eight-package golden set timed out at 600s *and* at
+      900s, each time dumping goroutines from inside `copyTree`. It is not
+      starvation — the 900s run was the only `go` process on the machine — and it
+      is not a deadlock: the stack's top frame is an active file copy.
+
+      **The cause is arithmetic, not concurrency.** `tui_test.go`'s `scratchData`
+      calls `copyTree` over the whole data directory, and every `start(t, …)`
+      calls it. Counted: **155 `start(t`/`scratchData(` call sites across 25 test
+      files** (many inside table loops, so the real number is higher), against a
+      data directory of **17.3 MB of which 17.0 MB is `assets/` — 66 SVGs**. One
+      measured `start()` costs about 4–10s on Windows, essentially all of it
+      copying pictures no assertion reads. `cmd/hexarena-tui` does not have this
+      shape and runs in ~200–430s.
+
+      ⚠️ **It is a pre-existing cost and a data-size trap, not a regression.** The
+      `crooner` change (`DAT-007`) added ~7 KB of JSON — 0.04% — and touched no
+      file in the package; the three SVGs it made a character *name* were already
+      sitting in the directory being copied. But the direction is one way: every
+      traced line that lands in `assets/` makes every one of those 155 copies
+      slower, whether or not a character names it.
+
+      **The shape of a fix, and why the obvious one is wrong.** A single shared
+      copy is not available: `hexforge-tui` **writes** — the save key, `skills
+      add`, `skills edit` — so those tests need a directory of their own. What
+      they do not need is their own pictures. Copy the JSON per test and share
+      `assets/` read-only (a link, or a second root the library is told about),
+      and the per-test cost stops scaling with the art. ⚠️ The art preview's cache
+      is keyed on a file's **size and modification time**, so whatever sharing
+      mechanism is used has to preserve both, and
+      `TestThePreviewRasterisesOncePerFileAndSize` is what will say whether it did.
+
+      Until then, the package needs an explicit `-timeout` above 600s wherever it
+      is run, and `make check` is the place that does not pass one.
+
+- [ ] `DAT-007` ⚠️ **The area axis is priced far below single-target burst, and a kit
+      made of it has no finisher. `pokemon.igglybuff` shipped weak on purpose —
+      the numbers are here so nobody re-measures them.**
+
+      `crooner` was authored as light's area dealer: `dazzle` (column 900),
+      `refrain` (arc_up 1200, `fester` 400‰), `patter` (single 380×3), `plunge`
+      (single 1900, cost 120‰). Every one of those sits where the book already
+      puts its peers — `discharge` is a column 900, `air_slash` an arc_up 1400,
+      `hyper_voice` an arc_up 900, `pummel` a 280×5, `volt_tackle` a 2400 at cost
+      120. It is nonetheless the weakest thing in the game.
+
+      **Measured with `forge.FightSquads`, 200 seeds each way, every mirror
+      control reading 500‰ exactly.** The seat is held fixed: `s05` is machamp +
+      gengar + the back seat, and `c05` is the same two team-mates with Mewtwo in
+      that seat instead. Head to head in the same shell, **`c05` takes 1000‰ —
+      400 battles of 400**.
+
+      | one variable off shipped | vs `s01` | vs `s04` |
+      |---|---|---|
+      | shipped | 5‰ | 0‰ |
+      | speed 95→140 | 32‰ | 5‰ |
+      | speed **and** accuracy at Mewtwo's 140/200 | 32‰ | 7‰ |
+      | `plunge` 1900→2400 (the cost tier's ceiling) | 7‰ | 0‰ |
+      | `endurance`→`berserk` | 10‰ | 2‰ |
+      | `solar_beam` (2400) added to the fielded four | 2‰ | 47‰ |
+      | all three area skills → three heavy single-target, + `berserk` | **172‰** | **237‰** |
+      | control: Mewtwo in the same seat | 975‰ | 660‰ |
+
+      ⚠️ **No single variable moves it and the stat line is not the cause.** On
+      paper Wigglytuff is both tougher and stronger than the unit that beats it
+      400/400 — effective health 7927 against 5802, attack 560 against 520. Given
+      Mewtwo's speed *and* accuracy it still reads 32‰. Only replacing the whole
+      area half of the kit moves it, which is the finding: **three area skills are
+      worth far less than three single-target ones at the same authored power.**
+      `discharge` earns its place on Magnezone because `zap_cannon` stands beside
+      it, not because a column is worth 900 on its own.
+
+      ⚠️ **A duel cannot see any of this and reported the opposite shape.**
+      `hexforge spar` reads 4.5% overall for the character (cleffa 26.8%, oddish
+      59.4%, happiny 0.0%), and there the single-stat probes are flat — accuracy
+      4.5%, attack 4.7%, defence 4.6%, speed 8.2% — while doubling every new
+      skill's power reads 47.4%. A 1v1 prices a `column` at one target, so the
+      duel is measuring a different skill from the one that ships. **Read an area
+      carrier off squads, never off spar** — the same limitation the mender note
+      records for support.
+
+      ⚠️ **`Rate()` drops an endless battle from the denominator**, so a rate can
+      improve while the sample shrinks: an earlier probe at 1.5× power read 15‰ →
+      176‰ while its endless count went 202 → 301 of 400. Quote the endless count
+      beside any rate taken on a squad that struggles to finish.
+
+      ⚠️ **One earlier reading here was wrong and is corrected rather than
+      deleted.** A probe that swapped Magnezone out of `s02` read 386 of 400
+      endless in its own mirror and that was reported as the crooner freezing the
+      board. It is not: **`s02`'s own mirror reads 166 endless** because Blastoise
+      brings four skills of nought power, and removing that squad's only damage
+      engine is what froze it. The shipped `s05` mirror reads **endless 0**.
+
+      What is open is the repricing, not the character. The candidate is
+      `patterns.json`'s `splash_power` (500‰ today) or the authored power of every
+      area skill in the book — which reaches every element and every balance
+      golden, so it is a PR of its own rather than a follow-up to a character.
 
 - [x] `ENG-003` ⚠️ **A one-way mirror rate stopped being a measurement above one unit a
       side — FOUND AND FIXED.** The skill that resolved in an order that does not
@@ -3316,11 +3420,15 @@ is only so the shape is readable.
             <(grep -o '"assets/[^"]*\.svg"' internal/seed/data/cast.json \
                 | sed 's|"assets/||; s|\.svg"||' | sort -u)
 
-      Ten files, four lines, **no orphan form** — every line below is
-      complete, and nothing `cast.json` names is missing from `assets/`.
-      By line, as they would be authored:
-      **igglybuff → jigglypuff → wigglytuff** · **mareep → flaaffy → ampharos** ·
-      **magikarp → gyarados** · **onix → steelix**.
+      **No orphan form** — every line below is complete, and nothing `cast.json`
+      names is missing from `assets/`. By line, as they would be authored:
+      **mareep → flaaffy → ampharos** · **magikarp → gyarados** ·
+      **onix → steelix**.
+      ⚠️ **The igglybuff line came off this list on 2026-09-08** (`DAT-007`), so
+      run the command rather than reading a count here — this paragraph carried
+      "ten files, four lines" for exactly one day. Its three pictures were first
+      measured that day, the day the character named them, and all three passed
+      `TestTheShippedArtIsCutOutRatherThanFramed` unchanged.
       ⚠️ **Nothing references any of these**, which is why they moved no golden
       and why `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them —
       that test walks the art shipped characters name, so the day one of these is

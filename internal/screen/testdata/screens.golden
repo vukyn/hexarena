@@ -317,7 +317,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a forked cast row =====
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
   pokemon.pichu            pokemon        electric <điện>
 > pokemon.poliwag          pokemon        water <nước>
@@ -773,9 +773,9 @@ nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (21 trong 21)
+đang xem tất cả nguồn (22 trong 22)
 
 >      naruto.naruto
        pokemon.abra
@@ -787,8 +787,8 @@ space để chọn · để trống thì ai cũng học được chiêu này
        pokemon.gastly
        pokemon.gible
        pokemon.happiny
+       pokemon.igglybuff
        pokemon.lapras
-       pokemon.machop
 
   chưa chọn gì
 
@@ -925,6 +925,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
   dark_edge       cùng bóng tối   sharers
   water_tide      cùng dòng nước  sharers
   grass_growth    cùng cỏ         sharers
+  light_gleam     cùng ánh sáng   sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
@@ -934,7 +935,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | browse =====
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
 > naruto.naruto            naruto         wind <gió>
   pokemon.abra             pokemon        dark <bóng tối>
@@ -1043,7 +1044,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong ../seed/data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 120x24 | elements =====
@@ -1067,9 +1068,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | filtered picker =====
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem naruto (1 trong 21)
+đang xem naruto (1 trong 22)
 
 >      naruto.naruto
 
@@ -1079,7 +1080,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | filtered skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 147 chiêu)
+  đang lọc long (5 trong 151 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -1089,7 +1090,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 120x24 | filtering skills =====
@@ -1109,11 +1110,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 120x24 | kit picker =====
-bộ chiêu  0/147
+bộ chiêu  0/151
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >    ! vine_whip       hệ grass, vũ trụ pokemon
@@ -1139,13 +1140,13 @@ space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · c
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
 > naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  20 nhân vật  Pokémon
+  pokemon          anime   1997  21 nhân vật  Pokémon
 
 2 tác phẩm · loại: anime film series game comic novel
 ----- footer -----
 ↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | reading a skill =====
-split <phân thân>  146/147
+split <phân thân>  150/151
 
   Tự xé mình ra, và cái phần xé đi thì không mọc lại được nữa.
   Gọi ra một phân thân mang 90% chỉ số người gọi.
@@ -1172,7 +1173,7 @@ chiêu trúng những ô nào  4/9
 ----- footer -----
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 120x24 | skill blurb =====
-split <phân thân>  146/147
+split <phân thân>  150/151
 
   Tự xé mình ra, và cái phần xé đi thì không mọc lại được nữa.
   Gọi ra một phân thân mang 90% chỉ số người gọi.
@@ -1198,16 +1199,16 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 120x24 | skills filtered to none =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 147 chiêu)
+  đang lọc zzzz (0 trong 151 chiêu)
 
   không có chiêu nào khớp.
 
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 120x24 | species =====
@@ -1241,7 +1242,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
-chiêu này gây hiệu ứng gì  1/42
+chiêu này gây hiệu ứng gì  1/43
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -1891,7 +1892,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a forked cast row =====
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
   naruto.naruto            naruto         wind <gió>
   pokemon.abra             pokemon        dark <bóng tối>
@@ -1903,6 +1904,7 @@ danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
   pokemon.gastly           pokemon        dark <bóng tối>
   pokemon.gible            pokemon        ground <đất>
   pokemon.happiny          pokemon        neutral <trung tính>
+  pokemon.igglybuff        pokemon        light <ánh sáng>
   pokemon.lapras           pokemon        water/ice <nước/băng>
   pokemon.machop           pokemon        ground <đất>
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
@@ -2559,9 +2561,9 @@ nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (21 trong 21)
+đang xem tất cả nguồn (22 trong 22)
 
 >      naruto.naruto
        pokemon.abra
@@ -2573,6 +2575,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
        pokemon.gastly
        pokemon.gible
        pokemon.happiny
+       pokemon.igglybuff
        pokemon.lapras
        pokemon.machop
        pokemon.magnemite
@@ -2732,6 +2735,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
   dark_edge       cùng bóng tối   sharers
   water_tide      cùng dòng nước  sharers
   grass_growth    cùng cỏ         sharers
+  light_gleam     cùng ánh sáng   sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
@@ -2741,7 +2745,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | browse =====
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
 > naruto.naruto            naruto         wind <gió>
   pokemon.abra             pokemon        dark <bóng tối>
@@ -2753,6 +2757,7 @@ danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
   pokemon.gastly           pokemon        dark <bóng tối>
   pokemon.gible            pokemon        ground <đất>
   pokemon.happiny          pokemon        neutral <trung tính>
+  pokemon.igglybuff        pokemon        light <ánh sáng>
   pokemon.lapras           pokemon        water/ice <nước/băng>
   pokemon.machop           pokemon        ground <đất>
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
@@ -2816,6 +2821,9 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
     gible.rush          lao vào
     gible.dragon        vuốt rồng
   pokemon.happiny       chưa viết bản dựng nào cho nhân vật này
+  pokemon.igglybuff
+    igglybuff.vang      hát vang
+    igglybuff.doc       dốc sức
   pokemon.lapras        chưa viết bản dựng nào cho nhân vật này
   pokemon.machop
     machop.gamble       đánh cược
@@ -2831,9 +2839,6 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
     mew.wither          suy tàn
   pokemon.mewtwo
     mewtwo.breach       xuyên giáp
-    mewtwo.origin       bản sao
-  pokemon.oddish        chưa viết bản dựng nào cho nhân vật này
-  pokemon.pichu
 
   abra.unbilled <quỵt giá>
   ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
@@ -2947,7 +2952,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong ../seed/data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 160x60 | elements =====
@@ -2971,9 +2976,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | filtered picker =====
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem naruto (1 trong 21)
+đang xem naruto (1 trong 22)
 
 >      naruto.naruto
 
@@ -2983,7 +2988,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | filtered skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 147 chiêu)
+  đang lọc long (5 trong 151 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -2993,7 +2998,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 160x60 | filtering skills =====
@@ -3049,11 +3054,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 160x60 | kit picker =====
-bộ chiêu  0/147
+bộ chiêu  0/151
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >    ! vine_whip       hệ grass, vũ trụ pokemon
@@ -3115,13 +3120,13 @@ space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · c
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
 > naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  20 nhân vật  Pokémon
+  pokemon          anime   1997  21 nhân vật  Pokémon
 
 2 tác phẩm · loại: anime film series game comic novel
 ----- footer -----
 ↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | reading a skill =====
-split <phân thân>  146/147
+split <phân thân>  150/151
 
   Tự xé mình ra, và cái phần xé đi thì không mọc lại được nữa.
   Gọi ra một phân thân mang 90% chỉ số người gọi.
@@ -3148,7 +3153,7 @@ chiêu trúng những ô nào  4/9
 ----- footer -----
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 160x60 | skill blurb =====
-split <phân thân>  146/147
+split <phân thân>  150/151
 
   Tự xé mình ra, và cái phần xé đi thì không mọc lại được nữa.
   Gọi ra một phân thân mang 90% chỉ số người gọi.
@@ -3210,16 +3215,16 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 160x60 | skills filtered to none =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 147 chiêu)
+  đang lọc zzzz (0 trong 151 chiêu)
 
   không có chiêu nào khớp.
 
-147 chiêu · 7 chiêu ai cũng học được
+151 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 160x60 | species =====
@@ -3256,7 +3261,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
-chiêu này gây hiệu ứng gì  1/42
+chiêu này gây hiệu ứng gì  1/43
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -3301,6 +3306,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        heartwood   lõi gỗ · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        sundered    đã tách · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        burrowed    độn thổ · tăng chỉ số · 2 lượt · 1 cộng dồn
+       limelight   hào quang · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
 
   poison
 
@@ -3344,6 +3350,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   heartwood    lõi gỗ
   sundered     đã tách
   burrowed     độn thổ
+  limelight    hào quang
   shield       khiên, chặn một nhát
   block        đỡ đòn
   regen        hồi máu mỗi lượt
@@ -3357,7 +3364,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   absorb       lá chắn, thấm sát thương cho tới khi cạn
   aegis        lá chắn
   bastion      thành trì
-  reserve      dồn lại cho chính người mang tiêu
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -3488,6 +3494,9 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
     gible.rush          lao vào
     gible.dragon        vuốt rồng
   pokemon.happiny       chưa viết bản dựng nào cho nhân vật này
+  pokemon.igglybuff
+    igglybuff.vang      hát vang
+    igglybuff.doc       dốc sức
   pokemon.lapras        chưa viết bản dựng nào cho nhân vật này
   pokemon.machop
     machop.gamble       đánh cược
@@ -3503,9 +3512,6 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
     mew.wither          suy tàn
   pokemon.mewtwo
     mewtwo.breach       xuyên giáp
-    mewtwo.origin       bản sao
-  pokemon.oddish        chưa viết bản dựng nào cho nhân vật này
-  pokemon.pichu
 
   abra.unbilled <quỵt giá>
   ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
@@ -3518,7 +3524,7 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
 nội tại  các nội tại đã khai báo, và ai mang
 
   id             tên tiếng Việt ai mang
-> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.diglett@28 pokemon.dratini@16 pokemon.happiny@32 pokemon.lapra…
+> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.diglett@28 pokemon.dratini@16 pokemon.happiny@32 pokemon.iggly…
   blaze          bùng lửa       pokemon.charmander@16 pokemon.torchic@24
   heatproof      chịu nhiệt     pokemon.charmander@16
   virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
@@ -3533,7 +3539,7 @@ nội tại  các nội tại đã khai báo, và ai mang
   elusive        huyền ảo       pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 p…
   contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
-  berserk        cuồng chiến    pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
+  berserk        cuồng chiến    pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
   unyielding     bất khuất      pokemon.machop@24
   carapace       vỏ cứng        pokemon.happiny@40 pokemon.squirtle@48
   projection     hộ thể         pokemon.charmander@48
@@ -3996,7 +4002,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a forked cast row =====
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
   pokemon.pichu            pokemon        electric
 > pokemon.poliwag          pokemon        water
@@ -4441,9 +4447,9 @@ point wind_shuriken at  .. is a splash cell, at 50%
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (21 of 21)
+showing all origins (22 of 22)
 
 >      naruto.naruto
        pokemon.abra
@@ -4455,8 +4461,8 @@ showing all origins (21 of 21)
        pokemon.gastly
        pokemon.gible
        pokemon.happiny
+       pokemon.igglybuff
        pokemon.lapras
-       pokemon.machop
 
   nothing chosen yet
 
@@ -4593,6 +4599,7 @@ squad bonuses  what a side is paid for what its units share
   dark_edge         sharers
   water_tide        sharers
   grass_growth      sharers
+  light_gleam       sharers
 
   counts the elements the units carry
   goes to only the units that share it
@@ -4602,7 +4609,7 @@ squad bonuses  what a side is paid for what its units share
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | browse =====
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
 > naruto.naruto            naruto         wind
   pokemon.abra             pokemon        dark
@@ -4704,7 +4711,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in ../seed/data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | elements =====
@@ -4728,9 +4735,9 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | filtered picker =====
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing naruto (1 of 21)
+showing naruto (1 of 22)
 
 >      naruto.naruto
 
@@ -4740,7 +4747,7 @@ showing naruto (1 of 21)
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | filtered skills =====
 skills  what each one does, and who may carry it
-  filtering long (5 of 147 skills)
+  filtering long (5 of 151 skills)
 
   id              element   damage multiplier who may carry it
 > dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
@@ -4750,7 +4757,7 @@ skills  what each one does, and who may carry it
   dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 120x24 | filtering skills =====
@@ -4770,11 +4777,11 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 120x24 | kit picker =====
-kit  0 of 147
+kit  0 of 151
 space chooses · the number is the order · ! is one this character cannot take
 
 >    ! vine_whip       grass units, out of pokemon
@@ -4800,13 +4807,13 @@ space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l ti
 origins  the works the cast is borrowed from
 
 > naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  20 cast  Pokémon
+  pokemon          anime   1997  21 cast  Pokémon
 
 2 works · media: anime film series game comic novel
 ----- footer -----
 ↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | reading a skill =====
-outrage  31 of 147
+outrage  31 of 151
 
   Hits an enemy for 220% of attack.
   Puts mire on itself.
@@ -4832,7 +4839,7 @@ which cells the skill catches  4 of 9
 ----- footer -----
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 120x24 | skill blurb =====
-split  146 of 147
+split  150 of 151
 
   Calls up a copy with 90% of the caster's stats.
   Puts sundered on itself.
@@ -4857,16 +4864,16 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | skills filtered to none =====
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 147 skills)
+  filtering zzzz (0 of 151 skills)
 
   nothing matches that.
 
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 120x24 | species =====
@@ -4900,7 +4907,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
-the statuses this skill inflicts  1 of 42
+the statuses this skill inflicts  1 of 43
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison      damages every turn · 3 turns · up to 3 stacks
@@ -5548,7 +5555,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a forked cast row =====
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
   naruto.naruto            naruto         wind
   pokemon.abra             pokemon        dark
@@ -5560,6 +5567,7 @@ cast  showing all origins (21 of 21 characters)
   pokemon.gastly           pokemon        dark
   pokemon.gible            pokemon        ground
   pokemon.happiny          pokemon        neutral
+  pokemon.igglybuff        pokemon        light
   pokemon.lapras           pokemon        water/ice
   pokemon.machop           pokemon        ground
   pokemon.magnemite        pokemon        electric/metal
@@ -6206,9 +6214,9 @@ point wind_shuriken at  .. is a splash cell, at 50%
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (21 of 21)
+showing all origins (22 of 22)
 
 >      naruto.naruto
        pokemon.abra
@@ -6220,6 +6228,7 @@ showing all origins (21 of 21)
        pokemon.gastly
        pokemon.gible
        pokemon.happiny
+       pokemon.igglybuff
        pokemon.lapras
        pokemon.machop
        pokemon.magnemite
@@ -6379,6 +6388,7 @@ squad bonuses  what a side is paid for what its units share
   dark_edge         sharers
   water_tide        sharers
   grass_growth      sharers
+  light_gleam       sharers
 
   counts the elements the units carry
   goes to only the units that share it
@@ -6388,7 +6398,7 @@ squad bonuses  what a side is paid for what its units share
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | browse =====
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
 > naruto.naruto            naruto         wind
   pokemon.abra             pokemon        dark
@@ -6400,6 +6410,7 @@ cast  showing all origins (21 of 21 characters)
   pokemon.gastly           pokemon        dark
   pokemon.gible            pokemon        ground
   pokemon.happiny          pokemon        neutral
+  pokemon.igglybuff        pokemon        light
   pokemon.lapras           pokemon        water/ice
   pokemon.machop           pokemon        ground
   pokemon.magnemite        pokemon        electric/metal
@@ -6458,6 +6469,9 @@ builds  the kit and the trait a character fields at level 60, furthest form
     gible.rush
     gible.dragon
   pokemon.happiny       no build written for this one yet
+  pokemon.igglybuff
+    igglybuff.vang
+    igglybuff.doc
   pokemon.lapras        no build written for this one yet
   pokemon.machop
     machop.gamble
@@ -6473,9 +6487,6 @@ builds  the kit and the trait a character fields at level 60, furthest form
     mew.wither
   pokemon.mewtwo
     mewtwo.breach
-    mewtwo.origin
-  pokemon.oddish        no build written for this one yet
-  pokemon.pichu
 
   abra.unbilled
   intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
@@ -6587,7 +6598,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in ../seed/data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | elements =====
@@ -6611,9 +6622,9 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | filtered picker =====
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing naruto (1 of 21)
+showing naruto (1 of 22)
 
 >      naruto.naruto
 
@@ -6623,7 +6634,7 @@ showing naruto (1 of 21)
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | filtered skills =====
 skills  what each one does, and who may carry it
-  filtering long (5 of 147 skills)
+  filtering long (5 of 151 skills)
 
   id              element   damage multiplier who may carry it
 > dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
@@ -6633,7 +6644,7 @@ skills  what each one does, and who may carry it
   dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 160x60 | filtering skills =====
@@ -6689,11 +6700,11 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 160x60 | kit picker =====
-kit  0 of 147
+kit  0 of 151
 space chooses · the number is the order · ! is one this character cannot take
 
 >    ! vine_whip       grass units, out of pokemon
@@ -6755,13 +6766,13 @@ space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l ti
 origins  the works the cast is borrowed from
 
 > naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  20 cast  Pokémon
+  pokemon          anime   1997  21 cast  Pokémon
 
 2 works · media: anime film series game comic novel
 ----- footer -----
 ↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | reading a skill =====
-outrage  31 of 147
+outrage  31 of 151
 
   Hits an enemy for 220% of attack.
   Puts mire on itself.
@@ -6787,7 +6798,7 @@ which cells the skill catches  4 of 9
 ----- footer -----
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 160x60 | skill blurb =====
-split  146 of 147
+split  150 of 151
 
   Calls up a copy with 90% of the caster's stats.
   Puts sundered on itself.
@@ -6848,16 +6859,16 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | skills filtered to none =====
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 147 skills)
+  filtering zzzz (0 of 151 skills)
 
   nothing matches that.
 
-147 skills · 7 anyone may carry
+151 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 160x60 | species =====
@@ -6894,7 +6905,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
-the statuses this skill inflicts  1 of 42
+the statuses this skill inflicts  1 of 43
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison      damages every turn · 3 turns · up to 3 stacks
@@ -6939,6 +6950,7 @@ space chooses a status · type the chance in parts per thousand
        heartwood   raises a stat · always in force · up to 2 stacks
        sundered    raises a stat · always in force · up to 2 stacks
        burrowed    raises a stat · 2 turns · 1 stack
+       limelight   raises a stat · always in force · up to 2 stacks
 
   poison
 
@@ -6982,6 +6994,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   heartwood    
   sundered     
   burrowed     
+  limelight    
   shield       blocks one strike
   block        
   regen        restores every turn
@@ -6995,7 +7008,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   absorb       soaks up damage until it is used up
   aegis        
   bastion      
-  reserve      builds up for its holder to spend
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.
@@ -7119,6 +7131,9 @@ builds  the kit and the trait a character fields at level 60, furthest form
     gible.rush
     gible.dragon
   pokemon.happiny       no build written for this one yet
+  pokemon.igglybuff
+    igglybuff.vang
+    igglybuff.doc
   pokemon.lapras        no build written for this one yet
   pokemon.machop
     machop.gamble
@@ -7134,9 +7149,6 @@ builds  the kit and the trait a character fields at level 60, furthest form
     mew.wither
   pokemon.mewtwo
     mewtwo.breach
-    mewtwo.origin
-  pokemon.oddish        no build written for this one yet
-  pokemon.pichu
 
   abra.unbilled
   intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
@@ -7148,12 +7160,12 @@ builds  the kit and the trait a character fields at level 60, furthest form
 traits  the declared traits, and who carries each
 
   id             carried by
-> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.diglett@28 pokemon.dratini@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.ma…
+> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.diglett@28 pokemon.dratini@16 pokemon.happiny@32 pokemon.igglybuff@16 pokemon…
   blaze          pokemon.charmander@16 pokemon.torchic@24
   heatproof      pokemon.charmander@16
   virulence      pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.m…
+  blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.i…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
   thorns         pokemon.squirtle@32
@@ -7163,7 +7175,7 @@ traits  the declared traits, and who carries each
   elusive        pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@4…
   contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       pokemon.gastly@32 pokemon.poliwag@36
-  berserk        pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
+  berserk        pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
   unyielding     pokemon.machop@24
   carapace       pokemon.happiny@40 pokemon.squirtle@48
   projection     pokemon.charmander@48

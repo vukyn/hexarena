@@ -329,6 +329,28 @@ Gây choáng cho mục tiêu, 60% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 4 lượt.
 [one line] choáng 60% · tầm 2 · 2 ô · hồi 4
 
+dazzle
+Bung ra một vệt sáng chói dọc hàng đứng, ai hứng phải cũng phải nhắm mắt lại, 90% công.
+Gây mù cho mục tiêu, 25% khả năng.
+Tầm 2 · 3 ô · 90% trúng · hồi 2 lượt.
+[one line] 90% công · mù 25% · tầm 2 · 3 ô · hồi 2
+
+refrain
+Hát lại đúng câu vừa hát, và câu ấy thì ở lại trong đầu người nghe rất lâu, 120% công.
+Gây lở loét cho mục tiêu, 40% khả năng.
+Tầm 2 · 3 ô · 88% trúng · hồi 3 lượt.
+[one line] 120% công · lở loét 40% · tầm 2 · 3 ô · hồi 3
+
+patter
+Vỗ liên tiếp vào cùng một chỗ, nhanh tới mức chẳng chừa lúc nào để đỡ, 3 nhát, mỗi nhát 38% công (tổng 114%).
+Tầm 1 · 85% trúng · hồi 2 lượt.
+[one line] 114% công · tầm 1 · hồi 2
+
+plunge
+Lấy đà rồi lao thẳng vào, không giữ lại chút gì cho mình, 190% công, tốn 12% máu tối đa của người dùng dù trúng hay trượt.
+Tầm 1 · 90% trúng · hồi 3 lượt.
+[one line] 190% công · tốn 12% máu · tầm 1 · hồi 3
+
 rinse
 Dội nước lên đồng đội, thứ gì bám trên người đều trôi theo.
 Gỡ 2 cộng dồn hiệu ứng gây hại theo lượt, hiệu ứng giảm chỉ số và điện tích.
@@ -1103,6 +1125,11 @@ Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
 Chỉ nằm đó, không làm gì.
 Tăng chỉ số · 2 lượt · 1 cộng dồn.
 
+[status] limelight
+Tăng chính xác 10% mỗi cộng dồn.
+Tối đa là 20%.
+Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
+
 [status] block
 Mỗi cộng dồn triệt tiêu một nhát; đòn hai nhát tiêu hai cộng dồn.
 Chặn cú đánh, không chặn thứ dính lại: đòn bị chặn vẫn để lại hiệu ứng gây hại theo lượt.
@@ -1521,6 +1548,28 @@ Aims at an enemy.
 Inflicts stun, 60% of the time.
 Range 2 · 2 cells · 100% to hit · 4 turns to recharge.
 [one line] stun 60% · range 2 · 2 cells · cd 4
+
+dazzle
+Hits an enemy for 90% of attack.
+Inflicts blind, 25% of the time.
+Range 2 · 3 cells · 90% to hit · 2 turns to recharge.
+[one line] 90% attack · blind 25% · range 2 · 3 cells · cd 2
+
+refrain
+Hits an enemy for 120% of attack.
+Inflicts fester, 40% of the time.
+Range 2 · 3 cells · 88% to hit · 3 turns to recharge.
+[one line] 120% attack · fester 40% · range 2 · 3 cells · cd 3
+
+patter
+Hits an enemy for 3 strikes of 38% of attack each, 114% in all.
+Range 1 · 85% to hit · 2 turns to recharge.
+[one line] 114% attack · range 1 · cd 2
+
+plunge
+Hits an enemy for 190% of attack, costing its caster 12% of full health whether it lands or not.
+Range 1 · 90% to hit · 3 turns to recharge.
+[one line] 190% attack · costs 12% health · range 1 · cd 3
 
 rinse
 Aims at an ally.
@@ -2260,6 +2309,11 @@ Raises a stat · always in force · up to 2 stacks.
 [status] burrowed
 Sits there and does nothing.
 Raises a stat · 2 turns · 1 stack.
+
+[status] limelight
+Raises accuracy by 10% per stack.
+At its cap that is 20%.
+Raises a stat · always in force · up to 2 stacks.
 
 [status] block
 Each stack swallows one strike whole; a two-strike skill spends two.

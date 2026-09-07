@@ -1004,3 +1004,49 @@ func TestEverySkillSaysWhichWorkItIsFrom(t *testing.T) {
 		}
 	}
 }
+
+// TestEveryElementCanStrikeMoreThanOneCellAtOnce is a reach property rather than
+// a balance one, and it is what a whole element's shipped pool is missing when
+// every skill in it aims at a single cell.
+//
+// A board is columns of three and a shape is what turns a placement into a
+// decision: a squad standing in one column is punished by a `column` and ignored
+// by a `single`, so an element whose entire damaging pool is single-target gives
+// its carriers no reason to read the enemy's formation and the opponent no reason
+// to break its own. Every other element ships one and nine of the eleven ship at
+// least two, so this is the shape the book already has rather than a rule invented
+// here.
+//
+// The measurement is deliberately narrow. It asks for **power** and for **more
+// than one cell**, because a zero-power shape is a status delivery and answers a
+// different question — `sing` is a `flank_up` that stuns two cells and does not
+// make an element able to hurt a formation. It says nothing about how much power,
+// which range or how many strikes: those are `hexforge weigh`'s business, and a
+// property test quoting a figure would be a balance table wearing a property's
+// name.
+func TestEveryElementCanStrikeMoreThanOneCellAtOnce(t *testing.T) {
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load shapes: %v", err)
+	}
+	book := mustSkills(t)
+	for _, carried := range element.All() {
+		spread := 0
+		for _, current := range book.Skills() {
+			if current.Element != carried || current.Power <= 0 {
+				continue
+			}
+			shape, err := patterns.Lookup(current.Pattern)
+			if err != nil {
+				t.Fatalf("%q names shape %q: %v", current.ID, current.Pattern, err)
+			}
+			if shape.MaxTargets() > 1 {
+				spread++
+			}
+		}
+		if spread == 0 {
+			t.Errorf("no %s skill both deals damage and reaches more than one cell, so the element cannot punish a formation at all",
+				carried)
+		}
+	}
+}

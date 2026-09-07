@@ -1770,6 +1770,170 @@
       ]
     },
     {
+      "id": "pokemon.igglybuff",
+      "name": "Igglybuff",
+      "origin": "pokemon",
+      "archetype": "crooner",
+      "image": "assets/igglybuff.svg",
+      "element": "light",
+      "bio": "Hít một hơi thật sâu rồi hát, mà bài hát thì chẳng nhắm vào ai cả — nó cứ vang ra khắp chỗ, ai đứng gần thì phải nghe cho hết. Igglybuff hát tới khi chính mình buồn ngủ mới thôi, và càng hát thì càng phồng lên.",
+      "species": [
+        "fae"
+      ],
+      "stages": [
+        {
+          "name": "Igglybuff",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1100,
+              "max": 3200
+            },
+            "attack": {
+              "base": 130,
+              "max": 380
+            },
+            "defense": {
+              "base": 58,
+              "max": 170
+            },
+            "speed": {
+              "base": 22,
+              "max": 65
+            },
+            "accuracy": {
+              "base": 34,
+              "max": 100
+            },
+            "dodge": {
+              "base": 10,
+              "max": 26
+            }
+          }
+        },
+        {
+          "name": "Jigglypuff",
+          "min_level": 16,
+          "image": "assets/jigglypuff.svg",
+          "stats": {
+            "hp": {
+              "base": 1280,
+              "max": 3800
+            },
+            "attack": {
+              "base": 155,
+              "max": 460
+            },
+            "defense": {
+              "base": 68,
+              "max": 200
+            },
+            "speed": {
+              "base": 26,
+              "max": 78
+            },
+            "accuracy": {
+              "base": 40,
+              "max": 120
+            },
+            "dodge": {
+              "base": 11,
+              "max": 30
+            }
+          }
+        },
+        {
+          "name": "Wigglytuff",
+          "min_level": 32,
+          "image": "assets/wigglytuff.svg",
+          "stats": {
+            "hp": {
+              "base": 1470,
+              "max": 4400
+            },
+            "attack": {
+              "base": 190,
+              "max": 560
+            },
+            "defense": {
+              "base": 80,
+              "max": 240
+            },
+            "speed": {
+              "base": 32,
+              "max": 95
+            },
+            "accuracy": {
+              "base": 48,
+              "max": 145
+            },
+            "dodge": {
+              "base": 12,
+              "max": 36
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "dazzle"
+        },
+        {
+          "id": "patter"
+        },
+        {
+          "id": "sing",
+          "at_level": 8
+        },
+        {
+          "id": "refrain",
+          "at_level": 12
+        },
+        {
+          "id": "hyper_voice",
+          "at_level": 16
+        },
+        {
+          "id": "body_slam",
+          "at_level": 20
+        },
+        {
+          "id": "plunge",
+          "at_level": 24
+        },
+        {
+          "id": "charm",
+          "at_level": 28
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "rally",
+          "at_level": 36
+        },
+        {
+          "id": "moonblast",
+          "at_level": 40
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 28
+        },
+        {
+          "id": "berserk",
+          "at_level": 44
+        }
+      ]
+    },
+    {
       "id": "pokemon.lapras",
       "name": "Lapras",
       "origin": "pokemon",

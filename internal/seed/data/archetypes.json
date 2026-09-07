@@ -1156,6 +1156,64 @@
           "at_level": 36
         }
       ]
+    },
+    {
+      "id": "crooner",
+      "role": "the one that aims at a shape instead of a unit and pays for it in armour: a health pool as deep as the cast's healers hold, behind a guard as thin as the cast's glass cannons, so it survives being splashed and loses to being found",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 1470,
+          "max": 4400
+        },
+        "attack": {
+          "base": 190,
+          "max": 560
+        },
+        "defense": {
+          "base": 80,
+          "max": 240
+        },
+        "speed": {
+          "base": 32,
+          "max": 95
+        },
+        "accuracy": {
+          "base": 48,
+          "max": 145
+        },
+        "dodge": {
+          "base": 12,
+          "max": 36
+        }
+      },
+      "skills": [
+        "dazzle",
+        "refrain",
+        "patter",
+        "plunge",
+        "sing",
+        "charm",
+        "moonblast",
+        "hyper_voice",
+        "body_slam",
+        "taunt",
+        "rally"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 28
+        },
+        {
+          "id": "berserk",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }

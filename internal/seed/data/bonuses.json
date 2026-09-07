@@ -187,6 +187,24 @@
           ]
         }
       ]
+    },
+    {
+      "id": "light_gleam",
+      "name": "cùng ánh sáng",
+      "axis": "element",
+      "value": "light",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "limelight",
+              "stacks": 1
+            }
+          ]
+        }
+      ]
     }
   ]
 }

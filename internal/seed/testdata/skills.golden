@@ -60,6 +60,10 @@ charm           light     enemy    2  single            0     1      0  1000    
 moonlight       light     ally     1  single            0     1      0  1000    3     0     0        0
 wish            light     ally     1  single            0     1      0  1000    4     0     0        0
 sing            light     enemy    2  flank_up          0     1      0  1000    4     0     0        0
+dazzle          light     enemy    2  column          900     1    900   900    2     0     0      308
+refrain         light     enemy    2  arc_up         1200     1   1200   880    3     0     0      411
+patter          light     enemy    1  single          380     3   1140   850    2     0     0      390
+plunge          light     enemy    1  single         1900     1   1900   900    3     0     0      651
 rinse           water     ally     1  single            0     1      0  1000    3     0     0        0
 chorus          water     ally     1  column            0     1      0  1000    4     0     0        0
 thunder_shock   electric  enemy    2  single          700     1    700   950    1     0     0      240
@@ -185,6 +189,8 @@ moonblast       weaken                 1      300        900              270
 charm           weaken                 2     1000       1000             1000
 wish            regrowth               1     1000       1000             1000
 sing            stun                   1      600       1000              600
+dazzle          blind                  1      250        900              225
+refrain         fester                 1      400        880              352
 chorus          haste                  1     1000       1000             1000
 thunder_shock   charge                 1     1000        950              950
 thunder_shock   stun                   1      120        950              114
@@ -293,6 +299,10 @@ charm           -          -                 -                   -         pokem
 moonlight       -          -                 -                   -         pokemon
 wish            -          -                 -                   -         pokemon
 sing            -          -                 -                   -         pokemon
+dazzle          -          -                 -                   -         pokemon
+refrain         -          -                 -                   -         pokemon
+patter          -          -                 -                   -         pokemon
+plunge          -          -                 -                   -         pokemon
 rinse           -          -                 -                   -         pokemon
 chorus          -          -                 -                   -         pokemon
 thunder_shock   -          -                 -                   -         pokemon
@@ -481,6 +491,7 @@ phalanx     buff                2       0            0      0               0   
 heartwood   buff                2       0            0      0               0          0   hp +10.0%
 sundered    buff                2       0            0      0               0          0   -
 burrowed    buff                1       2            0      0               0          0   -
+limelight   buff                2       0            0      0               0          0   accuracy +10.0%
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

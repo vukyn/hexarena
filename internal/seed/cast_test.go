@@ -16,6 +16,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/testfixture"
@@ -100,6 +101,7 @@ func TestShippedArchetypesMatchTheReferenceProfiles(t *testing.T) {
 		{"spendthrift", 2, profile(2800, 610, 260, 158, 190, 74)},
 		{"stoker", 0, profile(3000, 700, 340, 120, 165, 62)},
 		{"manifold", 1, profile(3400, 660, 300, 150, 170, 55)},
+		{"crooner", 2, profile(4400, 560, 240, 95, 145, 36)},
 	}
 	book := mustArchetypes(t)
 	if got, want := len(book.All()), len(design); got != want {
@@ -924,5 +926,133 @@ func TestABiographyNamesNoLaterForm(t *testing.T) {
 	}
 	if checked == 0 {
 		t.Fatal("no shipped character has both a biography and a second form, so this measures nothing")
+	}
+}
+
+// soleCarriers are the elements one character is allowed to be the whole of,
+// each with the reason it is still that way.
+//
+// A row is a gap that has been looked at, not a rule. Deleting one is what
+// shipping a second carrier looks like from here, and the test then holds the
+// element without anybody having to remember this list exists.
+var soleCarriers = map[string]string{
+	"ice": "Lapras is the only ice carrier at all, and it is dual water/ice with a single stage; the element has no entry in builds.json either, so its whole pool is unmeasured — filed in TODO.md",
+}
+
+// TestNoElementIsOneCharacter is the difference between an element having skills
+// and an element having a way to play.
+//
+// An element one character is the whole of cannot appear twice in a squad as two
+// different problems, and the opponent's answer to the element is its answer to
+// that character — so the element is a move list wearing an element's name. It is
+// also how an element quietly stops growing: the next carrier authored has the
+// same pool to choose from and differs only in its stat line, which is a reskin
+// rather than a second way of playing. Two carriers is the floor at which the
+// affinity starts being a fact about the board instead of about one unit.
+//
+// It counts **carriers**, not the pool. Splitting a pool two ways is one way to
+// clear this and not the only one — a second carrier that shares every skill and
+// plays at a different range is a real second answer, and one that takes four
+// skills nobody had is a bigger one; both are the author's call and neither is
+// what a test should be asking for.
+//
+// A held-back character counts. `Hidden` is an authoring convenience the engine
+// does not read, so Naruto is as real a wind carrier as Dratini — the one thing
+// it changes is the drafted pool, which is a different question from whether an
+// element can be brought twice.
+func TestNoElementIsOneCharacter(t *testing.T) {
+	carriers := map[element.Element][]string{}
+	for _, character := range mustCast(t).All() {
+		for _, member := range character.Element.Elements() {
+			carriers[member] = append(carriers[member], character.ID)
+		}
+	}
+	for _, carried := range element.All() {
+		held := carriers[carried]
+		if len(held) != 1 {
+			continue
+		}
+		if why, known := soleCarriers[carried.String()]; known {
+			t.Logf("%s is %s alone, which is known: %s", carried, held[0], why)
+			continue
+		}
+		t.Errorf("%s is carried by %s alone, so the element cannot be brought twice and answering it is answering one character; ship a second carrier, or add a row to soleCarriers saying why not",
+			carried, held[0])
+	}
+}
+
+// TestEveryHarmfulCategoryIsFieldedBySomeSquad is the difference between a
+// mechanism existing and a mechanism being measured.
+//
+// The shipped squads are what `forge.FightSquads` fights, so they are the only
+// placements any rate is ever read off. A harmful category no squad delivers is
+// therefore a category with **no number attached to it anywhere**: it parses, it
+// draws, it has a describer and a gloss, and nothing in the repository can say
+// what it is worth. `fester` shipped in exactly that state — two builds name a
+// carrier, no squad fields one — and the balance note beside it had to say so in
+// as many words.
+//
+// It reads squads rather than builds on purpose. A build is a *suggestion* to a
+// player: `builds.json` is a catalogue and nothing fights it. A squad is a
+// placement, and a placement is what a seed turns into a battle.
+//
+// Delivery counts all four routes a status can arrive by — the skill's own
+// `applies`, its `self_applies`, and the `applies` either condition adds on hold
+// — because every one of them reaches `battle.inflict`. ⚠️ `self_applies` is not
+// a curiosity here: `taunting` is a **harmful** category a unit puts on *itself*
+// (that is what makes the enemy aim at it), so the shipped `taunt` delivers
+// through that route and nothing else. A first version of this test read only
+// `applies` and reported the category as unfielded while `s02` was fielding it.
+//
+// `charge` is harmful too — `status.Category.Harmful` says so, because which side
+// of the board a counter belongs to is exactly what that predicate answers.
+func TestEveryHarmfulCategoryIsFieldedBySomeSquad(t *testing.T) {
+	book := mustSkills(t)
+	statuses := mustStatuses(t)
+	squads, err := seed.Squads()
+	if err != nil {
+		t.Fatalf("load shipped squads: %v", err)
+	}
+	delivered := map[status.Category]string{}
+	note := func(current skill.Skill, applied []skill.Application, where string) {
+		for _, one := range applied {
+			kind, err := statuses.Lookup(one.Status)
+			if err != nil {
+				t.Fatalf("%q applies %q: %v", current.ID, one.Status, err)
+			}
+			if kind.Category.Harmful() {
+				delivered[kind.Category] = where + " (" + current.ID + " → " + one.Status + ")"
+			}
+		}
+	}
+	for _, squad := range squads {
+		for _, unit := range squad.Units {
+			for _, id := range unit.Skills {
+				current, err := book.Lookup(id)
+				if err != nil {
+					t.Fatalf("squad %s unit %s names skill %q: %v", squad.ID, unit.ID, id, err)
+				}
+				note(current, current.Applies, squad.ID)
+				note(current, current.SelfApplies, squad.ID)
+				if current.Requires.AppliesOnHold() {
+					note(current, current.Requires.Applies, squad.ID)
+				}
+				if current.SelfRequires.AppliesOnHold() {
+					note(current, current.SelfRequires.Applies, squad.ID)
+				}
+			}
+		}
+	}
+	for _, category := range status.Categories() {
+		if !category.Harmful() {
+			continue
+		}
+		where, found := delivered[category]
+		if !found {
+			t.Errorf("no shipped squad delivers a %s, so nothing measures the category: put a carrier in a squad, because a build is a catalogue and only a squad is fought",
+				category)
+			continue
+		}
+		t.Logf("%-12s fielded by %s", category, where)
 	}
 }
