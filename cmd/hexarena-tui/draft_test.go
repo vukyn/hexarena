@@ -667,6 +667,9 @@ func TestADraftedMatchIsPlayedFromTheFirstBanToTheLastBlowOverALoopbackListener(
 		for _, message := range fake.take() {
 			m = send(t, m, message)
 		}
+		// Two presses a turn, the same driver match_test.go carries and with the
+		// same caveat written there: the break agrees with any number of them, so
+		// this reaches the result screen and holds no rule about the count.
 		for range 2 {
 			if m.screen != screenBattle || !m.battle.Live ||
 				m.battle.Pending == nil || m.battle.Answered {

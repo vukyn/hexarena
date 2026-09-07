@@ -3166,30 +3166,54 @@ is only so the shape is readable.
       Worth doing with the item below — they are one complaint, that the screen
       will not show what a turn is about to do before it is spent.
 
-- [ ] **A golden holds a state and says nothing about the path to it, and three
-      suites build the aiming state by assignment.** Found 2026-09-06 making the
-      aim list open on every skill: the entry above predicted the extra keystroke
-      would move "every play fixture that casts a single-aim skill" and called it
-      the bulk of the diff. **It moved none.** Every fixture that draws the aim
-      list reaches it with `p.Aiming = true` — `screens_golden_test.aBattleAiming`,
+- [x] **A golden holds a state and says nothing about the path to it — SWEPT,
+      and the one rule the sweep found held by nothing is now held.** The first
+      half stands as a fact rather than a task: every fixture that draws the aim
+      list reaches it with `p.Aiming = true` (`screens_golden_test.aBattleAiming`,
       `cmd/hexforge-tui/language_test.go` twice, `cmd/hexarena-tui/sweep_test.go`
-      twice — so the goldens hold the *state* and never pressed the key that
-      opens it.
-      ⚠️ That is not a fixture problem to fix by pressing keys instead: a golden
-      is a picture and a picture of a state is what it is for. It is worth
-      writing down because it bounds what the golden suite can be trusted to
-      catch — **no keystroke rule is held by a golden**, and every one of them
-      therefore needs a behaviour test of its own or it is held by nothing.
-      ⚠️ The second half is worse and is the same shape: `live_test.go` presses
-      enter in a `for action.Kind == Stay && struck.Aiming` loop, which tolerates
-      either answer by construction. Reverting `PlayScreen.answer` alone reddened
-      **not one test in the repository** until
-      `TestALiveAimListOpensForASkillWithOneLegalCell` was written. A loop written
-      to be robust against a rule cannot measure it — and the local twin of that
-      rule *was* covered, which is exactly what makes the gap invisible.
-      What to do with it: sweep for the other `for … && screen.<flag>` loops in
-      the screen suites and ask of each whether the rule it walks past is held
-      anywhere else.
+      twice), so a golden holds a *state* and **no keystroke rule in this
+      repository is held by a golden**. That is correct for a golden — a picture
+      of a state is what it is for — and it is why each such rule needs a
+      behaviour test of its own.
+
+      **The loop sweep, and what it found.** Every `for` in the three screen
+      suites whose body presses a key was read. Three classes, and only one is a
+      defect:
+      - **Tolerant assertion — one, and it was the known one.**
+        `live_test.go`'s `for action.Kind == Stay && struck.Aiming` reached an
+        Answer whether the list opened once, twice or not at all. It is now
+        exactly two presses with the first asserted to return `Stay` and leave
+        the screen aiming.
+      - **Waits — sound.** Every `… && time.Now().Before(deadline)` loop in
+        `cmd/hexarena-tui` (draft, match, clock) **asserts the state after
+        itself**, so a timeout fails rather than passing quietly.
+      - **Drivers — sound, now labelled.** The two `for range 2 { … key("enter") }`
+        loops in `match_test.go` and `draft_test.go` agree with any number of
+        presses by construction; they exist to reach the result screen. Both now
+        say out loud that they hold nothing and name what does. The rest
+        (`for m.form.cursor != field`, `for m.squad.Field != field`, …) navigate
+        to a known target and assert elsewhere.
+
+      **The mutation sweep, which is what the loop sweep could not answer.** Eight
+      keystroke rules on `PlayScreen` were reverted one at a time against a git
+      baseline and the four screen suites run: **all eight reddened**, so none was
+      unheld. But five of them redden only `TestTheLiveFootersNameNoKeyTheScreenIgnores`,
+      whose own doc says it *cannot see whether a named key does the right thing*
+      — it sees that a key did **something**. For four of those five that is the
+      right holder, because "does nothing on a live screen" is the whole rule (the
+      save key, `n`, `u`, `a`).
+      ⚠️ **The fifth was a real hole and is the same shape as the original bug.**
+      `Update`'s `p.Pending == nil || (p.Live && p.Answered)` guard is what stops a
+      live screen answering twice, and its named assertion was
+      `if action.Kind != Stay` — which a screen that had forgotten it answered
+      satisfies by **opening the aim list**. Since #322 made the list open on every
+      skill, that assertion had stopped distinguishing "dropped" from "started the
+      turn again". Dropping the clause left the test green. It now measures what
+      the press did *not* do — no action, not aiming, and a screen that did not
+      move — and the mutation reddens it.
+      ⚠️ **Not swept:** the mutation pass covered `PlayScreen` only. `DraftScreen`
+      and `ArrangeScreen` were read for tolerant loops and have none, but no rule
+      of theirs was reverted and watched.
 
 - [x] **A field inside a `modifier` was dropped silently in all three books —
       DONE, and the asymmetry it warned about was closed with it.**
