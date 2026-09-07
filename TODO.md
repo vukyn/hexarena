@@ -2898,9 +2898,55 @@ is only so the shape is readable.
       may be reused, and § *Grow the cast* above says why that is not a problem.
       Authoring one is the *Grow the cast* item above, not a separate task — this
       entry is the queue, not the work.
-- [ ] **Squad composition bonuses: the mechanism, the first bonus and the
-      reference screen are BUILT; what is left is the second axis and the top
-      rungs.** The idea, as asked for: fielding several units that share
+- [ ] **Squad composition bonuses: the mechanism, the first TWO bonuses and the
+      reference screen are BUILT; what is left is the top rungs.**
+
+      ⚠️ **The second axis shipped 2026-09-07 as `same_column`, and it is not the
+      axis this entry recommended.** The recommendation was the **archetype's**
+      column, on reachability alone, and the engine cannot see it: `battle.Roster`
+      carries no archetype on purpose — *"settled before a battle and leaves
+      nothing behind but numbers"* — so counting the preset would have meant
+      widening the roster, the wire and every log to say something **weaker** than
+      the slot already says. An archetype's column is where a character *wants* to
+      stand; the slot is where the player *put* it, which is the decision a
+      composition bonus is supposed to reward.
+      ⚠️ **One rung, at three, and the rung at two was built and thrown away.** A
+      rung at two fires on any board standing a pair in one column — which is most
+      constructed fixtures in this repository, because they choose skills and
+      traits deliberately and slots carelessly. It reddened two unrelated balance
+      tests (`TestAccumulatingIsAWayOfFightingRatherThanASlowerOne` at 356‰ against
+      a floor of 363, and both wall arms of
+      `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip`). **Spreading those
+      fixtures was tried first and was the wrong fix**: it made them green by
+      moving a unit from column 1 to column 2, which changes reach and therefore
+      re-baselines two balance measurements for a reason unrelated to the bonus.
+      Dropping the rung costs nothing anywhere and makes the bonus what it should
+      be — a side has to stack **all** of itself to be paid for the shape.
+      ⚠️ **Rungs above three are unreachable on this axis for ever**, and that is
+      not the element axis's "wait for 5v5": a column holds `hex.FormationRows`
+      units, which is a property of the board.
+      **Measured** (`FightSquads` with the bonus against the same run with it
+      removed, 400 battles a cell): rung three is worth **+126‰** against s01,
+      **+59‰** against s03 and **+8‰** against s04, and the mirror reads exactly
+      **500‰** both ways, which is the control. No shipped squad reaches it —
+      s01 stands two in a column and the rest stand three in three — so it is
+      something a player builds towards, exactly as `same_element` is.
+      ⚠️ **The bonus does not pay for the shape, and that is the finding.** The
+      same squad re-slotted into one column reads **464‰** against s01 *with* the
+      bonus where it reads 677‰ spread out: stacking costs about 213‰ and the
+      bonus returns 126‰. So it softens a real sacrifice without making the
+      degenerate formation correct. ⚠️ That figure moves one variable and keeps the
+      characters, which were picked for a spread formation, so it is a statement
+      about *that squad stacked* rather than about stacked squads in general.
+      ⚠️ **150‰ was measured and is NOT bigger.** The permanent-buff floor is 81
+      and the house figure is 150, so the grant had two legal values. At 150 the
+      bonus is worth **more** against s03 and s04 and **less** against s01 (+96‰
+      against +126‰), and at rung two it was worse against s04 (+18‰ against
+      +45‰) — more defence lengthens a battle, and a longer battle can change who
+      wins it. That is `swiftness` restated: **a win rate is non-monotone in a
+      stat**, so a sweep cannot pick the number by taking the largest. 100‰ ships
+      because it matches the grant `same_element` already carries and the only
+      alternative in the band was measured and beaten. The idea, as asked for: fielding several units that share
       something grants the squad a
       bonus, stronger bonuses sit at higher thresholds, and **not every bonus
       needs four rungs** — one or two is fine where the effect is worth it.
@@ -2929,10 +2975,9 @@ is only so the shape is readable.
       each, so the bonus is something a player builds *towards* rather than
       something already in the starter sides.
 
-      **Still open, and each keeps its reasoning below:** a second axis (the
-      origin one is still empty — decision 4) and the rungs at 4 and 5 (decision
-      6, they wait for 5v5). The reference screen — the nested item at the end —
-      shipped in #319.
+      **Still open:** the rungs at 4 and 5 (decision 6, they wait for 5v5) on the
+      **element** axis — the column axis can never reach them. A third axis is not
+      needed for the mechanism and the candidates below keep their reasoning.
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
       four obvious axes outright.** Multiplicity across the nineteen shipped

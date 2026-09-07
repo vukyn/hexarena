@@ -1,6 +1,7 @@
 package battle_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
@@ -232,5 +233,116 @@ func TestABattleRunsWithNoBonusBook(t *testing.T) {
 		if event.Kind == battle.BonusHeld {
 			t.Fatalf("a battle with no bonus book emitted %+v", event)
 		}
+	}
+}
+
+// The second axis. `same_element` counts what a squad IS; this counts where it
+// STANDS, and the two are different enough that the counting had to be split
+// rather than parameterised — an element bonus skips the inert element, and there
+// is no inert column.
+//
+// ⚠️ **The roadmap named the archetype's column and the engine cannot see it.**
+// Roster carries no archetype on purpose — settled before a battle, leaves nothing
+// behind but numbers — so counting the preset would have meant widening the
+// roster, the wire and every log to say something weaker than the slot already
+// says. An archetype's column is where a character *wants* to stand; the slot is
+// where the player put it, which is the decision a composition bonus rewards.
+// aColumnBattle is one side standing in the columns given, against an enemy pair
+// that always shares column 2 — so a count that crossed the board would show.
+func aColumnBattle(t *testing.T, cols []int) *battle.Battle {
+	t.Helper()
+	loaded := books(t)
+	book, err := composition.ParseBook([]byte(`{"bonuses": [
+	  {"id": "same_column", "name": "cùng tuyến", "axis": "column", "scope": "sharers", "rungs": [
+	    {"at": 3, "grants": [{"status": "toughened", "stacks": 2}]}
+	  ]}
+	]}`), composition.Deps{Statuses: loaded.Statuses, Chart: loaded.Chart})
+	if err != nil {
+		t.Fatalf("parse the column bonus: %v", err)
+	}
+	loaded.Bonuses = book
+	one, err := element.Parse("water")
+	if err != nil {
+		t.Fatalf("parse water: %v", err)
+	}
+	affinity, err := element.Single(one)
+	if err != nil {
+		t.Fatalf("affinity: %v", err)
+	}
+	stats := progression.Values{
+		progression.HP: 900, progression.Attack: 200, progression.Defense: 120,
+		progression.Speed: 50, progression.Accuracy: 90, progression.Dodge: 10,
+	}
+	roster := make([]battle.Roster, 0, len(cols)+2)
+	for i, col := range cols {
+		roster = append(roster, battle.Roster{
+			ID: "a" + strconv.Itoa(i+1), Side: hex.SideAlly,
+			Slot: hex.Offset{Col: col, Row: i}, Affinity: affinity, Stats: stats,
+			Skills: []string{"strike"}})
+	}
+	for i := range 2 {
+		roster = append(roster, battle.Roster{
+			ID: "e" + strconv.Itoa(i+1), Side: hex.SideEnemy,
+			Slot: hex.Offset{Col: 2, Row: i}, Affinity: affinity, Stats: stats,
+			Skills: []string{"strike"}})
+	}
+	fight, err := battle.New(loaded, 1, roster)
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	return fight
+}
+
+// TestAColumnBonusCountsWhereUnitsStand holds both rungs and the miss.
+//
+// ⚠️ **Rung three is here because no shipped squad reaches it.** s01 stands two
+// in one column and every other shipped squad stands its three in three, so the
+// top rung of this bonus fires nowhere in the data — which is the "fixture hides a
+// branch" shape this repository has paid for five times. It is reachable (a column
+// holds hex.FormationRows units, and that is three), and this is where that is
+// said out loud.
+func TestAColumnBonusCountsWhereUnitsStand(t *testing.T) {
+	for _, one := range []struct {
+		name   string
+		cols   []int
+		stacks int
+	}{
+		{"three in one column", []int{2, 2, 2}, 2},
+		// ⚠️ **Two in a column is deliberately NOT a rung**, and that is the whole
+		// reason this bonus has one. A rung at two fires on any board that puts a
+		// pair in a column, which is most constructed fixtures in this repository —
+		// they choose skills and traits deliberately and slots carelessly — so it
+		// was measured, found to move two unrelated balance tests, and dropped. A
+		// side has to stack ALL of itself to be paid for the shape.
+		{"two in one column", []int{2, 2, 0}, 0},
+		{"three in three columns", []int{0, 1, 2}, 0},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			fight := aColumnBattle(t, one.cols)
+			held, known := fight.Unit("a1")
+			if !known {
+				t.Fatal("no first unit on the board")
+			}
+			if got := held.Statuses.Stacks("toughened"); got != one.stacks {
+				t.Errorf("a squad standing in columns %v gave its first unit %d stacks, want %d",
+					one.cols, got, one.stacks)
+			}
+		})
+	}
+}
+
+// TestAColumnBonusIsCountedPerSide is the rule every bonus obeys and the one a
+// second axis is most likely to break: a side is counted on its own, so an enemy
+// standing in the same column cannot push this side over a threshold.
+func TestAColumnBonusIsCountedPerSide(t *testing.T) {
+	// Two allies in column 2, and the two enemies stand there too. Across the
+	// board that is four, which would reach the rung; on either side alone it is
+	// two, which does not.
+	fight := aColumnBattle(t, []int{2, 2, 0})
+	held, _ := fight.Unit("a1")
+	if got := held.Statuses.Stacks("toughened"); got != 0 {
+		t.Errorf("two allies in a column with two enemies in the same one gave %d stacks, "+
+			"want none: the count is crossing the board", got)
 	}
 }

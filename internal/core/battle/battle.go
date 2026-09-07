@@ -410,7 +410,8 @@ func awards(bonuses *composition.Book, chart *element.Chart, roster []Roster) []
 			if entry.Side != side {
 				continue
 			}
-			members = append(members, composition.Member{ID: entry.ID, Affinity: entry.Affinity})
+			members = append(members, composition.Member{
+				ID: entry.ID, Affinity: entry.Affinity, Column: entry.Slot.Col})
 		}
 		out = append(out, bonuses.Awards(chart, members)...)
 	}

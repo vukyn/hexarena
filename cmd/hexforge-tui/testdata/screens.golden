@@ -257,22 +257,22 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2329/3100     90   -
-A2   Bloom                [####......]  1008/2200    200   -
-A3   Sennin               [#######...]  2702/3400    134   toughened (always)
-E1   Example Adept        [######....]  2123/3100     90   poison (1t)
-E2   Bloom                [###.......]   728/2200    161   mire (2t)
-E3   Sennin               [####......]  1639/3400    134   toughened (always), poison (2t)
-     phân thân 1          [######....]   849/1360     53   -
-     phân thân 2          [######....]   906/1360     53   -
-     phân thân 1          [########..]  1104/1360     53   -
-     phân thân 2          [#######...]  1082/1360     53   -
+A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
+A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
+A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
+E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
+     phân thân 1          [########..]  1120/1360     53   -
+     phân thân 2          [######....]   932/1360     53   -
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [########..]  1098/1360     53   -
 
-A2 Bloom, lượt 5
-> bolt          80% công · tầm 3
-  venom_fang    còn hồi 1 lượt
-  creeping_rot  70% công · trúng độc 65% · tầm 3 · 3 ô · hồi 3
-  arc_bolt      còn hồi 2 lượt
+A3 Sennin, lượt 3
+> kunai          70% công · tầm 2
+  substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
+  shadow_clone   còn hồi 4 lượt
+  wind_shuriken  còn hồi 2 lượt
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a squad =====
 
@@ -395,14 +395,14 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 A4   Alakazam             [##########]  2800/2800    158   -
 A5   Venusaur             [##########]  3800/3800    100   kinship (always)
-E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   kinship (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always)
+E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 E4   Alakazam             [##########]  2800/2800    158   -
 E5   Venusaur             [##########]  3800/3800    100   kinship (always)
 
@@ -418,9 +418,9 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 7 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 
 A2 Bloom, lượt 1
   bolt          80% công · tầm 3
@@ -531,12 +531,12 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
-> same_element  đồng hệ  sharers
+> same_column   cùng tuyến  sharers
+  same_element  đồng hệ     sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
-  2 người cùng có: kinship <đồng khí> x1
-  3 người cùng có: kinship <đồng khí> x2
+  3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
 
@@ -1150,7 +1150,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/34
+chiêu này gây hiệu ứng gì  1/35
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -1960,7 +1960,7 @@ thế đứng
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
 ===== vi | 160x60 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 100-123/123
+trận đấu  seed 1  diễn biến 97-120/120
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1973,49 +1973,49 @@ trận đấu  seed 1  diễn biến 100-123/123
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2329/3100     90   -
-A2   Bloom                [####......]  1008/2200    200   -
-A3   Sennin               [#######...]  2702/3400    134   toughened (always)
-E1   Example Adept        [######....]  2123/3100     90   poison (1t)
-E2   Bloom                [###.......]   728/2200    161   mire (2t)
-E3   Sennin               [####......]  1639/3400    134   toughened (always), poison (2t)
-     phân thân 1          [######....]   849/1360     53   -
-     phân thân 2          [######....]   906/1360     53   -
-     phân thân 1          [########..]  1104/1360     53   -
-     phân thân 2          [#######...]  1082/1360     53   -
+A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
+A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
+A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
+E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
+     phân thân 1          [########..]  1120/1360     53   -
+     phân thân 2          [######....]   932/1360     53   -
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [########..]  1098/1360     53   -
 
-next: E2 ally.2,2#1 ally.2,2#2 A3 E3 A2
+next: E3 A2 E2 ally.2,2#1 ally.2,2#2 A3
 
+    A2   hits E3 for 494 (weak), 1996 left
+    A2   poison <trúng độc> x1 on E3, now 1
+  
+  E2  turn 4
+    E2  uses venom_fang <nanh độc> at 2,2
+    E2   hits A3 for 494 (weak), 2762 left
+    E2   A3 resists poison <trúng độc> (90%)
+  
+  A1  turn 2
     A1  uses riptide <sóng ngầm> at 3,1
-    A1   hits E2 for 163 (resisted), 728 left
+    A1   hits E2 for 150 (resisted), 848 left
     A1   misses E2 (77%)
     A1   mire <sa lầy> x1 on E2, now 1
-    A1   hits enemy.2,2#2 for 139, 1221 left
-    A1   hits enemy.2,2#2 for 139, 1082 left
+    A1   hits enemy.2,2#2 for 131, 1229 left
+    A1   hits enemy.2,2#2 for 131, 1098 left
     A1   enemy.2,2#2 resists mire <sa lầy> (55%)
     E2  speed 200 to 161
   
   E1  turn 2
-    E1  takes 103 from poison <trúng độc> x1
+    E1  takes 91 from poison <trúng độc> x1
     E1  stun <choáng> wears off
     E1  loses the turn (stun)
   
   A3  turn 3
-    A3  uses kunai <phi đao> at 4,2
-    A3   hits enemy.2,2#1 for 256, 1104 left
-  
-  E3  turn 3
-    E3  takes 225 from poison <trúng độc> x1
-    E3  uses kunai <phi đao> at 1,0
-    E3   hits ally.2,2#1 for 256, 849 left
-  
-  A2  turn 5
 
-A2 Bloom, lượt 5
-> bolt          80% công · tầm 3
-  venom_fang    còn hồi 1 lượt
-  creeping_rot  70% công · trúng độc 65% · tầm 3 · 3 ô · hồi 3
-  arc_bolt      còn hồi 2 lượt
+A3 Sennin, lượt 3
+> kunai          70% công · tầm 2
+  substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
+  shadow_clone   còn hồi 4 lượt
+  wind_shuriken  còn hồi 2 lượt
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a squad =====
 
@@ -2327,32 +2327,38 @@ trận đấu  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 A4   Alakazam             [##########]  2800/2800    158   -
 A5   Venusaur             [##########]  3800/3800    100   kinship (always)
-E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   kinship (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always)
+E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 E4   Alakazam             [##########]  2800/2800    158   -
 E5   Venusaur             [##########]  3800/3800    100   kinship (always)
 
 next: E2 A4 E4 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
+    A1   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
+    A2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     A2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
     A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     A5   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
+    E1   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     E2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
     E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
     E5   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
@@ -2364,16 +2370,10 @@ A2 Bloom, lượt 1
   venom_fang    120% công · trúng độc 90% · tầm 1 · hồi 1
   creeping_rot  70% công · trúng độc 65% · tầm 3 · 3 ô · hồi 3
   arc_bolt      150% công · choáng 25% · tầm 3 · hồi 3
-
-
-
-
-
-
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a squeezed battle aiming =====
 
-trận đấu  seed 1  diễn biến 2-18/18
+trận đấu  seed 1  diễn biến 8-24/24
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2386,31 +2386,31 @@ trận đấu  seed 1  diễn biến 2-18/18
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 A4   Alakazam             [##########]  2800/2800    158   -
 A5   Venusaur             [##########]  3800/3800    100   kinship (always)
-E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   kinship (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always)
+E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 E4   Alakazam             [##########]  2800/2800    158   -
 E5   Venusaur             [##########]  3800/3800    100   kinship (always)
 
 next: E2 A4 E4 A3 E3 A2
 
-    A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
-    A2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
-    A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
-    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
     A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     A5   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
+    E1   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     E2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
     E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
     E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
     E5   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
@@ -2670,12 +2670,12 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 
 bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
 
-> same_element  đồng hệ  sharers
+> same_column   cùng tuyến  sharers
+  same_element  đồng hệ     sharers
 
   đếm hệ mà các thành viên mang
   trao cho chỉ những người cùng chia
-  2 người cùng có: kinship <đồng khí> x1
-  3 người cùng có: kinship <đồng khí> x2
+  3 người cùng có: phalanx <trận thế> x2
 
   đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
 
@@ -4261,7 +4261,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/34
+chiêu này gây hiệu ứng gì  1/35
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -4295,6 +4295,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        heft       sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
        stoked     nóng máy · tăng chỉ số · 2 lượt · tối đa 5 cộng dồn
+       phalanx    trận thế · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        kinship    đồng khí · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        sundered   đã tách · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
        burrowed   độn thổ · tăng chỉ số · 2 lượt · 1 cộng dồn
@@ -4302,7 +4303,6 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
   poison
 
   cơ hội trúng  300      30%
-
 
 
 
@@ -4346,6 +4346,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   quickened    gia tốc
   evasive      khinh công
   stoked       nóng máy
+  phalanx      trận thế
   kinship      đồng khí
   sundered     đã tách
   burrowed     độn thổ
@@ -4373,7 +4374,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
-
 
 
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
@@ -4931,22 +4931,22 @@ the battle  seed 1
 the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2329/3100     90   -
-A2   Bloom                [####......]  1008/2200    200   -
-A3   Sennin               [#######...]  2702/3400    134   toughened (always)
-E1   Example Adept        [######....]  2123/3100     90   poison (1t)
-E2   Bloom                [###.......]   728/2200    161   mire (2t)
-E3   Sennin               [####......]  1639/3400    134   toughened (always), poison (2t)
-     phân thân 1          [######....]   849/1360     53   -
-     phân thân 2          [######....]   906/1360     53   -
-     phân thân 1          [########..]  1104/1360     53   -
-     phân thân 2          [#######...]  1082/1360     53   -
+A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
+A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
+A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
+E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
+     phân thân 1          [########..]  1120/1360     53   -
+     phân thân 2          [######....]   932/1360     53   -
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [########..]  1098/1360     53   -
 
-A2 Bloom, turn 5
-> bolt          80% attack · range 3
-  venom_fang    1 turn of cooldown left
-  creeping_rot  70% attack · poison 65% · range 3 · 3 cells · cd 3
-  arc_bolt      2 turns of cooldown left
+A3 Sennin, turn 3
+> kunai          70% attack · range 2
+  substitution   self veil x2 · itself · cd 4
+  shadow_clone   4 turns of cooldown left
+  wind_shuriken  2 turns of cooldown left
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a squad =====
 
@@ -5069,14 +5069,14 @@ the battle  seed 1
 the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 A4   Alakazam             [##########]  2800/2800    158   -
 A5   Venusaur             [##########]  3800/3800    100   kinship (always)
-E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   kinship (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always)
+E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 E4   Alakazam             [##########]  2800/2800    158   -
 E5   Venusaur             [##########]  3800/3800    100   kinship (always)
 
@@ -5092,9 +5092,9 @@ the battle  seed 1
 the window is too short for: board, 7 units, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 
 A2 Bloom, turn 1
   bolt          80% attack · range 3
@@ -5205,12 +5205,12 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 
 squad bonuses  what a side is paid for what its units share
 
-> same_element    sharers
+> same_column     sharers
+  same_element    sharers
 
   counts the elements the units carry
   goes to only the units that share it
-  2 sharing it: kinship x1
-  3 sharing it: kinship x2
+  3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
 
@@ -5824,7 +5824,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
 
-the statuses this skill inflicts  1 of 34
+the statuses this skill inflicts  1 of 35
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -6634,7 +6634,7 @@ the formation
 ↑/↓ field · ←/→ change · enter choose · esc done
 ===== en | 160x60 | a scrolled battle log =====
 
-the battle  seed 1  log 100-123/123
+the battle  seed 1  log 97-120/120
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6647,49 +6647,49 @@ the battle  seed 1  log 100-123/123
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2329/3100     90   -
-A2   Bloom                [####......]  1008/2200    200   -
-A3   Sennin               [#######...]  2702/3400    134   toughened (always)
-E1   Example Adept        [######....]  2123/3100     90   poison (1t)
-E2   Bloom                [###.......]   728/2200    161   mire (2t)
-E3   Sennin               [####......]  1639/3400    134   toughened (always), poison (2t)
-     phân thân 1          [######....]   849/1360     53   -
-     phân thân 2          [######....]   906/1360     53   -
-     phân thân 1          [########..]  1104/1360     53   -
-     phân thân 2          [#######...]  1082/1360     53   -
+A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
+A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
+A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
+E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
+     phân thân 1          [########..]  1120/1360     53   -
+     phân thân 2          [######....]   932/1360     53   -
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [########..]  1098/1360     53   -
 
-next: E2 ally.2,2#1 ally.2,2#2 A3 E3 A2
+next: E3 A2 E2 ally.2,2#1 ally.2,2#2 A3
 
+    A2   hits E3 for 494 (weak), 1996 left
+    A2   poison x1 on E3, now 1
+  
+  E2  turn 4
+    E2  uses venom_fang at 2,2
+    E2   hits A3 for 494 (weak), 2762 left
+    E2   A3 resists poison (90%)
+  
+  A1  turn 2
     A1  uses riptide at 3,1
-    A1   hits E2 for 163 (resisted), 728 left
+    A1   hits E2 for 150 (resisted), 848 left
     A1   misses E2 (77%)
     A1   mire x1 on E2, now 1
-    A1   hits enemy.2,2#2 for 139, 1221 left
-    A1   hits enemy.2,2#2 for 139, 1082 left
+    A1   hits enemy.2,2#2 for 131, 1229 left
+    A1   hits enemy.2,2#2 for 131, 1098 left
     A1   enemy.2,2#2 resists mire (55%)
     E2  speed 200 to 161
   
   E1  turn 2
-    E1  takes 103 from poison x1
+    E1  takes 91 from poison x1
     E1  stun wears off
     E1  loses the turn (stun)
   
   A3  turn 3
-    A3  uses kunai at 4,2
-    A3   hits enemy.2,2#1 for 256, 1104 left
-  
-  E3  turn 3
-    E3  takes 225 from poison x1
-    E3  uses kunai at 1,0
-    E3   hits ally.2,2#1 for 256, 849 left
-  
-  A2  turn 5
 
-A2 Bloom, turn 5
-> bolt          80% attack · range 3
-  venom_fang    1 turn of cooldown left
-  creeping_rot  70% attack · poison 65% · range 3 · 3 cells · cd 3
-  arc_bolt      2 turns of cooldown left
+A3 Sennin, turn 3
+> kunai          70% attack · range 2
+  substitution   self veil x2 · itself · cd 4
+  shadow_clone   4 turns of cooldown left
+  wind_shuriken  2 turns of cooldown left
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a squad =====
 
@@ -7001,32 +7001,38 @@ the battle  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 A4   Alakazam             [##########]  2800/2800    158   -
 A5   Venusaur             [##########]  3800/3800    100   kinship (always)
-E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   kinship (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always)
+E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 E4   Alakazam             [##########]  2800/2800    158   -
 E5   Venusaur             [##########]  3800/3800    100   kinship (always)
 
 next: E2 A4 E4 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
+    A1   3 of column2: phalanx x2 (same_column)
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
+    A2   3 of column2: phalanx x2 (same_column)
     A2   2 of grass: kinship x1 (same_element)
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance: toughened x1
+    A3   3 of column2: phalanx x2 (same_column)
     A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
     A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     A5   2 of grass: kinship x1 (same_element)
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
+    E1   3 of column2: phalanx x2 (same_column)
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   3 of column2: phalanx x2 (same_column)
     E2   2 of grass: kinship x1 (same_element)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance: toughened x1
+    E3   3 of column2: phalanx x2 (same_column)
     E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
     E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
     E5   2 of grass: kinship x1 (same_element)
@@ -7038,16 +7044,10 @@ A2 Bloom, turn 1
   venom_fang    120% attack · poison 90% · range 1 · cd 1
   creeping_rot  70% attack · poison 65% · range 3 · 3 cells · cd 3
   arc_bolt      150% attack · stun 25% · range 3 · cd 3
-
-
-
-
-
-
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a squeezed battle aiming =====
 
-the battle  seed 1  log 2-18/18
+the battle  seed 1  log 8-24/24
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -7060,31 +7060,31 @@ the battle  seed 1  log 2-18/18
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   kinship (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always)
+A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+A2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 A4   Alakazam             [##########]  2800/2800    158   -
 A5   Venusaur             [##########]  3800/3800    100   kinship (always)
-E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   kinship (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always)
+E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
+E2   Bloom                [##########]  2200/2200    200   phalanx x2 (always), kinship (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
 E4   Alakazam             [##########]  2800/2800    158   -
 E5   Venusaur             [##########]  3800/3800    100   kinship (always)
 
 next: E2 A4 E4 A3 E3 A2
 
-    A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
-    A2   2 of grass: kinship x1 (same_element)
-    A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
-    A3   holds endurance: toughened x1
+    A3   3 of column2: phalanx x2 (same_column)
     A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
     A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     A5   2 of grass: kinship x1 (same_element)
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
+    E1   3 of column2: phalanx x2 (same_column)
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   3 of column2: phalanx x2 (same_column)
     E2   2 of grass: kinship x1 (same_element)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance: toughened x1
+    E3   3 of column2: phalanx x2 (same_column)
     E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
     E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
     E5   2 of grass: kinship x1 (same_element)
@@ -7344,12 +7344,12 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 
 squad bonuses  what a side is paid for what its units share
 
-> same_element    sharers
+> same_column     sharers
+  same_element    sharers
 
   counts the elements the units carry
   goes to only the units that share it
-  2 sharing it: kinship x1
-  3 sharing it: kinship x2
+  3 sharing it: phalanx x2
 
   counted once from the squad that walks in, never again — and several may be in force at once
 
@@ -8935,7 +8935,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
 
-the statuses this skill inflicts  1 of 34
+the statuses this skill inflicts  1 of 35
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -8969,6 +8969,7 @@ space chooses a status · type the chance in parts per thousand
        moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
        heft       builds up for its holder to spend · 4 turns · up to 5 stacks
        stoked     raises a stat · 2 turns · up to 5 stacks
+       phalanx    raises a stat · always in force · up to 2 stacks
        kinship    raises a stat · always in force · up to 2 stacks
        sundered   raises a stat · always in force · up to 2 stacks
        burrowed   raises a stat · 2 turns · 1 stack
@@ -8976,7 +8977,6 @@ space chooses a status · type the chance in parts per thousand
   poison
 
   chance  300      30%
-
 
 
 
@@ -9020,6 +9020,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   quickened    
   evasive      
   stoked       
+  phalanx      
   kinship      
   sundered     
   burrowed     
@@ -9047,7 +9048,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   Damages every turn · 3 turns · up to 3 stacks.
 
   Declared figures: a trait amplifying or resisting changes what lands.
-
 
 
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
