@@ -3790,6 +3790,52 @@ now measured and written down, and what is left is the acceptance the item has b
 circling: the dragon build's 22% is a statement about `inferno` and belongs to the
 fire line's detonate rather than to this trait.
 
+### What a burrow is worth to the Diglett line
+
+The rating learned to price hiding, so the line's own hiding skill could go into a
+build. Which build turned out to matter more than whether.
+
+Measured 400 battles a cell, both ways round, against four of the cast:
+
+| kit | squirtle | charmander | machop | gastly |
+| --- | --- | --- | --- | --- |
+| **whole**, shipped (`rock_throw`) | 100.0% | 9.5% | 99.0% | 86.5% |
+| **whole**, the slot empty | 100.0% | 1.5% | 86.5% | 50.0% |
+| **whole**, `burrow` for `rock_throw` | 100.0% | **31.0%** | 85.0% | **97.5%** |
+| **whole**, `burrow` for `stone_edge` | 100.0% | 10.0% | 20.5% | 80.5% |
+| **split**, shipped (`rock_throw`) | 100.0% | 0.0% | **72.5%** | 86.0% |
+| **split**, the slot empty | 100.0% | 0.0% | **78.0%** | 83.0% |
+| **split**, `burrow` for `rock_throw` | 100.0% | 2.0% | **11.0%** | 94.5% |
+
+**In the whole build it is the fourth slot's best use.** It turns the one matchup
+that was a script — Charmander at 9.5% — into a real one at 31.0%, adds eleven
+points against Gastly, and pays fourteen in a matchup that was already 99%. The
+slot-empty row is what makes that a trade rather than a subtraction: in this build
+the fourth slot is worth a great deal (1.5%, 86.5%, 50.0% without it), so what
+happened is an exchange and not a removal. `stone_edge` is the wrong thing to cut,
+which the dpt heuristic said first and the Machop column confirms.
+
+⚠️ **In the split build it is a disaster, and the slot-empty row is why that is
+worth knowing.** 11.0% against Machop where the shipped kit reads 72.5% — and the
+same build with the slot *empty* reads **78.0%**, better than shipped. So burrow is
+not costing a slot, it is costing the mechanism: over a whole duel the rating cast
+the split **not once**. Hiding is worth more this turn than a body is, every turn
+both are off cooldown, and `Suggest` is a greedy one-turn evaluator with no term for
+"this compounds".
+
+Nothing is mis-priced. `hidden` is bounded by what the enemy would actually have
+thrown and `summonWorth` by the body it buys; the rating still cannot choose between
+two turns that deal no damage. **The same skill is worth +21.5 in one build and
+−61.5 in the other, and neither number is about the skill.** → `TODO.md` § *Two
+self-cast skills in one kit*.
+
+⚠️ **One clamp was written and thrown away.** Chasing the split-build collapse,
+`hidden` was given the bound `restored`'s third clamp is written on — you can only
+avoid dying once, so denial above the holder's remaining health cannot be banked.
+It is a good sentence and it moved **one battle in four hundred**, in one matchup,
+and nothing else across 3,200. An argument that sounds right is not a measurement,
+so it was reverted rather than kept as insurance.
+
 ### Both halves of an all-sided skill
 
 Built. `skill.All` aims at either half of the board and a shape aimed that way

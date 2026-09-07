@@ -532,12 +532,12 @@
       "id": "diglett.whole",
       "character": "pokemon.diglett",
       "name": "nguyên khối",
-      "intent": "Giữ nguyên thân mình mà đánh: ít thân hơn, nhưng thân nào cũng còn đủ máu",
+      "intent": "Giữ nguyên thân mình mà đánh, và khi đòn nặng sắp tới thì lặn xuống cho nó đánh vào đất",
       "skills": [
         "earthquake",
         "stone_edge",
         "dig",
-        "rock_throw"
+        "burrow"
       ],
       "passives": [
         "elusive"

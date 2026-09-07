@@ -1,6 +1,7 @@
 package seed_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
@@ -135,4 +136,139 @@ func TestTheShippedSplitIsCappedForAWholeBattle(t *testing.T) {
 		t.Errorf("only %d of %d duels spent both splits, so the bound above is mostly "+
 			"measuring battles that ended early", casts[2], battles)
 	}
+}
+
+// The whole build's four slots, and the same four with the slot spent the way it
+// used to be. Written out rather than derived, because that is the claim: these
+// are the two kits an author would field.
+//
+// ⚠️ **`wholeBuild` is checked against the shipped data below and not assumed to
+// be it.** The first version of this test named both kits and nothing else, and it
+// stayed green with `burrow` taken back out of builds.json — it held a claim about
+// two lists of strings and said nothing about what ships. A measurement is only a
+// reason to ship something if it is measuring the thing that ships.
+var (
+	wholeBuild   = []string{"earthquake", "stone_edge", "dig", "burrow"}
+	wholeNoHide  = []string{"earthquake", "stone_edge", "dig", "rock_throw"}
+	wholeBuildID = "diglett.whole"
+)
+
+// wholeSeeds is how many battles each half of the comparison is fought over,
+// both ways round.
+const wholeSeeds = 200
+
+// TestBurrowIsWhatMakesTheWholeBuildAMatchup is what the fourth slot was changed
+// for, and it is a comparison rather than a rate.
+//
+// ⚠️ **`rock_throw` was the slot and Charmander was the reason.** The whole build
+// wins nearly every matchup it has and loses that one almost as a script — 9.5%
+// over 400 battles, which is the shape `TestTheDragonBuildIsASidegradeAndNotAnUpgrade`
+// exists to refuse. Hiding is the only thing in the line's learnset that answers a
+// unit which out-damages it, because it is the only skill that buys turns instead
+// of dealing damage.
+//
+// The control is fought on the same run rather than quoted, for the reason every
+// referent in this repository is re-taken: a figure from another session is a
+// measurement of an engine that no longer exists.
+//
+// ⚠️ **It is a trade and the other half is stated.** Against Machop the burrow
+// build reads 85.0% where the old one reads 99.0%, because a turn spent
+// underground is a turn not spent swinging and Machop was already losing. Buying
+// twenty-one points in the matchup that was a script for fourteen in one that was
+// already won is the trade, and it is the reason this is a sidegrade and not an
+// upgrade.
+//
+// ⚠️ **The same skill in the OTHER build is a disaster and must stay out of it.**
+// `diglett.three` fought with burrow in place of `rock_throw` reads 11.0% against
+// Machop where it otherwise reads 72.5% — and the mechanism is not the slot: the
+// same build with the slot simply empty reads 78.0%. Burrow crowds out `split`,
+// because `Suggest` is a greedy one-turn rating and hiding is worth more *this*
+// turn than a body is. Measured over a whole duel it cast the split **not once**.
+// Two self-cast skills in one kit is a decision the rating cannot make.
+func TestBurrowIsWhatMakesTheWholeBuildAMatchup(t *testing.T) {
+	// What ships, read rather than assumed. Everything below is a statement about
+	// `wholeBuild`, and it is a reason to have changed the data only for as long
+	// as the data is that.
+	builds, err := seed.Builds()
+	if err != nil {
+		t.Fatalf("load the shipped builds: %v", err)
+	}
+	built, known := builds.Get(wholeBuildID)
+	if !known {
+		t.Fatalf("no build %q ships, so this measures a kit nobody can field", wholeBuildID)
+	}
+	if !slices.Equal(built.Skills, wholeBuild) {
+		t.Fatalf("%s ships %v and this test measures %v: the figures below are about a "+
+			"kit that is not the one in the data", wholeBuildID, built.Skills, wholeBuild)
+	}
+
+	hiding := theWholeBuildAgainst(t, wholeBuild, "pokemon.charmander")
+	swinging := theWholeBuildAgainst(t, wholeNoHide, "pokemon.charmander")
+
+	// The premise, held rather than assumed: the slot this replaced really does
+	// lose that matchup. If the control ever climbs out on its own, the change has
+	// no reason left and this test should say so rather than pass.
+	if swinging >= 200 {
+		t.Fatalf("the kit without hiding already wins %d.%d%% against Charmander, so the "+
+			"scripted defeat this answers is gone and the slot is no longer paid for",
+			swinging/10, swinging%10)
+	}
+	if hiding <= swinging {
+		t.Errorf("hiding wins %d.%d%% against Charmander and swinging wins %d.%d%%: the "+
+			"fourth slot is not buying the matchup it was spent on",
+			hiding/10, hiding%10, swinging/10, swinging%10)
+	}
+	t.Logf("against Charmander: hiding %d.%d%%, swinging %d.%d%%",
+		hiding/10, hiding%10, swinging/10, swinging%10)
+}
+
+// theWholeBuildAgainst fights one kit of the whole build against a shipped
+// character over the seed range, both ways round, and reports the win rate in
+// parts per thousand.
+//
+// Both ways for the reason every duel here takes both: the turn queue breaks a
+// tie by enlistment, so a one-way figure carries the first slot's advantage into
+// the answer.
+func theWholeBuildAgainst(t *testing.T, kit []string, opponent string) int {
+	t.Helper()
+	books, err := seed.Books()
+	if err != nil {
+		t.Fatalf("load the shipped books: %v", err)
+	}
+	stats, affinity, _, _ := fielded(t, "pokemon.diglett")
+	theirStats, theirAffinity, theirKit, theirTrait := fielded(t, opponent)
+	won, fought := 0, 0
+	for _, mineFirst := range []bool{true, false} {
+		for which := 1; which <= wholeSeeds; which++ {
+			mine := battle.Roster{ID: "mine", Side: hex.SideAlly, Slot: buildSlot,
+				Affinity: affinity, Stats: stats, Skills: kit, Passives: []string{"elusive"}}
+			theirs := battle.Roster{ID: "theirs", Side: hex.SideEnemy, Slot: buildSlot,
+				Affinity: theirAffinity, Stats: theirStats, Skills: theirKit, Passives: theirTrait}
+			order := []battle.Roster{mine, theirs}
+			if !mineFirst {
+				mine.Side, theirs.Side = hex.SideEnemy, hex.SideAlly
+				order = []battle.Roster{theirs, mine}
+			}
+			fight, err := battle.New(books, uint64(which), order)
+			if err != nil {
+				t.Fatalf("new battle: %v", err)
+			}
+			fight.Begin()
+			if _, err := fight.RunToEnd(4000); err != nil {
+				t.Fatalf("run: %v", err)
+			}
+			winner, decided := fight.Winner()
+			if !decided {
+				continue
+			}
+			fought++
+			if (winner == hex.SideAlly) == mineFirst {
+				won++
+			}
+		}
+	}
+	if fought == 0 {
+		t.Fatalf("no battle against %s ended, so nothing was measured", opponent)
+	}
+	return won * 1000 / fought
 }
