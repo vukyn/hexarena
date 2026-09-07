@@ -3497,6 +3497,31 @@ is only so the shape is readable.
       authoring decision and deliberately not folded in here — but a player build
       that takes it is no longer a unit one skill short.
 
+- [ ] **Two self-cast skills in one kit is a decision `Suggest` cannot make.**
+      Found 2026-09-07 putting `burrow` into the Diglett line. In the SPLIT build
+      it reads **11.0%** against Machop where the shipped kit reads **72.5%** — and
+      the mechanism is not the slot, because the same build with that slot simply
+      **empty** reads **78.0%**. Over a whole duel the rating cast the split **not
+      once**: hiding is worth more *this turn* than a body is, every turn both are
+      available, so the build's whole win condition never happens.
+
+      ⚠️ **It is a property of the rating rather than a bug in either skill.**
+      `Suggest` is a greedy one-turn evaluator: it prices what a turn does now and
+      has no term for "this compounds". A summon and a hide are both turns that
+      deal no damage, so the one with the larger immediate number wins the slot
+      forever. Nothing is mis-priced — `hidden` is bounded by what the enemy would
+      actually have thrown and `summonWorth` by the body it buys — and the rating
+      still cannot choose between them.
+
+      Two ways out, and the first is free: **an authoring rule** — one turn-spending
+      self-cast per kit, stated where builds are authored and held by a test over
+      builds.json. The second is the real fix and is its own piece of work: a rating
+      that can see a second turn, which is a search rather than a term and would
+      change every figure in this repository.
+      Until then, the same skill is worth **+21.5** in the whole build and **−61.5**
+      in the split one, and neither number is about the skill.
+      → `README.md` § *What a burrow is worth to the Diglett line*.
+
 - [ ] **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
       Built and measured on 2026-09-07 while closing the `reckless` item, reverted
       because that trait is not the one that wants it, and kept here because the
