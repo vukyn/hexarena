@@ -252,7 +252,7 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 	// would stop doing so the moment a caster's term read something the loop
 	// changes. That moment has arrived: the gradient reads the caster's health,
 	// and a draining skill heals its caster inside the loop.
-	brought := swingOf(declared, actor)
+	brought := b.swingOf(declared, actor)
 	total := int64(0)
 	for position, cell := range covers(shape, declared, aim) {
 		target := b.occupant(cell)
@@ -415,7 +415,7 @@ func (b *Battle) pastAPool(target *Unit, declared skill.Skill, damage int64) int
 // no longer thinks it lands.
 func (b *Battle) hitAgainst(actor *Unit, actorStats progression.Values, declared skill.Skill,
 	target *Unit, position int, brought swing) combat.Hit {
-	power := brought.applied(declared.PowerAgainst(conditionTarget(declared, target)))
+	power := brought.applied(declared.PowerAgainst(b.conditionTarget(declared, target)))
 	if position > 0 {
 		power = int(combat.Scaled(int64(power), b.books.Patterns.SplashPower))
 	}
@@ -515,7 +515,7 @@ func (b *Battle) summonWorth(caster *Unit, declared skill.Skill) int64 {
 	// Health against damage is the unit the rest of the file already mixes —
 	// spentHealth is subtracted from a damage total the same way — so the two are
 	// comparable here by the same convention rather than by a new one.
-	total -= healthCost(caster.MaxHP(), declared, b.spared(caster))
+	total -= healthCost(b.MaxHP(caster), declared, b.spared(caster))
 	if split := declared.Summons.Splits; split > 0 {
 		// Per copy, because that is how it is charged: Battle.summon takes the
 		// share off once for each body that stands up.
@@ -585,11 +585,11 @@ func spentStatus(declared skill.Skill) string {
 // would be the same mistake conditionTarget exists to prevent -- a reading that
 // does not match the resolution. Two functions, each naming its own condition,
 // cannot be handed the wrong one.
-func conditionCaster(declared skill.Skill, actor *Unit) skill.Target {
+func (b *Battle) conditionCaster(declared skill.Skill, actor *Unit) skill.Target {
 	return skill.Target{
 		Stacks:  actor.Statuses.Stacks(spentStatus(declared)),
 		Health:  actor.HP,
-		Maximum: actor.MaxHP(),
+		Maximum: b.MaxHP(actor),
 	}
 }
 
@@ -648,11 +648,11 @@ func (s swing) applied(power int) int {
 // swing softer than the first, for a difference written on no skill. That is the
 // same trap Battle.spend records, arriving through a field that has no status to
 // consume.
-func swingOf(declared skill.Skill, actor *Unit) swing {
-	caster := conditionCaster(declared, actor)
+func (b *Battle) swingOf(declared skill.Skill, actor *Unit) swing {
+	caster := b.conditionCaster(declared, actor)
 	return swing{
 		Bonus:   declared.SelfBonus(caster),
-		Share:   declared.SelfScale(actor.HP, actor.MaxHP()),
+		Share:   declared.SelfScale(actor.HP, b.MaxHP(actor)),
 		Restore: declared.SelfRestore(caster),
 	}
 }
@@ -664,11 +664,11 @@ func swingOf(declared skill.Skill, actor *Unit) swing {
 // and resolveAgainst then lands it. A rating built from a different reading than
 // the resolution would make the opponent prefer a skill for a bonus it does not
 // get, and nothing would report the disagreement.
-func conditionTarget(declared skill.Skill, target *Unit) skill.Target {
+func (b *Battle) conditionTarget(declared skill.Skill, target *Unit) skill.Target {
 	return skill.Target{
 		Stacks:  target.Statuses.Stacks(requiredStatus(declared)),
 		Health:  target.HP,
-		Maximum: target.MaxHP(),
+		Maximum: b.MaxHP(target),
 	}
 }
 

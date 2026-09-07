@@ -928,10 +928,16 @@ func TestPermanentDeclarationsAreRefused(t *testing.T) {
 			"want at least 1",
 		},
 		{
-			"a health modifier, which nothing reads",
+			"a timed health modifier",
 			`{"id": "swell", "category": "buff", "max_stacks": 1, "duration": 2,
 			  "modifiers": [{"target": "hp", "mode": "percent", "amount": 200}]}`,
-			"nothing in the engine reads",
+			"the maximum would drop back when it expires",
+		},
+		{
+			"a health modifier that lowers the maximum",
+			`{"id": "wither", "category": "stat_debuff", "max_stacks": 1, "duration": 0, "permanent": true,
+			  "modifiers": [{"target": "hp", "mode": "percent", "amount": -200}]}`,
+			"nothing lowers a maximum",
 		},
 	}
 	for _, test := range cases {

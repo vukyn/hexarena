@@ -225,7 +225,7 @@ func (b *Battle) tickStatuses(unit *Unit, turn atb.Turn) {
 // regeneration still on the board or from a cast that is already over, and the
 // event has no other way to tell them apart.
 func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn, from string) {
-	if amount <= 0 || unit.Dead || unit.HP >= unit.MaxHP() {
+	if amount <= 0 || unit.Dead || unit.HP >= b.MaxHP(unit) {
 		return
 	}
 	amount, reduced := healingFor(unit, amount)
@@ -237,7 +237,7 @@ func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn, from string) {
 	if amount == 0 {
 		return
 	}
-	if room := unit.MaxHP() - unit.HP; amount > room {
+	if room := b.MaxHP(unit) - unit.HP; amount > room {
 		amount = room
 	}
 	unit.HP += amount
@@ -423,7 +423,7 @@ func (b *Battle) spendHealth(unit *Unit, known skill.Skill, turn atb.Turn) {
 	if known.Cost <= 0 {
 		return
 	}
-	paid := healthCost(unit.MaxHP(), known, b.spared(unit))
+	paid := healthCost(b.MaxHP(unit), known, b.spared(unit))
 	if room := unit.HP - 1; paid > room {
 		paid = room
 	}
@@ -776,7 +776,7 @@ func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset) []hex.Offs
 // whether a unit is already in the list — no map iteration reaches the result.
 func (b *Battle) chainFrom(actor *Unit, known skill.Skill, aim hex.Offset) []*Unit {
 	head := b.occupant(aim)
-	if head == nil || !known.Amplified(conditionTarget(known, head)) {
+	if head == nil || !known.Amplified(b.conditionTarget(known, head)) {
 		return nil
 	}
 	out := []*Unit{head}
@@ -797,7 +797,7 @@ func (b *Battle) chainFrom(actor *Unit, known skill.Skill, aim hex.Offset) []*Un
 			if next == nil || seen[next.ID] {
 				continue
 			}
-			if !known.Amplified(conditionTarget(known, next)) {
+			if !known.Amplified(b.conditionTarget(known, next)) {
 				continue
 			}
 			seen[next.ID] = true
@@ -937,7 +937,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	// gradient that moved the power and left no trace in the log would be the trap
 	// Pierce, Refused and Drained each record -- a number a reader cannot account
 	// for from the skill and the stats alone.
-	brought := swingOf(known, unit)
+	brought := b.swingOf(known, unit)
 	b.emit(Event{
 		Kind: SkillUsed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
 		Skill: known.ID, Cell: hex.At(aim), Power: known.Power, Chance: known.Accuracy,
@@ -1117,7 +1117,7 @@ func (b *Battle) spend(unit *Unit, known skill.Skill, brought swing, turn atb.Tu
 	if known.SelfRequires == nil {
 		return
 	}
-	against := conditionCaster(known, unit)
+	against := b.conditionCaster(known, unit)
 	if !known.SelfAmplified(against) {
 		return
 	}
@@ -1239,7 +1239,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	// already have emptied. The same reason swing carries the caster's half.
 	amplified := false
 	if known.Requires != nil && position == 0 {
-		against := conditionTarget(known, target)
+		against := b.conditionTarget(known, target)
 		stacks := against.Stacks
 		if known.Amplified(against) {
 			amplified = true
@@ -1634,7 +1634,7 @@ func drainShare(total int) int {
 // that the skill's own figure is no longer the whole of it.
 func (b *Battle) drain(actor *Unit, dealt int64, share int, turn atb.Turn) {
 	amount := dealt * int64(share) / int64(scale.Base)
-	if amount <= 0 || actor.Dead || actor.HP >= actor.MaxHP() {
+	if amount <= 0 || actor.Dead || actor.HP >= b.MaxHP(actor) {
 		return
 	}
 	// The same cut heal takes, from the same definition and in the same place:
@@ -1647,7 +1647,7 @@ func (b *Battle) drain(actor *Unit, dealt int64, share int, turn atb.Turn) {
 	if amount == 0 {
 		return
 	}
-	if room := actor.MaxHP() - actor.HP; amount > room {
+	if room := b.MaxHP(actor) - actor.HP; amount > room {
 		amount = room
 	}
 	actor.HP += amount
@@ -1959,7 +1959,7 @@ func (b *Battle) outlastsAShield(application skill.Application) bool {
 // turns on when its holder is hurt has to turn on during the turn it was hurt,
 // not on the next one.
 func (b *Battle) inForce(unit *Unit, held passive.Passive) bool {
-	return held.While.Holds(unit.HP, unit.MaxHP())
+	return held.While.Holds(unit.HP, b.MaxHP(unit))
 }
 
 // resist takes whatever the target's traits refuse off an application's chance,

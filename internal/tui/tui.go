@@ -55,7 +55,7 @@ func Roster(fight *battle.Battle, tags map[string]string) string {
 	var b strings.Builder
 	b.WriteString("tag  unit                 hp                        spd   effects\n")
 	for _, unit := range fight.Units() {
-		state := HealthBar(unit.HP, unit.MaxHP())
+		state := HealthBar(unit.HP, fight.MaxHP(unit))
 		if unit.Dead {
 			state = "fallen"
 		}

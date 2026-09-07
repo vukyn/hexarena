@@ -159,7 +159,7 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 		// part company.
 		riders := declared.Applies
 		if declared.Requires.AppliesOnHold() &&
-			declared.Amplified(conditionTarget(declared, target)) {
+			declared.Amplified(p.fight.conditionTarget(declared, target)) {
 			riders = append(append([]skill.Application(nil), riders...), declared.Requires.Applies...)
 		}
 		if friendly {
@@ -268,7 +268,7 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 	// Read once, outside the loop, exactly as expected does: the caster is the
 	// same caster for every cell its own bomb catches, and a gradient asks how
 	// hurt it is.
-	brought := swingOf(declared, actor)
+	brought := p.fight.swingOf(declared, actor)
 	for position, cell := range covers(shape, declared, aim) {
 		target := p.fight.occupant(cell)
 		if target == nil || target.Side != actor.Side {
@@ -318,7 +318,7 @@ func (p *pricing) spentHealth(actor *Unit, declared skill.Skill) int64 {
 	// caster, which is a fact about the skill and its holder and so belongs in the
 	// price. A rating blind to it charges a trait-holder full price and declines
 	// the one cast the trait was bought for.
-	return healthCost(actor.MaxHP(), declared, p.fight.spared(actor))
+	return healthCost(p.fight.MaxHP(actor), declared, p.fight.spared(actor))
 }
 
 // discharged is what the charge already sitting on the board deals when this cast
@@ -367,7 +367,7 @@ func (p *pricing) discharged(actor *Unit, declared skill.Skill, aim hex.Offset) 
 		return 0
 	}
 	actorStats := p.fight.Stats(actor)
-	brought := swingOf(declared, actor)
+	brought := p.fight.swingOf(declared, actor)
 	from := fromSkill(declared)
 	scaling := combat.PickScaling(declared.Scaling.Source,
 		actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat])
@@ -446,7 +446,7 @@ func (p *pricing) drained(actor *Unit, declared skill.Skill, dealt int64) int64 
 	if share <= 0 || dealt <= 0 {
 		return 0
 	}
-	return worthHealing(dealt*int64(share)/scale.Base, actor, p.threat(actor))
+	return p.worthHealing(dealt*int64(share)/scale.Base, actor, p.threat(actor))
 }
 
 // replied is what an attack costs its own caster in answers: the damage the
@@ -540,7 +540,7 @@ func (p *pricing) replied(actor *Unit, declared skill.Skill, aim hex.Offset) int
 	}
 	actorStats := p.fight.Stats(actor)
 	// Read once, outside the loop, exactly as expected and friendlyFire do.
-	brought := swingOf(declared, actor)
+	brought := p.fight.swingOf(declared, actor)
 	// What the caster has left as the answers land, spent down the walk the way
 	// reply spends it. In expectation rather than in health: every other figure
 	// in this file is an expectation, and a reply that only half arrives should
@@ -717,7 +717,7 @@ func (p *pricing) threat(unit *Unit) int64 {
 // its half from, so the price and the payout come out of one expression rather
 // than two that agree today.
 func (p *pricing) restored(actor, target *Unit, declared skill.Skill) int64 {
-	brought := swingOf(declared, actor)
+	brought := p.fight.swingOf(declared, actor)
 	total := declared.Restores + brought.Restore
 	if total <= 0 {
 		return 0
@@ -729,13 +729,13 @@ func (p *pricing) restored(actor, target *Unit, declared skill.Skill) int64 {
 		combat.PickScaling(declared.Scaling.Source,
 			actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat]),
 		total)
-	return worthHealing(restored, target, p.threat(target))
+	return p.worthHealing(restored, target, p.threat(target))
 }
 
 // worthHealing is the three clamps, shared by a restore and a regeneration so the
 // two cannot drift apart on the one term that keeps either honest.
-func worthHealing(restored int64, target *Unit, threat int64) int64 {
-	room := target.MaxHP() - target.HP
+func (p *pricing) worthHealing(restored int64, target *Unit, threat int64) int64 {
+	room := p.fight.MaxHP(target) - target.HP
 	if restored > room {
 		restored = room
 	}
@@ -782,7 +782,7 @@ func (p *pricing) granted(actor, target *Unit, from origin,
 			tick := p.fight.books.Rules.Restore(
 				from.stat(p.fight, actor), kind.TickPower)
 			ticks := turnsOf(kind, healHorizon) * int64(application.Stacks)
-			value = worthHealing(tick*ticks, target, p.threat(target))
+			value = p.worthHealing(tick*ticks, target, p.threat(target))
 		case status.Shield:
 			value = p.shielded(target, kind, application.Stacks)
 		case status.Absorb:
@@ -1094,7 +1094,7 @@ func (p *pricing) undone(target *Unit, after status.Set, categories []status.Cat
 	if denied <= 0 {
 		return 0
 	}
-	return worthHealing(denied, target, p.threat(target))
+	return p.worthHealing(denied, target, p.threat(target))
 }
 
 // inflictedOn is what a harmful status is worth on whoever receives it: the
@@ -1324,7 +1324,7 @@ func (p *pricing) mended(target *Unit, kind status.Kind, stacks int) int64 {
 	if gained <= 0 {
 		return 0
 	}
-	return worthHealing(gained, target, p.threat(target))
+	return p.worthHealing(gained, target, p.threat(target))
 }
 
 // uncured is what cutting somebody's healing denies them, priced as the healing
@@ -1357,7 +1357,7 @@ func (p *pricing) uncured(target *Unit, kind status.Kind, stacks int) int64 {
 	if denied <= 0 {
 		return 0
 	}
-	return worthHealing(denied, target, p.threat(target))
+	return p.worthHealing(denied, target, p.threat(target))
 }
 
 // charged is what a counter is worth to whoever puts it on, which is not a
@@ -1600,7 +1600,7 @@ func (p *pricing) selfSpendable(holder *Unit, id string) int64 {
 					holder.Base[declared.Scaling.Stat],
 					p.fight.Stats(holder)[declared.Scaling.Stat]),
 				spends.StackRestore)
-			if value := worthHealing(healed, holder, p.threat(holder)); value > best {
+			if value := p.worthHealing(healed, holder, p.threat(holder)); value > best {
 				best = value
 			}
 			continue
@@ -1695,7 +1695,7 @@ func (p *pricing) spentCounter(actor *Unit, declared skill.Skill) int64 {
 	if err != nil {
 		return 0
 	}
-	against := conditionCaster(declared, actor)
+	against := p.fight.conditionCaster(declared, actor)
 	if !declared.SelfAmplified(against) {
 		return 0
 	}
@@ -1847,7 +1847,7 @@ func (b *Battle) bestAgainst(actor, victim *Unit) int64 {
 			continue
 		}
 		if value := b.against(actor, b.Stats(actor), declared, victim, 0,
-			swingOf(declared, actor)); value > best {
+			b.swingOf(declared, actor)); value > best {
 			best = value
 		}
 	}

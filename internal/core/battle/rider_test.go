@@ -157,7 +157,7 @@ func TestAGatedTraitOnlyActsWhileItsConditionHolds(t *testing.T) {
 	if !ok {
 		t.Fatal("the roster has no holder")
 	}
-	holder.HP = holder.MaxHP() / 2
+	holder.HP = fight.MaxHP(holder) / 2
 	events := act(t, fight, "strike", acrossTheBoard)
 	burned := false
 	for _, event := range find(events, battle.StatusApplied) {

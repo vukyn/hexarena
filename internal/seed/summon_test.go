@@ -88,9 +88,9 @@ func TestTheShippedSummonerCanActuallyPutACloneDown(t *testing.T) {
 		// a ratio rather than a figure so a retune of Naruto's curve does not
 		// have to be repeated here — what this is about is the share arriving,
 		// not what the share is worth this week.
-		if want := values[0] * 400 / 1000; copied.MaxHP() != want {
+		if want := values[0] * 400 / 1000; fight.MaxHP(copied) != want {
 			t.Errorf("%s has %d health, want %d — two fifths of the caster's %d",
-				copied.ID, copied.MaxHP(), want, values[0])
+				copied.ID, fight.MaxHP(copied), want, values[0])
 		}
 	}
 	// Two, because the skill asks for two and the formation has room: three

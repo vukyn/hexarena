@@ -1291,6 +1291,7 @@ func (l Lang) listed(parts []string, conjunction Key) string {
 // defence and said "attack" would read as a typo in the data.
 func (l Lang) describeStat(stat progression.Kind) string {
 	key, known := map[progression.Kind]Key{
+		progression.HP:     BlurbStatHealth,
 		progression.Attack: BlurbStatAttack, progression.Defense: BlurbStatDefense,
 		progression.Speed: BlurbStatSpeed, progression.Accuracy: BlurbStatAccuracy,
 		progression.Dodge: BlurbStatDodge,

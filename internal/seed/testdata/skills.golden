@@ -478,6 +478,7 @@ ironhide    buff                2       0            0      0               0   
 keenedge    buff                2       0            0      0               0          0   -
 tidewell    heal_mend           2       0            0      0               0        250   -
 phalanx     buff                2       0            0      0               0          0   defense +10.0%
+heartwood   buff                2       0            0      0               0          0   hp +10.0%
 kinship     buff                2       0            0      0               0          0   attack +10.0%
 sundered    buff                2       0            0      0               0          0   -
 burrowed    buff                1       2            0      0               0          0   -

@@ -171,6 +171,24 @@
       ]
     },
     {
+      "id": "grass_growth",
+      "name": "cùng cỏ",
+      "axis": "element",
+      "value": "grass",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "heartwood",
+              "stacks": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "same_element",
       "name": "đồng hệ",
       "axis": "element",

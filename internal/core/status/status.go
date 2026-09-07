@@ -1393,21 +1393,39 @@ func ParseBook(raw []byte) (*Book, error) {
 					declared.ID, i)
 			}
 			if term.Target == modifier.HP {
-				// A health term does nothing, and has always done nothing:
-				// Unit.MaxHP reads the *base* line, and nothing in the engine
-				// reads the modified health at all. So the status would apply,
-				// show up in the log and change no number anybody can see.
+				// ⚠️ A health term used to be refused outright, on the ground that
+				// nothing in the engine read one: Battle.MaxHP took the *base*
+				// line, so the status applied, appeared in the log and changed no
+				// number anybody could see. MaxHP reads the resolved line now, and
+				// the refusal narrowed to the two halves of it that were never
+				// about the reading at all.
 				//
-				// It is refused rather than fixed because fixing it is a design
-				// question, not an oversight: raising a maximum mid-battle has to
-				// decide whether current health follows it up, and lowering one
-				// has to decide what happens to a unit already above the new
-				// maximum. Neither answer is obvious and neither is needed yet.
-				// A passive is what makes this reachable — "more health" is the
-				// most obvious trait anybody would write — so the refusal is
-				// what stops it being written and silently doing nothing.
-				return nil, fmt.Errorf("status %q modifier %d targets health, which nothing in the engine reads: health comes from the stat line and does not move during a battle",
-					declared.ID, i)
+				// Both are the same question — what current health does when the
+				// maximum moves — and the answer taken is that current health
+				// never has to move, which is only safe while the maximum cannot
+				// fall:
+				//
+				//   - Timed. A timed health buff expires, and the maximum drops
+				//     back under a unit that was healed into the room it opened.
+				//     Whatever happened next would be a rule about losing health
+				//     that nothing in the log accounted for.
+				//   - Negative. A term lowering a maximum has to decide what
+				//     becomes of a unit already above the new one, and every
+				//     answer to that is a design nobody has asked for.
+				//
+				// So a health term may sit on a permanent status and may only be
+				// positive. The third leg of the rule cannot be seen from here: a
+				// *gated* trait can take a permanent status back off, which lowers
+				// a maximum by another road, and passive.ParseBook refuses that
+				// where the gate is visible.
+				switch {
+				case !declared.Permanent:
+					return nil, fmt.Errorf("status %q modifier %d raises health on a timed status: the maximum would drop back when it expires, under a unit that was healed into the room it opened",
+						declared.ID, i)
+				case term.Amount < 0:
+					return nil, fmt.Errorf("status %q modifier %d lowers health by %d: nothing lowers a maximum, because a unit already above the new one would have to lose health for a reason no event accounts for",
+						declared.ID, i, term.Amount)
+				}
 			}
 		}
 		kind := Kind{

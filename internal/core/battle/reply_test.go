@@ -214,7 +214,7 @@ func TestAReplyMayKill(t *testing.T) {
 	}
 	if !attacker.Dead {
 		t.Fatalf("the attacker survived at %d of %d, so no reply ever killed",
-			attacker.HP, attacker.MaxHP())
+			attacker.HP, fight.MaxHP(attacker))
 	}
 	events := fight.Drain()
 	// The battle is over, and it is over because of a reply rather than because
@@ -369,23 +369,23 @@ func TestAGatedTraitAnswersOnlyWhileItsGateHolds(t *testing.T) {
 	if !take(t, fight, "strike") {
 		t.Fatal("the attacker did not get its turn")
 	}
-	if holder.HP <= holder.MaxHP()/2 {
+	if holder.HP <= fight.MaxHP(holder)/2 {
 		t.Fatalf("the holder is already past its gate at %d of %d, so this measures nothing",
-			holder.HP, holder.MaxHP())
+			holder.HP, fight.MaxHP(holder))
 	}
 	if answered := replies(fight.Drain()); len(answered) != 0 {
 		t.Errorf("a trait gated shut answered anyway: %+v", answered)
 	}
 
 	// Hurt it past the line, then attack it again.
-	for round := 0; round < 40 && holder.HP > holder.MaxHP()/2; round++ {
+	for round := 0; round < 40 && holder.HP > fight.MaxHP(holder)/2; round++ {
 		if !step(t, fight) {
 			break
 		}
 		fight.Drain()
 	}
-	if holder.HP > holder.MaxHP()/2 {
-		t.Fatalf("the holder never crossed its gate; it is at %d of %d", holder.HP, holder.MaxHP())
+	if holder.HP > fight.MaxHP(holder)/2 {
+		t.Fatalf("the holder never crossed its gate; it is at %d of %d", holder.HP, fight.MaxHP(holder))
 	}
 	seen := 0
 	for round := 0; round < 6 && seen == 0; round++ {

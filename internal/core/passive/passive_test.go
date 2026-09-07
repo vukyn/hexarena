@@ -25,7 +25,9 @@ func statuses(t *testing.T) *status.Book {
 	    {"id": "fleet", "category": "buff", "max_stacks": 1, "duration": 0, "permanent": true,
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 500}]},
 	    {"id": "toughened", "category": "buff", "max_stacks": 3, "duration": 0, "permanent": true,
-	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]}
+	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]},
+	    {"id": "swollen", "category": "buff", "max_stacks": 3, "duration": 0, "permanent": true,
+	     "modifiers": [{"target": "hp", "mode": "percent", "amount": 200}]}
 	  ]
 	}`))
 	if err != nil {

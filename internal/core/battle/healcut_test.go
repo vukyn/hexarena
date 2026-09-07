@@ -262,7 +262,7 @@ func TestTheCutComesOffBeforeTheHealIsCappedAtTheRoom(t *testing.T) {
 	// Nearly full and clean: the payout is capped at the room, which is what
 	// makes this the interesting unit.
 	_, capped, ally := aHealableAlly(t, nil, 0)
-	ally.HP = ally.MaxHP() - room
+	ally.HP = capped.MaxHP(ally) - room
 	uncut := oneHeal(t, "a nearly-full clean unit", healedOnTheTurn(t, capped, "tonic", ownCell)).Amount
 	if uncut != room {
 		t.Fatalf("a nearly-full unit healed %d of a %d payout, want the room of %d",
@@ -271,7 +271,7 @@ func TestTheCutComesOffBeforeTheHealIsCappedAtTheRoom(t *testing.T) {
 
 	// Nearly full and festering: the same unit, the same cast.
 	shared, festering, hurt := aHealableAlly(t, nil, 0)
-	hurt.HP = hurt.MaxHP() - room
+	hurt.HP = festering.MaxHP(hurt) - room
 	afflict(t, shared, hurt, "fester", festerStacks, 0)
 	got := oneHeal(t, "a nearly-full festering unit", healedOnTheTurn(t, festering, "tonic", ownCell)).Amount
 	switch got {
