@@ -68,6 +68,7 @@ const (
 	WeighPierce
 	WeighPower
 	WeighRange
+	WeighSelfBonus
 	WeighSelfGradient
 	WeighStrikes
 )
@@ -83,6 +84,7 @@ var weighFieldNames = [weighFieldCount]string{
 	WeighPierce:       "pierce",
 	WeighPower:        "power",
 	WeighRange:        "range",
+	WeighSelfBonus:    "self_bonus",
 	WeighSelfGradient: "self_gradient",
 	WeighStrikes:      "strikes",
 }
@@ -144,6 +146,15 @@ func (f WeighField) of(declared skill.Skill) int {
 		return declared.Power
 	case WeighRange:
 		return declared.Range
+	case WeighSelfBonus:
+		// Nil-safe on the same terms as the gradient below, and for the same
+		// reason: a skill with no condition of its own adds nought, and seven of
+		// the twelve that do have one declare no bonus, so nought is an answer
+		// two thirds of the field's subjects give honestly.
+		if declared.SelfRequires == nil {
+			return 0
+		}
+		return declared.SelfRequires.BonusPower
 	case WeighSelfGradient:
 		// Nil-safe for the reason skill.Gradient.Share is: what a skill without
 		// a gradient adds is nought, and that is an answer rather than a state
@@ -185,6 +196,26 @@ func (f WeighField) set(declared skill.Skill, value int) skill.Skill {
 		declared.Power = value
 	case WeighRange:
 		declared.Range = value
+	case WeighSelfBonus:
+		// A fresh pointer for the reason the gradient below takes one, and a
+		// COPY of the condition rather than a new one: everything else the
+		// condition says — which status it reads, how many stacks, whether it
+		// gates, whether it consumes — is the skill, and a weighing that reset
+		// any of it would be pricing a different skill. The struct holds one
+		// slice and this writes none of it, so the shallow copy is safe.
+		//
+		// A skill with no condition at all gets an empty one carrying the bonus,
+		// which the parser refuses in its own words — a condition that reads
+		// neither a status nor health is a flat power bonus written in the shape
+		// that hides it. That is the same arrangement the gradient has: the
+		// bound belongs to the parser, and restating it here would be a second
+		// copy of a rule free to disagree with the one the game runs through.
+		condition := skill.Condition{}
+		if declared.SelfRequires != nil {
+			condition = *declared.SelfRequires
+		}
+		condition.BonusPower = value
+		declared.SelfRequires = &condition
 	case WeighSelfGradient:
 		// A fresh pointer rather than an assignment through the old one:
 		// declared is a shallow copy, so writing AtEmpty in place would move the
