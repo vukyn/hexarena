@@ -652,6 +652,14 @@ func (r *Room) begin() ([]Outbound, error) {
 		return nil, fmt.Errorf("field the %s squad: %w", away, err)
 	}
 	roster = append(roster, facing...)
+	// And then the lead of each contested speed group is alternated over that
+	// slice, which is the refinement the append above is only half of: home
+	// first decides *which* side a tie falls to, and this decides that they do
+	// not all fall to the same one. → alternateContested.
+	roster, err = alternateContested(r.deps.Books, r.seed, roster)
+	if err != nil {
+		return nil, fmt.Errorf("order battle %d of %d: %w", r.index, r.config.Battles, err)
+	}
 
 	fight, err := battle.New(r.deps.Books, r.seed, roster)
 	if err != nil {

@@ -3181,6 +3181,33 @@ unexported field refuses — so the binary's own settings struct printed the
 password in full while every other test in the repository stayed green. It
 restates the redaction itself now.
 
+- **Alternating the lead of each contested speed group** — built, in
+  `internal/room` and nowhere near the core. A contested speed group is the units
+  of both sides sharing one speed; the lead of each changes hands, per pair,
+  running across the groups.
+
+  ⚠️ The groups are read from the **enlisted** speed rather than the authored
+  one, and that is what costs an extra `battle.New` per battle: `enlist` applies
+  the composition bonuses and the passives before `queue.Add` asks, so a shipped
+  Magnezone authored at 110 enlists at 117 — and at 123 beside a second electric
+  unit, while its opposite number stays at 117. The authored line would call
+  those two a tie and alternate one that does not exist.
+
+  Measured as the gap between the two arms of the swap, 2000 seeds a squad:
+
+  | squad | home enlisted whole | leads alternating |
+  | --- | --- | --- |
+  | s01 | ±129.5‰ | ±76.4‰ |
+  | s02 | ±242.4‰ | ±89.4‰ |
+  | s03 | ±54.5‰ | ±42.8‰ |
+  | s04 | ±121.3‰ | ±93.3‰ |
+  | s05 | ±54.0‰ | ±26.5‰ |
+
+  Smaller on all five, 45% smaller on the mean. At five a side, on squads
+  composed for the size: ±46.0‰ became ±2.5‰ and ±125.7‰ became ±69.3‰. It does
+  **not** replace fighting both ways round — `Config.HomeFor` still does that,
+  and this is worth having on top of it.
+
 ### Not in the first version
 
 - **Fog of war.** It forces a per-side *filtered* event log, and `--verify` on a
@@ -3225,12 +3252,17 @@ restates the redaction itself now.
   alternating the lead pair by pair **49.6%**. So the lever works, and it is
   available for nothing.
 
+  ⚠️ **The alternating half of that has since been pulled and shipped**, in
+  `internal/room` and nowhere near the core — `room.alternateContested`, on the
+  slice `begin` composes. It is measured in the next entry. What stays refused
+  here is the *coin*: re-rolling the tie from the seed.
+
   It is still not the answer, because evening the ties does not make a battle
   even. See the note below: at more than one unit a side a mirror is not
-  complementary, so there is a residual nobody has named and the ties are not
-  where all of it lives. A match fights both ways round, which cancels the
-  residual as well as the tie — including the part that has not been explained.
-  The coin is worth having **on top of** that, per battle, not instead of it.
+  complementary, so there is a residual, and the ties are not where all of it
+  lives. A match fights both ways round, which cancels the residual as well as
+  the tie. The coin is worth having **on top of** that, per battle, not instead
+  of it.
 
 - ⚠️ **A one-way mirror rate is not a measurement above one unit a side, and
   this was found by a control arm failing.** A mirror fought one way and its own
@@ -3251,12 +3283,29 @@ restates the redaction itself now.
   ⚠️ The board is **not** the cause: `Place` is a real isometry both across the
   sides and within one, measured at 0 asymmetric pairs of 81, so
   `TestPlaceMirrorsBothSides` — which only checks the cross-side profile — was
-  not hiding anything. Nor is it structural: the shipped two-unit squad *is*
-  exactly complementary while a synthetic two-unit mirror of the same characters
-  on the same cells is not, and the two differ only in **kit**. So something a
-  skill does resolves in an order that does not mirror, and it has not been
-  found. `forge.FightSquads` sums both ways, which is right, but the
-  cancellation is only *proven* at one a side.
+  not hiding anything.
+
+  **Both causes have since been found, and they are two.** The first was the
+  order the aims were offered in — `hex.Cells()` is column-major over absolute
+  coordinates while `Place` rotates the enemy half 180 degrees, so `Suggest`'s
+  first-best kept a different unit on each half. That is fixed:
+  `battle.mirroredOrder` walks by authoring slot, and the synthetic mirror now
+  sums to 1000‰ at one, two and three a side.
+
+  The second is still open and was found on 2026-09-08, again by this control
+  arm: **`pattern.targets` walks a splash as absolute cube steps**, and a
+  rotation maps *up* to *down*, so a shape called `arc_up` catches different
+  neighbours in the hands of the two sides. Measured on the shipped squads, s01
+  and s02 sum to exactly 1000‰ — their kits reach no splash that catches a second
+  unit — while s03, s04 and s05 read 1119, 1153 and 1057. Driving both arms
+  prompt by prompt, the option lists are identical and the *ratings* differ: s03
+  turn one, `razor_leaf`, 273 against 443 for the same aim. → `TODO.md`,
+  `ENG-012`, which carries the two candidate answers and why neither has been
+  taken.
+
+  `forge.FightSquads` sums both ways, which is right, and that swap is what
+  every figure in this repository is read as: a **gap between two arms** rather
+  than a rate from one.
 
 ## What each question cost to answer
 

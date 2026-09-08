@@ -1793,3 +1793,103 @@ once, and `DAT-002` had already been wrong the same way about a drafted squad
 versus a saved one. What a player can build is a different question, and the
 cast-level half of it is `TestEveryElementBonusRungIsReachable`. → `TODO.md`
 `DAT-010`.
+
+## What the turn order is worth, and alternating the lead of a contested speed group
+
+`atb.Queue.Add` takes `seq` off a counter, `enlist` calls `Add` once per unit, and
+`battle.New` calls `enlist` **in the order of the roster slice it was handed**.
+`seq` is the last tie-break in the turn order, so **which side wins a speed tie is
+the caller's decision** — changeable with no core change, no golden moved and no
+loss of verifiability, because `Log.Roster` records the order the battle was
+fought in. And a tie is not won once: `Next` sets `now` to the actor's own `next`
+and leaves the other unit standing at the same instant, so the winner of a tie
+leads **every** round until something moves a speed.
+
+`forge.FightSquads` writes `append(ally, enemy...)` on purpose — it fights both
+ways round, which is what cancels the order — and `internal/room` used to do the
+same without the swap. It now alternates: `room.alternateContested`, called by
+`begin`.
+
+**A contested speed group is the units of BOTH sides sharing one speed.** The lead
+of each changes hands, **per pair, running across the groups**.
+
+### The figures
+
+Read as the **gap between the two arms of the swap**, never as one arm's rate —
+see the next section for why. 2000 seeds a squad, each shipped squad against a
+copy of itself:
+
+| squad | home enlisted whole | leads alternating |
+| --- | --- | --- |
+| `s01` | ±129.5‰ | ±76.4‰ |
+| `s02` | ±242.4‰ | ±89.4‰ |
+| `s03` | ±54.5‰ | ±42.8‰ |
+| `s04` | ±121.3‰ | ±93.3‰ |
+| `s05` | ±54.0‰ | ±26.5‰ |
+
+Smaller on every one of the five, 45% smaller on the mean. At five a side, on
+squads composed for the size because none of the shipped five is five strong:
+±46.0‰ became ±2.5‰ on one and ±125.7‰ became ±69.3‰ on the other.
+
+⚠️ **It does not replace fighting both ways round.** `Config.HomeFor` alternates
+home battle by battle and reads the low bit of the derived seed for the battle
+that has no partner; that is what cancels the residual as well as the tie. This is
+worth having on top of it, per battle.
+
+### Three things that are easy to get wrong here
+
+⚠️ **The groups are read from the ENLISTED speed, not the authored line.**
+`enlist` applies the composition bonuses and the passives before `queue.Add` asks,
+so `Roster.Stats` is not what the queue sees: the shipped `s03` fields a Magnezone
+authored at 110 that enlists at **117**, and beside a second electric unit the same
+Magnezone enlists at **123** while its opposite number stays at 117. The authored
+reading would call those two a contested pair — a tie that does not exist — and
+every group after it would take the wrong turn of the alternation. So the speeds
+come off a battle built for the purpose and thrown away, one extra `battle.New`
+per battle. `TestTheSpeedsDoNotDependOnTheOrderTheRosterIsIn` is what makes that
+probe honest.
+
+⚠️ **The lead alternates per PAIR, not once a group.** The two readings differ only
+where a group holds more than one unit a side, which a mirror of distinct speeds
+never produces — so the per-group version passes every other test and needs a
+fixture built for it (`machop` and `squirtle` are both authored at 85).
+
+⚠️ **An uncontested speed spends none of the alternation.** A speed only one side
+holds is not a tie: nobody wins it, so it must not move the turn of whoever leads
+the next contested pair.
+
+## ⚠️ A one-way mirror rate is STILL not a measurement, and the second cause is a pattern's splash
+
+A squad against a copy of itself, fought one way and then with the halves
+exchanged, must sum to 1000‰: they are the same battles relabelled. Measured on
+the shipped squads, 2000 seeds an arm:
+
+| squad | ally listed first | enemy first | sum |
+| --- | --- | --- | --- |
+| `s01` | 629.5‰ | 370.5‰ | **1000‰ — exact** |
+| `s02` | 742.4‰ | 257.6‰ | **1000‰ — exact** |
+| `s03` | 614.0‰ | 505.0‰ | 1119‰ |
+| `s04` | 697.5‰ | 455.0‰ | 1153‰ |
+| `s05` | 582.5‰ | 474.5‰ | 1057‰ |
+
+⚠️ **The aim-order cause is genuinely fixed and this is a SECOND one.**
+`battle.mirroredOrder` walks candidates by authoring slot rather than by absolute
+board order, and the synthetic mirror it was measured on sums to 1000‰ at one, two
+and three a side. That fixture's kits are `strike` and `sweep`, which carry no
+splash — so it confirmed the patch without confirming the property, and the
+shipped squads were never re-measured until 2026-09-08.
+
+**The mechanism, localised.** Driving both arms prompt by prompt and comparing them
+under the mirror: the two arms are offered the **same options in the same order**,
+and the *ratings* differ — `s03` turn 1, `razor_leaf` on Venusaur, 273 against 443
+for the same aim. `pattern.targets` walks `Splash` as absolute cube steps from the
+primary cell, `arc_up` is `[["up"], ["upper_right"]]`, and `hex.Place` puts the
+enemy half down under a **180 degree rotation** — which maps *up* to *down*. So the
+same authored slot catches different neighbours on the two halves, and the halves
+stop being reflections of each other.
+
+Nothing about determinism or replay is affected: a battle is still a pure function
+of its seed and its decisions and `--verify` still passes. What is affected is
+**measurement** — so every figure in this file is a gap between two arms, which is
+what `forge.FightSquads` has always summed. → `TODO.md` `ENG-012`, which carries
+the two candidate answers and why neither has been taken.
