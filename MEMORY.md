@@ -80,7 +80,7 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena shipping chars #182/#187/#189](memory/hexarena-poliwag-bruiser.md) — ⚠️ spar KHÔNG đo được support (dùng squad); hạ GIÁP mới kết mirror
 - [hexarena shipping a character](memory/hexarena-shipping-a-character.md) — 5 json + cast_test.go design table (hardcoded!); effHP<=11500
 - [hai số gặp nhau ở MỘT tích](memory/hexarena-two-numbers-that-meet-in-one-product.md) — ENG-004: Swung là hạng-1 nên grid bị TỪ CHỐI; ship `self_bonus` thay vì mặt hai trục
-- [kit toàn chiêu diện ko có đòn kết](memory/hexarena-an-area-kit-has-no-finisher.md) — igglybuff 0‰ vs mewtwo 1000‰ CÙNG GHẾ; ⚠️ spar 1v1 định giá column bằng MỘT mục tiêu → đo ra hình ngược
+- [kit toàn chiêu diện ko có đòn kết](memory/hexarena-an-area-kit-has-no-finisher.md) — ⚠️ `column` bắt ĐÚNG 1 ô có người trên cả 5 đội ship → splash_power ko bao giờ tới; chồng đội tốn ~250‰, đắt gấp đôi thứ nó mua
 - [pricing a new element pool](memory/hexarena-pricing-a-new-element-pool.md) — đo, đừng đoán; dpt = pw×hits×acc÷(cd+1); ⚠️ cần control cùng wrapper
 - [kit toàn hệ đu biên độ rộng](memory/hexarena-elemental-kits-swing-wider.md) — nhân hệ tính TỪNG chiêu; kit pha neutral né được khắc chế
 - [pool đầy ≠ hệ được chơi](memory/hexarena-a-full-pool-is-not-a-played-element.md) — 10 chiêu electric đều xoay quanh `charge` của Magnemite

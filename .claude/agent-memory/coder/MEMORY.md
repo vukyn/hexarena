@@ -35,6 +35,7 @@
 - [A mutation must hit the arm you claim](feedback_a_mutation_must_hit_the_arm_you_claim.md) — a blunt one died on table row 1; a full room hid a stolen seat; decoy a method to test a walk
 - [A read after the exchange misses the last body](feedback_a_read_after_the_exchange_misses_the_last_body.md) — the room retires with it (62/63); the answer to the input must carry it
 - [Three guards a neighbour already covered](feedback_three_guards_a_neighbour_already_covered.md) — one bound stated twice, a branch room.Left tolerates, a prompt action a departure repeats
+- [The fixture that makes it measurable has its own price](feedback_the_fixture_that_makes_it_measurable_has_its_own_price.md) — s06 bought 0‰→2‰ of area and cost its own side 253‰; balance.md had already priced that board at 213‰
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam

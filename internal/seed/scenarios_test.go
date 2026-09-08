@@ -104,6 +104,11 @@ func TestShippedPatternBook(t *testing.T) {
 	}
 	// Every shape must be able to cover its full width somewhere on the enemy
 	// half, otherwise it is a shape that can never do what it claims.
+	//
+	// ⚠️ This is a statement about CELLS and is blind to OCCUPANTS: every shape
+	// passes it while catching exactly one unit on every board the game is
+	// actually fought on, which is what `splash_power` is priced against. The
+	// occupancy half is `TestAShippedFormationIsCatchableByTheShapesItFields`.
 	for _, shape := range book.Patterns() {
 		best := 0
 		for _, centre := range hex.SideCells(hex.SideEnemy) {
