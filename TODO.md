@@ -88,6 +88,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-010` | refused | The queue as a third tie-break key |
 | `ENG-011` | done | `main` did not build, and no conflict was raised |
 | `ENG-012` | done | A pattern's splash is walked in absolute board directions — FIXED, the walk is the caster's frame now and the control arm closes |
+| `ENG-013` | open | A summon lives in the gap between the format and the team cap, and at five a side there is no gap |
 | `RAT-001` | shipped | The opponent |
 | `RAT-002` | shipped | Measuring the opponent |
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
@@ -4578,24 +4579,64 @@ is only so the shape is readable.
             digest to sha256 of nothing and mismatch the constant like any other
             divergence — and a mutation disabling it changed no test on either
             architecture.
-      - [ ] Read the balance again at 3v3. The screened formation was tuned at
-            five a side, and a shorter board leaves a summon more free slots.
-            ⚠️ **Five a side is held back until this is done** — `hexarena-host`
-            refuses `-format 5`, which is the only place in the repository a
-            format is chosen. `wire.Format5v5` stays valid **on the wire** on
-            purpose: taking it out of `Format.Valid` would be a protocol change,
-            and two peers have to keep agreeing about what the field can hold
-            whichever is a version ahead. `TestFiveASideIsHeldBackHereAndNowhereElse`
-            asserts both halves, because a test for the refusal alone would go
-            green the day somebody deleted the constant.
-            The second reason **was** the draft: at three bans a side a 5v5 needs
-            **sixteen** in the pool, and there are now **eighteen** (this said
-            eleven, then fifteen, sixteen, seventeen, all on 2026-09-05) since
-            `pokemon.gible`, `pokemon.pichu` and `pokemon.abra` shipped, so a 5v5
-            ban-and-pick can be seated with two to spare and its last pick is a
-            real choice. Lifting
-            the hold-back therefore wants one thing rather than two: **the numbers
-            read on this board**.
+      - [x] **Read the balance at five a side — DONE 2026-09-08, and the premise
+            of this item was wrong.** It said "the screened formation was tuned at
+            five a side, and a shorter board leaves a summon more free slots", so
+            re-read at 3v3. Neither half survives checking: `roster.json` has been
+            **3v3 since it stopped being a mirror**, the screened formation's own
+            figures (27.6% → 47.3% → 31.1%) were priced on that board, a spar is a
+            duel and the five shipped squads are three units each. Nothing in the
+            repository was ever read at five. ⚠️ The same false sentence was
+            carried in **three** places — this item, `wire.Format5v5`'s doc comment
+            and `cmd/hexarena-host`'s refusal — and all three now say what was
+            measured instead.
+
+            **So the board that had not been read was five, and it has been.** Same
+            bodies at every size, 100 seeds each way:
+
+            | reading | 3v3 | 4v4 | 5v5 |
+            |---|---|---|---|
+            | mirror rate | 500‰ | — | **500‰** |
+            | endless, of 200 | 0 | 0 | **0** |
+            | turns a battle, mirrored | 106 | — | 171 |
+            | screened against fronted, same bodies | 850‰ | 595‰ | **935‰** |
+            | `split` cast, mirrored | 400 | 400 | **0** |
+            | copies that arrived | 400 | 400 | **0** |
+
+            **Two of those are good news.** The board **resolves** at five and the
+            mirror is exactly even, so the fairness invariant that has caught two
+            balance changes holds there too. And the **screened formation is not
+            stale — it is worth more**: pricing it the only way that works, the same
+            bodies on both sides with one side's aces moved forward, screening reads
+            850‰ at three and **935‰** at five. The arrange phase gets *more*
+            decisive at five a side, not less. ⚠️ The 4v4 dip to 595‰ is the
+            fixture rather than the board: the fourth body it adds is not the third,
+            so the three columns are not three settings of one measurement.
+
+            ⚠️ **The third is the blocker, and it is a design collision rather than
+            a number: a summon lives in the gap between the format and the team cap,
+            and at five a side there is no gap.** `hex.MaxTeamSize` is five, so
+            `summonPlaces` computes `room = 5 - 5 = 0`, `summonWorth` prices every
+            summoning skill at nought and `Suggest` never casts one. The cliff is
+            exactly at the cap — four a side is untouched — and a probe raising the
+            constant to seven puts it back to 400 casts and 400 arrivals, which is
+            what says the cap is the knob and not the format. Three shipped skills
+            (`split`, `shadow_clone`, `summon_toad`) and the `diglett.three` build
+            are dead slots at five, so opening the format would ship a mechanic that
+            silently does nothing — and `TestEveryShippedBuildPlaysItsOwnKit` is the
+            rule that says a build may not name such a skill.
+
+            ⚠️ **A fourth reading, smaller and worth knowing: `same_column` stops
+            being a choice at five a side.** Its rung is three, and five units with
+            the front column empty have two columns to stand in, so one column holds
+            three of them and the screened formation grants it by construction, on
+            both sides. ⚠️ `galvanise` also appeared only in the 5v5 rows and that
+            one is the **fixture**: the fourth and fifth bodies are the electric
+            ones, so the count arrives with them rather than with the board size.
+
+            **The hold-back therefore stays, for the measured reason rather than
+            the invented one**, and what it now waits on is `ENG-013`.
+            → `docs/balance.md` § *Five a side, read at last*.
 
 - [ ] `CLI-001` **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long
@@ -6379,6 +6420,43 @@ is only so the shape is readable.
       and a `replies` at once (`blaze` and `last_gasp` gate; `venom_blood`,
       `thorns`, `ballast` and `static` reply), so nothing changes on today's data —
       but the *rule* would allow one, and this is the site that would be wrong.
+
+- [ ] `ENG-013` **A summon lives in the gap between the format and the team cap, and
+      at five a side there is no gap.** Raised 2026-09-08 by reading the balance at
+      five a side, which is the one thing `NET-001`'s last sub-item was waiting on.
+
+      `hex.MaxTeamSize` is **five**, and it is doing two jobs: it is the widest
+      team the board admits *and* it is the size of the largest format. So a full
+      5v5 side computes `room = MaxTeamSize - 5 = 0` in `battle.summonPlaces`,
+      `summonWorth` prices every summoning skill at nought, and `Suggest` never
+      casts one. Measured, mirrored, 100 seeds: `split` cast **400** times at three
+      a side, **400** at four, **0** at five, with copies arriving on the same
+      counts. The cliff is exactly at the cap.
+
+      ⚠️ **It is the cap and not the format**, and a probe says so rather than an
+      argument: with the constant raised to seven, the same 5v5 board reads 400
+      casts and 400 arrivals again, still resolves, and the mirror is still exactly
+      500‰. Nothing else about five a side is broken — → `NET-001` for the table.
+
+      **What it costs to fix is a decision, not a line.** Raising the cap means
+      deciding what the board is for: `battle.New` refuses a side over it,
+      `composition.ParseBook` refuses a rung above it, the squad builder and the
+      draft both count to it, `placement.Squad.Validate` reads it, and the battle
+      screen draws a formation sized by it. Three shapes were considered and none is
+      obviously right:
+      - **Raise it to seven or nine.** Cheapest to write and it makes a summon work
+        at every format. It also makes a *seven-unit roster* legal, which is a board
+        nobody has designed, and it moves `composition`'s rung ceiling.
+      - **Make the cap a function of the format.** Honest, and `internal/core/battle`
+        has no notion of a format on purpose: a roster is a list of facts, so the cap
+        would have to arrive as a parameter, which is a rule crossing the layer line.
+      - **Ship five a side with summoning declared dead there** and have the draft
+        refuse a summoning pick at that format. Smallest code, worst reading: a
+        skill that works at one format and not another is a rule no screen currently
+        has anywhere to say.
+
+      Until it is settled `cmd/hexarena-host` refuses `-format 5` and says why, in
+      those words.
 
 - [ ] `ENG-007` **Four ways of playing the board that the engine cannot express yet.**
       Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four

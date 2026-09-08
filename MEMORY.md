@@ -65,6 +65,7 @@ that owns the subject wins and the note is the thing to fix.
 - [socket = transport + mirror](memory/hexarena-socket-transport.md) — coder/websocket; ⚠️ wire ko nói lượt ai → client ko mỏng hơn mirror
 - [⚠️ answer bị drain ăn](memory/hexarena-chooser-answer-routing.md) — Mirror.Asking bật TRƯỚC chooser → drain trần nuốt đáp án, treo 1 allowance
 - [hexarena core design](memory/hexarena-core-design.md) — ATB wait=1e6/speed; 6x3 odd-q + 180° mirror; saturate-not-clamp
+- [summon cần KHE giữa format và cap](memory/hexarena-a-summon-needs-a-gap-between-format-and-cap.md) — ENG-013: MaxTeamSize=5 vừa là trần bàn vừa là cỡ format → 5v5 summon chết (400/400/0); ⚠️ 3 chỗ khai sai "balance đo ở 5 người"
 - [range = rank depth](memory/hexarena-range-is-rank-depth.md) — ⚠️ `range` = OCCUPIED enemy ranks, NOT hex distance; empty rank free
 - [block vs the rider](memory/hexarena-block-cancels-the-rider.md) — ⚠️ #181 blocked strike lands `dot` ONLY; miss lands nothing
 - [fester / heal cut](memory/hexarena-fester-heal-cut.md) — #190 anti-sustain; reduce BEFORE cap; ⚠️ "ko placement nào đo" ĐÃ VÁ — s05 field nó, build ko tính

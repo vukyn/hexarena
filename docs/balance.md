@@ -1934,3 +1934,59 @@ the old number said so only because the two lengths happened to be close. The
 doc had claimed for as long as it existed and nothing checked, and which is level
 only per turn — 11 a turn against 12, where the totals are 343,981 and 420,984.
 That is the assertion that makes the normalisation mutation-provable.
+
+## Five a side, read at last
+
+Every balance figure in this repository was read at **three units a side or
+fewer** — `roster.json` has been 3v3 since it stopped being a mirror, the screened
+formation was priced on that board, a spar is a duel, and the five shipped squads
+are three units each. ⚠️ **Three places in the repository claimed the opposite** —
+`TODO.md`'s own sub-item, `wire.Format5v5`'s doc comment and `cmd/hexarena-host`'s
+refusal all said "the shipped balance was read at five a side" — and none of them
+was ever true. The board nobody had read was five.
+
+Read 2026-09-08. Same bodies at every size, 100 seeds each way:
+
+| reading | 3v3 | 4v4 | 5v5 |
+|---|---|---|---|
+| mirror rate | 500‰ | — | **500‰** |
+| endless, of 200 battles | 0 | 0 | **0** |
+| turns a battle, mirrored | 106 | — | 171 |
+| screened against fronted, same bodies | 850‰ | 595‰ | **935‰** |
+| `split` cast, mirrored | 400 | 400 | **0** |
+| copies that arrived | 400 | 400 | **0** |
+
+**The board resolves and stays fair.** A mirrored squad comes to exactly 500‰ at
+five a side with nothing endless over two hundred battles, which is the same
+fairness invariant that has caught two balance changes on smaller boards. Battles
+run about 60% longer.
+
+**The screened formation is not stale — it is worth more.** Priced the only way
+that works, the same bodies on both sides with one side's aces moved into the
+front column, screening reads 850‰ at three a side and **935‰** at five. So the
+arrange phase gets *more* decisive as the board fills, not less. ⚠️ The 4v4 dip to
+595‰ is the fixture and not the board: the fourth body it adds is not the third, so
+the three columns are not three settings of one measurement.
+
+⚠️ **What blocks five a side is a design collision, not a number: a summon lives
+in the gap between the format and the team cap, and at five a side there is no
+gap.** `hex.MaxTeamSize` is five, so `battle.summonPlaces` computes
+`room = 5 - 5 = 0`, `summonWorth` prices every summoning skill at nought, and the
+rating never casts one. The cliff sits exactly at the cap — four a side is
+untouched — and a probe that raises the constant to seven puts the counts back to
+400 casts and 400 arrivals on the same board, which is what says the **cap** is the
+knob rather than the format. `split`, `shadow_clone` and `summon_toad` are dead
+slots at five, and so is the `diglett.three` build that names one; → `ENG-013`.
+
+⚠️ **A smaller reading worth keeping: `same_column` stops being a choice at five
+a side.** Its rung is three, and five units with the front column empty have two
+columns to stand in, so at least one column holds three of them — the screened
+formation grants it by construction, on both sides. A bonus priced as a decision
+becomes a property of the formation.
+
+⚠️ **The other bonus that appeared only in the 5v5 rows, `galvanise`, is the
+fixture and not the board**, and the difference is worth spelling out because the
+two look identical in a log: the fourth and fifth bodies of that squad are the
+electric ones, so the count that reaches its rung arrives with them. A reading
+about a board size has to hold the *bodies* fixed, and only the placement rows
+above do.

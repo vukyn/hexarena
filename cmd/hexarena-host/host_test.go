@@ -514,6 +514,21 @@ func TestFiveASideIsHeldBackHereAndNowhereElse(t *testing.T) {
 		strings.Contains(err.Error(), "five a side") {
 		t.Errorf("a 3v3 was refused by the five-a-side guard: %v", err)
 	}
+
+	// ⚠️ **The third clause is the REASON, and it is the one that has to go red
+	// when the reason stops holding.** Five a side was measured on 2026-09-08:
+	// the board resolves, the mirror is exactly even, and screening is worth more
+	// there than at three — the one thing that breaks is summoning, because a
+	// summon fills the gap between a side's strength and hex.MaxTeamSize and the
+	// largest format leaves no gap. So the refusal above is justified exactly
+	// while the format is at least the cap. Raise the cap (→ ENG-013) and this
+	// line reddens, which is the moment to re-decide rather than to notice later
+	// that a guard has outlived its argument.
+	if wire.Format5v5.Units() < hex.MaxTeamSize {
+		t.Errorf("the largest format fields %d units against a team cap of %d, so a full "+
+			"side now has room for a summon: the refusal above is held by a reason that "+
+			"no longer applies", wire.Format5v5.Units(), hex.MaxTeamSize)
+	}
 }
 
 // TestABadFlagIsReportedOnceAndHelpIsNotAFailure holds two things about the
