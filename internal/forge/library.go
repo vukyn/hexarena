@@ -326,6 +326,17 @@ func (l *Library) Characters() *cast.Book          { return l.characters }
 // has the row it drew.
 func (l *Library) Builds() []cast.Build { return l.builds.All() }
 
+// Build is one build by its own id, and whether the catalogue holds it.
+//
+// ⚠️ **This is the third way to ask that Builds' comment above rules out for a
+// SCREEN, and a command is not a screen.** A screen has the row it drew, so a
+// lookup by id would be a second path to something it already holds. A command
+// line has a string a person typed and nothing else — `hexforge census
+// machop.charge` — so the id lookup is the only shape it can have, and doing it
+// by ranging Builds in the front-end would put the catalogue's own indexing in a
+// caller.
+func (l *Library) Build(id string) (cast.Build, bool) { return l.builds.Get(id) }
+
 // BuildsOf is one character's builds, in declaration order, and is empty for a
 // character nobody has written a direction for.
 //

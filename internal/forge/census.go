@@ -167,3 +167,72 @@ func (l *Library) Census(build cast.Build, against string, seeds int) (CastCensu
 	}
 	return report, nil
 }
+
+// CensusSeeds is how many battles a census fights each arrangement over when
+// nobody says otherwise.
+//
+// Small, because of what a census asserts: "was this slot ever used" needs one
+// cast to answer yes, not a confident rate.
+//
+// ⚠️ **It is not as small as it can be, and the floor was measured rather than
+// guessed.** At two seeds `machop.charge` reads `wrecking_swing` silent on all
+// four boards — that skill is gated on five stacks of `heft` and `brace` grants
+// them a battle at a time, so its gate is only crossed in a battle that runs long
+// enough. A gated slot needs board TIME rather than more boards, which is exactly
+// what a seed buys and what another opponent does not.
+const CensusSeeds = 6
+
+// CensusWalk is a build measured against the authored squads until one of them
+// leaves nothing silent, which is the authoring rule itself rather than a
+// convenience over Census.
+//
+// ⚠️ **The walk is the rule and a census is one board.** A slot silent against
+// one squad is a fact about that matchup — `split` is uncast against eight of the
+// twenty-one characters and cast four hundred times across the rest — so what a
+// catalogue has to answer is whether a slot fires *anywhere*. A reader handed a
+// single board would take a silent row as a failed rule, and it is not one.
+//
+// It lives here rather than in the test that first needed it because two callers
+// now ask the same question — the catalogue test and `hexforge census` — and a
+// rule worded twice is the mistake this repository keeps a list of.
+type CensusWalk struct {
+	Build cast.Build
+	// Taken is every board the build was measured on, in the order the squads are
+	// declared, ending at the board that left nothing silent when there was one.
+	Taken []CastCensus
+	// Silent is the skills that stayed silent on EVERY board walked, which is
+	// empty for a build that passes the rule. A slot named here is a slot the
+	// author did not get.
+	Silent []string
+}
+
+// Boards is how many squads the build was measured against.
+func (w CensusWalk) Boards() int { return len(w.Taken) }
+
+// Plays reports whether the build cast every skill it names, somewhere.
+func (w CensusWalk) Plays() bool { return len(w.Silent) == 0 }
+
+// CensusWalk takes a census against each authored squad in turn and stops at the
+// first board that leaves nothing silent.
+//
+// Stopping early is what keeps the rule affordable: most builds are done after
+// the first board, and only the ones with something to explain pay for the rest.
+// A caller that wants one named board calls Census directly.
+func (l *Library) CensusWalk(build cast.Build, seeds int) (CensusWalk, error) {
+	squads := l.Squads()
+	if len(squads) == 0 {
+		return CensusWalk{}, fmt.Errorf("no squad is authored, so there is no board to stand %s on", build.ID)
+	}
+	walk := CensusWalk{Build: build}
+	for _, against := range squads {
+		census, err := l.Census(build, against.ID, seeds)
+		if err != nil {
+			return CensusWalk{}, err
+		}
+		walk.Taken = append(walk.Taken, census)
+		if walk.Silent = census.Silent(); len(walk.Silent) == 0 {
+			return walk, nil
+		}
+	}
+	return walk, nil
+}
