@@ -121,7 +121,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
 | `SCR-011` | done | Every scratch data directory copied 17 MB of art and re-ran the injection — BOTH FIXED; the ~1300s was Win… |
-| `SCR-012` | open | A draft's last pick can have one candidate, and the screen presents it as a … |
+| `SCR-012` | done | A draft's last pick can have one candidate, and the screen presented it as a choice — DONE. The mechanism was already shipped; the GAME CLIENT's record of it was… |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -298,34 +298,103 @@ is only so the shape is readable.
 
 ## Not done
 
-- [ ] `SCR-012` **A draft's last pick can have one candidate, and the screen
-      presents it as a choice.** Split out of `NET-001`'s ban-and-pick item on
-      2026-09-08, which named it and shipped without it; that was the only thing
-      keeping that box open.
+- [x] `SCR-012` **A draft's last pick can have one candidate, and the screen
+      presents it as a choice — DONE, and the mechanism was already shipped: what
+      was missing was the GAME CLIENT's record of it.** Split out of `NET-001`'s
+      ban-and-pick item on 2026-09-08, which named it and shipped without it; that
+      was the only thing keeping that box open.
 
       `draft.Slack` is `pool - 2*picks - 2*bans` — both sides, because both spend
       out of one pool — and the exhaustive walk holds the tight form: with every
       ban spent, the final pick sees exactly `slack + 1` candidates. So **slack of
-      nought means the last picker has no decision to make**, and the screen draws
-      it as a list to choose from anyway.
+      nought means the last picker has no decision to make**, and the screen used
+      to draw it as a list to choose from anyway.
 
-      ⚠️ **It is not reachable on the shipped cast today, and that is not a reason
-      to skip it.** Slack was nought at sixteen characters (`pokemon.gible`), one
-      at seventeen (`pokemon.pichu`) and is wider now — so the state is behind the
-      cast rather than gone, and it returns the moment a format changes the
-      arithmetic or 5v5's pool is counted against a bigger ban allowance. A screen
-      that reads correctly only because of a content figure is the shape this
-      repository has been caught by before.
+      ⚠️ **It is not reachable on the shipped cast today, and that was not a
+      reason to skip it.** Slack was nought at sixteen characters
+      (`pokemon.gible`), one at seventeen (`pokemon.pichu`) and is wider now — 22
+      characters ship, 21 of them offered, so a 3v3's last pick chooses from twelve
+      — so the state is behind the cast rather than gone, and it returns the moment
+      a format changes the arithmetic or 5v5's pool is counted against a bigger ban
+      allowance. A screen that reads correctly only because of a content figure is
+      the shape this repository has been caught by before.
 
       **What it is, concretely:** when the offered list holds exactly one
       candidate, say it is the only one left rather than drawing a cursor over a
-      single row. The figure is `draft.Slack`'s and has to be read from it rather
-      than counted on the screen — a second expression for one rule is how the two
-      come to disagree about which pick was forced.
+      single row.
 
-      ⚠️ **Both clients and both language books**: the draft screen is
-      `cmd/hexarena-tui`'s and a spectator draws the same draft. Three goldens
-      move.
+      ⚠️ **This entry used to say the figure "is `draft.Slack`'s and has to be read
+      from it rather than counted on the screen", and that half was WRONG** — the
+      code argues the opposite and its argument is the stronger one, so the
+      sentence is replaced rather than kept beside it. `draw.DraftLive.OnlyOne`'s
+      own doc: that expression *"has answered 1, 2 and 4 within two days as the
+      pool moved from sixteen characters to nineteen, so a screen holding the
+      count, or a test asserting it, is a number that stops being true without
+      anything saying so"*. **The rule is the list in hand — one entry is not a
+      choice** — and it is right for every step and every format with nothing
+      written down. `draft.Slack` stays where it belongs, in the *derivation* a
+      test does (`cmd/hexarena-tui`'s `TestTheLastPickChoosesFromSlackPlusOne` and
+      `pinchedDraftPoolIDs`), which is the one package that may name it at all.
+
+      ⚠️ **Two goldens moved, not three, and it is not "both clients".**
+      `cmd/hexforge-tui` draws no draft screen at all — nothing in that package
+      names `DraftScreen` — so the two records that can hold this are
+      `internal/screen`'s (the drawing) and `cmd/hexarena-tui`'s (the client's
+      framing of it).
+
+      ⚠️ **And a spectator cannot reach a populated draft today, so it is one
+      entry rather than two.** Measured in
+      `TestAWatcherOfADraftingRoomIsHandedADraftThatNeverAdvances`: a watching
+      client *is* welcomed into a drafting room with `Welcome.Drafts` set, so it
+      builds its own `*draft.Draft`, `Sight.Draft.Mirrored` is true and `model`
+      really does put the draft screen in front of it — but `internal/room/draft.go`
+      writes neither `wire.Drafted` nor `ClosureDraftExpired` to `Room.watched`, so
+      its record stays empty until the draft closes. After the two players drafted a
+      whole match the watcher was still holding **21 candidates out of 21, with 0
+      decisions replayed**. Watching a draft is step 7 of *Ban and pick, and a
+      spectator watching it*, and this state comes with it rather than before it.
+
+      **What shipped before this item was opened** (step 5b, `internal/screen`):
+      `DraftLive.OnlyOne`, the draw in `DraftScreen.head`, `i18n.DraftOnlyOne` in
+      both books, the *a draft with one candidate* golden entry and
+      `TestADecisionWithOneCandidateSaysThereIsNoChoice`, which holds the pair.
+
+      **What this item added, all of it in `cmd/hexarena-tui`:** the wording had
+      **nought hits** in that client's golden, and the client draws through a
+      different path — `draftLiveOf` into a reading, rendered inside `frame` — so
+      the package's pair could not stand in for it. Now: a *a draft with no choice
+      left* entry in `everyScreen` (+164 golden lines, four renders, both languages
+      at both sizes, a pure insertion),
+      `TestTheClientDrawsAForcedPickAsNoChoiceInBothLanguages` for the pair, and
+      `assertNamesNobodyAsTheOnlyOne`, which asks about **every** character in the
+      pool rather than one — a check against a single candidate stays green on a
+      screen wrongly naming any of the others.
+
+      ⚠️ **The fixture CONSTRUCTS the pinched pool and is measured against the
+      cast, which is the half worth reading.** `aPinchedPickScreen` draws from
+      `pinchedDraftPoolIDs`: the **size** is derived
+      (`2*PicksPerSide + 2*BansPerSide`, asserted to leave `Slack` at nought) and
+      the **members** are the first n of the twelve `namedDraftPoolIDs` this
+      package already names. Neither half alone is enough — a written-down ten
+      stops being right when either design figure moves, and slicing the *shipped*
+      pool is #328 exactly (a fixture picking by position moved 1,292 golden lines
+      the day the cast was sorted, with no screen having changed). So
+      `TestTheForcedPickEntryIsNotMovedByWhatTheCastShips` draws the entry twice —
+      once over the shipped cast and once over a cast one character wider, the
+      arrival inserted **in front**, because `cast.json` is in id order and only an
+      arrival that sorts ahead of what a slice was taking can catch one — and
+      demands the same bytes. Measured under mutation: replacing the named list
+      with `draft.NewPool(all).All()[:tight]` reddens it twice over, on the pool it
+      took and on the drawing (`pokemon.igglybuff` became `pokemon.happiny`).
+
+      ⚠️ **The neighbour of one is where the negative half is measured**, not the
+      whole pool: `2*picks - 2` picks taken leaves two candidates, and two is the
+      only reading that tells `len(Candidates) != 1` from any `<= n` form. Under
+      mutation `!= 1` → `< 1` reddens the pair test at two candidates and the
+      golden entry's own assertion at seven. **A wording change is caught by the
+      goldens and by nothing else**: a test that reads the book for its expectation
+      cannot see the book move, so rewording `DraftOnlyOne` in `english.go`
+      reddens both goldens on their English blocks and no assertion anywhere.
 
 - [x] `SCR-011` ⚠️ **Every scratch data directory copied the whole 17 MB data
       directory AND re-ran the fixture injection — BOTH FIXED. But the ~1300s in
