@@ -222,6 +222,20 @@
       ]
     },
     {
+      "id": "plated",
+      "category": "buff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "defense",
+          "mode": "percent",
+          "amount": 100
+        }
+      ]
+    },
+    {
       "id": "quickened",
       "category": "buff",
       "max_stacks": 1,

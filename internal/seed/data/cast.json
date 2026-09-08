@@ -2433,6 +2433,10 @@
         {
           "id": "composure",
           "at_level": 40
+        },
+        {
+          "id": "pristine",
+          "at_level": 48
         }
       ]
     },

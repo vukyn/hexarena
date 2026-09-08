@@ -312,6 +312,24 @@
       ]
     },
     {
+      "id": "pristine",
+      "name": "nguyên vẹn",
+      "flavour": "Lúc còn lành lặn thì đứng đâu cũng như đứng sau tường, sứt sát rồi thì chỗ nào cũng hở",
+      "grants": [
+        {
+          "status": "plated",
+          "stacks": 1
+        },
+        {
+          "status": "fortified",
+          "stacks": 1,
+          "while": {
+            "above_health": 700
+          }
+        }
+      ]
+    },
+    {
       "id": "quickening",
       "name": "lên đà",
       "flavour": "Mỗi lượt đứng được là một lượt lấy lại được nhịp, và nhịp thì không tự mất đi",

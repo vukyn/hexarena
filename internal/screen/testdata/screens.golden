@@ -1242,7 +1242,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
-chiêu này gây hiệu ứng gì  1/43
+chiêu này gây hiệu ứng gì  1/44
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -3261,7 +3261,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
-chiêu này gây hiệu ứng gì  1/43
+chiêu này gây hiệu ứng gì  1/44
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison      trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -3283,6 +3283,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        bare        trần trụi · giảm chỉ số · vĩnh viễn · 1 cộng dồn
        kindled     bùng cháy · tăng chỉ số · vĩnh viễn · 1 cộng dồn
        fortified   kiên cố · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       plated      bọc giáp · tăng chỉ số · vĩnh viễn · 1 cộng dồn
        quickened   gia tốc · tăng chỉ số · vĩnh viễn · 1 cộng dồn
        encumber    nặng nề · giảm chỉ số · vĩnh viễn · 1 cộng dồn
        fester      lở loét · giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn
@@ -3337,6 +3338,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   unleashed    bộc phát
   kindled      bùng cháy
   fortified    kiên cố
+  plated       bọc giáp
   quickened    gia tốc
   evasive      khinh công
   stoked       nóng máy
@@ -3363,7 +3365,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   charge       nhiễm điện
   absorb       lá chắn, thấm sát thương cho tới khi cạn
   aegis        lá chắn
-  bastion      thành trì
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -3547,6 +3548,7 @@ nội tại  các nội tại đã khai báo, và ai mang
   convalescence  ẩn thân        pokemon.happiny@48
   static         tê điện        pokemon.pichu@16
   magic_guard    tường tâm      pokemon.abra@16
+  pristine       nguyên vẹn     pokemon.magnemite@48
   quickening     lên đà         pokemon.torchic@16
 
   endurance <bền bỉ>
@@ -4907,7 +4909,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
-the statuses this skill inflicts  1 of 43
+the statuses this skill inflicts  1 of 44
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison      damages every turn · 3 turns · up to 3 stacks
@@ -6905,7 +6907,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
-the statuses this skill inflicts  1 of 43
+the statuses this skill inflicts  1 of 44
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison      damages every turn · 3 turns · up to 3 stacks
@@ -6927,6 +6929,7 @@ space chooses a status · type the chance in parts per thousand
        bare        lowers a stat · always in force · 1 stack
        kindled     raises a stat · always in force · 1 stack
        fortified   raises a stat · always in force · 1 stack
+       plated      raises a stat · always in force · 1 stack
        quickened   raises a stat · always in force · 1 stack
        encumber    lowers a stat · always in force · 1 stack
        fester      cuts healing received · 2 turns · up to 2 stacks
@@ -6981,6 +6984,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   unleashed    
   kindled      
   fortified    
+  plated       
   quickened    
   evasive      
   stoked       
@@ -7007,7 +7011,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   charge       
   absorb       soaks up damage until it is used up
   aegis        
-  bastion      
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.
@@ -7183,6 +7186,7 @@ traits  the declared traits, and who carries each
   convalescence  pokemon.happiny@48
   static         pokemon.pichu@16
   magic_guard    pokemon.abra@16
+  pristine       pokemon.magnemite@48
   quickening     pokemon.torchic@16
 
   endurance

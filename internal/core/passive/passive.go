@@ -91,10 +91,13 @@ type Grant struct {
 	// absorbing pool are rules about the *grant*, so they are refused wherever
 	// the gate over that grant comes from.
 	//
-	// ⚠️ **This is the shape and not a subject.** Nothing shipped carries a gated
-	// grant, so every walk over the shipped books is blind to this field; the
-	// first trait to want it is priced by measurement. → TODO.md § ENG-006,
-	// step 3.
+	// The first subject is `pristine`, and it is what the field was built for: a
+	// thin plating that never lapses beside the shipped `fortified` behind a gate
+	// at the top of the bar. Measured, the gate is the only dial in the game that
+	// separates two matchups a magnitude cannot — the same tier ungated is worth
+	// 248 and 216 parts per thousand against two opponents, and behind the gate
+	// 222 and 38. → README.md § *What a guard that holds while its holder is
+	// fresh is worth*.
 	While *Condition
 }
 
