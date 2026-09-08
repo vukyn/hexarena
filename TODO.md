@@ -105,8 +105,9 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-005` | done | `reckless` is the dragon build's 22.1% — CLOSED. All four levers are measured… |
 | `DAT-006` | refused | Rebalancing `reckless` |
 | `DAT-007` | open | The area axis is not priced below single-target burst — on every board a rate… |
-| `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 for… |
+| `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 forbids — and NEITHER can be re-pointed today: the composition-bonus effect vocabulary has nine slots and the shipped table uses all nine. Premise rewritten, measured, and a distinctness guard shipped |
 | `DAT-009` | done | Ally-aimed area support is single-target on every shipped board — REFUSED, with the measurement: the item's own `arc_up` candidate is a no-op, and `pierce`, the one shape that catches two, moved one battle in twelve hundred |
+| `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
 | `SCR-001` | shipped | Reference screens |
@@ -387,69 +388,388 @@ is only so the shape is readable.
       on is gone, and whether what is left still needs one there is unmeasured —
       it needs somebody on that platform, not another reading here.
 
-- [ ] `DAT-008` ⚠️ **`bedrock` and `phalanx` are the same effect on two different
-      axes, and decision 5 of `DAT-002` forbids exactly that.** Raised 2026-09-08
-      out of `DAT-002` while refreshing it; found by reading the shipped table, not
-      by a test.
+- [ ] `DAT-010` ⚠️ **No composition bonus in the game can be priced on a board that
+      exists: the whole ten-bonus table fires on ZERO shipped squads and on
+      `roster.json`.** Raised 2026-09-08 out of `DAT-008`'s measurement. **Filed
+      only — no work done, and it is deliberately not `DAT-008`'s to fix**, because
+      it is about the table rather than about the two ids that collide.
 
-      `ground_root` grants `bedrock` — defence +100‰, up to 2 stacks, permanent.
-      `same_column` grants `phalanx` — defence +100‰, up to 2 stacks, permanent.
-      Byte for byte the same modifier under two names. Derive it rather than
-      trusting this paragraph:
+      Derived off `cast.json` × `squads.json` × `bonuses.json`, skipping
+      `elements.json`'s `inert`:
+
+      | squad | non-inert elements | slot columns | bonuses fired |
+      |---|---|---|---|
+      | `s01` | ground 1, water 1, light 1 | {2:2, 0:1} | **none** |
+      | `s02` | water 1, dark 1, electric 1, metal 1 | {2:1, 1:1, 0:1} | **none** |
+      | `s03` | grass 1, electric 1, metal 1, fire 1 | {2:1, 1:1, 0:1} | **none** |
+      | `s04` | ground 1, dark 1 | {2:1, 1:1, 0:1} | **none** |
+      | `s05` | ground 1, dark 1, light 1 | {2:1, 1:1, 0:1} | **none** |
+
+      `roster.json` fires none either — `internal/seed/testdata/replay.golden:138`
+      reads `bonus_held  0`. Every element rung sits at 2 or 3 and every shipped
+      squad carries three or four **different** elements; `same_column`'s only rung
+      is at 3 and no shipped squad stands three units in one column.
+
+      **Measured, not only derived** (`DAT-008` Run A, `forge.FightSquads`, 200
+      seeds a cell): removing `ground_root` **and** `same_column` from the book
+      comes back **identical in every field** — rate, both half-tallies, median
+      turns — on `s01` vs `s04` (92‰, 37/363/0), `s01` vs `s05` (995‰, 398/2/0) and
+      `s04` vs `s05` (1000‰, 400/0/0), with all six mirrors at exactly 500‰. The
+      pricing switch `DAT-002` decision 4 calls the *only* instrument that can price
+      a bonus is a provable no-op on every board this repository quotes a rate off.
+
+      **Why that is worse than it sounds.** `DAT-002` recorded *"no shipped squad
+      fired it"* about the retired `same_element` blanket and treated it as fine —
+      a bonus is *something a player builds towards*. That reading survives for one
+      bonus and does not survive for the table: with **nothing** firing anywhere,
+      the only way to price any rung is to build a squad for it, and a probe squad
+      is a statement about that squad rather than about the game. `DAT-008` had to
+      do exactly that, and hit the qualification head on: the probe's own baseline
+      was **saturated at 1000‰ on two of its three boards**, so a table of ten
+      bonuses was priced on **one** pairing. Meanwhile the shape a probe has to take
+      to fire a column bonus — stacking — costs about 213‰ (`DAT-002`) to 253‰
+      (`DAT-007`) before the bonus pays anything, so the instrument perturbs what it
+      measures.
+
+      This is `DAT-007`'s finding one layer out. There the *area axis* was absent
+      from every fought board; here the *whole composition-bonus mechanism* is, and
+      the two have the same cause — the five shipped squads stand one unit per
+      column and carry one unit per element.
+
+      **Candidates, none measured, and each has a cost worth naming before anybody
+      reaches for it:**
+      1. **Ship a sixth squad that fires something.** The cheapest, and `DAT-007`
+         built and threw away an `s06` for the neighbouring reason: a new squad is a
+         new board every existing squad rate is quoted against, and the stacked
+         shape it has to take to fire `same_column` is a squad that is worse for
+         reasons unrelated to the bonus. Read `DAT-007`'s `s06` autopsy first.
+      2. **Re-slot or re-cast an existing squad so it reaches a rung.** Moves every
+         rate already quoted off that squad, which is most of the balance record.
+      3. **Accept it and say so where a number is read** — the `DAT-007` shape:
+         quote every composition-bonus figure as a probe reading with its squad
+         named, and never as a property of the game. Costs nothing and buys
+         honesty rather than coverage.
+      4. **A guard.** The reachability tests in
+         `internal/seed/elementbonus_test.go` ask whether the CAST could field a
+         rung; none asks whether anything that ships DOES. A test that reports, per
+         bonus, whether any shipped formation reaches it would have said this out
+         loud a month ago. ⚠️ It has to **log rather than assert** on today's data
+         for the reason `areaboard_test.go` gives twice: filing an open item as a
+         failing test is not filing it.
+
+      ⚠️ **What this is NOT.** It is not an argument that the table is wrong, and it
+      is not a reason to re-price anything: `DAT-008`'s probe shows the bonuses do
+      real work when they fire (117‰ each, 292‰ for the stacked pair, on the one
+      board inside the 50…950‰ band). It is an argument that the repository has no
+      *board* on which to check that work, which is a measurement problem rather
+      than a balance one — and it is why `DAT-002`'s remaining rungs, and any
+      eleventh bonus, would ship today with nothing able to price them.
+
+- [ ] `DAT-008` ⚠️ **`bedrock` and `phalanx` are the same effect on two different
+      axes, which decision 5 of `DAT-002` forbids — and NEITHER can be re-pointed
+      today, because the effect vocabulary a composition bonus can reach has nine
+      slots and the shipped table uses all nine. The premise is rewritten, the
+      measurement is here so nobody re-runs it, and what shipped is a guard.**
+      Raised 2026-09-08 out of `DAT-002` while refreshing it; found by reading the
+      shipped table, not by a test. Re-derived and measured the same day. Nothing
+      in `internal/seed/data` changed, so no golden moved and the data digest is
+      untouched.
+
+      **1. The collision, derived.** `ground_root` grants `bedrock` and
+      `same_column` grants `phalanx`; the two kinds are byte for byte the same —
+      `{"category":"buff","max_stacks":2,"duration":0,"permanent":true,"modifiers":[{"target":"defense","mode":"percent","amount":100}]}`,
+      at `internal/seed/data/statuses.json:346` and `:412`. Derive it rather than
+      trusting this paragraph, and derive it over the whole bonus book rather than
+      over the two ids, which is what says it is the **only** one of the ten:
 
       ```sh
-      jq -r '.kinds[]|select(.id=="bedrock" or .id=="phalanx")' \
+      jq -r '[.kinds[]|select(.id=="bedrock" or .id=="phalanx" or .id=="emberheart"
+              or .id=="tailwind" or .id=="galvanise" or .id=="ironhide"
+              or .id=="keenedge" or .id=="tidewell" or .id=="heartwood"
+              or .id=="limelight")]
+            | map({id:.id, fp:(del(.id)|tostring)}) | group_by(.fp)
+            | map(select(length>1)) | .[] | [.[].id] | join(" == ")' \
         internal/seed/data/statuses.json
       ```
+      → `bedrock == phalanx`, and nothing else.
 
-      ⚠️ **Decision 5 is the rule this breaks, and it is worded for exactly this
-      case**: *"each must do something no other bonus does … two bonuses that come
-      to the same thing with different words are the 'two callers wording one
-      choice' mistake, at the level of a feature instead of a string."* A player
-      who has both cannot tell them apart on the board — the effects column reads
-      `phalanx x2 (always), bedrock x2 (always)` and both lines mean *more
-      defence*. What is distinct is only how the two are **earned**, and the whole
-      argument for the per-element table was that a bonus should say what its tribe
-      is FOR.
+      ⚠️ **The same grouping over all forty-three kinds finds a SECOND group, and
+      it is not this rule's business**: `swelter == verdure == moisture`, all
+      `{"category":"reserve","max_stacks":999,"duration":5}`. Reserve counters are
+      told apart by which skill spends them and **no bonus grants any of them**, so
+      decision 5 says nothing about them. That is precisely why the guard below is
+      scoped to the **bonus book** and not to `statuses.json`: a guard written over
+      the status book is red on shipped data for a reason the rule does not cover,
+      and a red test nobody can act on is a test that gets deleted.
 
-      ⚠️ **It is not a duplicate-status bug and must not be "fixed" by merging
-      them.** The two are earned on different axes and stack, so collapsing them
-      into one status would halve what a stacked column of one element gets, which
-      is a balance change wearing a tidy-up. The question is which of the two
-      changes its *effect*.
+      ⚠️ **Still not a duplicate-status bug, and still not fixable by merging
+      them** — now measured rather than argued, see 5 below. The two are earned on
+      different axes and they STACK (decision 4), so one status under two names
+      would cost a stacked single-element column **117‰** against `s04` on the one
+      board that can price it. A balance change wearing a tidy-up.
 
-      **Three ways out, none measured yet:**
-      1. **Re-point `ground_root`.** Ground is the element the chart makes the
-         sturdiest already, so doubling down on defence is the least distinct
-         choice available to it. A ground effect nothing else has — something about
-         being immovable once the board can move (`ENG-007`), or a floor under
-         incoming damage — would be the shape.
-      2. **Re-point `same_column`.** A formation bonus paying a *stat* is the odd
-         one out: every element bonus now pays a stat or a share, and the column
-         axis is the only one about where a unit stands. Something that reads as
-         formation — reach, or the rank rule `range` already counts — would make it
-         the only bonus about the board rather than about the units.
-      3. **Accept the collision and write down why.** Defensible if the two are
-         never held together in practice, which is checkable: no shipped squad
-         reaches the column rung at all, and only ground squads reach `bedrock`.
-         ⚠️ But "no shipped squad" is a statement about the starter sides and not
-         about what a player can build, and this entry has been wrong that way
-         before — see `DAT-002`'s *"one carrier" is a statement about a DRAFTED
-         squad*.
+      **2. ⚠️ THE FINDING THAT NARROWS THE OPTIONS: the effect vocabulary is
+      FULL.** A composition grant is `composition.Grant{Status, Stacks}`
+      (`internal/core/composition/composition.go:137-147`) and must name a
+      **permanent** status (`composition.go:564-573`). What a permanent status may
+      legally carry, and what already carries it:
 
-      ⚠️ **Whatever ships needs the pricing switch, not a sweep of both.** The
-      control is the same squad, same members, same seeds, with **one** bonus
-      toggled (`forge.FightSquads` takes a set to disable) — a run with both off
-      measures the pair and can price neither. → `DAT-002` decision 4.
+      | effect field on `status.Kind` | shipped bonus using it |
+      |---|---|
+      | `modifiers` → `attack` | `fire_forge` / `emberheart` |
+      | `modifiers` → `defense` | `ground_root` / `bedrock` **and** `same_column` / `phalanx` ← the collision |
+      | `modifiers` → `speed` | `electric_surge` / `galvanise` |
+      | `modifiers` → `accuracy` | `light_gleam` / `limelight` |
+      | `modifiers` → `dodge` | `wind_gust` / `tailwind` |
+      | `modifiers` → `hp` | `grass_growth` / `heartwood` |
+      | `heal_share` | `water_tide` / `tidewell` |
+      | `pierce_share` | `dark_edge` / `keenedge` |
+      | `ward_share` | `metal_ward` / `ironhide` |
 
-      **A test is owed either way.** Nothing today would notice a third bonus
-      arriving with a fourth copy of defence +100‰: the distinctness rule is prose
-      in this file and prose in `CLAUDE.md`, and every other rule about the table —
-      reachability, coverage, no blanket — is held by a property test in
-      `internal/seed/elementbonus_test.go`. A guard that refuses two bonuses whose
-      grants resolve to the same effect is the missing one, and it is what turns
-      option 3 from "we decided not to look" into "we decided, and the next
-      collision fails".
+      Nine slots, nine bonuses, and every other door is closed by a written-down
+      deliberate rule rather than by an omission:
+
+      - **`affinity`** — `status.ParseBook` refuses an affinity term on ANY status:
+        *"targets affinity, which a status cannot carry"*
+        (`internal/core/status/status.go:1414`). `modifier.Set.Affinity` is fully
+        wired at `battle/turn.go:1284` and `battle/ai.go:500`, so the target exists
+        and is reachable by nothing.
+      - **`tick_power`** — a permanent `Dot`/`Regen` is refused outright
+        (`status.go:1317`): *"which would tick for the whole battle"*.
+      - **`pool_power`** (a permanent Absorb) — legal at parse and **dead in the
+        engine**. `battle.award` calls `unit.Statuses.Hold(kind, 0, grant.Stacks)`
+        with the amount hardcoded to nought
+        (`internal/core/battle/battle.go:477`), and `composition.Grant` carries no
+        quantity on purpose, because *"the units receiving one do not share a stat
+        line"*. A bonus-granted barrier is a pool of nought — the same trap
+        `grass_growth` already records one field over.
+      - **`shield` block charges, `charge`, `reserve`** — every consumption path
+        goes through `status.Set.Remove` (`battle/turn.go:833, 1140, 1262, 1321`),
+        and `Remove` refuses a permanent status (`status.go:987`). A permanently
+        granted spendable resource is **unspendable**: a permanent shield is an
+        infinite block.
+      - **`taunt` / `control` / `stat_debuff` / `heal_cut`** — hostile, and
+        permanent means undispellable. A bonus handing its own side one of these is
+        a penalty, not a bonus.
+
+      So any genuinely new bonus effect needs Go under `internal/core`, and in two
+      of those cases needs a refusal somebody wrote down on purpose reversed. That
+      turns three options into one.
+
+      **3. ⚠️ Option 3's justification was FALSE and is corrected rather than
+      deleted.** It read *"defensible if the two are never held together in
+      practice … only ground squads reach `bedrock`"*. A player can build the
+      collision today:
+
+      ```sh
+      jq -r '[.characters[]|select(.element=="ground")|.id]' internal/seed/data/cast.json
+      ```
+      → `pokemon.diglett`, `pokemon.gible`, `pokemon.machop` — **three** carriers,
+      **none hidden**. A 3v3 of Dugtrio + Garchomp + Machamp stacked in one column
+      reaches `ground_root` rung 3 (`bedrock ×2`) **and** `same_column` rung 3
+      (`phalanx ×2`) at once: defence **+400‰**, drawn as two identical lines in
+      the effects column. No doubling-up needed, so `internal/draft`'s exclusive
+      pool does not prevent it, and it is legal in saved **and** drafted mode. This
+      is the same correction `DAT-002` already had to make about *"one carrier"*
+      being a statement about a DRAFTED squad — the second time this file has been
+      wrong in that exact direction.
+
+      **4. ⚠️ Option 2 is dead for longer than option 1.** Reach is not modifiable
+      by anything: `known.Range` is read straight off the skill book at
+      `internal/core/battle/turn.go:683,698` and **nothing anywhere modifies it**.
+      There is no `modifier.Target` for range (`modifier.go:40-48` declares seven
+      and `Affinity` is the last) and no status field for one, so a formation bonus
+      paying reach needs a new modifier target or a new `Kind` field, plus
+      `reachableRanks`, plus `price.go` and `ai.go` — a trait that changes a price
+      has two sites — plus a fifth `Block` wording. Option 1's own named shapes are
+      barely cheaper: immovability needs `ENG-007`'s whole *nothing on this board
+      ever moves* prerequisite, and a floor under incoming damage is a new
+      `status.Kind` field plus a new read in the damage path, `price.go`, `ai.go`,
+      the event and both describers.
+
+      **5. The measurement — `DAT-002` decision 4's pricing switch, applied.** Same
+      squads, same members, same seeds, **one** bonus toggled;
+      `forge.FightSquads(home, away, seeds, without...)`, 200 seeds a cell so every
+      row is 400 battles. Endless is quoted beside every rate because `Rate()`
+      drops an endless battle from the denominator (`internal/forge/spar.go:98`).
+
+      **Run A — the no-op proof, on shipped squads.** Taking BOTH bonuses out of
+      the book comes back **identical in every field** — rate, both half-tallies,
+      median turns — on every pairing:
+
+      | pairing | baseline | both off | endless | turns |
+      |---|---|---|---|---|
+      | `s01` vs `s04` | 92‰ (37/363/0) | **92‰ (37/363/0)** | 0 of 400 | 48 |
+      | `s01` vs `s05` | 995‰ (398/2/0) | **995‰ (398/2/0)** | 0 of 400 | 54 |
+      | `s04` vs `s05` | 1000‰ (400/0/0) | **1000‰ (400/0/0)** | 0 of 400 | 38 |
+      | `s01` mirror | 500‰ | 500‰ | 2 of 400 | 78 |
+      | `s04` mirror | 500‰ | 500‰ | 0 of 400 | 43 |
+      | `s05` mirror | 500‰ | 500‰ | 0 of 400 | 52 |
+
+      That is item 6 below turned from a reading of JSON into a measurement: **the
+      pricing switch decision 4 requires is a provable no-op on every board a rate
+      in this repository is read off**, so neither bonus can be priced there.
+
+      **Run B — the probe, the only instrument that can see the rung.**
+      `probe_ground` is the squad from 3 above, built in a scratch directory via
+      `lib.SaveSquad`: Dugtrio + Garchomp + Machamp at level 60 on their
+      `builds.json` kits, all three slots in one column — `{2,0} {2,1} {2,2}`. It is
+      the only squad in the repository that fires both bonuses. **Gate written down
+      before the run**, `DAT-007`'s shape: worth pursuing only if a toggled arm
+      moves the aggregate over boards whose baseline is inside **50…950‰** by
+      **≥ 50‰**, because a saturated pairing prices nothing.
+
+      | board | baseline | `ground_root` off | `same_column` off | both off | endless |
+      |---|---|---|---|---|---|
+      | vs `s01` | 1000‰ (400/0/0) | 1000‰ | 1000‰ | — | 0 of 400 |
+      | vs `s04` | **422‰ (169/231/0)** | **305‰ (122/278/0)** | **305‰ (122/278/0)** | **130‰ (52/348/0)** | 0 of 400 |
+      | vs `s05` | 1000‰ (400/0/0) | 1000‰ | 1000‰ | — | 0 of 400 |
+
+      Mirrors, **every arm including the disabled ones**: `probe_ground` 500‰,
+      `s01` 500‰, `s04` 500‰, `s05` 500‰ — twenty-two mirror readings, all exactly
+      even. Median turns 44–51 on the probe rows, 42–47 on `s04`.
+
+      **Two of the three boards are saturated at 1000‰ and are dropped from the
+      aggregate**, so the whole reading rests on `s04` — and there the gate
+      **passes**: 422‰ → 305‰ is **117‰**, twice the floor. So the collision is not
+      cosmetic. What blocks a re-pointing is feasibility (item 2), not size.
+
+      ⚠️ **The two arms are identical in every field, not merely in the
+      aggregate** — 122/278/0 both ways, same median turns. The collision is not
+      only byte-identical in the data; on the one board that can price it the two
+      bonuses are **indistinguishable in outcome, battle for battle**. That is
+      decision 5's *"come to the same thing with different words"* as a
+      measurement.
+
+      ⚠️ **They stack, and merging them is now priced.** Each alone is worth 117‰
+      (422 → 305) and the pair together is worth **292‰** (422 → 130), so the
+      second copy is worth *more* than the first (175‰ against 117‰) — a win rate
+      is non-monotone in a stat, which is `swiftness` and the 150‰ sweep restated.
+      A merged status capped at `max_stacks: 2` is exactly the one-bonus state, so
+      **merging costs a stacked ground column 117‰**, forty per cent of what the
+      pair is worth. Raising the merged cap to 4 instead is authoring a new balance
+      number, which is the change the merge was supposed to avoid.
+
+      ⚠️ **Say plainly what the probe reading is and is not.** It prices the bonus
+      on a squad built to hold it — a statement about *that squad*, not about the
+      game, the same qualification `DAT-002` attached to its own stacked reading.
+      And stacking is expensive before the bonus pays anything: `DAT-007` measured
+      it at ~253‰ and `DAT-002` at ~213‰, by two different instruments. So
+      `probe_ground` is already a couple of hundred parts down for standing that
+      way, and 292‰ of defence is what it is being handed back.
+
+      `forge.Census` is not the instrument here — it counts casts per slot and
+      answers a kit question, and a permanent defence buff changes no slot's
+      preference.
+
+      **6. ⚠️ The whole ten-bonus table fires on ZERO shipped boards.** Derived off
+      `cast.json` × `squads.json` × `bonuses.json`, skipping `elements.json`'s
+      `inert`:
+
+      | squad | non-inert elements | slot columns | bonuses fired |
+      |---|---|---|---|
+      | `s01` | ground 1, water 1, light 1 | {2:2, 0:1} | **none** |
+      | `s02` | water 1, dark 1, electric 1, metal 1 | {2:1, 1:1, 0:1} | **none** |
+      | `s03` | grass 1, electric 1, metal 1, fire 1 | {2:1, 1:1, 0:1} | **none** |
+      | `s04` | ground 1, dark 1 | {2:1, 1:1, 0:1} | **none** |
+      | `s05` | ground 1, dark 1, light 1 | {2:1, 1:1, 0:1} | **none** |
+
+      `roster.json` fires none either — `internal/seed/testdata/replay.golden:138`
+      reads `bonus_held  0`. `DAT-002` said this of `same_element` alone; it is
+      true of the entire table that replaced it, and Run A is the confirmation.
+      **Filed as `DAT-010`**, because it is arguably a bigger item than this one and
+      it is not this one's to fix.
+
+      **7. The surviving door, RECORDED AND NOT BUILT.** `status.ParseBook` refuses
+      only a *negative* `hp` term (`status.go:1440-1455`); a permanent status may
+      carry a negative modifier on any other target. So the one data-only shape
+      left is **a bonus that COSTS something** — `ground_root` paying defence and
+      charging speed, say, which no other bonus does and which is one line of JSON.
+      The author was asked on 2026-09-08 and chose to **HOLD** it. The reasons are
+      the ones this repository applies everywhere: authoring a balance number with
+      no board to read it on is what item 6 says is impossible right now, and a win
+      rate is non-monotone in a stat, so the size cannot be picked by sweeping for
+      the largest. If it is ever taken it arrives as its own PR, with the probe
+      measurement and a gate written down first.
+
+      **8. Shipped: `TestNoTwoBonusesGrantTheSameEffect`**
+      (`internal/seed/elementbonus_test.go`), with `ground_root` / `same_column`
+      named as the one accepted collision and pinned **both ways** — a third bonus
+      arriving with a fourth copy of defence fails, and the day the collision is
+      resolved the stale exception fails so it cannot outlive what it excuses. The
+      set is derived from the bonus book, never a written-down list of ids. It keys
+      a grant on the **whole resolved `status.Kind`** minus the two label fields,
+      via `%#v` rather than a hand-written field comparison, because that type has
+      grown four effect fields since it was written and a hand-written list is the
+      *"two windows do not cover a growing list"* shape; the price is that a future
+      **label** field must be zeroed there too, which the comment says. Stacks are
+      deliberately excluded — decision 5 forbids two bonuses coming to the same
+      *thing*, not the same *amount*, and keying on stacks would let the collision
+      be dissolved by editing `bedrock` from one stack to three, a tidy-up wearing a
+      fix. It is the effect-level twin of `internal/i18n.LogGlossCollisions`, which
+      refuses two kinds claiming one id.
+      Modifier order is normalised, and no shipped status carries two modifiers, so
+      that branch is exercised by
+      `TestTwoKindsWithTheSameTermsInEitherOrderFingerprintAlike` on hand-built
+      kinds rather than left as a fixture hiding a branch — with a discriminating
+      control, since a `fingerprint` that returned a constant would pass the
+      ordering arm on its own.
+      An **assertion** rather than the `t.Logf` both tests in `areaboard_test.go`
+      use, and the difference is what is being held: those log a measurement whose
+      right value is undecided, this holds a rule already settled — decision 5,
+      author's call 2026-09-04 — with exactly one known violation, which is the
+      shape `TestTheElementsWithNoBonusAreExactlyTheOnesWithOneCarrier` next to it
+      already uses. The item asked for an assertion in as many words: *"the next
+      collision fails"*. A log cannot fail.
+      **Mutation-checked three ways, all on the data and all reverted by hand.**
+      Pointing `tailwind` at `defense` makes the group three and names `wind_gust`
+      — the guard sees a NEW collision. Moving `bedrock`'s amount to 150 reddens
+      with *"DAT-008 is closed, delete this exception"* — the pin really is
+      two-way, and without that arm the exception would be worthless. Giving
+      `bedrock` a `"name"` stays **green**, which is what says `fingerprint` is not
+      reading a label as an effect; that arm was itself checked for inertness,
+      because the name reaches `status.Kind.Name` and **nothing else in the
+      repository observes it** — no board golden fires `ground_root`, which is the
+      warning under *Blast radius* below rather than a convenience.
+
+      **What is still open** is the collision itself, and it now has a prior
+      question that is not a design question at all: **what effect is there left to
+      re-point either bonus AT?** Item 2 says the answer today is none without Go,
+      item 7 says the one data-only answer is held on purpose, and item 6 says
+      nothing that ships could price the result anyway.
+
+      **Blast radius — for the day a re-pointing does ship. Derive it, do not read
+      the numbers here as current:**
+
+      ```sh
+      find . -name '*.golden' -exec grep -Hc phalanx {} \; | grep -v ':0$'
+      find . -name '*.golden' -exec grep -Hn bedrock {} \;
+      ```
+
+      ⚠️ **The two are nothing like symmetric, and the asymmetry is the finding.**
+      `phalanx` is on **657 golden lines across six files** — `internal/screen`
+      306, `cmd/hexarena-tui` 242, `cmd/hexforge-tui` 94,
+      `internal/tui/opening.golden` 12, `internal/i18n/describe.golden` 2,
+      `internal/seed/skills.golden` 1 — because several fixtures fight with
+      `phalanx` **live**, so an effect change moves health and damage on those
+      boards and not only the catalogue row. `bedrock` is on **13 lines across five
+      files**, and `grep 'bedrock x'` over every golden in the repository returns
+      **nothing**: every one of those thirteen is a *catalogue* row in the statuses
+      listing or the statuses table, in both languages. ⚠️ **`bedrock` never
+      appears on a board anywhere**, because no fixture fires `ground_root` — not a
+      convenience, a warning that a re-pointed `bedrock` would ship exercised by
+      nothing. It is item 6 again, seen from the goldens.
+      (An earlier draft of this entry put those figures at "six goldens" and "two
+      goldens" from a line-range list. The list had gone stale; the two commands
+      above are what to run.)
+      Not affected either way: `replay.golden:138` (`bonus_held 0`). The data digest
+      moves on any `statuses.json` edit but nothing pins its value.
+      `internal/i18n/gloss.go:136,141` carry `trận thế` / `nền đá`; a re-pointed
+      status keeps its id but the word may stop fitting, and both languages are
+      revisited then. `internal/tui/tui.go:125` and
+      `internal/tui/effects_test.go:20` name `phalanx x2 (always)` as layout
+      literals rather than effect assertions. The three-place data-file rule does
+      not bite — no new file.
 
 - [ ] `DAT-007` ⚠️ **The area axis is not priced below single-target burst — on every
       board a rate is read off, it DOES NOT EXIST. The repricing is refused for now
@@ -4004,7 +4324,8 @@ is only so the shape is readable.
       something already in the starter sides. That is still true of the table that
       replaced it.
 
-      **Still open, and it is three things rather than one:**
+      **Still open, and it is four things rather than one** — the fourth arrived on
+      2026-09-08 out of `DAT-008`'s measurement and is the largest of them:
 
       1. **The rungs at 4 and 5** (decision 6, they wait for 5v5) on the **element**
          axis — the column axis can never reach them, because a column holds
@@ -4012,7 +4333,29 @@ is only so the shape is readable.
       2. **`ice` has no bonus of its own**, because it has one carrier. → the
          doubled-up loophole below, which is why "one carrier" is not the same as
          "unreachable".
-      3. **`bedrock` and `phalanx` are the same effect.** → `DAT-008`.
+      3. **`bedrock` and `phalanx` are the same effect.** → `DAT-008`, which is
+         rewritten rather than closed. ⚠️ **The finding that came back from it is
+         about this table rather than about those two ids: the effect vocabulary a
+         composition grant can reach has exactly NINE slots and the ten shipped
+         bonuses already use all nine** — the six `modifier` targets a permanent
+         status may carry, plus `heal_share`, `pierce_share` and `ward_share`.
+         `affinity` is refused on any status (`status/status.go:1414`), a permanent
+         tick is refused outright (`:1317`), a permanent Absorb's pool is
+         hardcoded to nought (`battle/battle.go:477`, and `Grant` carries no
+         quantity on purpose), and every spendable counter is unspendable because
+         `Remove` refuses a permanent status (`:987`). So **the eleventh bonus
+         cannot say anything new without Go under `internal/core`**, which is a
+         prerequisite on item 1 above as much as on `DAT-008`: authoring the rungs
+         at 4 and 5 for 5v5 is cheap, and authoring an eleventh bonus is not.
+         The one data-only shape left is a bonus that *costs* something — a
+         permanent status may carry a negative modifier on any target but `hp`
+         (`:1440-1455`) — and the author chose on 2026-09-08 to hold it.
+      4. **⚠️ Nothing in this table fires on any board a rate is read off.** None
+         of `s01`–`s05` reaches any rung, and `replay.golden:138` reads
+         `bonus_held 0`; taking two bonuses out of the book was measured as a
+         no-op identical in every field on all three shipped pairings. That was
+         said of `same_element` above and is true of the whole table that replaced
+         it. → `DAT-010`.
 
       A third axis is not needed for the mechanism and the candidates below keep
       their reasoning.

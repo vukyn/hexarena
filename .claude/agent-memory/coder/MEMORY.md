@@ -38,6 +38,7 @@
 - [Three guards a neighbour already covered](feedback_three_guards_a_neighbour_already_covered.md) — one bound stated twice, a branch room.Left tolerates, a prompt action a departure repeats
 - [The fixture that makes it measurable has its own price](feedback_the_fixture_that_makes_it_measurable_has_its_own_price.md) — s06 bought 0‰→2‰ of area and cost its own side 253‰; balance.md had already priced that board at 213‰
 - [A null needs TWO controls](feedback_a_null_needs_two_controls.md) — an exact-null arm (arc_up, battle-for-battle) AND a payload calibration arm (fury ×2, −27‰); without the second, "no effect" = "blind"
+- [A green-expected mutation proves nothing alone](feedback_a_green_expected_mutation_proves_nothing_by_itself.md) — M3 moved no test and no golden; probe the parsed field or "green" is indistinguishable from "never landed"
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
