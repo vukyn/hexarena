@@ -137,6 +137,21 @@ type Deps struct {
 	// stamped at build time and read by the binary's own main; wire.Local is
 	// what assembles one.
 	Version wire.Version
+	// Tokens makes a seat token, and is what a rejoin rests on.
+	//
+	// ⚠️ **It is injected rather than called for here, because a room has no
+	// randomness of its own and is not getting any.** Everything else this
+	// package does is a state machine over messages — no clock, no rand, no I/O —
+	// which is what lets the room be driven a message at a time in a test and
+	// replayed from a log. A `crypto/rand` read inside Join would put the first
+	// unrepeatable thing into it.
+	//
+	// ⚠️ **Nil is a supported answer and means no rejoin.** The room seats
+	// clients exactly as before and issues no token, so a caller that has not
+	// thought about tokens gets the behaviour it had rather than a panic or a
+	// half-feature. cmd/hexarena-host supplies one; a test that does not care
+	// leaves it nil.
+	Tokens func() (wire.SeatToken, error)
 }
 
 // Outbound is one message the room wants sent, and the seat it is for.
@@ -164,6 +179,14 @@ type peer struct {
 	taken bool
 	name  string
 	squad placement.Squad
+	// token is what this seat's client shows to take it back, and is empty when
+	// the room was built with no way to make one. → Deps.Tokens.
+	//
+	// ⚠️ It is compared in constant time and never logged, never drawn and never
+	// recorded: it is on the peer beside the squad because a seat is what it
+	// belongs to, and it leaves the room only in the welcome addressed to the
+	// client that owns it.
+	token wire.SeatToken
 }
 
 // Room is one match: a series of battles between two seats.

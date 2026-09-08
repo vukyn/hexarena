@@ -120,6 +120,26 @@ type table struct {
 	// allowance is the timer on the seat the room is waiting for.
 	allowance allowance
 
+	// holding is the reconnect window on each seat: the timer that will tell the
+	// room the client is not coming back, and nil for a seat that is not being
+	// held. Guarded by exchange, like the seats themselves.
+	//
+	// ⚠️ **A held seat is still TAKEN in the room**, which is the whole
+	// arrangement: the transport keeps the room ignorant of a socket closing, so
+	// the match, the board and the clock are exactly where they were and a
+	// returning client needs nothing rebuilt. What the transport has given up is
+	// the seat's *connection*, so nothing is written to it and nothing is read
+	// from it — and if the allowance runs out meanwhile, the room passes the turn
+	// as it would for anybody thinking too long.
+	holding [seatsPerTable]*time.Timer
+	// rejoinable is whether each seat can be come back to at all, which is the
+	// room's answer rather than this package's. → room.Admission.Rejoinable.
+	//
+	// ⚠️ Without it a room that issues no tokens would hold a seat open for a
+	// minute for a client that has no way to prove it is that client — a minute
+	// of the other player's evening spent on nothing.
+	rejoinable [seatsPerTable]bool
+
 	// holders is how many connections still refer to this table.
 	// ⚠️ Guarded by the **Server's** mutex rather than by exchange: it is the
 	// server's map that owns a table's lifetime, and a count guarded by the lock
@@ -161,6 +181,72 @@ func (t *table) seat(seat wire.Seat, peer *connection) {
 	case wire.SeatGuest:
 		t.guest = peer
 	}
+}
+
+// indexOfSeat is a seat's place in the fixed-size arrays above, and whether it is
+// a seat at all. A watcher has none.
+func indexOfSeat(seat wire.Seat) (int, bool) {
+	switch seat {
+	case wire.SeatHost:
+		return 0, true
+	case wire.SeatGuest:
+		return 1, true
+	}
+	return 0, false
+}
+
+// hold starts the reconnect window on a seat, and reports whether one was
+// started. The caller holds exchange.
+//
+// It refuses to start a second window on one seat: a seat can only be left once
+// while it is empty, and a stray second call would leave the first timer running
+// with nothing to stop it.
+func (t *table) hold(seat wire.Seat, window time.Duration, expired func()) bool {
+	index, ok := indexOfSeat(seat)
+	if !ok || !t.rejoinable[index] || t.holding[index] != nil || window <= 0 {
+		return false
+	}
+	t.holding[index] = time.AfterFunc(window, expired)
+	return true
+}
+
+// release stops the reconnect window on a seat, and reports whether one was
+// running. The caller holds exchange.
+//
+// ⚠️ **A false from Stop is not a failure here and must not be treated as one.**
+// It means the timer had already fired, which is the race this whole arrangement
+// has: the window expired while the returning client's hello was in flight. What
+// happens then is decided by the room rather than here — the expiry has already
+// told the room the seat left, so the hello that arrives a moment later finds a
+// seat with no token to match and is refused as an ordinary full room, or seated
+// as a new player if the seat was freed. Either is correct; what would not be is
+// this pretending the window was still open.
+func (t *table) release(seat wire.Seat) bool {
+	index, ok := indexOfSeat(seat)
+	if !ok || t.holding[index] == nil {
+		return false
+	}
+	running := t.holding[index].Stop()
+	t.holding[index] = nil
+	return running
+}
+
+// releaseAll stops every window, for a table that is going away. The caller holds
+// exchange.
+func (t *table) releaseAll() {
+	for index := range t.holding {
+		if t.holding[index] != nil {
+			t.holding[index].Stop()
+			t.holding[index] = nil
+		}
+	}
+}
+
+// held reports whether a seat is being kept for a client that may come back. The
+// caller holds exchange.
+func (t *table) held(seat wire.Seat) bool {
+	index, ok := indexOfSeat(seat)
+	return ok && t.holding[index] != nil
 }
 
 // free gives a seat up, and **only if it is still this connection's**.

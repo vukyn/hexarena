@@ -1471,7 +1471,51 @@ is only so the shape is readable.
             **and a malformed hello whose bytes hold the password** over real
             connections and greps the sink for the characters, and cannot see a
             print nothing happened to reach on the day it ran.
-      - [ ] A seat token and a rejoin. ⚠️ **The ground this item used to give was
+      - [ ] **A seat token and a rejoin — the SERVER half is done; the client
+            does not come back on its own yet.** A room issues a seat token
+            (`room.Deps.Tokens`, `wire.NewSeatToken`), the welcome carries it, and
+            a hello showing it takes that seat back **before** the room is asked
+            whether it is full — which is the whole shape, since a rejoining
+            client's own seat is exactly what makes it full. The transport holds a
+            seat for `socket.DefaultRejoinWindow` (60s) instead of reporting the
+            departure, and tells the room only when the window runs out.
+
+            ⚠️ **The room is not told a socket closed, and that is what makes a
+            rejoin cheap.** The board, the series and the clock are exactly where
+            they were, so a returning client needs nothing rebuilt. The allowance
+            is NOT paused: a player does not buy thinking time by pulling out a
+            cable, so a seat that stays away past its allowance is passed by
+            `TimedOut` as if its holder were staring at the screen.
+
+            ⚠️ **A seat with no token is not held at all.** Whether a room can
+            issue tokens is `Deps.Tokens`, which the transport never sees, so the
+            gate says it on `Admission.Rejoinable` — holding a seat for a client
+            that cannot prove it is that client is a minute of the other player's
+            evening spent on nothing. Every test written before this rides on it:
+            the socket fixtures pass no token source, so a departure still ends a
+            match at once there.
+
+            ⚠️ **`seatFor` had two guards and now has one.** `!token.Set()` and
+            `held.token.Set()` each close the empty-against-empty case alone, so
+            with both present a mutation removing either left the other doing the
+            job and no test moved. One guard a mutation reddens is worth more than
+            two that cover for each other.
+
+            ⚠️ **A rejoin re-sends the SAME token**, because the seat is the same:
+            issuing a fresh one would leave a client that reconnected twice
+            holding a token for a seat under a name the room has forgotten.
+
+            **What is left — step 2, the client.** `cmd/hexarena-tui` keeps the
+            token (`socket.Client.Token`) and does not yet dial again with it, so
+            a player whose wifi drops still has to rejoin by hand inside the
+            window. That needs the catch-up too: the record is already there
+            (`Registry.Since`), and the **open prompt is not** — see the note on
+            `Reading` below, which is the one piece of state a returning client
+            cannot rebuild.
+
+            The reasoning this item was raised on, kept because it is what the
+            window is bounded by:
+            ⚠️ **The ground this item used to give was
             wrong** — it was filed as cheap because the cursor makes catching up
             cheap, which is true and is not the reason it matters. The real one:
             **the transport cannot tell a wifi hiccup from a departure.** A socket
