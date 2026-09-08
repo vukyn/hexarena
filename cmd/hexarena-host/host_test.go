@@ -79,6 +79,33 @@ func (p *paper) said() string {
 	return out
 }
 
+// eventually is said, waited for.
+//
+// ⚠️ **A callback the transport makes is not ordered by the call that provoked
+// it**, and reading `said()` straight after a Dial is the flake that comes of
+// assuming otherwise. socket.Server calls Joined *after* the welcome has gone out
+// — deliberately, so a caller's lines come in the order the room produced them —
+// so a client whose Dial has returned is a client whose join line may not be
+// written yet. Measured 2026-09-08: green on its own and on six runs of this
+// package, and red inside `go test ./...`, which is the load that separates them.
+// That is the "a test measured the machine rather than the code" shape this
+// repository already has a code for (SCR-010), arriving through a callback rather
+// than through a clock.
+//
+// It reports what was on the paper when it gave up, so a caller that wanted a
+// line it never got fails naming the whole page rather than an empty string.
+func (p *paper) eventually(t *testing.T, wanted string) string {
+	t.Helper()
+	deadline := time.Now().Add(theWholeShutdown)
+	for {
+		said := p.said()
+		if strings.Contains(said, wanted) || time.Now().After(deadline) {
+			return said
+		}
+		time.Sleep(time.Millisecond)
+	}
+}
+
 // hosting is the binary's own open, over a given advertised address and a port a
 // test chose, torn down whatever the test does.
 func hosting(t *testing.T, chosen settings, advertised string, out, errs io.Writer) *hosted {
@@ -318,7 +345,7 @@ func TestAJoinIsAnnouncedAndAFinishedMatchIsReported(t *testing.T) {
 		t.Fatalf("join the room this host opened: %v", err)
 	}
 	defer client.Close()
-	if said := out.said(); !strings.Contains(said, "Bảo joined as host") {
+	if said := out.eventually(t, "Bảo joined as host"); !strings.Contains(said, "Bảo joined as host") {
 		t.Errorf("a player joined and the host printed %q", said)
 	}
 
