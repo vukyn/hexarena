@@ -153,6 +153,21 @@ var (
 	wholeBuildID = "diglett.whole"
 )
 
+// The split build's own four slots and the two variations the hiding measurement
+// is read against, named once for the reason the three above are.
+//
+// ⚠️ **`splitTrait` is `swiftness` and not `elusive`.** The two shipped Diglett
+// builds carry different traits, and the split build fought under the whole
+// build's is a kit nobody can field.
+var (
+	splitShipped   = []string{"split", "dig", "earthquake", "rock_throw"}
+	splitHiding    = []string{"split", "dig", "earthquake", "burrow"}
+	splitSlotEmpty = []string{"split", "dig", "earthquake"}
+	splitTrait     = "swiftness"
+	splitFoe       = "pokemon.machop"
+	burrowID       = "burrow"
+)
+
 // wholeSeeds is how many battles each half of the comparison is fought over,
 // both ways round.
 const wholeSeeds = 200
@@ -222,14 +237,95 @@ func TestBurrowIsWhatMakesTheWholeBuildAMatchup(t *testing.T) {
 		hiding/10, hiding%10, swinging/10, swinging%10)
 }
 
+// TestBurrowStaysOutOfTheSplitBuild is the standing half of `RAT-008`, and it is
+// the one thing that work leaves behind in code.
+//
+// The split build is the board the whole hiding investigation was raised on, and
+// what it holds is that `burrow` in that build is worse than the slot it takes
+// AND worse than leaving the slot empty. Both controls, because either alone is
+// satisfiable for a reason that is not the finding: worse than the shipped kit
+// alone would read as an ordinary trade of one skill for another, and the empty
+// slot is what says the skill is costing more than the slot is worth.
+//
+// ⚠️ **The cast count is asserted beside the rate.** A rate cannot say whether a
+// build played its kit — that is what `RAT-006` found the hard way — so a claim
+// that hiding is what collapses this build has to show the hiding happening. If
+// the rating ever stops casting `burrow` here, this test is measuring a slot
+// nobody spends and must say so rather than pass.
+//
+// ⚠️ **It fights under `swiftness`, the split build's own trait**, not the whole
+// build's `elusive`. The two shipped Diglett builds do not share one and a kit
+// fought under the wrong trait is a kit nobody can field.
+//
+// Three kits and not the four the investigation ran: dropping `split` entirely
+// reads bit for bit as the shipped kit against this opponent, which was worth
+// measuring once and is worth nothing to re-measure on every run — this package
+// already fights 800 duels for the whole build alone.
+func TestBurrowStaysOutOfTheSplitBuild(t *testing.T) {
+	shipped, _ := theDiglettKitAgainst(t, splitShipped, splitTrait, splitFoe)
+	hiding, burrows := theDiglettKitAgainst(t, splitHiding, splitTrait, splitFoe)
+	empty, _ := theDiglettKitAgainst(t, splitSlotEmpty, splitTrait, splitFoe)
+	t.Logf("against %s: shipped %d‰, burrow %d‰ over %d casts, slot empty %d‰",
+		splitFoe, shipped, hiding, burrows, empty)
+
+	// The premise, held rather than assumed.
+	if burrows == 0 {
+		t.Fatalf("the burrow kit never cast %q against %s, so the figures below are "+
+			"about a slot the rating declines rather than about hiding", burrowID, splitFoe)
+	}
+	if hiding >= shipped {
+		t.Errorf("the burrow kit reads %d‰ against %s where the shipped kit reads %d‰: "+
+			"hiding is no longer costing this build the matchup it was measured costing",
+			hiding, splitFoe, shipped)
+	}
+	// ⚠️ **The empty control is asserted against the SHIPPED kit and not against
+	// the burrow one**, and that is what keeps it from being the line above said
+	// twice: `hiding < shipped <= empty` gives `hiding < empty` for free, so a
+	// direct comparison of the two would be a bound a neighbour already covers.
+	// What it cannot give for free is this — the fourth slot of this build is
+	// worth nothing against this opponent, so the collapse is not a slot being
+	// spent. That is the whole reason `burrow` is a mistake here rather than a
+	// trade, and it is a fact about the data that nothing else holds.
+	if empty < shipped {
+		t.Errorf("the split build with its fourth slot EMPTY reads %d‰ against %s where "+
+			"the shipped kit reads %d‰, so that slot now pays for itself: the loss above "+
+			"is a slot being spent rather than hiding costing more than the slot is worth, "+
+			"and the burrow reading is an ordinary trade", empty, splitFoe, shipped)
+	}
+}
+
 // theWholeBuildAgainst fights one kit of the whole build against a shipped
 // character over the seed range, both ways round, and reports the win rate in
 // parts per thousand.
 //
+// It is the whole build's trait spelled once — everything above is a statement
+// about `diglett.whole`, which ships `elusive` — over the general instrument
+// below.
+func theWholeBuildAgainst(t *testing.T, kit []string, opponent string) int {
+	t.Helper()
+	rate, _ := theDiglettKitAgainst(t, kit, "elusive", opponent)
+	return rate
+}
+
+// theDiglettKitAgainst fights an arbitrary Diglett kit and trait against a
+// shipped character over the seed range, both ways round, and reports the win
+// rate in parts per thousand together with how many times the kit cast `burrow`.
+//
 // Both ways for the reason every duel here takes both: the turn queue breaks a
 // tie by enlistment, so a one-way figure carries the first slot's advantage into
 // the answer.
-func theWholeBuildAgainst(t *testing.T, kit []string, opponent string) int {
+//
+// ⚠️ **The trait is a parameter because the two shipped builds do not share
+// one** — `diglett.whole` carries `elusive` and `diglett.three` carries
+// `swiftness` — and a measurement of the split build fought under the whole
+// build's trait is a measurement of a kit nobody can field.
+//
+// ⚠️ **And the cast count is beside the rate because a rate cannot say whether a
+// build played its kit.** That is the whole of what RAT-006 found: a slot the
+// rating never spends and a slot it spends every battle read identically in a win
+// rate, so a figure about a hiding skill has to say how often the hiding
+// happened.
+func theDiglettKitAgainst(t *testing.T, kit []string, trait, opponent string) (int, int) {
 	t.Helper()
 	books, err := seed.Books()
 	if err != nil {
@@ -237,11 +333,11 @@ func theWholeBuildAgainst(t *testing.T, kit []string, opponent string) int {
 	}
 	stats, affinity, _, _ := fielded(t, "pokemon.diglett")
 	theirStats, theirAffinity, theirKit, theirTrait := fielded(t, opponent)
-	won, fought := 0, 0
+	won, fought, burrows := 0, 0, 0
 	for _, mineFirst := range []bool{true, false} {
 		for which := 1; which <= wholeSeeds; which++ {
 			mine := battle.Roster{ID: "mine", Side: hex.SideAlly, Slot: buildSlot,
-				Affinity: affinity, Stats: stats, Skills: kit, Passives: []string{"elusive"}}
+				Affinity: affinity, Stats: stats, Skills: kit, Passives: []string{trait}}
 			theirs := battle.Roster{ID: "theirs", Side: hex.SideEnemy, Slot: buildSlot,
 				Affinity: theirAffinity, Stats: theirStats, Skills: theirKit, Passives: theirTrait}
 			order := []battle.Roster{mine, theirs}
@@ -257,6 +353,15 @@ func theWholeBuildAgainst(t *testing.T, kit []string, opponent string) int {
 			if _, err := fight.RunToEnd(4000); err != nil {
 				t.Fatalf("run: %v", err)
 			}
+			// Read before the winner is asked, because the record is what the
+			// battle did rather than how it came out: a seed that ends
+			// undecided still cast whatever it cast.
+			for _, event := range fight.Drain() {
+				if event.Kind == battle.SkillUsed && event.Actor == "mine" &&
+					event.Skill == burrowID {
+					burrows++
+				}
+			}
 			winner, decided := fight.Winner()
 			if !decided {
 				continue
@@ -270,5 +375,5 @@ func theWholeBuildAgainst(t *testing.T, kit []string, opponent string) int {
 	if fought == 0 {
 		t.Fatalf("no battle against %s ended, so nothing was measured", opponent)
 	}
-	return won * 1000 / fought
+	return won * 1000 / fought, burrows
 }

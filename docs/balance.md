@@ -277,6 +277,36 @@ Rules for anything added to that file:
   second copy of its arithmetic*. Two available implementations, one broken rule
   each. And it costs roughly **×36 a turn** on the shipped kits, taking a
   20,000-battle sweep from ~7.5s to ~4.5 minutes.
+- **A hide is priced by what it denies, and what it denies is an AIM rather than a
+  turn — the second half of that is refused, with a measurement.** `pricing.hidden`
+  prices each enemy at what its best blow on the holder beats its best blow on
+  anybody else by, capped at `turnWorth` because a denied turn is an ordinary turn
+  of that enemy's, and converted into that enemy's own turns by `overTheWindow`
+  because the window counts down on the *holder's*. What it does **not** subtract
+  is what the enemy still gets out of the turn: an enemy that may not point at the
+  holder points at itself, and comes out of the window with a self-buff it kept.
+  ⚠️ **The obvious floor of `turnWorth(other)` is wrong** and stays refused, for a
+  reason worth knowing before somebody re-derives it: `turnWorth` walks only
+  `aimedAtAnEnemy` skills, which is *exactly* the set a hide removes, so flooring
+  the denial with it subtracts an alternative the enemy does not have. The
+  complement — `declared.Target == skill.Self`, the options `aims` still offers a
+  unit whose target is underground — **was** built, as `pricing.kept`, one ply
+  through the rating's own `rate` with no aim walk, no board advanced and nothing
+  rolled. It priced exactly what it was derived to: 550 against a denial of 1293,
+  a 43% cut.
+  ⚠️ **And it moved nothing, because the response is a cliff.** Sweeping every
+  divisor of the term on the shipped Diglett board reads 110‰, 145‰, 105‰, 175‰,
+  555‰ and then a flat 775‰ from `/6` to `/64` — so the hole is five or six times
+  rather than the thirty two samples suggested, the rate is **non-monotone** below
+  the cliff, and a partial correction cannot be read in a rate at all. Over twelve
+  rows the term moved no win rate and ten casts of 1586. It would have to be worth
+  about 1050 to reach the cliff and cannot be: a gated spender's fuel prices
+  through `selfSpendable` at `strike/5`, which is the right divisor for the term it
+  belongs to. **The expressible half is about half the size of the hole, by
+  construction**, and the remainder is deferral — a hide moves the blow rather than
+  removing it — which needs the horizon the bullet above refuses. So the term was
+  reverted and the deliverable is this paragraph plus
+  `TestBurrowStaysOutOfTheSplitBuild`. → `TODO.md` § `RAT-008`.
 - **An attack is charged for the reply it provokes.** `friendlyFire` is what a
   skill costs its own side; `replied` is what the units it hurts cost it back, and
   the two are subtracted side by side in `rate`. Before it, `price.go` did not

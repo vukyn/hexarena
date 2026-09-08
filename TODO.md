@@ -94,7 +94,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `RAT-005` | done | The rating could not price hiding — DONE |
 | `RAT-006` | done | Two self-cast skills in one kit — RE-MEASURED, and the premise did not surviv… |
 | `RAT-007` | refused | Waiting — passing a turn because the next one is worth more |
-| `RAT-008` | open | A denied enemy turn is not a lost enemy turn, and no factor closes the gap |
+| `RAT-008` | done | A denied enemy turn is not a lost enemy turn — REFUSED, with the measurement: the expressible half was built, moved nought and was reverted |
 | `PRG-001` | shipped | Progression |
 | `PRG-002` | refused | `at_stage` on a learnset entry |
 | `PRG-003` | refused | A character class |
@@ -4609,49 +4609,104 @@ is only so the shape is readable.
       turn is an ORDINARY turn of that enemy's — the correction `turnWorth` has
       been the written statement of since the `outrage` measurement. On the board
       above that takes `burrow` from 5502 to 1362.
-      → `RAT-008` for what is left, which is not a factor.
+      → `RAT-008` for what is left, which is not a factor — and which was chased,
+      measured and refused the same day, with the sweep that puts the size of the
+      remaining hole at five or six times rather than the thirty two samples had
+      suggested.
 
-- [ ] `RAT-008` **A denied enemy turn is not a lost enemy turn, and no factor closes
-      the gap.** Raised 2026-09-08 out of `RAT-006`, whose two corrections to
-      `pricing.hidden` are shipped and are **not** the size of the hole.
+- [x] `RAT-008` **A denied enemy turn is not a lost enemy turn — REFUSED, and the
+      refusal is a measurement.** Raised 2026-09-08 out of `RAT-006` and closed the
+      same day. The term the entry asked for was **written, measured and thrown
+      away**; what is left is this entry, the sweep below and one regression test.
+      The precedent is the `hidden` clamp in `README.md`: an argument that sounds
+      right is not a measurement, and an inert term is not kept as insurance.
 
-      **The measurement, on the Diglett board `RAT-006` tabulates.** With `hidden`
-      returning nought outright the split build reads **780‰** against Machop —
-      exactly the slot-empty control, because `burrow` is then never cast. Divided
-      by 64 it reads 775‰; by 4, 175‰; as shipped after both corrections, 110‰.
-      The term has to fall by roughly **thirty times** before the attacks win the
-      turn, and the two errors that were genuinely there are worth **four** between
-      them: probed on the opening board, `bestAgainst` 2751, `turnWorth` 1293,
-      windowed **1362** — against a best strike of **352** for the holder itself.
+      **First, the entry's own headline number is wrong, and the sweep is what said
+      so.** `RAT-008` read "roughly **thirty times**" off two samples — `/4` and
+      `/64` — with nothing taken in between. Sampled properly, on the Diglett split
+      build against Machop, 200 seeds both ways, casts beside the rate:
 
-      ⚠️ **So the remaining error is not a mis-scaled factor, it is the wrong
-      quantity.** Read the log and the mechanism is plain: while the hider is
-      under, Machop casts `brace`, three times, and comes out of the window with
-      its defence permanently raised. The turn was denied its *aim* and kept its
-      *value*. `hidden` prices what the enemy could not throw; what it should
-      price is the difference between the enemy's best turn with the holder
-      reachable and its best turn without — and the second half of that is one ply
-      of the opponent's own rating, which is a **search rather than a term** and is
-      the same refusal this file already makes for a rating that can see a second
-      turn.
+      | `hidden` divided by | rate | `burrow` cast |
+      |---|---|---|
+      | 1, as shipped | 110‰ | 1258 |
+      | 2 | **145‰** | 1258 |
+      | 3 | **105‰** | 1200 |
+      | 4 | 175‰ | 1200 |
+      | 5 | **555‰** | 926 |
+      | 6 | **775‰** | 814 |
+      | 8 | 775‰ | 814 |
+      | 16 | 775‰ | 814 |
+      | 32 | 775‰ | 802 |
+      | 64 | 775‰ | 802 |
+      | the term returning nought | 780‰ | 0 |
 
-      ⚠️ **`elsewhere` is the half that already does this and it cannot be
-      widened cheaply**: it reads the enemy's best strike at the holder's other
-      allies, so it is nought exactly when the holder is the only target — which is
-      every duel, and every board where a hide looks best. A floor of
-      `turnWorth(other)` was considered and refused on the reading: `turnWorth`
-      counts only enemy-aimed skills, and against a hidden holder in a one on one
-      the enemy cannot use any of them, so it would subtract an alternative the
-      enemy does not have.
+      ⚠️ **The hole is five or six times, not thirty, and it is a CLIFF rather
+      than a slope.** Everything from `/6` to `/64` reads the identical 775‰ —
+      `/64` was never a reading of "how far it must fall", it was a reading of the
+      plateau the collapse recovers onto at `/6`. And below the cliff the rate is
+      **non-monotone**: 110, 145, 105, 175. That is the shape a win rate has in a
+      price, which this file already says of `swiftness` and of the column bonus,
+      and it has a consequence that decides this item — **no partial correction to
+      this term can be seen in a rate at all.**
 
-      ⚠️ **Deferral is the other half and it is not modelled at all.** A hide
-      moves the enemy's blow later; it removes it only if the battle ends first,
-      which a one-turn evaluator cannot know. Both halves point at the same missing
-      machinery, which is why this is one item and not two.
+      **The term that was built.** `pricing.kept(unit)`: the best of an enemy's
+      **self-aimed** casts, priced through the rating's own `rate`, subtracted from
+      `lost` after the `turnWorth` cap. It is the exact complement of the floor the
+      entry below refused — `turnWorth` walks only `aimedAtAnEnemy` skills, which is
+      precisely the set a hide removes, and `kept` walks only
+      `declared.Target == skill.Self`, which is the set `aims` still offers a unit
+      whose target is underground. One ply, no aim walk, no board advanced, nothing
+      rolled, memoised per unit.
 
-      Until then `burrow` is over-priced in a duel and about right in a squad —
+      ⚠️ **It priced exactly what it was derived to price and moved nothing.**
+      Probed on the opening board: `kept(machop)` = **550**, taking `lost` from
+      1293 to **743** — a 43% cut, over half the distance to `/2`. Measured over
+      twelve rows (the four split kits against Machop, and the whole build with and
+      without `burrow` against Squirtle, Charmander, Machop and Gastly): **not one
+      win rate moved, in any row.** The only figure that moved anywhere was ten
+      `burrow` casts of 1586 in the Squirtle row — the one opponent carrying a
+      self-aimed skill of its own, `withdraw`, which is what says the term was live
+      and pointed at the right set rather than dead.
+
+      ⚠️ **And the cliff says why, arithmetically.** 743 is on the wrong side of
+      it: the recovery needs the term at about 1293/5, so `kept` would have to be
+      worth roughly **1050** rather than 550. It cannot be. `brace` prices through
+      `granted`'s Reserve arm into `selfSpendable`'s gated arm, which is
+      `strike(machop)/5` — a divisor that deliberately under-prices a gated
+      spender's fuel and is right to, for the term it belongs to. **The expressible
+      half of "the enemy keeps its turn" is about half the size of the hole, by
+      construction.** That is the finding: not that the term is wrong, but that the
+      correct term is too small to reach, and a term built to reach it would be a
+      number chosen to hit a target.
+
+      ⚠️ **The other half is DEFERRAL and it is refused for `RAT-007`'s reason.** A
+      hide does not remove the enemy's blow, it moves it later, and it removes it
+      only if the battle ends first — which needs a **horizon this rating does not
+      have**. `RAT-007` names the two available lookaheads and each breaks a rule of
+      `price.go`: one rolls, the other is a second copy of the resolving arithmetic.
+      `kept` was neither — same `rate`, same board, same turn — and that is exactly
+      why it could only reach the half that fits in one turn.
+
+      ⚠️ **`elsewhere` is not the way in either**, unchanged from the raising: it
+      reads the enemy's best strike at the holder's other allies, so it is nought
+      exactly when the holder is the only target — every duel, and every board
+      where a hide looks best.
+
+      **What is left in code is one test**,
+      `TestBurrowStaysOutOfTheSplitBuild` (`internal/seed/diglett_test.go`), which
+      holds the standing consequence: `burrow` in `diglett.three` reads below the
+      shipped kit AND the slot-empty control reads at or above it, so the loss is
+      hiding costing more than the slot is worth rather than a slot being spent.
+      Its premise — that the kit casts `burrow` at all — is asserted, because a rate
+      cannot say whether a build played its kit. Three mutations, three red: the
+      term deleted (the cast count goes to nought and the premise fires), the term
+      at `/6` (the shipped comparison fires), and the slot-empty control weakened
+      (the data claim fires).
+
+      `burrow` therefore stays over-priced in a duel and about right in a squad —
       `diglett.whole` plays it 7 times over the census boards and reads 317 of 440
-      against the cast — so the shipped catalogue is not carrying the defect.
+      against the cast — so the shipped catalogue is not carrying the defect, and
+      `TestEveryShippedBuildPlaysItsOwnKit` is what keeps that true.
 
 - [x] `FRG-003` **The cast census has no command — DONE.** `hexforge census <build>
       [--against SQUAD] [--seeds N]` prints the kit in its own order with a count
@@ -4700,6 +4755,15 @@ is only so the shape is readable.
       silent slot unmarked, the board unnamed, the walk never stopping early, the
       seeds printed from the flag default, and the subcommand off the dispatch
       table.
+
+      ⚠️ **A second caller wants a shape this does not have: a BUILD duelled
+      against a character.** `hexforge spar` duels *characters* on their learnset
+      kits and `Census` stands a build in a *squad*, so neither can field an
+      arbitrary kit in a one on one — which is the whole instrument `RAT-008` was
+      measured on, and it had to be written as a test helper
+      (`theDiglettKitAgainst`) because no command could do it. Worth folding in
+      here rather than raising separately: it is the same subcommand with the
+      opponent named instead of the squad.
 
 - [ ] `ENG-006` **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
       Built and measured on 2026-09-07 while closing the `reckless` item, reverted
