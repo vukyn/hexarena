@@ -4125,9 +4125,42 @@ is only so the shape is readable.
             3. The ordinary screen work: an entry in `everyScreen`, both language
                books, the width floor, and three goldens.
       - [ ] A chess clock — a budget per player rather than per turn.
-      - [ ] Prove the mirror across architectures: the same seed and the same
-            digest on amd64 and arm64. Friends are not all on one machine, and
-            this is the assumption the whole design rests on.
+      - [x] **Prove the mirror across architectures — DONE 2026-09-08.** The
+            shipped battle from seed 11 digests to
+            `3ed1b9ffd84ac1d1876530bc48a2bd893fa7f82afefeaa627d4cc2493cdecee0` on
+            **darwin/arm64 and darwin/amd64 alike**, 257 events each, and the
+            whole engine and protocol suite is green under both:
+            `internal/core`, `internal/seed`, `internal/wire`, `internal/room`,
+            `internal/socket`, `internal/draft`. `make cross-arch` is the run, and
+            it inverts GOARCH rather than fixing it, so it is "the other one" on
+            either kind of machine.
+
+            ⚠️ **The digest and not the existing goldens, and the difference is
+            what a match is decided by.** `TestBattleReplayGolden` already pins a
+            whole battle from seed 11 and would catch a divergence — but it pins
+            **rendered text**, which is one derivation away from what two peers
+            send each other: a change to how an event is *worded* moves that
+            golden and nothing about the protocol, and a change to how an event is
+            *marshalled* moves the digest and not necessarily the wording. The
+            digest is what `room.resolved` computes and what `socket.Mirror`
+            checks.
+
+            ⚠️ **On an Apple machine the other architecture runs under Rosetta,
+            and that is stated rather than glossed.** It is a real amd64 binary
+            executing amd64 instructions, so it exercises the compiler's amd64
+            code generation, its integer widths and its calling convention —
+            which is where an architecture difference in code like this would come
+            from. It is **not** a second silicon vendor, and a difference living in
+            Intel's hardware rather than in the generated code would not be caught.
+            For an engine with no floating point in it that gap is very small; it
+            is not nothing, and it is why the test names which of the two was
+            measured.
+
+            ⚠️ **A vacuity guard was written and deleted.** "The battle produced
+            some events" could not be shown to matter — a battle with none would
+            digest to sha256 of nothing and mismatch the constant like any other
+            divergence — and a mutation disabling it changed no test on either
+            architecture.
       - [ ] Read the balance again at 3v3. The screened formation was tuned at
             five a side, and a shorter board leaves a summon more free slots.
             ⚠️ **Five a side is held back until this is done** — `hexarena-host`
