@@ -298,10 +298,38 @@ type listener struct {
 	endings  chan ending
 }
 
-// ending is a match the transport saw finish, as the room's own last reading.
+// spentIn is how long each seat of a room has been waited on, read off the
+// transport's own clock.
+//
+// ⚠️ **It reaches into the server's table map, which nothing else in this suite
+// does**, and the reason is that the chess clock has no other observable: the
+// budget is spent inside the transport, the room is never told about it, and
+// what a client sees is a turn it did not get rather than a figure. A test that
+// measured it any other way would be measuring the consequence and calling it
+// the cause. The lock is the server's own.
+func (l *listener) spentIn(code wire.RoomCode) [seatsPerTable]time.Duration {
+	l.server.mu.Lock()
+	entry, running := l.server.tables[code]
+	l.server.mu.Unlock()
+	if !running {
+		return [seatsPerTable]time.Duration{}
+	}
+	return entry.allowance.Spent()
+}
+
+// ending is a match the transport saw finish, as the room's own last reading and
+// the clock it was played under.
+//
+// ⚠️ **The clock is captured HERE and not read afterwards**, because there is no
+// afterwards: a table is released when its last connection goes, which is the
+// same moment the match ends, so a test that waited for both loops to return and
+// then asked for the clock would be asking about a table the server has already
+// let go of. Measured — "no table is open for room …" is what that reads as. The
+// Finished callback is the one instant the transport is holding both.
 type ending struct {
 	code    wire.RoomCode
 	reading room.Reading
+	spent   [seatsPerTable]time.Duration
 }
 
 // listening starts a registry, a server over it and a loopback listener, and
@@ -321,7 +349,7 @@ func listening(t *testing.T, timings Timings) *listener {
 		Timings: timings,
 		Report:  held.failures.take,
 		Finished: func(code wire.RoomCode, reading room.Reading) {
-			held.endings <- ending{code: code, reading: reading}
+			held.endings <- ending{code: code, reading: reading, spent: held.spentIn(code)}
 		},
 	})
 	held.http = httptest.NewServer(held.server)

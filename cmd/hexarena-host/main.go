@@ -149,9 +149,12 @@ type settings struct {
 	format    int
 	battles   int
 	allowance int
-	turns     int
-	password  wire.Password
-	seed      uint64
+	// budget is the chess clock: seconds each player has for the whole match, and
+	// nought is no clock at all. → room.Config.Budget.
+	budget   int
+	turns    int
+	password wire.Password
+	seed     uint64
 	// draft says the two sides ban and pick before they fight, out of one shared
 	// pool, rather than each bringing a squad built at home.
 	//
@@ -209,8 +212,8 @@ type settings struct {
 // String is the settings as a line, with the password redacted through the type
 // that owns the redaction. → the note on the struct, for why this exists at all.
 func (s settings) String() string {
-	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, watch %t, browse %t, logs %q, version %t",
-		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.watch, s.browse, s.logs, s.version)
+	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, budget %d, turns %d, password %s, seed %d, draft %t, watch %t, browse %t, logs %q, version %t",
+		s.port, s.advertise, s.format, s.battles, s.allowance, s.budget, s.turns, s.password, s.seed, s.draft, s.watch, s.browse, s.logs, s.version)
 }
 
 // GoString is the same for %#v, which does not go through String.
@@ -291,6 +294,7 @@ func flags(chosen *settings) *flag.FlagSet {
 	set.IntVar(&chosen.battles, "battles", 1, "battles in the series: 1 or 3")
 	set.IntVar(&chosen.allowance, "allowance", room.DefaultAllowance, "seconds a player has to answer one prompt")
 	set.IntVar(&chosen.turns, "turns", room.DefaultTurnCap, "turns one battle may open before the room stops asking")
+	set.IntVar(&chosen.budget, "budget", 0, "seconds each player has for the WHOLE match; 0 is no clock, and the per-turn allowance still applies")
 	set.Func("password", "a gate against strangers on the network; NOT security, and visible in ps", func(given string) error {
 		chosen.password = wire.Password(given)
 		return nil
@@ -527,6 +531,7 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 		Format:    wire.Format(chosen.format),
 		Battles:   chosen.battles,
 		Allowance: chosen.allowance,
+		Budget:    chosen.budget,
 		Seed:      chosen.seed,
 		TurnCap:   chosen.turns,
 		Password:  chosen.password,
@@ -750,6 +755,15 @@ func banner(held *hosted, how string, out io.Writer) {
 			held.announceErr)
 	}
 	fmt.Fprintf(out, "  allowance   %ds a turn, %d turns a battle at most\n", held.config.Allowance, held.config.TurnCap)
+	// ⚠️ **Drawn only when there is one**, for the draft and watch lines' reason:
+	// a line every ordinary host reads past is how the one that matters stops
+	// being read. What it has to say is that the two clocks BOTH apply — a host
+	// who set a budget and expects it to replace the allowance would otherwise
+	// find turns still cut off at ninety seconds.
+	if held.config.Budget > 0 {
+		fmt.Fprintf(out, "  budget      %ds each for the whole match, on top of the allowance above\n",
+			held.config.Budget)
+	}
 	fmt.Fprintf(out, "  seed        %d\n", held.config.Seed)
 	fmt.Fprintf(out, "  password    %s\n", passwordLine(held.config.Password))
 	// The two numbers a refused joiner has to compare against their own. A peer

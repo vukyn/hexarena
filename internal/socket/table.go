@@ -338,6 +338,22 @@ func (t *table) ended(code wire.RoomCode, reading room.Reading, tell func(wire.R
 type allowance struct {
 	mu    sync.Mutex
 	timer *time.Timer
+	// spent is how long each seat has been kept waiting across the whole match,
+	// and armedSeat with armedAt is the stretch currently being counted.
+	//
+	// ⚠️ **A seat is charged for the time it was ASKED, not for the length the
+	// timer was armed with**, which is the whole difference between a chess clock
+	// and a per-turn allowance. A player who answers in five seconds of a ninety
+	// second allowance has spent five, and charging the armed length would spend
+	// a whole match's budget in a handful of prompt turns.
+	//
+	// ⚠️ They live on this struct rather than on the table because this is what
+	// already knows when a clock started: `set` is the one place a seat begins
+	// and stops being waited on, so the charge has exactly one site and cannot
+	// drift from the arming.
+	spent     [seatsPerTable]time.Duration
+	armedSeat wire.Seat
+	armedAt   time.Time
 	// generation is what makes a stale fire silent. A timer that has already
 	// fired cannot be stopped, so its callback may still run after the seat has
 	// answered; comparing the generation it was armed under against the current
@@ -390,9 +406,34 @@ func (a *allowance) set(reading room.Reading, only wire.Seat, fire func(wire.Sea
 		a.timer.Stop()
 		a.timer = nil
 	}
+	// Whatever was being waited on stops being waited on here, so this is where
+	// it is charged — before anything decides what to arm next, so a seat asked
+	// twice running is charged for the first stretch rather than having it
+	// overwritten.
+	a.charge()
 	if !waiting || length <= 0 || fire == nil {
 		return
 	}
+	// ⚠️ **The shorter of the two, which is what makes the budget a budget.** The
+	// allowance bounds one turn and the budget bounds the match; a clock armed
+	// for the allowance alone would let a player with four seconds left hold a
+	// prompt for ninety. A budget already spent leaves nothing to arm for, and
+	// that case is a timeout the moment the prompt opens rather than a hang —
+	// which is what "running out is not a forfeit" means in practice, because the
+	// room then passes that turn like any other timeout.
+	if budget := Allowance(reading.Config.Budget); budget > 0 {
+		if left := budget - a.spentBy(seat); left < length {
+			length = left
+		}
+		if length <= 0 {
+			// Nothing left at all. Arming a zero timer would be a fire on the
+			// next tick anyway; a tiny one keeps every path through this function
+			// the same shape and keeps the fire on the timer's goroutine rather
+			// than on this one, which is the ordering everything below assumes.
+			length = time.Millisecond
+		}
+	}
+	a.armedSeat, a.armedAt = seat, time.Now()
 	armed := a.generation
 	a.timer = time.AfterFunc(length, func() {
 		a.mu.Lock()
@@ -403,6 +444,45 @@ func (a *allowance) set(reading room.Reading, only wire.Seat, fire func(wire.Sea
 		}
 		fire(seat)
 	})
+}
+
+// charge adds the stretch just ended to the seat that was being waited on. The
+// caller holds the mutex.
+//
+// A zero armedAt is nothing being waited on, which is every call before the first
+// prompt and every call after a match ends.
+func (a *allowance) charge() {
+	index, seated := indexOfSeat(a.armedSeat)
+	if !seated || a.armedAt.IsZero() {
+		a.armedSeat, a.armedAt = "", time.Time{}
+		return
+	}
+	a.spent[index] += time.Since(a.armedAt)
+	a.armedSeat, a.armedAt = "", time.Time{}
+}
+
+// spentBy is how long one seat has been kept waiting so far. The caller holds
+// the mutex.
+func (a *allowance) spentBy(seat wire.Seat) time.Duration {
+	index, seated := indexOfSeat(seat)
+	if !seated {
+		return 0
+	}
+	return a.spent[index]
+}
+
+// Spent is how long each seat has been waited on across the match, for a caller
+// that has to report a clock. Seats are in the order the room hands them out.
+func (a *allowance) Spent() [seatsPerTable]time.Duration {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	out := a.spent
+	// The stretch in flight is included, because a reader asking "how much has
+	// this seat used" while it is being asked wants the answer that includes now.
+	if index, seated := indexOfSeat(a.armedSeat); seated && !a.armedAt.IsZero() {
+		out[index] += time.Since(a.armedAt)
+	}
+	return out
 }
 
 // armed is whether a timer is in place and the generation it would fire under,
@@ -427,6 +507,7 @@ func (a *allowance) stop() {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.generation++
+	a.charge()
 	if a.timer != nil {
 		a.timer.Stop()
 		a.timer = nil

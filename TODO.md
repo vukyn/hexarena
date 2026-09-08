@@ -4322,7 +4322,62 @@ is only so the shape is readable.
                to check their network for a problem that is on their own machine.
             3. The ordinary screen work: an entry in `everyScreen`, both language
                books, the width floor, and three goldens.
-      - [ ] A chess clock — a budget per player rather than per turn.
+      - [x] **A chess clock — DONE 2026-09-08.** `hexarena-host -budget N` gives
+            each player N seconds for the **whole match**, counted only while the
+            room is waiting on them. Nought is no clock, which is what every room
+            had before and is still the default.
+
+            ⚠️ **It does NOT replace the per-turn allowance; both apply and the
+            shorter wins.** They answer different questions — the allowance stops
+            one turn hanging a match, the budget stops a whole match being spent
+            one legal turn at a time — and a room with a budget and no allowance
+            would let a player hold a single turn for the length of their entire
+            clock. The banner says so, because a host who set a budget expecting
+            it to replace the allowance would otherwise find turns still cut off
+            at ninety seconds with nothing explaining it.
+
+            ⚠️ **The room does not count it and cannot.** `internal/room` has no
+            clock — which is what lets a match be driven a message at a time in a
+            test — so `Config.Budget` is a number the room passes on and the
+            transport spends, exactly as it spends the allowance. The room learns
+            the result the way it already does: a TimedOut input arriving.
+
+            ⚠️ **A seat is charged the time it was ASKED, not the length the timer
+            was armed with.** That is the whole difference between a chess clock
+            and a per-turn allowance: a player who answers in five seconds of a
+            ninety-second allowance has spent five, and charging the armed length
+            would spend a match's budget in a handful of prompts. Measured on a
+            whole 3v3: **91 turns over 19ms, host charged 7ms and guest 10ms**,
+            where the wrong arithmetic would have read 91 × 90s.
+
+            ⚠️ **Running out is not a forfeit**, which is the decision the
+            allowance already took: a seat with nothing left times out the moment
+            each prompt opens, so its units pass and the board kills them. Nobody
+            is declared to have lost on time — the room has no verdict for it, and
+            a match against a spent clock ends `won` or `drawn` and never
+            `abandoned`. → `TestASpentBudgetTimesOutEveryTurnRatherThanForfeiting`.
+
+            ⚠️ **The clamp is the promise and it took a test of its own.** Every
+            other test here passes with it deleted — measured — because they
+            either have a budget too generous to bite or an allowance already
+            shorter than the budget. What separates them is a player who keeps
+            thinking: with the clamp each prompt is armed for whatever is left and
+            the total stops at the budget; without it each prompt is armed for the
+            whole allowance again. `TestASeatIsNeverChargedMoreThanItsBudget`.
+
+            ⚠️ **The clock had to be captured at the ENDING and not read after
+            it.** A table is released when its last connection goes, which is the
+            same moment the match ends — so a test that waited for both loops and
+            then asked read "no table is open for room …". The Finished callback
+            is the one instant the transport holds both.
+
+            **What is left: a client that draws it.** `wire.Welcome.Budget` rides
+            to both clients precisely so one can — a number the room enforces and
+            never tells anybody about is a match lost to something invisible — and
+            nothing draws it yet. ⚠️ That is not a small addition: the battle
+            screen's body is **17 rows short at the floor before anything new**
+            (→ `playFit`'s re-taken budget above), and the per-turn countdown went
+            onto the heading row for exactly that reason.
       - [x] **Prove the mirror across architectures — DONE 2026-09-08.** The
             shipped battle from seed 11 digests to
             `3ed1b9ffd84ac1d1876530bc48a2bd893fa7f82afefeaa627d4cc2493cdecee0` on

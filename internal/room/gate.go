@@ -254,6 +254,7 @@ func (r *Room) welcomeTo(seat wire.Seat, token wire.SeatToken) []Outbound {
 		Format:    r.config.Format,
 		Battles:   r.config.Battles,
 		Allowance: r.config.Allowance,
+		Budget:    r.config.Budget,
 		TurnCap:   r.config.TurnCap,
 		Drafts:    r.config.Drafts,
 		Seat:      seat,

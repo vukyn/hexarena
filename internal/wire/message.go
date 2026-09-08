@@ -310,6 +310,24 @@ type Welcome struct {
 	// of a clock. That is why it sits here beside the format and why no
 	// battle-carrying message holds a clock reading at all.
 	Allowance int `json:"allowance"`
+	// Budget is the **chess clock**: how many seconds this client has for the
+	// whole match, counted only while the room is waiting on it. Nought is no
+	// budget, which is every room that has not asked for one.
+	//
+	// ⚠️ **It is here for the same reason TurnCap is, and the reason is not
+	// symmetry.** A client that did not know its budget would watch a per-turn
+	// countdown reach zero on a turn it had ninety seconds for, having quietly
+	// run out of clock two turns earlier — a match decided by a number nothing on
+	// its screen could show. The allowance tells a client how long *this* turn
+	// is; this tells it how long the rest of them are.
+	//
+	// ⚠️ **It is the same number for both seats and is not a remaining count.** A
+	// welcome is sent once, at the join, so a figure that counted down would be
+	// stale the moment it arrived; what each side has *left* is the client's own
+	// arithmetic over the turns it has spent, exactly as the per-turn countdown
+	// is. → room.Config.Budget, where the rule is, and internal/socket, which
+	// enforces it.
+	Budget int `json:"budget,omitempty"`
 	// TurnCap is how many turns one battle may open before the room stops
 	// asking, so a runaway cannot hold two people at a board for ever.
 	//
