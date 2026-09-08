@@ -3193,7 +3193,12 @@ restates the redaction itself now.
   left is the listing on the client, so a player picks a room instead of being
   read a code. → `internal/discovery`, and `TODO.md` for the platform note that
   makes the client half worth doing carefully.
-- **A chess clock** — a total budget per player rather than a budget per turn.
+- **A client that draws the chess clock.** The clock itself ships:
+  `hexarena-host -budget N` gives each player N seconds for the whole match, on
+  top of the per-turn allowance, and a seat that runs out times out on every
+  prompt rather than forfeiting. `wire.Welcome.Budget` rides to both clients so
+  one can count it down, and nothing draws it yet — the battle screen's body is
+  already seventeen rows short at the floor. → `TODO.md`.
 - **TLS.** On a LAN it costs more than it is worth, and saying the password is not
   security is more honest than a self-signed certificate that implies it is.
 - **NAT traversal or a relay.** The premise is one network.

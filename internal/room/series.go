@@ -91,6 +91,34 @@ type Config struct {
 	// it a battle was capped. → wire.Welcome.TurnCap, which carries the three
 	// alternatives that were refused.
 	TurnCap int
+	// Budget is a **chess clock**: how many seconds each player has for the whole
+	// match, counted only while the room is waiting on them. Nought is no budget
+	// at all, which is the shipped default and the arrangement every room had
+	// before this field.
+	//
+	// ⚠️ **It does not replace the per-turn allowance; both apply and the shorter
+	// one wins.** They answer different questions — the allowance stops one turn
+	// hanging a match, the budget stops a whole match being spent one legal turn
+	// at a time — and a room with a budget and no allowance would let a player
+	// hold a single turn for the length of their entire clock.
+	//
+	// ⚠️ **The room does not count it and cannot.** Every field here is a number
+	// the room passes on rather than reads: internal/room has no clock, which is
+	// what lets a match be driven a message at a time in a test. The transport
+	// spends the budget exactly as it spends the allowance, and the room learns
+	// the result the same way — a TimedOut input arriving.
+	//
+	// ⚠️ **Running out is not a forfeit**, which is the decision the allowance
+	// already took: a seat with nothing left times out on every prompt from then
+	// on, so its units pass and the board kills them. Nobody is declared to have
+	// lost on time — they lose on the board, which is where this game decides
+	// things. → TestASeatThatNeverAnswersLosesOnTheBoardRatherThanByForfeit.
+	//
+	// ⚠️ **It rides on wire.Welcome**, beside the allowance and the cap and for
+	// the same reason: a client counts its own clock down so a player can watch
+	// it, and a number the room enforced and never told anybody about would be a
+	// match lost to something invisible.
+	Budget int
 	// Password keeps strangers in the house off the board and is **not**
 	// security. Empty is a room with none, which accepts any hello that gets
 	// past the version gate.
@@ -173,6 +201,21 @@ func (c Config) Validate() error {
 	}
 	if c.TurnCap <= 0 {
 		return fmt.Errorf("a turn cap of %d ends every battle before it starts", c.TurnCap)
+	}
+	// ⚠️ **Nought is not refused and is the ordinary case** — it is "no clock",
+	// which is what every room had before the budget existed. What is refused is
+	// a negative, which is a typo rather than a meaning, and a budget shorter
+	// than one turn's allowance, which is a room where the first prompt spends
+	// the whole clock and every turn after it times out. That second one is a
+	// bounds check rather than a design decision: nobody wants it, and it is the
+	// shape a host reaches by typing seconds where they meant minutes.
+	if c.Budget < 0 {
+		return fmt.Errorf("a budget of %d seconds is not a clock", c.Budget)
+	}
+	if c.Budget > 0 && c.Budget < c.Allowance {
+		return fmt.Errorf("a budget of %ds is shorter than the %ds one turn is allowed, so the "+
+			"first prompt would spend the whole clock and every turn after it would time out",
+			c.Budget, c.Allowance)
 	}
 	return nil
 }
