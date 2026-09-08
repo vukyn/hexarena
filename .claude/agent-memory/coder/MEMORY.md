@@ -55,3 +55,5 @@ here now, and new ones belong here.
 - [hexarena forge + TUI](project_hexarena_forge_tui.md) — 1st third-party dep (bubbletea) confined to cmd/hexforge-tui by an import-graph test; bubbletea pty startup queries hang headless tests
 - [hexarena onboarding fixes](project_hexarena_onboarding_fixes.md) — LICENSE/.claude ignore/replay notice/go 1.27.0/Makefile 2026-08-24; govulncheck must be rebuilt after a Go bump
 - [hexarena refusal wordings](project_hexarena_refusal_wordings.md) — Block wordings + OptionRefusal + gated opening; ⚠️ distinctness-only sweep measured nothing
+- [Stage the bytes, not the directory](feedback_stage_the_bytes_not_the_directory.md) — a per-process fixture in memory has no cleanup owner and no cross-run staleness; ⚠️ a share chain kills a TempDir-skipping guard
+- [Two test binaries beat stashing](feedback_two_test_binaries_beat_stashing.md) — `go test -c` both sides, interleave, `=== RUN` counts free; ⚠️ run from the package dir

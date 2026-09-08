@@ -78,14 +78,29 @@ var (
 // that changed what is under test.
 func CopyData(from, to string) (DataCopy, error) {
 	var done DataCopy
-	if err := copyInto(&done, from, to, false); err != nil {
+	if err := copyInto(&done, from, to, false, wantAll); err != nil {
 		return done, err
 	}
 	return done, nil
 }
 
+// want says which halves of a data directory a copy is for.
+//
+// The split exists because Data below builds a scratch directory out of two
+// different sources: the books come from the staged injection, which is held in
+// memory, and the art comes straight from the shipped directory. Sharing the art
+// from anywhere else would put a second link in the chain, and the guard that
+// catches a test writing through a share is keyed on the source it was shared
+// from — see rememberArt.
+type want int
+
+const (
+	wantAll   want = iota // the books and the art: what CopyData does
+	wantBooks             // the books alone, for a directory that is to hold no picture
+)
+
 // copyInto is CopyData over one directory, told whether it is inside the art.
-func copyInto(done *DataCopy, from, to string, art bool) error {
+func copyInto(done *DataCopy, from, to string, art bool, asked want) error {
 	entries, err := os.ReadDir(from)
 	if err != nil {
 		return fmt.Errorf("read %s: %w", from, err)
@@ -93,10 +108,13 @@ func copyInto(done *DataCopy, from, to string, art bool) error {
 	for _, entry := range entries {
 		source, destination := filepath.Join(from, entry.Name()), filepath.Join(to, entry.Name())
 		if entry.IsDir() {
+			if asked == wantBooks && !art && entry.Name() == ArtDir {
+				continue
+			}
 			if err := os.MkdirAll(destination, 0o755); err != nil {
 				return fmt.Errorf("create %s: %w", destination, err)
 			}
-			if err := copyInto(done, source, destination, art || entry.Name() == ArtDir); err != nil {
+			if err := copyInto(done, source, destination, art || entry.Name() == ArtDir, asked); err != nil {
 				return err
 			}
 			continue
@@ -174,6 +192,31 @@ func copyFile(done *DataCopy, source, destination string, art bool) error {
 		return fmt.Errorf("stamp %s: %w", destination, err)
 	}
 	return nil
+}
+
+// shareArt gives a directory the shipped pictures without copying any of them.
+//
+// It is CopyData's art half on its own, for the caller whose books came from
+// somewhere else. The source is always the shipped directory, never a staged or
+// scratch one: rememberArt remembers the file a picture was shared FROM, so a
+// chain of shares would leave the committed file with nothing watching it.
+func shareArt(done *DataCopy, from, to string) error {
+	source := filepath.Join(from, ArtDir)
+	info, err := os.Stat(source)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("stat %s: %w", source, err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("%s is not a directory", source)
+	}
+	destination := filepath.Join(to, ArtDir)
+	if err := os.MkdirAll(destination, 0o755); err != nil {
+		return fmt.Errorf("create %s: %w", destination, err)
+	}
+	return copyInto(done, source, destination, true, wantAll)
 }
 
 // PrivateArt takes one picture out of the share, so a test may write to it.

@@ -59,14 +59,13 @@ func scratchData(t *testing.T) string {
 func scratchDataFrom(t *testing.T, shipped string) string {
 	t.Helper()
 	target := t.TempDir()
-	copyTree(t, shipped, target)
+	if _, err := testfixture.Data(target, shipped, func(dir string) (testfixture.Saver, error) {
+		return forge.Load(dir)
+	}); err != nil {
+		t.Fatalf("build a scratch data directory: %v", err)
+	}
 	if err := os.Remove(filepath.Join(target, "squads.json")); err != nil && !os.IsNotExist(err) {
 		t.Fatalf("clear the squad catalogue: %v", err)
-	}
-	if err := testfixture.Inject(target, func() (testfixture.Saver, error) {
-		return forge.Load(target)
-	}); err != nil {
-		t.Fatalf("inject the fixture: %v", err)
 	}
 	return target
 }

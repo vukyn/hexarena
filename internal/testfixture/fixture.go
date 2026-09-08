@@ -1242,31 +1242,63 @@ type Saver interface {
 	SkillDeps() skill.Deps
 }
 
-// Inject adds the fixture to a data directory that already holds the shipped
-// books, and writes the art the fixture characters name.
+// FixtureArt is the pictures the fixture characters name, under ArtDir.
+//
+// bloom.svg is the grown form's own picture. The bench carries one so that
+// per-stage art is exercised by every test that walks this cast, rather than
+// only by the one test written for it.
+var FixtureArt = []string{"fixture/adept.svg", "fixture/sprout.svg", "fixture/bloom.svg"}
+
+// WriteArt writes the fixture's own pictures into a data directory.
+//
+// ⚠️ **It is separate from Inject because the books are staged once per process
+// and these pictures are not.** Data below writes them into every scratch
+// directory, so a test that rewrites one reaches nothing but its own copy —
+// which is what they were before the injection was staged, and what
+// TestThePreviewRasterisesOncePerFileAndSize was written over. Sharing them
+// instead would be cheap and would quietly turn the fixture's art into a file
+// two tests could fight over.
+//
+// Each is removed before it is written, for the reason PrivateArt does the same:
+// writing over a link writes through it. Nothing shares these today, and "today"
+// is not a property.
+func WriteArt(dir string) error {
+	for _, name := range FixtureArt {
+		written := filepath.Join(dir, ArtDir, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(written), 0o755); err != nil {
+			return fmt.Errorf("make %s: %w", filepath.Dir(written), err)
+		}
+		if err := os.Remove(written); err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("unshare %s: %w", written, err)
+		}
+		if err := os.WriteFile(written, []byte(Art), 0o644); err != nil {
+			return fmt.Errorf("write %s: %w", written, err)
+		}
+	}
+	return nil
+}
+
+// Inject adds the fixture BOOKS to a data directory that already holds the
+// shipped ones. WriteArt is the pictures, and Data is both.
 //
 // reload hands back a library reading that directory, and is called again before
 // every write: each save rewrites a whole book, so a library opened once would
-// hold a stale copy of the file it is about to replace.
+// hold a stale copy of the file it is about to replace. That reload is the
+// expensive part of this — it re-parses every book each time — which is why Data
+// runs this once a process rather than once a scratch directory.
 //
 // It writes through the library rather than editing the JSON for two reasons.
 // The files stay in exactly the form Marshal produces, which a test asserts
 // about the shipped cast, and the fixture is validated the way real data is -- a
 // fixture the tool would refuse is not one worth testing with.
+//
+// ⚠️ **This is DETERMINISTIC, and staging it rests on that.** It reads no clock,
+// draws no randomness and generates no identifier: what it writes is the fixed
+// package constants below put through the library's own savers. So its output is
+// a pure function of the books it is given and those constants — which is the
+// precondition for building it once and handing out copies, and the reason
+// stageKey hashes exactly those two things.
 func Inject(dir string, reload func() (Saver, error)) error {
-	art := filepath.Join(dir, ArtDir, "fixture")
-	if err := os.MkdirAll(art, 0o755); err != nil {
-		return fmt.Errorf("make %s: %w", art, err)
-	}
-	// bloom.svg is the grown form's own picture. The bench carries one so that
-	// per-stage art is exercised by every test that walks this cast, rather than
-	// only by the one test written for it.
-	for _, name := range []string{"adept.svg", "sprout.svg", "bloom.svg"} {
-		if err := os.WriteFile(filepath.Join(art, name), []byte(Art), 0o644); err != nil {
-			return fmt.Errorf("write %s: %w", name, err)
-		}
-	}
-
 	// Skills first, then the presets whose kits name them, then the origins and
 	// the characters that name both: each book validates against the ones under
 	// it, so a fixture written out of order is refused by its own parser.

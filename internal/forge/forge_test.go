@@ -35,14 +35,13 @@ const shippedDataDir = "../seed/data"
 func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
-	copyTree(t, shippedDataDir, target)
 	// The fixture is what the tests name. Before this they named the characters
 	// the repository shipped, so editing the real cast broke tests that had
 	// nothing to do with it.
-	if err := testfixture.Inject(target, func() (testfixture.Saver, error) {
-		return Load(target)
+	if _, err := testfixture.Data(target, shippedDataDir, func(dir string) (testfixture.Saver, error) {
+		return Load(dir)
 	}); err != nil {
-		t.Fatalf("inject the fixture: %v", err)
+		t.Fatalf("build a scratch data directory: %v", err)
 	}
 	return target
 }
