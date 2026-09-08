@@ -99,12 +99,13 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `PRG-002` | refused | `at_stage` on a learnset entry |
 | `PRG-003` | refused | A character class |
 | `DAT-001` | shipped | Balance |
-| `DAT-002` | open | Squad composition bonuses: the mechanism, the first TWO bonuses and the refer… |
+| `DAT-002` | open | Squad composition bonuses: the mechanism, both axes, the reference screen and… |
 | `DAT-003` | done | A `hexforge new` churned `screens.golden` — DONE, by the third option this en… |
 | `DAT-004` | done | A golden holds a state and says nothing about the path to it — SWEPT, and the… |
 | `DAT-005` | done | `reckless` is the dragon build's 22.1% — CLOSED. All four levers are measured… |
 | `DAT-006` | refused | Rebalancing `reckless` |
 | `DAT-007` | open | The area axis is priced far below single-target burst, and a kit made of it h… |
+| `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 for… |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
 | `SCR-001` | shipped | Reference screens |
@@ -332,6 +333,70 @@ is only so the shape is readable.
 
       Until then, the package needs an explicit `-timeout` above 600s wherever it
       is run, and `make check` is the place that does not pass one.
+
+- [ ] `DAT-008` ⚠️ **`bedrock` and `phalanx` are the same effect on two different
+      axes, and decision 5 of `DAT-002` forbids exactly that.** Raised 2026-09-08
+      out of `DAT-002` while refreshing it; found by reading the shipped table, not
+      by a test.
+
+      `ground_root` grants `bedrock` — defence +100‰, up to 2 stacks, permanent.
+      `same_column` grants `phalanx` — defence +100‰, up to 2 stacks, permanent.
+      Byte for byte the same modifier under two names. Derive it rather than
+      trusting this paragraph:
+
+      ```sh
+      jq -r '.kinds[]|select(.id=="bedrock" or .id=="phalanx")' \
+        internal/seed/data/statuses.json
+      ```
+
+      ⚠️ **Decision 5 is the rule this breaks, and it is worded for exactly this
+      case**: *"each must do something no other bonus does … two bonuses that come
+      to the same thing with different words are the 'two callers wording one
+      choice' mistake, at the level of a feature instead of a string."* A player
+      who has both cannot tell them apart on the board — the effects column reads
+      `phalanx x2 (always), bedrock x2 (always)` and both lines mean *more
+      defence*. What is distinct is only how the two are **earned**, and the whole
+      argument for the per-element table was that a bonus should say what its tribe
+      is FOR.
+
+      ⚠️ **It is not a duplicate-status bug and must not be "fixed" by merging
+      them.** The two are earned on different axes and stack, so collapsing them
+      into one status would halve what a stacked column of one element gets, which
+      is a balance change wearing a tidy-up. The question is which of the two
+      changes its *effect*.
+
+      **Three ways out, none measured yet:**
+      1. **Re-point `ground_root`.** Ground is the element the chart makes the
+         sturdiest already, so doubling down on defence is the least distinct
+         choice available to it. A ground effect nothing else has — something about
+         being immovable once the board can move (`ENG-007`), or a floor under
+         incoming damage — would be the shape.
+      2. **Re-point `same_column`.** A formation bonus paying a *stat* is the odd
+         one out: every element bonus now pays a stat or a share, and the column
+         axis is the only one about where a unit stands. Something that reads as
+         formation — reach, or the rank rule `range` already counts — would make it
+         the only bonus about the board rather than about the units.
+      3. **Accept the collision and write down why.** Defensible if the two are
+         never held together in practice, which is checkable: no shipped squad
+         reaches the column rung at all, and only ground squads reach `bedrock`.
+         ⚠️ But "no shipped squad" is a statement about the starter sides and not
+         about what a player can build, and this entry has been wrong that way
+         before — see `DAT-002`'s *"one carrier" is a statement about a DRAFTED
+         squad*.
+
+      ⚠️ **Whatever ships needs the pricing switch, not a sweep of both.** The
+      control is the same squad, same members, same seeds, with **one** bonus
+      toggled (`forge.FightSquads` takes a set to disable) — a run with both off
+      measures the pair and can price neither. → `DAT-002` decision 4.
+
+      **A test is owed either way.** Nothing today would notice a third bonus
+      arriving with a fourth copy of defence +100‰: the distinctness rule is prose
+      in this file and prose in `CLAUDE.md`, and every other rule about the table —
+      reachability, coverage, no blanket — is held by a property test in
+      `internal/seed/elementbonus_test.go`. A guard that refuses two bonuses whose
+      grants resolve to the same effect is the missing one, and it is what turns
+      option 3 from "we decided not to look" into "we decided, and the next
+      collision fails".
 
 - [ ] `DAT-007` ⚠️ **The area axis is priced far below single-target burst, and a kit
       made of it has no finisher. `pokemon.igglybuff` shipped weak on purpose —
@@ -3459,8 +3524,56 @@ is only so the shape is readable.
       may be reused, and § *Grow the cast* above says why that is not a problem.
       Authoring one is the *Grow the cast* item above, not a separate task — this
       entry is the queue, not the work.
-- [ ] `DAT-002` **Squad composition bonuses: the mechanism, the first TWO bonuses and the
-      reference screen are BUILT; what is left is the top rungs.**
+- [ ] `DAT-002` **Squad composition bonuses: the mechanism, both axes, the reference
+      screen and the WHOLE per-element table are BUILT. What is left is the top
+      rungs, one uncovered element, and one collision.**
+
+      **State on 2026-09-08.** Ten bonuses ship: one on the column axis and **nine
+      of the ten fieldable elements**, each saying what its tribe is FOR rather
+      than that sharing is worth something.
+
+      | bonus | axis | value | grant | rungs |
+      |---|---|---|---|---|
+      | `same_column` | column | any | `phalanx` defence +100‰ | 3 |
+      | `fire_forge` | element | fire | `emberheart` attack +100‰ | 2 |
+      | `ground_root` | element | ground | `bedrock` defence +100‰ | 2, 3 |
+      | `wind_gust` | element | wind | `tailwind` dodge +100‰ | 2 |
+      | `electric_surge` | element | electric | `galvanise` speed **+50‰** | 2 |
+      | `metal_ward` | element | metal | `ironhide` ward 200‰ | 2 |
+      | `dark_edge` | element | dark | `keenedge` pierce +150‰ | 2, 3 |
+      | `water_tide` | element | water | `tidewell` healing received +250‰ | 2, 3 |
+      | `grass_growth` | element | grass | `heartwood` max health +100‰ | 2 |
+      | `light_gleam` | element | light | `limelight` accuracy +100‰ | 2 |
+
+      Only the three-carrier elements — dark, ground and water — declare a rung at
+      3, and `same_column` declares **only** a rung at 3: a side has to stack all of
+      itself in one column to be paid for the shape. ⚠️ **`electric_surge` is half the others and the
+      reason is measured**: `quickened` — a whole trait — sits at 80, and 150‰ buys
+      14.8% more turns against 80‰'s 7.9%, so an element bonus level with the trait
+      would make the trait a trap. That is
+      `TestASpeedTraitIsPricedBelowTheOtherPermanentBuffs` restated at the level of
+      a bonus.
+
+      ⚠️ **`same_element` was RETIRED on 2026-09-08 (#356), and its measurements are
+      kept below because they are the reason the table exists.** A blanket paying
+      for sharing *anything* and a table saying what each tribe is FOR are two
+      answers to one question; both paying at once meant a tribe collected its own
+      bonus **and** a constant on top, so what a player chose between was every
+      element plus the same attack buff. `TestNoBlanketElementBonusShips` holds the
+      retirement and **names no id**, because the thing refused is the shape.
+
+      ⚠️ **`grass_growth` needed a mechanism where the seven before it needed a row
+      of JSON** (#353). `Battle.MaxHP` read `Unit.Base[progression.HP]`, so a health
+      term on a status was a number nothing read and `status.ParseBook` refused one
+      outright. It resolves through the modifiers now — a method on the *battle*,
+      because saturation needs the ceilings and the bounds, and storing the figure
+      on the unit is what `Unit.Base`'s own comment rules out. The blanket refusal
+      became three narrower ones, which together are what let current health stay
+      put when a maximum moves: permanent only, positive only, and **not from a
+      gated trait** — that third leg is invisible from `status.ParseBook` and lives
+      in `passive.ParseBook`, because `reconsider` calls `Release` when a gate
+      closes. At enlistment current health is set to the maximum *after* the traits
+      and the bonuses are on; after that a rise opens room and never fills it.
 
       ⚠️ **The second axis shipped 2026-09-07 as `same_column`, and it is not the
       axis this entry recommended.** The recommendation was the **archetype's**
@@ -3491,7 +3604,7 @@ is only so the shape is readable.
       **+59‰** against s03 and **+8‰** against s04, and the mirror reads exactly
       **500‰** both ways, which is the control. No shipped squad reaches it —
       s01 stands two in a column and the rest stand three in three — so it is
-      something a player builds towards, exactly as `same_element` is.
+      something a player builds towards, exactly as the element table is.
       ⚠️ **The bonus does not pay for the shape, and that is the finding.** The
       same squad re-slotted into one column reads **464‰** against s01 *with* the
       bonus where it reads 677‰ spread out: stacking costs about 213‰ and the
@@ -3506,17 +3619,24 @@ is only so the shape is readable.
       +45‰) — more defence lengthens a battle, and a longer battle can change who
       wins it. That is `swiftness` restated: **a win rate is non-monotone in a
       stat**, so a sweep cannot pick the number by taking the largest. 100‰ ships
-      because it matches the grant `same_element` already carries and the only
-      alternative in the band was measured and beaten. The idea, as asked for: fielding several units that share
-      something grants the squad a
-      bonus, stronger bonuses sit at higher thresholds, and **not every bonus
-      needs four rungs** — one or two is fine where the effect is worth it.
+      because it was the grant `same_element` carried and the only alternative in
+      the band was measured and beaten; it is now the house figure the whole
+      element table sits at, `electric_surge` excepted. The idea, as asked for:
+      fielding several units that share something grants the squad a bonus,
+      stronger bonuses sit at higher thresholds, and **not every bonus needs four
+      rungs** — one or two is fine where the effect is worth it.
 
       **Shipped:** `internal/core/composition` (the count, the ladder, the two
-      scopes, `Book.Without`), `data/bonuses.json` as the sixteenth data file,
-      `battle.Books.Bonuses` awarding before `queue.Add`, the `bonus_held` event
-      with the value and the count on it, and `same_element` — sharers-only,
-      rungs 2 and 3, granting the permanent `kinship` buff at one and two stacks.
+      scopes, both axes, `Book.Without`), `data/bonuses.json` as the sixteenth data
+      file, `battle.Books.Bonuses` awarding before `queue.Add`, the `bonus_held`
+      event with the value and the count on it, the reference screen, and the ten
+      bonuses tabulated at the top.
+
+      **The retired blanket, and the numbers that priced the whole table.**
+      `same_element` was sharers-only, rungs 2 and 3, granting the permanent
+      `kinship` buff at one and two stacks. It shipped first, it is what every
+      element bonus since was priced against, and it went out on 2026-09-08 once
+      the table covered every element it was covering.
       **Measured** (the same squads, the same seeds, `FightSquads(..., "same_element")`
       against the same run with it on): at the shipped 100‰ a stack, rung two is
       worth **+111‰** and rung three **+448‰** on the pairings that are not already
@@ -3532,25 +3652,60 @@ is only so the shape is readable.
       ⚠️ Saturated pairings price **nothing** — a rate already at 1000‰ or 0‰ moves
       by +0 whatever the bonus does — so only the two readings above are quotable
       out of the eight that were run.
-      ⚠️ **No shipped squad fires it**: s01–s04 carry three different elements
-      each, so the bonus is something a player builds *towards* rather than
-      something already in the starter sides.
+      ⚠️ **No shipped squad fired it**: s01–s04 carry three different elements
+      each, so the bonus was something a player built *towards* rather than
+      something already in the starter sides. That is still true of the table that
+      replaced it.
 
-      **Still open:** the rungs at 4 and 5 (decision 6, they wait for 5v5) on the
-      **element** axis — the column axis can never reach them. A third axis is not
-      needed for the mechanism and the candidates below keep their reasoning.
+      **Still open, and it is three things rather than one:**
+
+      1. **The rungs at 4 and 5** (decision 6, they wait for 5v5) on the **element**
+         axis — the column axis can never reach them, because a column holds
+         `hex.FormationRows`.
+      2. **`ice` has no bonus of its own**, because it has one carrier. → the
+         doubled-up loophole below, which is why "one carrier" is not the same as
+         "unreachable".
+      3. **`bedrock` and `phalanx` are the same effect.** → `DAT-008`.
+
+      A third axis is not needed for the mechanism and the candidates below keep
+      their reasoning.
+
+      ⚠️ **"One carrier" is a statement about a DRAFTED squad and not about a saved
+      one, and the retirement is what made that matter.** `carriersByElement` counts
+      the cast, and every reachability test built on it reads one carrier as "no
+      squad can field a tribe of it". That holds for a drafted squad — `internal/draft`
+      makes the pool exclusive, so a drafted side is six or ten *different*
+      characters by construction — and is **false for a saved one**, where
+      `TestOneSquadMayFieldTheSameCharacterTwice` holds the opposite. A saved squad
+      of two Lapras is two ice units, reaches `MinimumRung`, and since the blanket
+      went out is paid **nothing**.
+      Accepted rather than fixed: covering it means authoring an effect for a tribe
+      only a doubled-up squad can field, which is a bonus written for a case nobody
+      builds towards. What may not happen is the set growing quietly, so
+      `TestTheElementsWithNoBonusAreExactlyTheOnesWithOneCarrier` pins it **both
+      ways** — a second element losing coverage fails, and so does a bonus authored
+      for a one-carrier tribe. ⚠️ It is what forced `light_gleam` to ship in the same
+      PR as light's second carrier (#363), which is the shape this pin exists for.
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
-      four obvious axes outright.** Multiplicity across the nineteen shipped
-      characters:
+      four obvious axes outright.** Multiplicity across the **twenty-two** shipped
+      characters (⚠️ derived, never remembered — this table said "nineteen" on
+      2026-09-07 and three characters have shipped since, so re-run
+      `jq '.characters|length' internal/seed/data/cast.json` and the element count
+      beside it rather than reading the numbers here as current):
 
       | axis | most units that can share one value | rungs reachable |
       |---|---:|---|
-      | element | 3 (water: Lapras, Poliwag, Squirtle) | 2, 3 |
-      | origin | **18** (`pokemon`) | 2, 3, 4, 5 — but see below |
+      | element | 3 (dark, ground and water) | 2, 3 |
+      | origin | **21** (`pokemon`) | 2, 3, 4, 5 — but see below |
       | species | **3** (`dragon`: Charmander, Dratini, Gible) | 2, 3 |
-      | archetype | 1 (nineteen characters, nineteen presets) | **none** |
-      | archetype `column` | 7 / 6 / 6 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
+      | archetype | 1 (twenty-two characters, twenty-two presets) | **none** |
+      | archetype `column` | 2, 3, 4, 5 on all three | not the axis that shipped |
+
+      ⚠️ **The shipped column axis is the SLOT, not the archetype's column** — see
+      the top of this entry. The archetype row is kept because it is the
+      recommendation that was made and refused, and a reader who finds only the
+      shipped answer cannot tell it was ever weighed.
 
       ⚠️ **An origin threshold is FREE at every rung today**, and that is the
       sharpest thing here: eighteen of nineteen characters are `pokemon`, so *any*
@@ -3590,6 +3745,9 @@ is only so the shape is readable.
       draft is the opposite case: a shared exclusive pool forbids doubling by
       construction, so the same bonus means two different things in the two modes,
       and `squadIsFieldable` is where that scope has to be legible.
+      ⚠️ **This stopped being theoretical when the blanket was retired** — see
+      *"One carrier" is a statement about a DRAFTED squad* above: it is the reason
+      `ice` is uncovered rather than unreachable.
 
       **Axes beyond element and origin, with what the data says about each:**
       - **`column`** (0..2 on the archetype preset) — the best-shaped candidate:
@@ -3685,10 +3843,17 @@ is only so the shape is readable.
          status display shows.
       4. **Bonuses STACK.** Entering a battle with several squad-wide bonuses and
          several sharers-only bonuses live at once is the ordinary case, not an
-         edge. The correlation objection this entry raised is **dead as raised**,
-         because it was an objection to a *`column`* bonus and there is no column
-         bonus: water came bundled with a free column rung where grass did not,
-         and with no column axis there is nothing to bundle.
+         edge — and it is the ordinary case in the data now, not just in principle:
+         a grass unit standing in a stacked column collects `heartwood` and
+         `phalanx`, and a dual collects on both of its halves.
+         ⚠️ **The correlation objection this entry raised is dead, but not for the
+         reason it was retired under.** It was retired as "there is no column
+         bonus", and `same_column` shipped on 2026-09-07 — so the objection is
+         live again in shape and dead in fact: it feared an element being *bundled*
+         with a free column rung, and the column rung sits at **3**, which no
+         element rung is tied to. A squad earns the column bonus by stacking a
+         formation and the element bonus by sharing an element, and neither implies
+         the other.
          ⚠️ **But stacking makes the ORIGIN axis worse, not better, and this is
          the one thing to read before authoring one.** With rungs 2 and 3 at 3v3,
          **no 3v3 squad can fail the origin axis at all**: **seventeen of the
