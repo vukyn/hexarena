@@ -1465,13 +1465,44 @@ is only so the shape is readable.
             issuing a fresh one would leave a client that reconnected twice
             holding a token for a seat under a name the room has forgotten.
 
-            **What is left — step 2, the client.** `cmd/hexarena-tui` keeps the
-            token (`socket.Client.Token`) and does not yet dial again with it, so
-            a player whose wifi drops still has to rejoin by hand inside the
-            window. That needs the catch-up too: the record is already there
-            (`Registry.Since`), and the **open prompt is not** — see the note on
-            `Reading` below, which is the one piece of state a returning client
-            cannot rebuild.
+            ⚠️ **Step 2 shipped 2026-09-08: a returning client rebuilds the board
+            and plays the match out.** `Room.Resume(seat)` hands back the whole
+            record, and the transport sends it after the welcome — so a client
+            that lost its socket comes back to the board it left, mid-battle, and
+            finishes the series. Held by
+            `TestAReturningClientRebuildsTheBoardAndPlaysTheMatchOut`, which
+            asserts the **verdict** rather than the state: a mirror that rebuilt
+            wrongly would not fail visibly, it would send decisions for a battle it
+            was mis-seeing, so playing the match to its end is the only assertion
+            that catches it.
+
+            ⚠️ **The record cannot be replayed by a player unchanged**, and this
+            is the trap. A `wire.Start` carries the *side* its recipient plays and
+            the recorded one is the **host's** — a watcher plays neither half, so
+            it is given the seat a room hands out first. Handed to a returning
+            **guest** it seats that client on the wrong half of its own board, and
+            nothing complains: the roster is legal, the battle is real, and every
+            digest simply disagrees while both peers think they are playing.
+            `Resume` re-sides each Start; `TestAReturningGUESTIsSeatedOnItsOwnHalf`
+            is the arm the host cannot test.
+
+            ⚠️ **The open prompt does NOT travel, and this entry said it must.**
+            The note below on `Reading` claimed a rejoin wanted a deep copy of
+            `Room.Pending`, because passing the room's own `*battle.Prompt` out of
+            its goroutine is exactly the sharing the registry exists to prevent.
+            The premise was wrong rather than the reasoning: **a mirror derives the
+            prompt.** It calls `Begin` itself and advances to the same one after
+            the last recorded turn — which is what a watcher already does, and the
+            reason no `wire.Turn` carries the opening board either. What travels is
+            the decisions. That note predates the watcher record; the record is
+            what made it obsolete, and it is corrected in `registry.go`.
+
+            **What is left — step 3, the client dialling itself.**
+            `cmd/hexarena-tui` keeps the token (`socket.Client.Token`) and does
+            not yet dial again with it, so a player whose wifi drops has to rejoin
+            by hand inside the window. Everything under it is built: the seat is
+            held, the token is kept, and a second Dial carrying it is seated and
+            caught up.
 
             The reasoning this item was raised on, kept because it is what the
             window is bounded by:

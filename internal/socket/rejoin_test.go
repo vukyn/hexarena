@@ -261,3 +261,116 @@ func TestARejoinStopsTheWindowRatherThanOutlivingIt(t *testing.T) {
 	guest.Close()
 	_ = guestPlay.wait(t, "the guest")
 }
+
+// TestAReturningClientRebuildsTheBoardAndPlaysTheMatchOut is the payoff, and it
+// is the only test here that asserts the thing a player would notice: a match
+// interrupted mid-battle finishes normally, played to its end by a client that
+// lost its socket and came back.
+//
+// ⚠️ **The verdict is the assertion.** A returning client whose board was wrong
+// would not fail visibly — it would send decisions the room accepted for a
+// battle it was mis-seeing, and every digest would disagree while both peers
+// thought they were playing. So this plays the whole match out: a mirror that did
+// not rebuild correctly cannot reach a verdict, because the digests stop
+// matching the moment it acts.
+func TestAReturningClientRebuildsTheBoardAndPlaysTheMatchOut(t *testing.T) {
+	dependencies := tokenised(t)
+	held := listening(t, Timings{RejoinWindow: time.Minute})
+	code := held.open(t, config(11, 1, room.DefaultAllowance), dependencies)
+
+	ctx := context.Background()
+	host := held.dial(t, code, hello(t, theHostSquad(t, dependencies.Characters), "Host", ""), dependencies.Books)
+	token := host.Token()
+	hostChoose, fifth := stepped(rating(host), 5)
+	hostPlay := play(ctx, host, hostChoose)
+	guest := held.dial(t, code, hello(t, theGuestSquad(t, dependencies.Characters), "Guest", ""), dependencies.Books)
+	guestPlay := play(ctx, guest, rating(guest))
+
+	reachedOr(t, fifth, "the host's fifth decision")
+	host.Close()
+	if err := hostPlay.wait(t, "the host"); err != nil {
+		t.Fatalf("the host's own loop after its socket closed: %v", err)
+	}
+
+	returning := hello(t, theHostSquad(t, dependencies.Characters), "Host", "")
+	returning.Token = token
+	back := held.dial(t, code, returning, dependencies.Books)
+	if back.Seat() != wire.SeatHost {
+		t.Fatalf("the returning client took the seat %q", back.Seat())
+	}
+	// ⚠️ **Nothing is asserted about the mirror before Play starts.** Dial returns
+	// on the welcome, and the resumed record arrives behind it — so the bodies are
+	// still in the socket at this point, and a mirror read here would find no
+	// battle and say the rejoin had failed. The record is consumed by the read
+	// loop, which is what the line below starts.
+	backPlay := play(ctx, back, rating(back))
+	if err := backPlay.wait(t, "the returning host"); err != nil {
+		t.Fatalf("the returning host's loop: %v", err)
+	}
+	if err := guestPlay.wait(t, "the guest"); err != nil {
+		t.Fatalf("the guest's loop: %v", err)
+	}
+	done := held.finished(t)
+	if done.reading.Result.Verdict == room.VerdictAbandoned {
+		t.Fatalf("the match was abandoned rather than played out: %+v", done.reading.Result)
+	}
+	if !done.reading.Finished {
+		t.Errorf("the match did not finish: %+v", done.reading.Result)
+	}
+}
+
+// TestAReturningGUESTIsSeatedOnItsOwnHalf is the arm the test above cannot hold.
+//
+// The record's wire.Start carries the **host's** side, because a watcher plays
+// neither half and is given the seat a room hands out first. Handed unchanged to
+// a returning guest it seats that client on the wrong half of its own board —
+// and nothing complains: the roster is legal, the battle is real, and every
+// digest simply disagrees. room.Room.Resume re-sides it, and this is what says
+// so.
+func TestAReturningGUESTIsSeatedOnItsOwnHalf(t *testing.T) {
+	dependencies := tokenised(t)
+	held := listening(t, Timings{RejoinWindow: time.Minute})
+	code := held.open(t, config(11, 1, room.DefaultAllowance), dependencies)
+
+	ctx := context.Background()
+	host := held.dial(t, code, hello(t, theHostSquad(t, dependencies.Characters), "Host", ""), dependencies.Books)
+	hostPlay := play(ctx, host, rating(host))
+	guest := held.dial(t, code, hello(t, theGuestSquad(t, dependencies.Characters), "Guest", ""), dependencies.Books)
+	token := guest.Token()
+	guestChoose, third := stepped(rating(guest), 3)
+	guestPlay := play(ctx, guest, guestChoose)
+
+	reachedOr(t, third, "the guest's third decision")
+	// The side this seat was playing before it went, read while it still holds it.
+	was := guest.Mirror().Side()
+	guest.Close()
+	_ = guestPlay.wait(t, "the guest")
+
+	returning := hello(t, theGuestSquad(t, dependencies.Characters), "Guest", "")
+	returning.Token = token
+	back := held.dial(t, code, returning, dependencies.Books)
+	backPlay := play(ctx, back, rating(back))
+	if err := backPlay.wait(t, "the returning guest"); err != nil {
+		t.Fatalf("the returning guest's loop: %v", err)
+	}
+	if err := hostPlay.wait(t, "the host"); err != nil {
+		t.Fatalf("the host's loop: %v", err)
+	}
+	// Read off Fought rather than off Side: the battle is over by now, and Fought
+	// is the locked record of which half this client played in each one.
+	fought := back.Mirror().Fought()
+	if len(fought) == 0 {
+		t.Fatal("the returning guest rebuilt no battle at all")
+	}
+	if now := fought[0].Side; now != was {
+		t.Errorf("the guest played %s before its socket closed and %s after coming back: the "+
+			"recorded wire.Start is the host's, so a record handed over unchanged seats a "+
+			"returning guest on the wrong half of its own board", was, now)
+	}
+	// And it played the match out rather than falling over, which is the other
+	// half of the same claim: a mirror on the wrong side cannot reach a verdict.
+	done := held.finished(t)
+	if done.reading.Result.Verdict == room.VerdictAbandoned {
+		t.Errorf("the match was abandoned rather than played out: %+v", done.reading.Result)
+	}
+}

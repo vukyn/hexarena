@@ -119,6 +119,51 @@ func (r *Room) Since(cursor int) ([]wire.Body, int) {
 	return r.watched[cursor:recorded:recorded], recorded
 }
 
+// Resume is the whole record as one seat would have received it, which is what a
+// client that lost its socket needs in order to come back to the board it left.
+//
+// ⚠️ **The record cannot simply be replayed by a player, and that is the one
+// thing about a rejoin that is not obvious.** A wire.Start carries the *side* its
+// recipient plays, and the recorded one is taken from the host's chair on
+// purpose — a watcher plays neither half, so it is given the seat a room hands
+// out first. Handed unchanged to a returning **guest**, it would seat that
+// client on the wrong half of its own board: every subsequent digest would
+// disagree while both peers were fighting the same battle perfectly, which is
+// the failure mode this file's Since already warns about from the other end.
+// So each Start is re-sided here, for the seat asking.
+//
+// ⚠️ **The open prompt is NOT sent and does not need to be**, which retires a
+// note that stood in TODO.md since before the record existed: a rejoin was said
+// to want a copy of Room.Pending, because passing the room's own *battle.Prompt
+// out of its goroutine is exactly the sharing the registry exists to prevent.
+// A mirror does not need one. It calls Begin itself and advances to the same
+// prompt after the last recorded turn — the same thing a watcher does, and the
+// reason no wire.Turn carries the opening board either. What has to travel is the
+// decisions; the prompt is derived at both ends from the same events.
+//
+// The bodies themselves are not deep-copied, for watchedFrom's reason: a
+// wire.Body is a value the room recorded and never edits. The Starts are the
+// exception and are **replaced** rather than edited, so the record keeps the one
+// it holds.
+func (r *Room) Resume(seat wire.Seat) []wire.Body {
+	// Through Since rather than over the field, and TestTheWatcherRecordIsWrite
+	// OnlyFromTheRoom is what insists: the record is named inside exactly two
+	// functions, the one that appends and the one that reads, so a third reader
+	// asks the second rather than becoming one. It also gets the bounded slice
+	// for free.
+	recorded, _ := r.Since(0)
+	out := make([]wire.Body, 0, len(recorded))
+	for _, body := range recorded {
+		if opening, isStart := body.(wire.Start); isStart {
+			opening.Side = r.sideOf(seat)
+			out = append(out, opening)
+			continue
+		}
+		out = append(out, body)
+	}
+	return out
+}
+
 // watch records one body, and it is the only way anything gets into the record.
 //
 // ⚠️ **Every call to it sits beside the room already emitting the same thing to

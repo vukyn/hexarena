@@ -243,6 +243,17 @@ type Answer struct {
 	// as the Admission above does. → Registry.Since, and internal/room/watch.go.
 	Watched []wire.Body
 	Cursor  int
+	// Resumed is the whole record as the **rejoining seat** would have received
+	// it, and is empty on every input but a hello that took a seat back.
+	//
+	// ⚠️ **It is not Watched with a different name.** Watched is what a *watcher*
+	// is owed because of this input, from the host's chair, and this is the whole
+	// record re-sided for one seat — see Room.Resume, where the Start's side is
+	// the reason the two cannot be one field. A transport that handed a returning
+	// guest the watcher's bodies would seat it on the wrong half of its own
+	// board, and every digest after that would disagree while both peers fought
+	// the same battle perfectly.
+	Resumed []wire.Body
 	// Reading is the room after the input. It is the zero Reading when Known is
 	// false, because there was no room to read.
 	Reading Reading
@@ -260,12 +271,15 @@ type Answer struct {
 // Reading is what a transport reads off a running room, taken inside that room's
 // own goroutine and copied out.
 //
-// ⚠️ **Pending is deliberately not in it.** Room.Pending hands back a
-// *battle.Prompt, which is a pointer into the room's own state, and passing one
-// out of the goroutine is exactly the sharing this file exists to prevent. What
-// a rejoining client needs is the open prompt, so this is a real gap rather than
-// an omission — it wants a copy whose slices are copied too, and the client that
-// would read it is a later item. → TODO.md, under the seat token and the rejoin.
+// ⚠️ **Pending is deliberately not in it, and it is no longer a gap.** Room.Pending
+// hands back a *battle.Prompt, which is a pointer into the room's own state, and
+// passing one out of the goroutine is exactly the sharing this file exists to
+// prevent. This note used to add that a rejoining client needs the open prompt
+// and that a copy whose slices were copied too was therefore owed. **It is not.**
+// A mirror derives the prompt: it calls Begin itself and advances to the same one
+// after the last recorded turn, which is the same thing a watcher does and the
+// reason no wire.Turn carries the opening board either. What travels is the
+// decisions. → Room.Resume.
 type Reading struct {
 	// Config is what the room was opened with, which is where the allowance a
 	// transport counts down comes from.
@@ -574,6 +588,14 @@ func answerFrom(playing *Room, asked request) served {
 	switch asked.kind {
 	case inputJoin:
 		answered.answer.Admission, answered.answer.Out, answered.err = playing.Join(asked.hello)
+		// A rejoin takes the record home with it, inside the room's goroutine and
+		// before anything can retire the entry — the same argument Watched
+		// carries, for the same reason: a transport that welcomed the client and
+		// then asked for the record would be asking a room that may already have
+		// gone.
+		if answered.answer.Rejoined {
+			answered.answer.Resumed = playing.Resume(answered.answer.Seat)
+		}
 	case inputDeliver:
 		answered.answer.Out, answered.err = playing.Deliver(asked.seat, asked.body)
 	case inputTimedOut:

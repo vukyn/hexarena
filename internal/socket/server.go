@@ -293,6 +293,20 @@ func (s *Server) join(ctx context.Context, stop func(), code wire.RoomCode, entr
 	}
 	entry.seat(answered.Seat, peer)
 	s.send(ctx, entry, peer, answered.Out)
+	// ⚠️ **After the welcome and before anything else**, which is the order a
+	// mirror was built for: it takes its seat off the welcome and then applies
+	// bodies, so a record arriving first would be replayed by a mirror that does
+	// not yet know which half it plays. Same order the watcher path uses, and for
+	// the same reason.
+	if len(answered.Resumed) > 0 {
+		if err := peer.send(ctx, answered.Resumed...); err != nil {
+			if !ended(err) {
+				s.failed(fmt.Errorf("hand %s the %d recorded bodies of room %s: %w",
+					answered.Seat, len(answered.Resumed), code, err))
+			}
+			return room.Admission{}, false
+		}
+	}
 	s.settled(ctx, code, entry, answered)
 	// The second seat's join is what opens the first battle, so it is an exchange
 	// that records — the wire.Start every watcher already attached is owed.
