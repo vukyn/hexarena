@@ -36,7 +36,16 @@ const shippedDataDir = "../../internal/seed/data"
 func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
-	copyTree(t, shippedDataDir, target)
+	// The fixture is what the tests name. Before this they named the characters
+	// the repository shipped, so editing the real cast broke tests that had
+	// nothing to do with it. testfixture.Data is where the injection and the
+	// sharing live; it is staged once a process, so this call is the writing out
+	// rather than the building.
+	if _, err := testfixture.Data(target, shippedDataDir, func(dir string) (testfixture.Saver, error) {
+		return forge.Load(dir)
+	}); err != nil {
+		t.Fatalf("build a scratch data directory: %v", err)
+	}
 	// The fixture controls its own catalogue, so the scratch copy starts with
 	// none. squads.json is written by this client and ships with whatever the
 	// author last built — that is the design, not an accident — which means a
@@ -46,14 +55,6 @@ func scratchData(t *testing.T) string {
 	// an empty catalogue, which is what it already promises.
 	if err := os.Remove(filepath.Join(target, "squads.json")); err != nil && !os.IsNotExist(err) {
 		t.Fatalf("clear the squad catalogue: %v", err)
-	}
-	// The fixture is what the tests name. Before this they named the characters
-	// the repository shipped, so editing the real cast broke tests that had
-	// nothing to do with it.
-	if err := testfixture.Inject(target, func() (testfixture.Saver, error) {
-		return forge.Load(target)
-	}); err != nil {
-		t.Fatalf("inject the fixture: %v", err)
 	}
 	return target
 }

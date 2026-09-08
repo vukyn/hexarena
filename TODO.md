@@ -120,7 +120,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-008` | done | The cast listing draws every row, so the detail pane shrinks as the cast grow… |
 | `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
-| `SCR-011` | open | Every scratch data directory copied 17 MB of art — FIXED; the ~1300s was Win… |
+| `SCR-011` | done | Every scratch data directory copied 17 MB of art and re-ran the injection — BOTH FIXED; the ~1300s was Win… |
 | `SCR-012` | open | A draft's last pick can have one candidate, and the screen presents it as a … |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
@@ -327,14 +327,15 @@ is only so the shape is readable.
       `cmd/hexarena-tui`'s and a spectator draws the same draft. Three goldens
       move.
 
-- [ ] `SCR-011` ⚠️ **Every scratch data directory copied the whole 17 MB data
-      directory — FIXED, the art is shared now. But the ~1300s in this item's
-      first draft was a WINDOWS reading, `make check` is green on macOS, and the
-      copying was never this machine's cost.**
+- [x] `SCR-011` ⚠️ **Every scratch data directory copied the whole 17 MB data
+      directory AND re-ran the fixture injection — BOTH FIXED. But the ~1300s in
+      this item's first draft was a WINDOWS reading, `make check` is green on
+      macOS, and neither half of the cost was where the first draft put it.**
 
-      **What shipped.** `testfixture.CopyData` copies the books and *shares* the
-      art: a hard link first, a symbolic link where a hard link is refused
-      (another filesystem), a byte copy where neither is available (Windows
+      **What shipped, first half: the art is shared.** `testfixture.CopyData`
+      copies the books and *shares* the art: a hard link first, a symbolic link
+      where a hard link is refused (another filesystem), a byte copy where
+      neither is available (Windows
       without developer mode, across two volumes). All three keep the file's size
       and modification time, which is what the art preview's cache is keyed on —
       `TestThePreviewRasterisesOncePerFileAndSize` is green, and the copy
@@ -349,34 +350,129 @@ is only so the shape is readable.
       byte-identical `copyTree`. All five now call one function, which is what
       stops the sixth copy of the slow shape being written.
 
-      **Measured 2026-09-08, macOS on APFS, `go test -count=1 -v` one package at a
-      time.** The counts are `=== RUN` lines, so the same tests still run — each
-      package is one or two higher only because this added its own guard:
-
-      | package | before | after | tests |
-      |---|---|---|---|
-      | `cmd/hexforge-tui` | 111.8s | 106.5s | 194 → 196 |
-      | `internal/screen` | 41.9s | 42.4s | 257 → 258 |
-      | `internal/forge` | 106.1s | 105.1s | 168 → 170 |
-      | `cmd/hexarena-tui` | 20.5s | 23.9s | 88 → 89 |
-      | `cmd/hexforge` | 7.9s | 8.3s | 48 → 49 |
-
       One copy of the data directory writes **17,269,474 bytes before and 241,573
       after**, and a full run of the five packages makes **784 of them** — 13.5 GB
       of writes down to 189 MB. The *call sites* were counted at 155 in
       `cmd/hexforge-tui`; the copies it really makes are **301**, so a site count
-      is about half the figure.
+      is about half the figure. (Re-measured with the staging in: a scratch
+      directory writes **260,112 bytes** in 19 files and hard-links 66 pictures —
+      the books plus the fixture's three — and 17,288,013 if the sharing is
+      mutated out, which is what
+      `TestAScratchDataDirectoryStillSharesRatherThanCopies` bounds at a
+      megabyte.)
 
       ⚠️ **"Essentially all of it copying pictures" is FALSE on this filesystem,
-      and that is the correction worth keeping.** Timed either way, one copy of
-      the data directory takes **23 ms sharing and 22 ms copying** — seventeen
-      megabytes of page-cached SVG costs nothing measurable on APFS. A whole
-      `scratchData` runs **206–235 ms** copying against **215 ms** sharing: the
-      copy is under a tenth of it, and `testfixture.Inject` — which re-parses and
-      re-saves the books through `forge` for every scratch directory — is about
-      **180 ms** of the rest. So the win here is 5.3s of 112s, and **the lever
-      that would move this machine is staging the injected books once per process,
-      not the art.** That is the open half of this item.
+      and that is the correction that found the second half.** Timed either way,
+      one copy of the data directory takes **23 ms sharing and 22 ms copying** —
+      seventeen megabytes of page-cached SVG costs nothing measurable on APFS. A
+      whole `scratchData` ran **206–235 ms**, so the copy was under a tenth of it
+      and `testfixture.Inject` — which re-parsed and re-saved the books through
+      `forge` for every scratch directory — was about **180 ms** of the rest. The
+      art was worth 5.3s of 112s. The lever was the injection.
+
+      **What shipped, second half: the injection is staged once per process.**
+      `testfixture.Data(target, shipped, load)` is the one entry point now, and
+      all five `scratchData` helpers are shims over it. It injects the fixture
+      **once a test binary**, holds the resulting **book files as bytes in
+      memory**, and builds each scratch directory by writing those bytes out,
+      linking the shipped pictures straight from the shipped directory, and
+      writing the fixture's own three pictures fresh. `testfixture.Stagings()`
+      counts the injections so a test can assert the arrangement instead of a
+      stopwatch.
+
+      ⚠️ **`Inject` reloads the library 37 times, not four.** Four *call sites*,
+      but one for the skill dependencies and then one before every single write —
+      31 skills, 3 origins, 2 characters — because each save rewrites a whole book
+      and a library opened once would hold a stale copy of the file it is about to
+      replace. That is the 180 ms, and it is why doing it once was worth the
+      machinery.
+
+      **Three questions this had to answer, and none of them went the obvious
+      way:**
+
+      1. ⚠️ **A stale stage would leave every test green** — every scratch
+         directory built from books that had since moved, and nothing to say so.
+         Two things stop it. Nothing is written to disk between runs (what
+         survives an injection is bytes, not a directory), so **no cross-run cache
+         exists** and the injector compiled into the binary is always the one that
+         ran. And within a run the stage is held under a **SHA-256 of the shipped
+         books byte for byte plus the fixture constants**, so books edited while
+         the tests are running produce a new stage rather than a stale one.
+         `TestTheStageKeyCoversTheBooksAndTheFixture` moves each input separately
+         and `TestEditedBooksReachTheNextScratchDirectory` is the same claim end to
+         end. The art is deliberately not in the key: no picture is staged, so
+         none can go stale.
+      2. **Nothing has to clean it up, because there is nothing left.** This item
+         used to say the work "needs a `TestMain` in five packages that have
+         none", and that is **wrong** — but the reasoning behind it was right for
+         the design it assumed. A staged *directory* has no correct owner:
+         `t.TempDir` and `t.Cleanup` are per test, so the first test to ask would
+         delete it while the rest were still reading it, and "the OS, eventually"
+         is the only honest answer left. Staging the **bytes** removes the
+         question: `injectOnce` works in its own `os.MkdirTemp` and removes it
+         before it returns, asserted on both arms
+         (`TestAnInjectionLeavesNothingBehind`, `TestStagingLeavesNothingOnDisk`).
+      3. ⚠️ **The fixture's own art stayed private, and that was a decision.**
+         Staging it alongside the books would have been free and would have turned
+         three pictures every suite writes near into files two tests could fight
+         over — and worse, a picture shared *from a staged directory* is shared
+         from somewhere under `os.TempDir()`, which `rememberArt` skips, so the
+         write-through guard on the committed art would have gone quietly dead.
+         So `WriteArt` is separate from `Inject` and runs per directory, the
+         shipped pictures are still linked **straight from the shipped
+         directory**, and `TestTheFixturesOwnArtIsPrivateToEachScratchDirectory`
+         holds it. Checked while here: the row
+         `TestThePreviewRasterisesOncePerFileAndSize` opens on is
+         `fixture-anime.adept`, whose `assets/fixture/adept.svg` **has no
+         committed counterpart at all** — so that test writes to a private file
+         either way, and its `testfixture.PrivateArt` call is insurance against
+         the ordering moving, exactly as its own comment says.
+
+      **Measured 2026-09-08, macOS 26.6.2 on APFS, 8 cores.** Two `go test -c`
+      binaries per package, run from the package directory with
+      `-test.count=1 -test.v`, **interleaved before/after, three rounds** — a
+      single pair is not a measurement here, and the first half of this item got
+      the direction wrong from one. The machine was this session's own and not
+      otherwise loaded, but it is not quiet: the before side of `cmd/hexforge-tui`
+      is bimodal at 114s and 188s. **No range overlaps.**
+
+      | package | before (3 runs) | after (3 runs) | `=== RUN` |
+      |---|---|---|---|
+      | `cmd/hexforge-tui` | 114.4 / 187.8 / 187.9s | 68.3 / 71.5 / 73.5s | 196 → 196 |
+      | `internal/forge` | 114.1 / 117.2 / 148.4s | 94.0 / 104.7 / 111.1s | 172 → 178 |
+      | `internal/screen` | 42.7 / 47.6 / 60.4s | 7.9 / 10.1 / 13.0s | 258 → 258 |
+      | `cmd/hexarena-tui` | 21.2 / 22.7 / 36.1s | 8.3 / 9.4 / 10.9s | 90 → 90 |
+      | `cmd/hexforge` | 8.6 / 9.2 / 12.3s | 5.9 / 6.4 / 6.9s | 55 → 55 |
+
+      The counts are `=== RUN` lines: the same tests still run, and
+      `internal/forge` is six higher only because that is where the six tests this
+      owed had to live — `internal/testfixture` may not import a library to inject
+      through, since that package's own tests import it, and it takes three more
+      of its own (172 → 178 here, 6 → 9 there). ⚠️ The *measured* after-binary
+      carried a temporary timing harness in place of one of the six, which is why
+      its count matched; the six together run in about 1.5s and none of the
+      figures above turns on them.
+
+      **One `scratchData`, same binaries, interleaved, three rounds a side.**
+      Before: **139–273 ms**, every call, eighteen of them. After: the process's
+      **first** call is 151–186 ms — that is the injection, paid once — and every
+      call after it is **18–30 ms**, fifteen of them. So a scratch directory costs
+      about a **tenth** of what it did, and the whole 180 ms injection is paid
+      once instead of ~300 times in `cmd/hexforge-tui` alone.
+
+      ⚠️ **`internal/forge` is the package this did NOT rescue, and that is worth
+      knowing before somebody optimises it next.** It drops about 20% and still
+      runs ~100s: its cost is `spar`/`weigh` fighting thousands of battles, not
+      its scratch directories. `internal/screen` is the other end — 4–6x, because
+      almost all it did was build data directories and draw.
+
+      ⚠️ **No before/after was taken for `make check` itself, deliberately.** It
+      is green after, twice, at 5:12 and 3:36 — the spread is the machine, and a
+      pair of runs on one side is not a reading, which is the whole lesson of the
+      first half of this item. The per-package figures above are the measurement.
+      What the gate adds is a ceiling: `internal/seed` runs 211s inside it and
+      builds no scratch directory at all, so the gate can only ever move by less
+      than the five packages do.
 
       ⚠️ **The gate is not red here and this item used to say it was.** `make
       check` was green at `d022cdf` before any of this, and `cmd/hexforge-tui`

@@ -39,17 +39,16 @@ const shippedDataDir = "../seed/data"
 func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
-	copyTree(t, shippedDataDir, target)
+	if _, err := testfixture.Data(target, shippedDataDir, func(dir string) (testfixture.Saver, error) {
+		return forge.Load(dir)
+	}); err != nil {
+		t.Fatalf("build a scratch data directory: %v", err)
+	}
 	// The squad catalogue is written by the authoring client and ships with
 	// whatever its author last built. Nothing here reads it, and forge.Load takes
 	// a missing file as an empty catalogue.
 	if err := os.Remove(filepath.Join(target, "squads.json")); err != nil && !os.IsNotExist(err) {
 		t.Fatalf("clear the squad catalogue: %v", err)
-	}
-	if err := testfixture.Inject(target, func() (testfixture.Saver, error) {
-		return forge.Load(target)
-	}); err != nil {
-		t.Fatalf("inject the fixture: %v", err)
 	}
 	return target
 }
