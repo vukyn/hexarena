@@ -3837,9 +3837,10 @@ under, the Machop spends the turns it cannot aim on `brace`, and comes out of th
 window with its defence permanently raised. **The turn lost its aim and kept its
 value**, which is precisely what `pricing.hidden` did not model.
 
-⚠️ **Two errors in that term are now corrected and they are worth four of a needed
-thirty.** It counted the hiding window in the **holder's** turns when what a hide
-denies is the **enemy's** — equal only at equal speed, and this Diglett is fast —
+⚠️ **Two errors in that term are now corrected and they are worth four — of a
+needed five or six, which is not what this paragraph first said.** It counted the
+hiding window in the **holder's** turns when what a hide denies is the
+**enemy's** — equal only at equal speed, and this Diglett is fast —
 and it priced a denied turn at the heaviest blow in the enemy's kit when a denied
 turn is an *ordinary* turn of that enemy's, which is the same correction
 `turnWorth` has been the written statement of since the `outrage` measurement. On
@@ -3848,15 +3849,48 @@ the opening board that takes the figure from 5502 to 1362, against a best strike
 — the split build against Squirtle, 100.0% to 95.5% — and every other figure in the
 table is unchanged. With the term returning nought outright the split row reads
 780‰ against Machop, its own slot-empty control, so the rest of the hole is not a
-factor: it is the enemy's kept turn, which needs one ply of the opponent's own
-rating. → `TODO.md` § `RAT-008`.
+factor: it is the enemy's kept turn.
+
+⚠️ **"A needed thirty" was itself a bad reading, and sampling the sweep properly
+is what said so.** Thirty was taken off two points, `/4` and `/64`, with nothing
+in between. Every divisor, split build against Machop, 200 seeds each way, casts
+beside the rate: `/1` 110‰ (1258 casts), `/2` **145‰** (1258), `/3` **105‰**
+(1200), `/4` 175‰ (1200), `/5` **555‰** (926), `/6` **775‰** (814), and then 775‰
+at `/8`, `/16`, `/32` and `/64` alike. **The hole is five or six times, and the
+response is a cliff rather than a slope** — `/64` was a reading of the plateau,
+not of the distance. Below the cliff the rate is **non-monotone** (110, 145, 105,
+175), which is the shape a win rate has in a price everywhere else in this file,
+and it has a consequence: **a partial correction to this term cannot be seen in a
+rate at all.**
+
+⚠️ **So one ply of the opponent's own rating was written, and it is worth
+nothing.** `pricing.kept` — the best of an enemy's *self-aimed* casts, priced
+through the rating's own `rate` and subtracted after the ordinary-turn cap — is
+the expressible half of "the enemy keeps its turn", and it is the exact
+complement of the `turnWorth` floor that was refused. It priced what it was
+derived to price: `kept(machop)` is **550**, taking the denial from 1293 to
+**743**, a 43% cut. Over twelve rows — four split kits against Machop, and the
+whole build with and without `burrow` against each of the four opponents above —
+**not one win rate moved**: every one of the eight whole-build cells came back
+digit for digit as the table quotes it. The only figure that moved anywhere was
+ten `burrow` casts of 1586 against Squirtle, the one opponent carrying a
+self-aimed skill of its own, which is what says the term was live. 743 is
+simply on the wrong side of the cliff, which needs about 1293/5; `kept` would
+have to be worth roughly **1050** and cannot be, because `brace` prices through
+`selfSpendable`'s gated arm at `strike(machop)/5`. **The expressible half is about
+half the size of the hole, by construction.** The remainder is *deferral* — a hide
+moves the blow rather than removing it — and that needs a horizon this rating does
+not have, which is the same refusal `RAT-007` makes. The term was reverted.
+→ `TODO.md` § `RAT-008`.
 
 ⚠️ **One clamp was written and thrown away.** Chasing the split-build collapse,
 `hidden` was given the bound `restored`'s third clamp is written on — you can only
 avoid dying once, so denial above the holder's remaining health cannot be banked.
 It is a good sentence and it moved **one battle in four hundred**, in one matchup,
 and nothing else across 3,200. An argument that sounds right is not a measurement,
-so it was reverted rather than kept as insurance.
+so it was reverted rather than kept as insurance. `kept` above is the second thing
+this one section has thrown away on that rule, and it did **worse** than the clamp
+— nought battles rather than one.
 
 ⚠️ **And a rate cannot say any of this.** Everything above that turned out to be
 wrong was wrong because a win rate reads exactly the same with a dead slot in it.

@@ -15,6 +15,7 @@
 - [A stripped name hides a clip](feedback_name_strip_hides_a_clip.md) — the width sweep measures the line WITHOUT its names; a row carrying a value overflows green — read the golden for `…`
 - [The fixture decides what a suite can see](feedback_fixture_decides_what_is_visible.md) — hand-set flag, mirror fixture, unobservable capacity, sweep at the fork-less row, shipped data already sorted
 - [Measure WHICH guard masks](feedback_measure_which_guard_masks.md) — the blamed clamp was innocent; saturation kills monotonicity-in-power past a subtraction
+- [A two-point reading names no distance](feedback_a_two_point_reading_names_no_distance.md) — "30×" was /4 and /64; every rung says /5–/6, and past a CLIFF a correct half-sized term reads as no term
 - [A scripted revert can restore the wrong line](feedback_scripted_revert_wrong_occurrence.md) — green tests do not prove an undo; read git diff on the file
 - [A fixture-cast edit costs goldens](feedback_fixture_cast_edit_costs_goldens.md) — one skill into a fixture kit moved 656 golden lines; build the carrier in the test (twinOf/forkedTwin)
 - [A refusal can be right for the wrong reason](feedback_a_refusal_can_be_right_for_the_wrong_reason.md) — separate the verdict from its evidence; re-run a TODO's own example first, it may not reproduce

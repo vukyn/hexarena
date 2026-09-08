@@ -93,7 +93,7 @@ that owns the subject wins and the note is the thing to fix.
 - [fixture chọn theo tính chất vẫn mù](memory/hexarena-a-fixture-chosen-by-property-is-blind-to-other-properties.md) — battleCast sắp theo SỐ chiêu → kit toàn `single`, tính năng diện tích vô hình
 - [referent cũ sống lâu hơn kết luận nó chặn](memory/hexarena-a-stale-referent-outlives-the-conclusion-it-blocked.md) — squirtle 93.0%→28.4%; chính test đó đã ghi "re-take before quoting"
 - [rate KHÔNG nói build có chơi hết kit](memory/hexarena-a-rate-cannot-say-a-build-played-its-kit.md) — ⚠️ RAT-006 đổ tội nhầm: split=0 CẢ ở kit thắng; đếm cast bằng Census, bàn duel/mirror mù ngược nhau
-- [lượt bị chặn ≠ lượt mất](memory/hexarena-a-denied-turn-is-not-a-lost-turn.md) — hidden đếm cửa sổ bằng lượt CHỦ + lấy cú mạnh nhất; sửa được 4× trên 30× cần
+- [lượt bị chặn ≠ lượt mất](memory/hexarena-a-denied-turn-is-not-a-lost-turn.md) — hidden đếm cửa sổ bằng lượt CHỦ + lấy cú mạnh nhất; ⚠️ RAT-008 TỪ CHỐI: đáp ứng là VÁCH ĐÁ ở /5–/6 (không phải 30×), nửa đo được cắt 43% mà dời 0‰
 - [rating định giá 0 thì ngừng chơi — ĐÃ VÁ](memory/hexarena-a-rating-that-prices-nothing-stops-playing.md) — credit CHỈ cho guard permanent; ⚠️ credit phẳng làm 40/40 mirror ship Endless
 - [nhánh summon bỏ qua giá](memory/hexarena-the-summon-branch-skips-the-price.md) — continue nên không tới prices.rate; ⚠️ probe trước khi kết luận
 - [counter có hạn ≠ trần cả trận](memory/hexarena-a-timed-counter-is-not-a-lifetime-cap.md) — phải permanent + category không ai strip
