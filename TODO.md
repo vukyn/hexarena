@@ -3168,22 +3168,44 @@ is only so the shape is readable.
             `i18n.NoteWrote`/`NoteBattleVerify` and the **path** is
             `forge.Library`'s, so the two candidate fixes land in different
             packages.
-      - [ ] **`cmd/hexarena-tui`'s golden moves on every data commit, and only
-            the join screen's digest line does it now.** Measured 2026-09-06 while
-            step 5b's draft entries were being made immune: hiding one character
-            leaves `internal/screen`'s record holding and moves this one on six
-            entries, all of them `máy này — data <digest>`. That predates the
-            draft — it arrived with the join screen — and the line is not an
-            accident: the data digest is what a player compares against a friend's
-            before blaming the game, and `-version` prints the same figure.
-            ⚠️ So this is a **cost with a reason**, not a defect, and the question
-            is only whether the record needs six copies of it. The cheap answer is
-            the one `cmd/hexforge-tui`'s golden already uses for the data
-            directory — drop the line from the recorded body and assert it
-            separately — which would leave the digest measured by a test that is
-            *about* the digest and take this golden out of the path of every
-            balance commit. Not done, because it is the join screen's to answer
-            and 5b had no business editing it.
+      - [x] **`cmd/hexarena-tui`'s golden moves on every data commit — DONE.**
+            Measured 2026-09-06 while step 5b's draft entries were being made
+            immune: hiding one character leaves `internal/screen`'s record holding
+            and moved this one on six entries in each language, all of them
+            `máy này — data <digest>`. The line is not an accident — the digest is
+            what a player compares against a friend's before blaming the game, and
+            `-version` prints the same figure — so it was a cost with a reason and
+            the question was only whether a screen record needs to carry it.
+
+            `withoutTheRunningDataDigest` redacts it out of the capture, and the
+            line itself is asserted whole, in both languages, by
+            `TestTheJoinScreenDrawsThisBinarysOwnVersion` and
+            `TestTheJoinScreenDrawsTheDigestItHoldsRatherThanOneOfItsOwn` — both
+            *about* the digest, where this golden is about the drawing.
+
+            ⚠️ **Redacted, not dropped, and that is the difference from the header
+            `bodyOf` drops.** The digest sits in the BODY of a screen, so its row's
+            presence and position are part of what the golden holds; the stand-in
+            is the same twelve characters, because a shorter one would move a clip
+            point and record a screen nobody draws.
+
+            ⚠️ **A long-form redaction was written and deleted.** Nothing draws
+            `Digest.String()` — the join line is `Short()` and `-version` is not a
+            screen — so the branch could not fire, and a mutation confirmed it:
+            deleting it changed no test. A branch that cannot fire reads as a
+            protection somebody is relying on.
+
+            **Measured both ways.** A data change that moves only the digest
+            (`6537b5d935f7` → `3d2471de7dbb`) now leaves this golden alone; a data
+            change that moves a screen still fails it, on the row it moved. An
+            instrument with only the first half can only ever agree.
+
+            ⚠️ **The guard against a no-op redaction is not the only net and is the
+            only clear one**, which is measured rather than assumed: with the
+            wording moved and the guard deleted, `TestEveryScreenDrawsWhatTheGolden
+            Holds` fails as a screen-moved diff (which is not what happened), and
+            `TestTheCommittedGoldenNamesNoDataDigest` stays **green** until
+            somebody accepts that diff with `make golden`.
       - [x] **The arrange screen — step 5c. Done 2026-09-06.** A drafting match
             reaches a board now: `internal/screen/arrange.go` is the screen
             (`draw.ArrangeScreen`), `screenArrange` is the client's fourteenth
