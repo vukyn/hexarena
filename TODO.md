@@ -109,9 +109,10 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-007` | open | The area axis is not priced below single-target burst — on every board a rate… |
 | `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 forbids — and NEITHER can be re-pointed today: the composition-bonus effect vocabulary has nine slots and the shipped table uses all nine. Premise rewritten, measured, and a distinctness guard shipped |
 | `DAT-009` | done | Ally-aimed area support is single-target on every shipped board — REFUSED, with the measurement: the item's own `arc_up` candidate is a no-op, and `pierce`, the one shape that catches two, moved one battle in twelve hundred |
-| `DAT-011` | open | Happiny's cleanser slot is 20 per mille under its design floor on an honest instrument |
+| `DAT-011` | done | Happiny's cleanser slot is 20 per mille under its design floor — SWEPT, every lever closed, and the floor turned out not to be a line any shipped build clears; two catalogued builds shipped |
 | `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` — a reach guard and the probe-reading convention shipped; a board for a bonus to fire on did not |
 | `DAT-012` | done | A seat-swap rate is a reading about the SHELL as much as the seat — two shells answered opposite for one character, and the Gyarados line shipped on the honest one |
+| `DAT-013` | open | Neither of the mender's catalogued builds clears the floor its own test asserts, and `cleffa.hex` loses four battles in five |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Traced Pokemon are waiting for a character — run the `comm` in the entry, never read a count off it |
 | `CAST-003` | shipped | A stage may declare its own element — the mechanism, and the onix line that fields it |
@@ -304,11 +305,67 @@ is only so the shape is readable.
 
 ## Not done
 
-- [ ] `DAT-011` **Happiny's cleanser slot is under its design floor on an honest
-      instrument, and it has been at every reading that was not flattering it.**
-      Split out of `ENG-012` on 2026-09-08 rather than fixed there: what to do
-      about it is an authoring decision about a character, and a geometry fix is
-      not the place to make one.
+- [ ] `DAT-013` ⚠️ **Neither of the mender's catalogued builds clears the floor the
+      mender test asserts, and one of them loses four battles in five.** Raised
+      2026-09-09 out of `DAT-011`'s sweep, and deliberately not `DAT-011`'s to fix:
+      that item is about a cleanser and this is a balance change to a different
+      character's builds. Nothing in `internal/seed/data` changed for it yet, so no
+      golden moved and the data digest is untouched.
+
+      `TestAMenderEarnsItsSlotWhereASparCannotSeeIt` fights with
+      `moonblast, charm, moonlight, solar_beam` — a **hybrid** taking two skills
+      from each of the mender's two builds, which `builds.json` does not carry. Over
+      300 seeds a side, same fixture, same three opponents:
+
+      | kit | slugger | blighter | bruiser |
+      | --- | ---: | ---: | ---: |
+      | the fixture's hybrid (catalogued by nobody) | 601‰ | 508‰ | 518‰ |
+      | `cleffa.mend` | **340‰** | 615‰ | 864‰ |
+      | `cleffa.hex` | **205‰** | **197‰** | **180‰** |
+
+      ⚠️ **`cleffa.hex` is the finding, and it is an order of magnitude bigger than
+      the twenty per mille `DAT-011` was opened for.** 168–212 per mille across every
+      opponent at two depths — a shipped direction that loses four in five. `charm`,
+      `sing`, `smokescreen`, `solar_beam` + `elusive` is four slots of control and
+      one attack, and the control half is what `RAT-002` already says the rating
+      underprices; whether the build is weak or the *pricing* of it is weak has to be
+      settled before either is touched, because a repricing moves every control
+      skill in the book and a rekit moves one entry.
+
+      ⚠️ **`cleffa.mend` reads 340 against a slugger and 864 against a bruiser** — a
+      524-per-mille spread, the widest of anything `DAT-011` measured — and it puts
+      **77 of 600** battles past the turn cap against the slugger, which is twelve
+      times the ten per mille a reading here may carry. So the mend build cannot be
+      quoted at all against that opponent until the stall is understood; it is the
+      guarded-mirror shape `RAT-004` fixed once and is worth checking against.
+
+      **Why the test was not changed to read a build.** It would go red immediately
+      and the game would not have moved — a green test on a kit nobody ships is
+      wrong, but a red test is not a fix. The fixture keeps the hybrid, its doc
+      carries the table above, and the *cleanser* beside it now fields a catalogued
+      build (`aThirdMemberFrom`) so the two are at least honest about which is which.
+      ⚠️ **The figures in the mender test's own doc — 525 and 543 — are stale as
+      well**, from before `ENG-012`; it reads 601 and 518 today.
+
+- [x] `DAT-011` **Happiny's cleanser slot is twenty per mille under its design
+      floor — EVERY LEVER IS NOW MEASURED AND CLOSED, and the floor turned out not to
+      be a line any shipped build clears. What shipped is two catalogued builds and
+      an instrument that reads one.** Split out of `ENG-012` on 2026-09-08 rather
+      than fixed there: what to do about it is an authoring decision about a
+      character, and a geometry fix is not the place to make one. Swept and closed
+      2026-09-09.
+
+      **What shipped.** Two builds in `builds.json` — `happiny.tend` (`egg_bomb`,
+      `safeguard`, `heal_bell`, `soft_boiled` + `endurance`, the optimum the sweep
+      found) and `happiny.decoy` (`egg_bomb`, `safeguard`, `taunt`, `soft_boiled` +
+      `carapace`, the opposite shape) — plus `aThirdMemberFrom`, which fields a
+      catalogued build's four skills **and its trait** in the fixture's third slot,
+      and the cleanser test now uses it. ⚠️ **The reading did not move**: 429‰ and
+      430‰ before and after, because the build is exactly the kit the test used to
+      write out by hand. That is the point rather than a disappointment — the
+      instrument changed and the number did not, so the number was never about the
+      instrument. Happiny was one of five characters with no entry in the catalogue
+      at all, and every character that has one has at least two, which is why two.
 
       `TestACleanserEarnsItsSlotWhereASparCannotSeeIt` holds that a slot a striker
       holds better is a slot the cleanser should not be in, at a floor of 450 per
@@ -334,13 +391,98 @@ is only so the shape is readable.
       written against read 133 — so the floor stays named and visible rather than
       being moved to meet the number.
 
-      ⚠️ **Raising attack is already refused**, and the refusal is recorded in the
-      test's own doc: pushing it until the squad won reached the floor at 660,
-      which is a bruiser's attack on a character whose whole shape is that it has
-      none. What got it to the floor the first time was the *kit* — trading a
-      self-buff the rating prices at nothing for `safeguard`, the first
-      column-wide absorb in the book. A second reading of the kit is the place to
-      look before the stat line.
+      **The sweep. Twenty-odd configurations, 400 seeds a side unless noted, and
+      the numbers are here so nobody re-measures them.** The entry used to end
+      "a second reading of the kit is the place to look before the stat line";
+      the kit was read, and so was everything else.
+
+      *The kit — seven alternatives, and the shipped four beat every one.* Each
+      row differs from the base kit in exactly one slot, replaced by
+      `hyper_voice`, which is the only other thing in the learnset that damages:
+
+      | the slot given up | vs a slugger | vs a blighter |
+      | --- | ---: | ---: |
+      | none — the base kit | 407‰ | 456‰ |
+      | `safeguard` | **163‰** (−244) | 345‰ (−111) |
+      | `soft_boiled` | 401‰ (−6) | 363‰ (−93) |
+      | `heal_bell` | **491‰ (+84)** | 333‰ (−123) |
+
+      ⚠️ **`heal_bell` is the only slot in the kit whose REMOVAL improves a
+      matchup**, and it is the character's own archetype. A cleanse is worth
+      about +123 against a squad that brings something to strip and about −84
+      against one that does not, so the fourth slot is matchup-dependent by
+      construction — and a floor asserted **per matchup** is a floor no such kit
+      can clear. It fires 2.5 casts a battle in both matchups against
+      `safeguard`'s 14.1 and `soft_boiled`'s 13.2, which is the same fact counted
+      a second way. The other three alternatives (`rally`, `taunt`, `rapid_spin`,
+      `wide_guard`, and `hyper_voice` in the striking slot) all read lower still.
+
+      *The trait — all six, and the fixture's hardcoded one is already the best.*
+      `aThirdMemberAs` fixes `endurance` for every third member of every squad it
+      builds, which nothing had questioned:
+
+      | trait | vs a slugger | vs a blighter |
+      | --- | ---: | ---: |
+      | `endurance` | **407‰** | 456‰ |
+      | `last_gasp` | 407‰ | 455‰ |
+      | `convalescence` | 397‰ | 447‰ |
+      | `composure` | 392‰ | 446‰ |
+      | `carapace` | 276‰ | **648‰** |
+      | `ballast` | **21‰** | 332‰ |
+
+      ⚠️ **`ballast` reads 21 per mille — seventeen wins in eight hundred
+      battles.** It grants `encumber` alongside `fortified`, and Happiny is the
+      slowest unit on the board at 90 speed, so the trait's own cost lands on the
+      one character least able to pay it. Worth knowing before anybody fields it
+      elsewhere; it is not a Happiny finding so much as an `encumber` one.
+
+      *The stat line — and this is where the shape of the whole problem shows.*
+      Defence swept 220 to 400 over 200 seeds, then the mender's entire stat
+      table put on the cleanser:
+
+      | stat line | effective hp | vs a slugger | vs a blighter | stalls |
+      | --- | ---: | ---: | ---: | ---: |
+      | shipped, defence 220 | 8 320 | 392‰ | 447‰ | 0 |
+      | defence 280 | 9 280 | 367‰ | 485‰ | 5 |
+      | defence 340 | 10 240 | **524‰** | 394‰ | 9 |
+      | defence 400 | 11 200 | **622‰** | 352‰ | 16 |
+      | the mender's whole table | 9 520 | 473‰ | 652‰ | **68 of 600** |
+
+      ⚠️ **Every way of buying survival moves the two matchups in OPPOSITE
+      directions**, and the mechanism is one sentence: effective health buys wins
+      against burst and loses them against attrition, because a longer battle is
+      what a poison squad wants and the cleanser adds no damage to end one
+      sooner. ⚠️ **And the two that buy the most push the board past the ten per
+      mille of unresolved battles a reading here may carry** — 40‰ at defence
+      400, 113‰ on the mender's table. That is the guarded-mirror shape `RAT-004`
+      already fixed once, arriving through the stat line instead of the rating.
+      ⚠️ **Defence 418 is refused outright** by the joint budget: 4800 health
+      behind it absorbs 11 510 against a `max_effective_hp` of 11 500, so
+      Blissey is twelve points from the ceiling at defence 400 and there is no
+      room above it at all. Raising attack was already refused (660 needed).
+
+      *Two things that are NOT the cause, checked so they are not re-checked.*
+      The fixture's third slot is `{Col: 0, Row: 1}` and `AllyFrontCol` is 2, so
+      the support already stands in the **back** column behind both carriers —
+      the cell does not punish it. And the opponent is not it either: the mender
+      clears 450 against all three of slugger, blighter and bruiser
+      (601‰ / 508‰ / 518‰), so the instrument is not hostile to supports.
+
+      ⚠️ **What the sweep found instead is that the comparison was never level,
+      and that is `DAT-013`.** The mender's floor-clearing reading comes off a
+      **hybrid of its two catalogued builds** that `builds.json` does not carry;
+      the builds it does carry read 340‰ and 205‰ against the same slugger — both
+      under the floor, one of them far under the cleanser. So the cleanser was
+      being measured on its only kit against a number no shipped build produces.
+
+      **The conclusion, stated plainly: the 20 per mille stands and is not a
+      defect in the character.** On catalogued kits Happiny is the **steadiest**
+      support in the game — 407‰ / 456‰ / 431‰ across three opponents, a band of
+      49 — against `cleffa.mend`'s 524-wide spread and `cleffa.hex`'s flat 180‰.
+      A support whose worst matchup is 407 is worth more than one whose worst is
+      340 and whose other direction loses four in five. The floor stays at 450,
+      printed and unmet, because the number it is unmet by is smaller than the
+      error in the thing it was being compared against.
 
 - [x] `ENG-012` **A pattern's splash was walked in absolute board directions, so an
       authored formation did not play the same on the two halves.** Found on

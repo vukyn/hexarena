@@ -634,6 +634,36 @@
       "passives": [
         "contagion"
       ]
+    },
+    {
+      "id": "happiny.tend",
+      "character": "pokemon.happiny",
+      "name": "ấp ủ",
+      "intent": "Lo cho người bên cạnh sạch vết và đứng dậy được, còn đòn thì để kẻ khác đánh",
+      "skills": [
+        "egg_bomb",
+        "safeguard",
+        "heal_bell",
+        "soft_boiled"
+      ],
+      "passives": [
+        "endurance"
+      ]
+    },
+    {
+      "id": "happiny.decoy",
+      "character": "pokemon.happiny",
+      "name": "quay lưng",
+      "intent": "Gọi cả trận về phía mình rồi đứng đó, dựa vào cái vỏ nó vẫn quen mang",
+      "skills": [
+        "egg_bomb",
+        "safeguard",
+        "taunt",
+        "soft_boiled"
+      ],
+      "passives": [
+        "carapace"
+      ]
     }
   ]
 }

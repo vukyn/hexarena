@@ -71,6 +71,15 @@ func TestTheShippedBuildsAreTheOnesTheTestsMeasure(t *testing.T) {
 		// form could not carry one of them. See onix_test.go.
 		{"onix.wall", wallBuild, "thorns"},
 		{"onix.forge", forgeBuild, "ballast"},
+		// The cleanser's steady direction. ⚠️ It is pinned here for a reason the
+		// rest of this table does not have: the cleanser fixture READS this build
+		// rather than writing a kit out, so without the pin an edit to
+		// builds.json would silently change what 429 and 430 per mille are a
+		// reading of. The fixture following the data and the table pinning the
+		// data are the two halves of one guard. `happiny.decoy` is deliberately
+		// absent — no test measures it, and this table's claim is about the
+		// builds the suite measures. → `TODO.md` `DAT-011`.
+		{"happiny.tend", tendBuild, "endurance"},
 	} {
 		build, known := book.Get(want.id)
 		if !known {
