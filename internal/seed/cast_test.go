@@ -314,28 +314,72 @@ func TestEveryShippedArchetypeKitIsCarryableAtAll(t *testing.T) {
 // TestEveryShippedCharacterMayCarryItsKit re-checks through skill.CanCarry what
 // cast.ParseBook already applied, so a change loosening the parser fails here
 // rather than shipping a character battle.New will refuse.
+//
+// ⚠️ **Asked once per FORM, and every form has to answer yes**, because a stage
+// may declare an affinity of its own and "the character's element" is then not
+// a thing one question can be about. The quantifier is the whole point: what
+// battle.enlist applies is the affinity the unit was FIELDED with, so a book
+// only *some* form could carry is a book the engine refuses at the moment
+// somebody plays it — the exact gap between the authoring layer and the engine
+// this test exists to keep closed.
+//
+// The form set is spelled out here rather than borrowed from the parser on
+// purpose: a guard that reuses the machinery it is guarding cannot see that
+// machinery go wrong. The stage gate is an allowlist, an empty one is every
+// form, and there is deliberately no level term — a form is fieldable from its
+// own MinLevel to the cap, so every form of a legal line can be put on the
+// board holding anything its gate admits.
 func TestEveryShippedCharacterMayCarryItsKit(t *testing.T) {
 	skills, err := seed.SkillBook()
 	if err != nil {
 		t.Fatalf("load shipped skills: %v", err)
 	}
+	var asked int
 	for _, character := range mustCast(t).All() {
 		for _, entry := range character.Skills {
 			known, err := skills.Lookup(entry.ID)
 			if err != nil {
 				t.Fatalf("%s: %v", character.ID, err)
 			}
-			if !skill.CanCarry(character.Element, known) {
-				t.Errorf("%s is %s and carries %s, which is %s: battle.New will refuse it",
-					character.ID, character.Element, entry.ID, known.Element)
+			for _, stage := range character.Stages {
+				if !entry.Held(stage.Name) {
+					continue
+				}
+				asked++
+				affinity := character.ElementAt(stage)
+				if !skill.CanCarry(affinity, known) {
+					t.Errorf("%s as %s is %s and carries %s, which is %s: battle.New will refuse it",
+						character.ID, stage.Name, affinity, entry.ID, known.Element)
+				}
 			}
 		}
+	}
+	// A walk that asked nothing passes, and a gate that had quietly become
+	// "no form holds anything" is exactly how it would come to ask nothing.
+	if asked == 0 {
+		t.Fatal("no form was asked about any skill, so this measured nothing")
 	}
 }
 
 // TestEveryShippedCharacterCoversItsPresetDemand is the property that makes the
 // wizard's element prompt honest: a character sitting on a preset's kit must
 // carry everything that kit demands.
+//
+// ⚠️ **The form it asks about is the ROOT, and that is the per-form reading of
+// this rule rather than an exemption from it.** A preset has no stages —
+// checkStages refuses a stage gate on one outright — and its kit is Learn(ids),
+// every entry at level one and ungated, so what a preset suggests is held by
+// the form a character *starts* as. That is also what the wizard writes: it
+// fills a one-stage line and offers the element beside the kit. A grown form
+// that declared an affinity dropping one of those elements would be refused by
+// TestEveryShippedCharacterMayCarryItsKit above, which asks every form, so
+// nothing is lost by asking the root here — and asking every form here would
+// instead be wrong for a character that has added stage gates of its own, which
+// LearnedIDs cannot see.
+//
+// Archetype.Demands itself is unchanged and must stay so: it is a fact about a
+// kit, a preset has no forms, and pushing stages into the preset layer to
+// "complete" the feature would give the preset a shape it has no data for.
 func TestEveryShippedCharacterCoversItsPresetDemand(t *testing.T) {
 	archetypes, characters := mustArchetypes(t), mustCast(t)
 	for _, character := range characters.All() {
@@ -349,13 +393,45 @@ func TestEveryShippedCharacterCoversItsPresetDemand(t *testing.T) {
 			// binds it, and the test above covers that.
 			continue
 		}
+		if len(character.Stages) == 0 {
+			t.Errorf("%s has no form to start as", character.ID)
+			continue
+		}
+		root := character.Stages[0]
+		affinity := character.ElementAt(root)
 		for _, member := range preset.Demands {
-			if !character.Element.Has(member) {
-				t.Errorf("%s carries the %s preset's kit unchanged but is %s, missing %s",
-					character.ID, preset.ID, character.Element, member)
+			if !affinity.Has(member) {
+				t.Errorf("%s carries the %s preset's kit unchanged but is %s as %s, missing %s",
+					character.ID, preset.ID, affinity, root.Name, member)
 			}
 		}
 	}
+}
+
+// fieldableElements is every element a character can be fielded carrying, once
+// each, in the order its forms declare them.
+//
+// ⚠️ **It is not character.Element.Elements(), and the gap is a whole carrier.**
+// A stage may declare an affinity of its own, so a line that is ground as a root
+// and ground/metal as a grown form is a metal carrier: cast.Character.ElementAt
+// is what a placement, a roster entry and a spar all resolve through, and
+// "carrier" in this package means "can be fielded carrying it" everywhere it is
+// used. Reading the character's alone under-counts exactly the lines the stage
+// element exists for, and does it without saying anything.
+//
+// Distinct and in declaration order rather than through a map, for
+// Character.Art's reason: a set built by ranging a map has no order, and this
+// feeds counts and messages that a reader compares between runs.
+func fieldableElements(character cast.Character) []element.Element {
+	out := make([]element.Element, 0, 2)
+	for _, stage := range character.Stages {
+		for _, member := range character.ElementAt(stage).Elements() {
+			if !slices.Contains(out, member) {
+				out = append(out, member)
+			}
+		}
+	}
+	return out
 }
 
 func sameStrings(left, right []string) bool {
@@ -796,8 +872,18 @@ func castReport(characters *cast.Book, origins *cast.OriginBook, limits progress
 			// The art each form shows, resolved rather than declared: a stage
 			// that names none shows the character's, and a record that printed
 			// the empty field instead would read as "this form has no picture".
-			fmt.Fprintf(&b, "  stage %q owns levels %d to %d, showing %s\n",
-				stage.Name, stage.MinLevel, last, character.StageArt(stage))
+			//
+			// ⚠️ **The element is resolved on the same terms, and this line is
+			// the ONLY thing guarding a mistyped stage `element` key.** Neither
+			// cast.ParseBook nor progression uses DisallowUnknownFields, so
+			// `"elemnt"` is dropped in silence — and it cannot be caught by a
+			// nil check either, because a stage naming no element is legal and
+			// reads as the character's. What a typo does move is this record:
+			// the form goes back to printing the character's element, and the
+			// golden diff says so.
+			fmt.Fprintf(&b, "  stage %q owns levels %d to %d, %s, showing %s\n",
+				stage.Name, stage.MinLevel, last,
+				character.ElementAt(stage), character.StageArt(stage))
 			levels := []int{stage.MinLevel, last}
 			if stage.MinLevel == last {
 				levels = levels[:1]
@@ -960,10 +1046,15 @@ var soleCarriers = map[string]string{
 // does not read, so Naruto is as real a wind carrier as Dratini — the one thing
 // it changes is the drafted pool, which is a different question from whether an
 // element can be brought twice.
+// ⚠️ It counts every element a character can be FIELDED carrying, which since
+// a stage may declare its own affinity is not the same list as the character's
+// own. A line gaining an element on evolution is a real second carrier of that
+// element — a squad can bring it twice by fielding two of them grown — and
+// reading character.Element alone would under-count it silently.
 func TestNoElementIsOneCharacter(t *testing.T) {
 	carriers := map[element.Element][]string{}
 	for _, character := range mustCast(t).All() {
-		for _, member := range character.Element.Elements() {
+		for _, member := range fieldableElements(character) {
 			carriers[member] = append(carriers[member], character.ID)
 		}
 	}

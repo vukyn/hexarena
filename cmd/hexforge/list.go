@@ -490,6 +490,11 @@ func renderCast(out io.Writer, lib *forge.Library) {
 	}
 	rendered := newTable("id", "name", "origin", "archetype", "element", "stages", "image")
 	for _, character := range characters {
+		// The character's element rather than any one form's: this is a row per
+		// character with no level in it, and the `stages` column beside it
+		// already carries the shape of the line. `hexforge show` is the command
+		// that resolves a form, and it prints one line per form that declares
+		// its own.
 		rendered.add(character.ID, character.Name, character.Origin, character.Archetype,
 			character.Element.String(), forge.StageSummary(character), character.Image)
 	}

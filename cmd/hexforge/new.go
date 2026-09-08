@@ -367,6 +367,16 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 	label("from", "%s", title)
 	label("tuned from", "%s", character.Archetype)
 	label("element", "%s", character.Element)
+	// Only for a form that declares its own, on exactly the terms the art block
+	// below uses: most lines are one element throughout, and a row per form on
+	// every character would be noise on every listing. What the row above says
+	// is what the line starts as, and these say where it changes.
+	for _, stage := range character.Stages {
+		if stage.Element == nil {
+			continue
+		}
+		label("", "%s as %s", character.ElementAt(stage), stage.Name)
+	}
 	// The learnset, with its gates, through the same summary the traits use:
 	label("kit", "%s", forge.UnlockSummary(character.Skills))
 	// Only when there are any, on the same terms as the traits line below: most

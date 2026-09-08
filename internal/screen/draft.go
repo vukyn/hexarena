@@ -1082,6 +1082,12 @@ func (d DraftScreen) poolRows(c Context, room int) []string {
 	rows := make([]string, 0, to-from)
 	for index := from; index < to; index++ {
 		character := live.Pool[index]
+		// The character's element, not a form's, for the reason the cast
+		// listing's own row keeps it: a pool row has no level and therefore no
+		// form to resolve, and the glossed affinity is the last column, so a
+		// line that gained an element on evolution would widen the one column
+		// with nothing behind it to give way. A ban is a decision about the
+		// character rather than about a form, which is what the column is for.
 		line := Pad(character.ID, draftIDWidth) + " " +
 			Pad(c.Text(d.stateOf(character.ID)), width) + " " +
 			c.Lang.GlossedAffinity(character.Element)

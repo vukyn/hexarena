@@ -432,7 +432,12 @@ func (l *Library) duellist(character cast.Character, level int, want string) (Du
 	skills, passives := seedKit(character, level, stage.Name)
 	return Duellist{
 		ID: character.ID, Name: character.Name, Level: level, Stage: stage.Name,
-		Affinity: character.Element, Stats: stats,
+		// The stage's affinity, falling back to the character's — this is the
+		// funnel every measurement comes through (spar, weigh and the carrier
+		// sweep all build their duellist here), so a line that changes element
+		// on evolution is measured as two different things on the chart the
+		// moment its two forms are sparred apart.
+		Affinity: character.ElementAt(stage), Stats: stats,
 		Skills: skills, Passives: passives,
 	}, nil
 }

@@ -258,10 +258,14 @@ func (p Placement) resolve(side hex.Side, characters *cast.Book) (battle.Roster,
 		// still named by the id it was placed with, and identified on the board
 		// by its tag, so nothing that needs the line rather than the form loses
 		// it here.
-		Name:     form.Name,
-		Side:     side,
-		Slot:     p.Slot,
-		Affinity: character.Element,
+		Name: form.Name,
+		Side: side,
+		Slot: p.Slot,
+		// The form's affinity for the same reason as the form's name: a stage
+		// may declare its own element, and what fights is the form. The
+		// character's is the answer for every form that declares none, which
+		// Character.ElementAt is the one place to decide.
+		Affinity: character.ElementAt(form),
 		Stats:    stats,
 		Skills:   skills,
 		Passives: passives,

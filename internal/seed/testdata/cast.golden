@@ -8,17 +8,17 @@ naruto.naruto — Naruto
   species  human
   art      assets/naruto.svg
   kit      kunai substitution@8 shadow_clone@12 wind_shuriken@20 summon_toad@28 rasengan@36 comeback@44
-  stage "Naruto" owns levels 1 to 15, showing assets/naruto.svg
+  stage "Naruto" owns levels 1 to 15, wind, showing assets/naruto.svg
     level 1  hp 1020, atk 180, def 130, spd 48, acc 64, ddg 26
              absorbs 1463 of the 11500 budget, 10037 to spare
     level 15 hp 1501, atk 255, def 182, spd 63, acc 84, ddg 33
              absorbs 2413 of the 11500 budget, 9087 to spare
-  stage "Shippuden" owns levels 16 to 31, showing assets/naruto-shippuden.svg
+  stage "Shippuden" owns levels 16 to 31, wind, showing assets/naruto-shippuden.svg
     level 16 hp 1648, atk 291, def 199, spd 71, acc 92, ddg 37
              absorbs 2742 of the 11500 budget, 8758 to spare
     level 31 hp 2177, atk 377, def 259, spd 89, acc 114, ddg 46
              absorbs 4061 of the 11500 budget, 7439 to spare
-  stage "Sennin" owns levels 32 to 60, showing assets/naruto-sage-mode.svg
+  stage "Sennin" owns levels 32 to 60, wind, showing assets/naruto-sage-mode.svg
     level 32 hp 2374, atk 421, def 282, spd 98, acc 122, ddg 51
              absorbs 4609 of the 11500 budget, 6891 to spare
     level 60 hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
@@ -31,17 +31,17 @@ pokemon.abra — Abra
   species  esper
   art      assets/abra.svg
   kit      psycho_cut shadow_ball@8 nasty_plot@12 dark_pulse@16 mind_crush@20 night_shade@24 mind_burn@28 inner_focus@32 shadow_punch@36 taunt@40 spite@44 curse@48 body_slam@52 shadow_claw@56
-  stage "Abra" owns levels 1 to 15, showing assets/abra.svg
+  stage "Abra" owns levels 1 to 15, dark, showing assets/abra.svg
     level 1  hp 560, atk 122, def 52, spd 31, acc 38, ddg 14
              absorbs 657 of the 11500 budget, 10843 to spare
     level 15 hp 825, atk 179, def 76, spd 46, acc 56, ddg 21
              absorbs 1035 of the 11500 budget, 10465 to spare
-  stage "Kadabra" owns levels 16 to 35, showing assets/kadabra.svg
+  stage "Kadabra" owns levels 16 to 35, dark, showing assets/kadabra.svg
     level 16 hp 1125, atk 244, def 104, spd 63, acc 75, ddg 29
              absorbs 1516 of the 11500 budget, 9984 to spare
     level 35 hp 1606, atk 349, def 149, spd 90, acc 108, ddg 42
              absorbs 2404 of the 11500 budget, 9096 to spare
-  stage "Alakazam" owns levels 36 to 60, showing assets/alakazam.svg
+  stage "Alakazam" owns levels 36 to 60, dark, showing assets/alakazam.svg
     level 36 hp 2039, atk 444, def 189, spd 114, acc 138, ddg 53
              absorbs 3326 of the 11500 budget, 8174 to spare
     level 60 hp 2800, atk 610, def 260, spd 158, acc 190, ddg 74
@@ -54,17 +54,17 @@ pokemon.bulbasaur — Bulbasaur
   species  plant
   art      assets/bulbasaur.svg
   kit      vine_whip razor_leaf poison_powder@8 sleep_powder@12[Bulbasaur,Ivysaur] leech_seed@16 synthesis@20 venoshock@24 sludge_bomb@32 ingrain@36 overgrow@20 thorn_volley@24 bloom_burst@36 sprout@20 verdant_mend@28
-  stage "Bulbasaur" owns levels 1 to 15, showing assets/bulbasaur.svg
+  stage "Bulbasaur" owns levels 1 to 15, grass, showing assets/bulbasaur.svg
     level 1  hp 900, atk 150, def 130, spd 30, acc 40, ddg 15
              absorbs 1291 of the 11500 budget, 10209 to spare
     level 15 hp 1398, atk 228, def 194, spd 44, acc 58, ddg 22
              absorbs 2303 of the 11500 budget, 9197 to spare
-  stage "Ivysaur" owns levels 16 to 31, showing assets/ivysaur.svg
+  stage "Ivysaur" owns levels 16 to 31, grass, showing assets/ivysaur.svg
     level 16 hp 1684, atk 281, def 240, spd 52, acc 70, ddg 25
              absorbs 3034 of the 11500 budget, 8466 to spare
     level 31 hp 2269, atk 373, def 315, spd 66, acc 90, ddg 33
              absorbs 4659 of the 11500 budget, 6841 to spare
-  stage "Venusaur" owns levels 32 to 60, showing assets/venusaur.svg
+  stage "Venusaur" owns levels 32 to 60, grass, showing assets/venusaur.svg
     level 32 hp 2613, atk 434, def 368, spd 73, acc 102, ddg 36
              absorbs 5819 of the 11500 budget, 5681 to spare
     level 60 hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50
@@ -77,17 +77,17 @@ pokemon.charmander — Charmander
   species  lizard dragon
   art      assets/charmander.svg
   kit      ember fire_spin fire_fang@8 smokescreen@12 flamethrower@16 dragon_rage@20 dragon_dance@24 heat_wave@32 inferno@36 dragon_claw@40 outrage@44 dragon_drive@48 bank_embers@20 flare@24 pyre@40 cauterise@28
-  stage "Charmander" owns levels 1 to 15, showing assets/charmander.svg
+  stage "Charmander" owns levels 1 to 15, fire, showing assets/charmander.svg
     level 1  hp 760, atk 180, def 95, spd 46, acc 48, ddg 22
              absorbs 1001 of the 11500 budget, 10499 to spare
     level 15 hp 1149, atk 265, def 141, spd 63, acc 66, ddg 30
              absorbs 1689 of the 11500 budget, 9811 to spare
-  stage "Charmeleon" owns levels 16 to 31, showing assets/charmeleon.svg
+  stage "Charmeleon" owns levels 16 to 31, fire, showing assets/charmeleon.svg
     level 16 hp 1355, atk 321, def 175, spd 73, acc 76, ddg 35
              absorbs 2147 of the 11500 budget, 9353 to spare
     level 31 hp 1830, atk 423, def 231, spd 92, acc 97, ddg 44
              absorbs 3244 of the 11500 budget, 8256 to spare
-  stage "Charizard" owns levels 32 to 60, showing assets/charizard.svg
+  stage "Charizard" owns levels 32 to 60, fire, showing assets/charizard.svg
     level 32 hp 2103, atk 491, def 281, spd 102, acc 109, ddg 51
              absorbs 4075 of the 11500 budget, 7425 to spare
     level 60 hp 3100, atk 700, def 400, spd 140, acc 150, ddg 70
@@ -100,17 +100,17 @@ pokemon.cleffa — Cleffa
   species  fae
   art      assets/cleffa.svg
   kit      moonblast charm moonlight@8 solar_beam@12 sing@14 smokescreen@16 wish@20 rally@24 wide_guard@28 taunt@32 withdraw@36 rapid_spin@40 light_screen@34
-  stage "Cleffa" owns levels 1 to 15, showing assets/cleffa.svg
+  stage "Cleffa" owns levels 1 to 15, light, showing assets/cleffa.svg
     level 1  hp 1032, atk 103, def 93, spd 29, acc 39, ddg 14
              absorbs 1352 of the 11500 budget, 10148 to spare
     level 15 hp 1498, atk 149, def 135, spd 42, acc 56, ddg 20
              absorbs 2174 of the 11500 budget, 9326 to spare
-  stage "Clefairy" owns levels 16 to 31, showing assets/clefairy.svg
+  stage "Clefairy" owns levels 16 to 31, light, showing assets/clefairy.svg
     level 16 hp 1838, atk 181, def 166, spd 50, acc 68, ddg 24
              absorbs 2858 of the 11500 budget, 8642 to spare
     level 31 hp 2439, atk 240, def 220, spd 67, acc 90, ddg 32
              absorbs 4234 of the 11500 budget, 7266 to spare
-  stage "Clefable" owns levels 32 to 60, showing assets/clefable.svg
+  stage "Clefable" owns levels 32 to 60, light, showing assets/clefable.svg
     level 32 hp 2892, atk 289, def 261, spd 79, acc 106, ddg 37
              absorbs 5415 of the 11500 budget, 6085 to spare
     level 60 hp 4200, atk 420, def 380, spd 115, acc 155, ddg 55
@@ -123,12 +123,12 @@ pokemon.diglett — Diglett
   species  brood
   art      assets/diglett.svg
   kit      dig rock_throw@8 split@12 sand_tomb@16 burrow@20 earthquake@24 body_slam@28 stone_edge@32 sandstorm@36 taunt@40 seismic_toss@44 rapid_spin@48 inner_focus@52
-  stage "Diglett" owns levels 1 to 23, showing assets/diglett.svg
+  stage "Diglett" owns levels 1 to 23, ground, showing assets/diglett.svg
     level 1  hp 793, atk 154, def 70, spd 35, acc 39, ddg 12
              absorbs 979 of the 11500 budget, 10521 to spare
     level 23 hp 1384, atk 268, def 122, spd 61, acc 68, ddg 21
              absorbs 1949 of the 11500 budget, 9551 to spare
-  stage "Dugtrio" owns levels 24 to 60, showing assets/dugtrio.svg
+  stage "Dugtrio" owns levels 24 to 60, ground, showing assets/dugtrio.svg
     level 24 hp 2016, atk 391, def 177, spd 88, acc 100, ddg 32
              absorbs 3210 of the 11500 budget, 8290 to spare
     level 60 hp 3400, atk 660, def 300, spd 150, acc 170, ddg 55
@@ -141,17 +141,17 @@ pokemon.dratini — Dratini
   species  dragon
   art      assets/dratini.svg
   kit      gust twister@8 dragon_rage@12 air_slash@16 slipstream@20 dragon_dance@24 updraft@28 body_slam@32 hurricane@36 dragon_claw@40 safeguard@44 dragon_drive@46 outrage@48 hyper_voice@52 taunt@56
-  stage "Dratini" owns levels 1 to 23, showing assets/dratini.svg
+  stage "Dratini" owns levels 1 to 23, wind, showing assets/dratini.svg
     level 1  hp 790, atk 141, def 84, spd 30, acc 40, ddg 12
              absorbs 1011 of the 11500 budget, 10489 to spare
     level 23 hp 1371, atk 245, def 145, spd 51, acc 69, ddg 20
              absorbs 2034 of the 11500 budget, 9466 to spare
-  stage "Dragonair" owns levels 24 to 43, showing assets/dragonair.svg
+  stage "Dragonair" owns levels 24 to 43, wind, showing assets/dragonair.svg
     level 24 hp 1807, atk 323, def 190, spd 63, acc 83, ddg 22
              absorbs 2952 of the 11500 budget, 8548 to spare
     level 43 hp 2457, atk 439, def 258, spd 85, acc 113, ddg 30
              absorbs 4575 of the 11500 budget, 6925 to spare
-  stage "Dragonite" owns levels 44 to 60, showing assets/dragonite.svg
+  stage "Dragonite" owns levels 44 to 60, wind, showing assets/dragonite.svg
     level 44 hp 3112, atk 556, def 327, spd 102, acc 135, ddg 34
              absorbs 6510 of the 11500 budget, 4990 to spare
     level 60 hp 3800, atk 680, def 400, spd 125, acc 165, ddg 42
@@ -164,17 +164,17 @@ pokemon.gastly — Gastly
   species  shade
   art      assets/gastly.svg
   kit      shadow_claw shadow_ball@8 night_shade@12 spite@14 curse@16 bite@18 smokescreen@20 poison_powder@22 sludge_bomb@24 venoshock@26 dark_pulse@28 nasty_plot@30 taunt@32 body_slam@36 skull_bash@40 shadow_punch@38
-  stage "Gastly" owns levels 1 to 15, showing assets/gastly.svg
+  stage "Gastly" owns levels 1 to 15, dark, showing assets/gastly.svg
     level 1  hp 688, atk 141, def 68, spd 30, acc 41, ddg 18
              absorbs 844 of the 11500 budget, 10656 to spare
     level 15 hp 999, atk 204, def 99, spd 44, acc 59, ddg 26
              absorbs 1330 of the 11500 budget, 10170 to spare
-  stage "Haunter" owns levels 16 to 31, showing assets/haunter.svg
+  stage "Haunter" owns levels 16 to 31, dark, showing assets/haunter.svg
     level 16 hp 1276, atk 262, def 135, spd 55, acc 74, ddg 34
              absorbs 1851 of the 11500 budget, 9649 to spare
     level 31 hp 1693, atk 348, def 179, spd 74, acc 99, ddg 45
              absorbs 2704 of the 11500 budget, 8796 to spare
-  stage "Gengar" owns levels 32 to 60, showing assets/gengar.svg
+  stage "Gengar" owns levels 32 to 60, dark, showing assets/gengar.svg
     level 32 hp 2066, atk 426, def 233, spd 89, acc 120, ddg 54
              absorbs 3676 of the 11500 budget, 7824 to spare
     level 60 hp 3000, atk 620, def 340, spd 130, acc 175, ddg 80
@@ -187,17 +187,17 @@ pokemon.gible — Gible
   species  dragon
   art      assets/gible.svg
   kit      dig sand_tomb@8 rock_throw@12 dragon_rage@16 earthquake@20 dragon_dance@24 sandstorm@28 stone_edge@32 dragon_claw@36 seismic_toss@40 body_slam@44 dragon_drive@46 outrage@48 taunt@52 rapid_spin@56
-  stage "Gible" owns levels 1 to 23, showing assets/gible.svg
+  stage "Gible" owns levels 1 to 23, ground, showing assets/gible.svg
     level 1  hp 640, atk 140, def 68, spd 38, acc 37, ddg 13
              absorbs 785 of the 11500 budget, 10715 to spare
     level 23 hp 1117, atk 244, def 118, spd 66, acc 64, ddg 23
              absorbs 1557 of the 11500 budget, 9943 to spare
-  stage "Gabite" owns levels 24 to 47, showing assets/gabite.svg
+  stage "Gabite" owns levels 24 to 47, ground, showing assets/gabite.svg
     level 24 hp 1470, atk 322, def 156, spd 87, acc 85, ddg 31
              absorbs 2237 of the 11500 budget, 9263 to spare
     level 47 hp 2115, atk 464, def 225, spd 126, acc 122, ddg 45
              absorbs 3704 of the 11500 budget, 7796 to spare
-  stage "Garchomp" owns levels 48 to 60, showing assets/garchomp.svg
+  stage "Garchomp" owns levels 48 to 60, ground, showing assets/garchomp.svg
     level 48 hp 2678, atk 587, def 285, spd 159, acc 155, ddg 57
              absorbs 5230 of the 11500 budget, 6270 to spare
     level 60 hp 3100, atk 680, def 330, spd 185, acc 180, ddg 66
@@ -210,17 +210,17 @@ pokemon.happiny — Happiny
   species  brood
   art      assets/happiny.svg
   kit      egg_bomb hyper_voice safeguard@8 heal_bell@12 soft_boiled@16 rally@20 wide_guard@24 taunt@28 rapid_spin@32
-  stage "Happiny" owns levels 1 to 15, showing assets/happiny.svg
+  stage "Happiny" owns levels 1 to 15, neutral, showing assets/happiny.svg
     level 1  hp 1180, atk 94, def 55, spd 22, acc 37, ddg 10
              absorbs 1396 of the 11500 budget, 10104 to spare
     level 15 hp 1706, atk 135, def 79, spd 31, acc 53, ddg 14
              absorbs 2156 of the 11500 budget, 9344 to spare
-  stage "Chansey" owns levels 16 to 31, showing assets/chansey.svg
+  stage "Chansey" owns levels 16 to 31, neutral, showing assets/chansey.svg
     level 16 hp 2101, atk 166, def 97, spd 38, acc 66, ddg 17
              absorbs 2782 of the 11500 budget, 8718 to spare
     level 31 hp 2782, atk 220, def 128, spd 51, acc 87, ddg 23
              absorbs 3974 of the 11500 budget, 7526 to spare
-  stage "Blissey" owns levels 32 to 60, showing assets/blissey.svg
+  stage "Blissey" owns levels 32 to 60, neutral, showing assets/blissey.svg
     level 32 hp 3309, atk 262, def 151, spd 62, acc 103, ddg 27
              absorbs 4975 of the 11500 budget, 6525 to spare
     level 60 hp 4800, atk 380, def 220, spd 90, acc 150, ddg 40
@@ -233,17 +233,17 @@ pokemon.igglybuff — Igglybuff
   species  fae
   art      assets/igglybuff.svg
   kit      dazzle patter sing@8 refrain@12 hyper_voice@16 body_slam@20 plunge@24 charm@28 taunt@32 rally@36 moonblast@40
-  stage "Igglybuff" owns levels 1 to 15, showing assets/igglybuff.svg
+  stage "Igglybuff" owns levels 1 to 15, light, showing assets/igglybuff.svg
     level 1  hp 1100, atk 130, def 58, spd 22, acc 34, ddg 10
              absorbs 1314 of the 11500 budget, 10186 to spare
     level 15 hp 1598, atk 189, def 84, spd 32, acc 49, ddg 13
              absorbs 2046 of the 11500 budget, 9454 to spare
-  stage "Jigglypuff" owns levels 16 to 31, showing assets/jigglypuff.svg
+  stage "Jigglypuff" owns levels 16 to 31, light, showing assets/jigglypuff.svg
     level 16 hp 1920, atk 232, def 101, spd 39, acc 60, ddg 15
              absorbs 2566 of the 11500 budget, 8934 to spare
     level 31 hp 2561, atk 310, def 135, spd 52, acc 80, ddg 20
              absorbs 3716 of the 11500 budget, 7784 to spare
-  stage "Wigglytuff" owns levels 32 to 60, showing assets/wigglytuff.svg
+  stage "Wigglytuff" owns levels 32 to 60, light, showing assets/wigglytuff.svg
     level 32 hp 3009, atk 384, def 164, spd 65, acc 98, ddg 24
              absorbs 4657 of the 11500 budget, 6843 to spare
     level 60 hp 4400, atk 560, def 240, spd 95, acc 145, ddg 36
@@ -256,7 +256,7 @@ pokemon.lapras — Lapras
   species  leviathan
   art      assets/lapras.svg
   kit      ice_shard ice_beam@8 water_gun withdraw@12 blizzard@20 bubble_beam@16 ice_wall@24 water_pulse@28 brine@32 rally@36 hail@40 hydro_pump@44 wide_guard@46 body_slam@48 rapid_spin@52 taunt@56
-  stage "Lapras" owns levels 1 to 60, showing assets/lapras.svg
+  stage "Lapras" owns levels 1 to 60, water/ice, showing assets/lapras.svg
     level 1  hp 1582, atk 182, def 124, spd 27, acc 55, ddg 12
              absorbs 2237 of the 11500 budget, 9263 to spare
     level 60 hp 4600, atk 530, def 360, spd 80, acc 160, ddg 34
@@ -269,17 +269,17 @@ pokemon.machop — Machop
   species  titan
   art      assets/machop.svg
   kit      brace wrecking_swing cross_chop@8 rock_throw body_slam vital_throw@12 seismic_toss@16 inner_focus@20 submission@24 taunt@32 skull_bash@36 rally@40 wide_guard@44
-  stage "Machop" owns levels 1 to 15, showing assets/machop.svg
+  stage "Machop" owns levels 1 to 15, ground, showing assets/machop.svg
     level 1  hp 860, atk 196, def 120, spd 23, acc 55, ddg 8
              absorbs 1204 of the 11500 budget, 10296 to spare
     level 15 hp 1249, atk 284, def 174, spd 33, acc 79, ddg 11
              absorbs 1976 of the 11500 budget, 9524 to spare
-  stage "Machoke" owns levels 16 to 31, showing assets/machoke.svg
+  stage "Machoke" owns levels 16 to 31, ground, showing assets/machoke.svg
     level 16 hp 1481, atk 339, def 206, spd 38, acc 94, ddg 13
              absorbs 2501 of the 11500 budget, 8999 to spare
     level 31 hp 1965, atk 450, def 274, spd 50, acc 125, ddg 17
              absorbs 3764 of the 11500 budget, 7736 to spare
-  stage "Machamp" owns levels 32 to 60, showing assets/machamp.svg
+  stage "Machamp" owns levels 32 to 60, ground, showing assets/machamp.svg
     level 32 hp 2272, atk 523, def 316, spd 58, acc 144, ddg 19
              absorbs 4665 of the 11500 budget, 6835 to spare
     level 60 hp 3300, atk 760, def 460, spd 85, acc 210, ddg 28
@@ -292,17 +292,17 @@ pokemon.magnemite — Magnemite
   species  construct
   art      assets/magnemite.svg
   kit      thunder_shock discharge@8 thunderbolt@12 flash_cannon@14 charge_beam@16 electro_ball@18 magnetise@20 spark@22 overload@23 mirror_shot@24 thunder_wave@26 metal_sound@28 magnet_rise@30 zap_cannon@32 smokescreen@36 inner_focus@40 taunt@44 steel_beam@42
-  stage "Magnemite" owns levels 1 to 15, showing assets/magnemite.svg
+  stage "Magnemite" owns levels 1 to 15, electric/metal, showing assets/magnemite.svg
     level 1  hp 737, atk 152, def 84, spd 27, acc 44, ddg 15
              absorbs 943 of the 11500 budget, 10557 to spare
     level 15 hp 1070, atk 221, def 121, spd 39, acc 64, ddg 21
              absorbs 1502 of the 11500 budget, 9998 to spare
-  stage "Magneton" owns levels 16 to 31, showing assets/magneton.svg
+  stage "Magneton" owns levels 16 to 31, electric/metal, showing assets/magneton.svg
     level 16 hp 1312, atk 271, def 148, spd 47, acc 78, ddg 26
              absorbs 1961 of the 11500 budget, 9539 to spare
     level 31 hp 1741, atk 359, def 197, spd 63, acc 104, ddg 35
              absorbs 2887 of the 11500 budget, 8613 to spare
-  stage "Magnezone" owns levels 32 to 60, showing assets/magnezone.svg
+  stage "Magnezone" owns levels 32 to 60, electric/metal, showing assets/magnezone.svg
     level 32 hp 2066, atk 426, def 234, spd 75, acc 124, ddg 42
              absorbs 3682 of the 11500 budget, 7818 to spare
     level 60 hp 3000, atk 620, def 340, spd 110, acc 180, ddg 62
@@ -315,7 +315,7 @@ pokemon.mew — Mew
   species  mythic
   art      assets/mew.svg
   kit      psychic body_slam@8 dream_eater@12 recover@14 hypnosis@16 transform@18 swift@20 withdraw@22 bite@24 smokescreen@26 rally@28 inner_focus@30 taunt@32 wide_guard@34 pummel@36 poison_powder@38 sludge_bomb@40 venoshock@42 skull_bash@44 rapid_spin@46 submission@48 vital_throw@52 cross_chop@56
-  stage "Mew" owns levels 1 to 60, showing assets/mew.svg
+  stage "Mew" owns levels 1 to 60, neutral, showing assets/mew.svg
     level 1  hp 1238, atk 202, def 168, spd 37, acc 59, ddg 16
              absorbs 1931 of the 11500 budget, 9569 to spare
     level 60 hp 3600, atk 590, def 490, spd 110, acc 172, ddg 49
@@ -328,7 +328,7 @@ pokemon.mewtwo — Mewtwo
   species  mythic
   art      assets/mewtwo.svg
   kit      psystrike shadow_ball@8 psycho_cut@12 recover@14 dark_pulse@16 nasty_plot@18 psychic@20 swift@22 bite@24 hypnosis@26 dream_eater@28 body_slam@30 smokescreen@32 inner_focus@34 taunt@36 skull_bash@40 submission@44 vital_throw@48
-  stage "Mewtwo" owns levels 1 to 60, showing assets/mewtwo.svg
+  stage "Mewtwo" owns levels 1 to 60, dark, showing assets/mewtwo.svg
     level 1  hp 1032, atk 178, def 96, spd 48, acc 68, ddg 23
              absorbs 1363 of the 11500 budget, 10137 to spare
     level 60 hp 3000, atk 520, def 280, spd 140, acc 200, ddg 68
@@ -341,17 +341,17 @@ pokemon.oddish — Oddish
   species  plant
   art      assets/oddish.svg
   kit      acid mega_drain toxic@8 acid_spray@10 stun_spore@12 petal_dance@16 poison_powder@20 sludge_bomb@24 venoshock@28 synthesis@32 ingrain@36 rally@40 wide_guard@44
-  stage "Oddish" owns levels 1 to 15, showing assets/oddish.svg
+  stage "Oddish" owns levels 1 to 15, grass, showing assets/oddish.svg
     level 1  hp 820, atk 140, def 103, spd 24, acc 40, ddg 11
              absorbs 1102 of the 11500 budget, 10398 to spare
     level 15 hp 1183, atk 199, def 147, spd 33, acc 57, ddg 15
              absorbs 1763 of the 11500 budget, 9737 to spare
-  stage "Gloom" owns levels 16 to 31, showing assets/gloom.svg
+  stage "Gloom" owns levels 16 to 31, grass, showing assets/gloom.svg
     level 16 hp 1462, atk 244, def 181, spd 41, acc 71, ddg 19
              absorbs 2346 of the 11500 budget, 9154 to spare
     level 31 hp 1935, atk 321, def 239, spd 54, acc 94, ddg 25
              absorbs 3480 of the 11500 budget, 8020 to spare
-  stage "Vileplume" owns levels 32 to 60, showing assets/vileplume.svg
+  stage "Vileplume" owns levels 32 to 60, grass, showing assets/vileplume.svg
     level 32 hp 2346, atk 389, def 290, spd 73, acc 114, ddg 31
              absorbs 4618 of the 11500 budget, 6882 to spare
     level 60 hp 3400, atk 560, def 420, spd 105, acc 165, ddg 45
@@ -364,17 +364,17 @@ pokemon.pichu — Pichu
   species  rodent
   art      assets/pichu.svg
   kit      thunder_shock nuzzle@8 charge_beam@12 spark@16 electro_ball@20 thunder_wave@24 taunt@28 discharge@32 thunderbolt@36 volt_tackle@40 overload@44 magnetise@46 body_slam@48 zap_cannon@52 inner_focus@56
-  stage "Pichu" owns levels 1 to 15, showing assets/pichu.svg
+  stage "Pichu" owns levels 1 to 15, electric, showing assets/pichu.svg
     level 1  hp 580, atk 120, def 56, spd 32, acc 34, ddg 18
              absorbs 688 of the 11500 budget, 10812 to spare
     level 15 hp 855, atk 176, def 82, spd 47, acc 50, ddg 26
              absorbs 1089 of the 11500 budget, 10411 to spare
-  stage "Pikachu" owns levels 16 to 35, showing assets/pikachu.svg
+  stage "Pikachu" owns levels 16 to 35, electric, showing assets/pikachu.svg
     level 16 hp 1165, atk 241, def 112, spd 63, acc 68, ddg 36
              absorbs 1600 of the 11500 budget, 9900 to spare
     level 35 hp 1664, atk 344, def 160, spd 91, acc 97, ddg 51
              absorbs 2552 of the 11500 budget, 8948 to spare
-  stage "Raichu" owns levels 36 to 60, showing assets/raichu.svg
+  stage "Raichu" owns levels 36 to 60, electric, showing assets/raichu.svg
     level 36 hp 2112, atk 437, def 203, spd 116, acc 123, ddg 65
              absorbs 3543 of the 11500 budget, 7957 to spare
     level 60 hp 2900, atk 600, def 280, spd 160, acc 170, ddg 90
@@ -387,22 +387,22 @@ pokemon.poliwag — Poliwag
   species  amphibian
   art      assets/poliwag.svg
   kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 taunt@32 submission@36[Poliwrath] hydro_pump@40 rally@44 rinse@32[Politoed] chorus@36[Politoed] drench@28 soak@20 tide_break@36 wellspring@28
-  stage "Poliwag" owns levels 1 to 15, showing assets/poliwag.svg
+  stage "Poliwag" owns levels 1 to 15, water, showing assets/poliwag.svg
     level 1  hp 963, atk 168, def 145, spd 25, acc 38, ddg 11
              absorbs 1428 of the 11500 budget, 10072 to spare
     level 15 hp 1398, atk 244, def 210, spd 36, acc 55, ddg 15
              absorbs 2377 of the 11500 budget, 9123 to spare
-  stage "Poliwhirl" owns levels 16 to 31, showing assets/poliwhirl.svg
+  stage "Poliwhirl" owns levels 16 to 31, water, showing assets/poliwhirl.svg
     level 16 hp 1644, atk 291, def 249, spd 40, acc 63, ddg 18
              absorbs 3010 of the 11500 budget, 8490 to spare
     level 31 hp 2181, atk 386, def 331, spd 53, acc 84, ddg 24
              absorbs 4591 of the 11500 budget, 6909 to spare
-  stage "Poliwrath" owns levels 32 to 31, showing assets/poliwrath.svg
+  stage "Poliwrath" owns levels 32 to 31, water, showing assets/poliwrath.svg
     level 32 hp 2547, atk 454, def 385, spd 62, acc 96, ddg 27
              absorbs 5828 of the 11500 budget, 5672 to spare
     level 31 hp 2506, atk 447, def 379, spd 61, acc 94, ddg 27
              absorbs 5682 of the 11500 budget, 5818 to spare
-  stage "Politoed" owns levels 32 to 60, showing assets/politoed.svg
+  stage "Politoed" owns levels 32 to 60, water, showing assets/politoed.svg
     level 32 hp 2616, atk 399, def 399, spd 55, acc 103, ddg 30
              absorbs 6097 of the 11500 budget, 5403 to spare
     level 60 hp 3800, atk 580, def 580, spd 80, acc 150, ddg 45
@@ -415,12 +415,12 @@ pokemon.riolu — Riolu
   species  canine
   art      assets/riolu.svg
   kit      metal_claw reversal aura_sphere@8 force_palm@12 close_combat@16 metal_sound@20 flash_cannon@24 mirror_shot@28 magnet_rise@32 taunt@36 rally@40 wide_guard@44
-  stage "Riolu" owns levels 1 to 19, showing assets/riolu.svg
+  stage "Riolu" owns levels 1 to 19, metal, showing assets/riolu.svg
     level 1  hp 700, atk 180, def 90, spd 40, acc 58, ddg 20
              absorbs 910 of the 11500 budget, 10590 to spare
     level 19 hp 1096, atk 277, def 138, spd 56, acc 83, ddg 27
              absorbs 1602 of the 11500 budget, 9898 to spare
-  stage "Lucario" owns levels 20 to 60, showing assets/lucario.svg
+  stage "Lucario" owns levels 20 to 60, metal, showing assets/lucario.svg
     level 20 hp 1677, atk 411, def 207, spd 82, acc 105, ddg 36
              absorbs 2837 of the 11500 budget, 8663 to spare
     level 60 hp 3000, atk 720, def 360, spd 135, acc 175, ddg 60
@@ -433,17 +433,17 @@ pokemon.squirtle — Squirtle
   species  turtle
   art      assets/squirtle.svg
   kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36 water_pulse@32 taunt@40 skull_bash@44 wide_guard@44 soak@20 deluge@44
-  stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg
+  stage "Squirtle" owns levels 1 to 15, water, showing assets/squirtle.svg
     level 1  hp 950, atk 120, def 175, spd 24, acc 40, ddg 11
              absorbs 1505 of the 11500 budget, 9995 to spare
     level 15 hp 1412, atk 176, def 252, spd 35, acc 57, ddg 15
              absorbs 2600 of the 11500 budget, 8900 to spare
-  stage "Wartortle" owns levels 16 to 31, showing assets/wartortle.svg
+  stage "Wartortle" owns levels 16 to 31, water, showing assets/wartortle.svg
     level 16 hp 1631, atk 207, def 290, spd 39, acc 63, ddg 17
              absorbs 3210 of the 11500 budget, 8290 to spare
     level 31 hp 2183, atk 276, def 385, spd 52, acc 84, ddg 23
              absorbs 4995 of the 11500 budget, 6505 to spare
-  stage "Blastoise" owns levels 32 to 60, showing assets/blastoise.svg
+  stage "Blastoise" owns levels 32 to 60, water, showing assets/blastoise.svg
     level 32 hp 2461, atk 315, def 438, spd 57, acc 92, ddg 26
              absorbs 6061 of the 11500 budget, 5439 to spare
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
@@ -456,17 +456,17 @@ pokemon.torchic — Torchic
   species  brood
   art      assets/torchic.svg
   kit      ember blaze_kick@8 fire_fang@12 flamethrower@16 inferno@20 body_slam@24 flare_blitz@28 heat_wave@32 taunt@36 rapid_spin@40 fire_spin@44 skull_bash@48 submission@52 inner_focus@56
-  stage "Torchic" owns levels 1 to 15, showing assets/torchic.svg
+  stage "Torchic" owns levels 1 to 15, fire, showing assets/torchic.svg
     level 1  hp 600, atk 140, def 68, spd 24, acc 33, ddg 12
              absorbs 736 of the 11500 budget, 10764 to spare
     level 15 hp 884, atk 206, def 100, spd 35, acc 48, ddg 17
              absorbs 1178 of the 11500 budget, 10322 to spare
-  stage "Combusken" owns levels 16 to 35, showing assets/combusken.svg
+  stage "Combusken" owns levels 16 to 35, fire, showing assets/combusken.svg
     level 16 hp 1206, atk 281, def 136, spd 48, acc 66, ddg 24
              absorbs 1752 of the 11500 budget, 9748 to spare
     level 35 hp 1722, atk 401, def 194, spd 68, acc 94, ddg 35
              absorbs 2836 of the 11500 budget, 8664 to spare
-  stage "Blaziken" owns levels 36 to 60, showing assets/blaziken.svg
+  stage "Blaziken" owns levels 36 to 60, fire, showing assets/blaziken.svg
     level 36 hp 2186, atk 510, def 247, spd 87, acc 120, ddg 44
              absorbs 3989 of the 11500 budget, 7511 to spare
     level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
