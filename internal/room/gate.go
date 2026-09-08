@@ -1,6 +1,8 @@
 package room
 
 import (
+	"fmt"
+
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
@@ -29,6 +31,31 @@ type Admission struct {
 	// turned away for its version or its password is a refusal like any other,
 	// so this stays false and the caller may not substitute hello.Watch for it.
 	Watching bool
+	// Rejoined is this client having taken back a seat it already held rather
+	// than having been given a new one.
+	//
+	// ⚠️ **The transport needs to tell the two apart even though the room does
+	// not.** To the room a rejoin is the same seat with the same squad, so
+	// nothing here changes and no message goes to the other player. To the
+	// transport it is the difference between a seat being filled for the first
+	// time — which is what starts a match — and a connection returning to one
+	// that was being held open for it, which must not start anything and must
+	// cancel the window that was about to end the match.
+	Rejoined bool
+	// Rejoinable is this seat having a token, which is what makes coming back to
+	// it possible at all.
+	//
+	// ⚠️ **The transport cannot work this out and must not guess it.** Whether a
+	// room can issue tokens is Deps.Tokens, which the transport never sees, and
+	// holding a seat open for a client that has no way to prove it is that client
+	// is a minute of the other player's time spent on nothing. So the gate says
+	// it, once, on the admission that created the seat.
+	//
+	// It is a second boolean beside Rejoined rather than a reading of it because
+	// the two answer different questions at different moments: this one is "may
+	// this seat be come back to", asked when it is taken, and Rejoined is "was it
+	// just come back to", asked on every hello.
+	Rejoinable bool
 }
 
 // Join is the gate. It reports what the room did with the hello and everything
@@ -142,7 +169,23 @@ func (r *Room) Join(hello wire.Hello) (Admission, []Outbound, error) {
 		if !r.config.Watchable {
 			return Admission{}, r.refuseConnection(wire.CodeWatchingClosed), nil
 		}
-		return Admission{Watching: true}, r.welcomeTo(""), nil
+		return Admission{Watching: true}, r.welcomeTo("", ""), nil
+	}
+	// ⚠️ **A rejoin is answered BEFORE the room is asked whether it is full**,
+	// and that order is the whole shape of the feature: a rejoining client's own
+	// seat is exactly what makes the room full, so a gate that asked about space
+	// first would refuse every rejoin there was any point in making. It sits
+	// after the version and the password because those are true of every client,
+	// and after the watcher branch because a watcher holds no seat to take back.
+	if seat, index, matched := r.seatFor(hello.Token); matched {
+		// Nothing else changes. The name and the squad the returning client
+		// brings are **ignored** rather than re-read: the squad is already on the
+		// board — in a drafting room it was picked here rather than brought at
+		// all — and a rejoin that re-seated a different side would let a player
+		// swap squads by pulling out a cable. What comes back is the welcome this
+		// seat was given, which is the same welcome because the seat is the same.
+		return Admission{Seat: seat, Rejoined: true, Rejoinable: true},
+			r.welcomeTo(seat, r.seated[index].token), nil
 	}
 	index, free := r.freeSeat()
 	if !free {
@@ -166,10 +209,14 @@ func (r *Room) Join(hello wire.Hello) (Admission, []Outbound, error) {
 		return Admission{}, r.refuseConnection(wire.CodeSquadRefused), nil
 	}
 	seat := seats[index]
+	token, err := r.mintToken()
+	if err != nil {
+		return Admission{}, nil, err
+	}
 	// The squad is the empty one in a drafting room, and the draft fills both in
 	// itself once it is Done. → draftAdvanced.
-	r.seated[index] = peer{taken: true, name: hello.Name, squad: hello.Squad.Clone()}
-	out := r.welcomeTo(seat)
+	r.seated[index] = peer{taken: true, name: hello.Name, squad: hello.Squad.Clone(), token: token}
+	out := r.welcomeTo(seat, token)
 	// The second peer to be seated starts the match, which is the one place a
 	// join produces more than an answer to itself. ⚠️ **A watcher reaches none of
 	// this**, which is what "a watcher does not start the match" means: it left
@@ -178,11 +225,11 @@ func (r *Room) Join(hello wire.Hello) (Admission, []Outbound, error) {
 	if _, stillFree := r.freeSeat(); !stillFree {
 		opening, err := r.bothTaken()
 		if err != nil {
-			return Admission{Seat: seat}, out, err
+			return Admission{Seat: seat, Rejoinable: token.Set()}, out, err
 		}
 		out = append(out, opening...)
 	}
-	return Admission{Seat: seat}, out, nil
+	return Admission{Seat: seat, Rejoinable: token.Set()}, out, nil
 }
 
 // welcomeTo is the room's configuration as a welcome, addressed to one seat —
@@ -202,7 +249,7 @@ func (r *Room) Join(hello wire.Hello) (Admission, []Outbound, error) {
 // from", which is how Server.send answers a client that has none, and
 // wire.Welcome.Seat that is not a seat is the room saying this client watches,
 // which is what Welcome.Watching reads. Neither is invented here.
-func (r *Room) welcomeTo(seat wire.Seat) []Outbound {
+func (r *Room) welcomeTo(seat wire.Seat, token wire.SeatToken) []Outbound {
 	return []Outbound{{To: seat, Body: wire.Welcome{
 		Format:    r.config.Format,
 		Battles:   r.config.Battles,
@@ -210,7 +257,53 @@ func (r *Room) welcomeTo(seat wire.Seat) []Outbound {
 		TurnCap:   r.config.TurnCap,
 		Drafts:    r.config.Drafts,
 		Seat:      seat,
+		Token:     token,
 	}}}
+}
+
+// seatFor is the seat a token belongs to, and whether it belongs to one.
+//
+// ⚠️ **An unset token matches nothing, and that is the case this has to get
+// right rather than the interesting one.** Every ordinary hello carries no token,
+// and every seat in a room built with no Deps.Tokens holds none — so a bare
+// Equal would find `"" == ""` and hand a stranger somebody's seat on the very
+// next join. This one line is what stops it.
+//
+// ⚠️ **There used to be a second guard, `held.token.Set()` in the loop, and it
+// was deleted because it made neither of them provable.** Either alone closes
+// the empty-against-empty case, so with both present a mutation removing one
+// left the other doing the job and no test moved. One guard that a mutation
+// reddens is worth more than two that cover for each other.
+//
+// The compare is constant-time for wire.Password's reason: one that returned
+// early would tell a guesser how much of a guess was right.
+func (r *Room) seatFor(token wire.SeatToken) (wire.Seat, int, bool) {
+	if !token.Set() {
+		return "", 0, false
+	}
+	for index := range r.seated {
+		if held := r.seated[index]; held.taken && held.token.Equal(token) {
+			return seats[index], index, true
+		}
+	}
+	return "", 0, false
+}
+
+// mintToken is a seat token, or none at all when the caller supplied no way to
+// make one. → Deps.Tokens, where nil is a supported answer.
+//
+// A failure is returned rather than swallowed: a caller that asked for tokens and
+// cannot have one is a room whose rejoin would silently not work, and a seat
+// handed out under that misunderstanding is worse than a join that says so.
+func (r *Room) mintToken() (wire.SeatToken, error) {
+	if r.deps.Tokens == nil {
+		return "", nil
+	}
+	token, err := r.deps.Tokens()
+	if err != nil {
+		return "", fmt.Errorf("make a seat token: %w", err)
+	}
+	return token, nil
 }
 
 // bothTaken is what the second peer sitting down starts.

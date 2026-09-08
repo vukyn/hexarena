@@ -1,7 +1,9 @@
 package wire
 
 import (
+	"crypto/rand"
 	"crypto/subtle"
+	stdhex "encoding/hex"
 	"fmt"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
@@ -111,6 +113,75 @@ func (p Password) String() string {
 // reaches for.
 func (p Password) GoString() string { return "wire.Password(" + p.String() + ")" }
 
+// SeatToken is what a client shows to take back the seat it had, and it is the
+// one secret in this protocol that is not a password.
+//
+// ⚠️ **It is a capability, not a name.** Anyone holding it is that seat, so a
+// room hands one only to the connection it just seated, and a client keeps it in
+// memory and never writes it anywhere. It is unguessable rather than
+// unforgeable: there is no signature and no expiry on the token itself — the
+// window a seat is held open for is what bounds it, and that lives in the
+// transport.
+//
+// It is redacted by String and GoString, for wire.Password's reason: a seat token
+// is worth exactly as much as the password that got the seat, and a debug line
+// that printed one is a debug line that hands a match away.
+type SeatToken string
+
+// Set reports whether a client is showing a token at all. An empty one is an
+// ordinary join rather than a bad rejoin, which is why nothing refuses it.
+func (t SeatToken) Set() bool { return t != "" }
+
+// Equal reports whether two tokens match, in constant time. → Password.Equal,
+// which this is the same decision as: a comparison that returns early tells a
+// guesser how much of a guess was right.
+func (t SeatToken) Equal(other SeatToken) bool {
+	return subtle.ConstantTimeCompare([]byte(t), []byte(other)) == 1
+}
+
+// String is the redaction, and it says the one thing about a token that is safe
+// to say: whether there is one.
+func (t SeatToken) String() string {
+	if t == "" {
+		return "[unset]"
+	}
+	return "[set]"
+}
+
+// GoString redacts under %#v as well.
+func (t SeatToken) GoString() string { return "wire.SeatToken(" + t.String() + ")" }
+
+// seatTokenBytes is how much randomness a token carries.
+//
+// Sixteen, which is a hundred and twenty-eight bits, and the reasoning is the
+// ordinary one for a bearer secret rather than anything about this game: a token
+// is guessed by trying, every try is a whole websocket handshake against one LAN
+// host, and a hundred and twenty-eight bits is out of reach of that by an
+// enormous margin. Fewer would still be out of reach and would invite the
+// arithmetic to be redone every time somebody wondered; more buys nothing and
+// makes the hex longer in a log that must never carry it anyway.
+const seatTokenBytes = 16
+
+// NewSeatToken makes one, from the operating system's randomness.
+//
+// ⚠️ **It lives here rather than in the room, and that is what keeps the room a
+// state machine.** internal/room reads no clock and draws no randomness — which
+// is what lets a match be driven one message at a time in a test — so the room
+// takes a source (room.Deps.Tokens) and this is the one every real caller hands
+// it. A test hands it a counter.
+//
+// A failure is returned rather than papered over with a weaker source: a room
+// that cannot make a token should say so and seat nobody, because the alternative
+// is a seat whose rejoin quietly does not work and a client that finds out by
+// losing a match.
+func NewSeatToken() (SeatToken, error) {
+	raw := make([]byte, seatTokenBytes)
+	if _, err := rand.Read(raw); err != nil {
+		return "", fmt.Errorf("draw a seat token: %w", err)
+	}
+	return SeatToken(stdhex.EncodeToString(raw)), nil
+}
+
 // Hello is the first thing a client says. Client → server.
 //
 // It carries the three version numbers inline (see Version), the squad the
@@ -162,6 +233,18 @@ type Hello struct {
 	// that means to play writes `false` rather than nothing, so what a joiner
 	// asked for reads whole in a log and in the golden.
 	Watch bool `json:"watch"`
+	// Token is a seat this client already had, shown to take it back after the
+	// socket between them closed.
+	//
+	// ⚠️ **A token is checked BEFORE the room is asked whether it is full**,
+	// because a rejoining client's seat is exactly what makes it full — that is
+	// the whole shape of a rejoin, and a gate that asked about space first would
+	// refuse every rejoin that mattered. → room.Room.Join.
+	//
+	// An empty token is an ordinary join and is not a failure: a client that
+	// never had a seat has nothing to show, and a client whose token no longer
+	// matches anything is told the room is full, which is true.
+	Token SeatToken `json:"token,omitempty"`
 }
 
 // Kind is KindHello.
@@ -291,6 +374,17 @@ type Welcome struct {
 	// watcher threaded through the same places as the players changes the battle
 	// it came to watch. → internal/room/series.go, seatCount.
 	Seat Seat `json:"seat"`
+	// Token is what this client shows to take this seat back after the socket
+	// between them closes. It is empty for a watcher, which holds no seat, and
+	// empty from a room whose caller supplied no way to make one — a rejoin is
+	// then simply unavailable rather than broken. → Hello.Token, and
+	// room.Deps.Tokens.
+	//
+	// ⚠️ **A rejoin re-sends the SAME welcome and therefore the same token.** The
+	// seat did not change, so neither does the capability for it; issuing a fresh
+	// one would leave a client that reconnected twice holding a token for a seat
+	// it still has under a name the room has forgotten.
+	Token SeatToken `json:"token,omitempty"`
 }
 
 // Kind is KindWelcome.

@@ -126,6 +126,35 @@ import (
 // LAN is not the one a host wants over patchy wifi.
 const DefaultCloseThreshold = 60 * time.Second
 
+// DefaultRejoinWindow is how long a seat is held open for the client that had
+// it, after the socket between them closed.
+//
+// ⚠️ **This is what the close threshold used to be doing on its own, and the two
+// are now different jobs.** Before a rejoin existed, a socket closing ended the
+// match, so the threshold was the only thing standing between two seconds of lag
+// and losing a whole bo3 — and it had to be generous for a reason that was
+// nothing to do with liveness. It can go back to answering its own question, "is
+// anybody there", and this answers "how long do we wait for them to come back".
+//
+// Sixty seconds, and the bounds are the same two the threshold's are, from the
+// other side:
+//
+//   - **Long enough to be worth having.** A wifi roam, a switch reconvergence or
+//     a laptop lid is seconds to tens of seconds; a window shorter than the blip
+//     it is meant to survive is a feature that never fires.
+//   - **Bounded by what the other player will sit through.** The room's clock
+//     does NOT stop while a seat is held — a player does not buy thinking time by
+//     pulling out a cable — so a seat that stays away past its allowance is
+//     passed by room.TimedOut exactly as if its holder were staring at the
+//     screen. The window therefore costs the other player nothing beyond the
+//     ordinary allowance, and what it bounds is only how long a *finished* match
+//     waits before the room is told nobody is coming back.
+//
+// A zero or negative Timings.RejoinWindow takes this default; a room whose seats
+// have no token holds nothing open whatever this says, because there would be
+// nobody who could come back. → room.Admission.Rejoinable.
+const DefaultRejoinWindow = 60 * time.Second
+
 // DefaultKeepalive is how often the transport pings a peer to find out whether
 // it is still there.
 //
@@ -181,6 +210,9 @@ type Timings struct {
 	Write time.Duration
 	// MessageLimit is the largest message that will be read, in bytes.
 	MessageLimit int64
+	// RejoinWindow is how long a seat is held for the client that had it.
+	// → DefaultRejoinWindow.
+	RejoinWindow time.Duration
 }
 
 // withDefaults fills in whatever the caller had no opinion about.
@@ -196,6 +228,9 @@ func (t Timings) withDefaults() Timings {
 	}
 	if t.MessageLimit <= 0 {
 		t.MessageLimit = DefaultMessageLimit
+	}
+	if t.RejoinWindow <= 0 {
+		t.RejoinWindow = DefaultRejoinWindow
 	}
 	return t
 }
