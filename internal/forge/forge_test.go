@@ -47,28 +47,45 @@ func scratchData(t *testing.T) string {
 	return target
 }
 
-func copyTree(t *testing.T, from, to string) {
+// copyTree puts the data at from into to: the books byte for byte, the art
+// shared rather than copied.
+//
+// It is a shim over testfixture.CopyData, which is where the mechanism and the
+// reason for it live. It used to be a byte-for-byte walk of the whole tree, in
+// five packages at once, and the shipped assets folder is 16 MB against 350 KB
+// of books — so every scratch directory any of those suites built paid for
+// sixty-six pictures no assertion reads.
+func copyTree(t *testing.T, from, to string) testfixture.DataCopy {
 	t.Helper()
-	entries, err := os.ReadDir(from)
+	done, err := testfixture.CopyData(from, to)
 	if err != nil {
-		t.Fatalf("read %s: %v", from, err)
+		t.Fatalf("copy the data at %s: %v", from, err)
 	}
-	for _, entry := range entries {
-		source, destination := filepath.Join(from, entry.Name()), filepath.Join(to, entry.Name())
-		if entry.IsDir() {
-			if err := os.MkdirAll(destination, 0o755); err != nil {
-				t.Fatalf("create %s: %v", destination, err)
-			}
-			copyTree(t, source, destination)
-			continue
-		}
-		raw, err := os.ReadFile(source)
-		if err != nil {
-			t.Fatalf("read %s: %v", source, err)
-		}
-		if err := os.WriteFile(destination, raw, 0o644); err != nil {
-			t.Fatalf("write %s: %v", destination, err)
-		}
+	return done
+}
+
+// TestAScratchDataDirectorySharesTheShippedArt is the guard on the arithmetic
+// that lets this suite finish: a scratch data directory must not hold its own
+// copy of the shipped pictures.
+//
+// It asserts the mechanism and not a stopwatch. A timing assertion would be a
+// flake, and would pass anyway on a machine fast enough to make the copy look
+// cheap. testfixture.CopyData falls back to writing the bytes out where neither
+// kind of link can be made — correct, and exactly as slow as what this
+// replaced — so a fallback that had quietly become the normal path would leave
+// every test in this package green and the package back at its old cost. That is
+// the failure this names, and it is the only one a green suite cannot show.
+func TestAScratchDataDirectorySharesTheShippedArt(t *testing.T) {
+	copied, walked, err := testfixture.CopiedArt(shippedDataDir, scratchData(t))
+	if err != nil {
+		t.Fatalf("compare the art: %v", err)
+	}
+	if walked == 0 {
+		t.Fatal("no pictures were compared, so nothing here is measured")
+	}
+	if len(copied) != 0 {
+		t.Errorf("%d of %d shipped pictures were copied rather than shared, starting with %v",
+			len(copied), walked, copied[:min(3, len(copied))])
 	}
 }
 
@@ -674,6 +691,27 @@ func TestArtFilesSkipsANameTheParserRefuses(t *testing.T) {
 // yet — so this is an empty list and not an error. A front-end that took an
 // error here would have no form to show, which is a worse answer than a field
 // somebody can type into.
+// TestTheArtFolderIsTheOneTheFixtureUses holds two spellings of one folder name
+// together.
+//
+// assetsDir is declared here for the game and testfixture.ArtDir is declared
+// there for the scratch data directories the tests build, and that package
+// cannot read this one's: this file imports it, so importing back would be an
+// import cycle in this test binary. Two spellings of a folder name is the
+// mistake assetsDir's own comment names, so the two are checked to agree rather
+// than assumed to.
+func TestTheArtFolderIsTheOneTheFixtureUses(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load %s: %v", dir, err)
+	}
+	if want := filepath.Join(dir, testfixture.ArtDir); lib.AssetsPath() != want {
+		t.Errorf("the library looks for art in %q and the fixture files it under %q",
+			lib.AssetsPath(), want)
+	}
+}
+
 func TestArtFilesTreatsAMissingAssetsFolderAsEmpty(t *testing.T) {
 	dir := scratchData(t)
 	assets := filepath.Join(dir, "assets")

@@ -49,7 +49,7 @@ that owns the subject wins and the note is the thing to fix.
 - [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — draft 1…5c xong; spectator 1…5 xong (còn cờ host + xem draft); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire ko nói phòng đủ người, cũng ko báo sắp xếp đã tới
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [4 đội starter, dùng được ngay](memory/hexarena-starter-squads.md) — ⚠️ Rate() BỎ trận Endless khỏi mẫu số: healer gặp healer hoà mãi mà vẫn khoe 85%
-- [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ danh sách import ≠ danh sách đồng hồ (context.WithTimeout)
+- [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ import ≠ đồng hồ CẢ HAI CHIỀU (WithTimeout lọt; import time mà không đọc vẫn chặn)
 - [CRLF phá data digest](memory/hexarena-crlf-data-digest.md) — ⚠️ join Mac→Win data_mismatch cùng commit; .gitattributes ko chữa checkout cũ
 - [dán chữ gãy cả 2 client](memory/hexarena-paste-both-clients.md) — ⚠️ textinput.pasteMsg KHÔNG XUẤT; PasteMsg là đường duy nhất
 - [lobby PvP chơi được](memory/hexarena-pvp-lobby.md) — ⚠️ RWMutex qua callback deadlock với WRITER; Live dùng Since không Drain

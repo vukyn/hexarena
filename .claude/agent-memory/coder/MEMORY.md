@@ -19,6 +19,7 @@
 - [A fixture-cast edit costs goldens](feedback_fixture_cast_edit_costs_goldens.md) — one skill into a fixture kit moved 656 golden lines; build the carrier in the test (twinOf/forkedTwin)
 - [A refusal can be right for the wrong reason](feedback_a_refusal_can_be_right_for_the_wrong_reason.md) — separate the verdict from its evidence; re-run a TODO's own example first, it may not reproduce
 - [Rebasing onto a moved origin/main](feedback_rebase_onto_a_moved_main.md) — patch-not-stash, leave the golden out; main moves MID-task too, so pin HEAD either side of a golden reading
+- [Measure the term before optimising it](feedback_measure_the_term_before_optimising_it.md) — SCR-011 blamed a 17 MB copy; 23ms vs 22ms on APFS, and 301 copies not 155 call sites
 - [Measure the thing a bound bounds](feedback_measure_the_thing_a_bound_bounds.md) — my 1 MiB read limit bounded 2.9 KB; hold both ends. -race's first catch is a TEST's teardown assumption
 - [A fixture the code can reorder](feedback_a_fixture_the_code_can_reorder.md) — an in-place sort also sorts the EXPECTATION; 0 tests failed
 - [Re-entrant RLock in a Read callback](feedback_reentrant_rlock_inside_a_read_callback.md) — 1 run in 10; -race clean; hoist the seat out of the lock

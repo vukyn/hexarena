@@ -1254,7 +1254,7 @@ type Saver interface {
 // about the shipped cast, and the fixture is validated the way real data is -- a
 // fixture the tool would refuse is not one worth testing with.
 func Inject(dir string, reload func() (Saver, error)) error {
-	art := filepath.Join(dir, "assets", "fixture")
+	art := filepath.Join(dir, ArtDir, "fixture")
 	if err := os.MkdirAll(art, 0o755); err != nil {
 		return fmt.Errorf("make %s: %w", art, err)
 	}
