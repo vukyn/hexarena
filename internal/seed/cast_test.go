@@ -17,6 +17,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
+	"github.com/vukyn/hexarena/internal/draft"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/testfixture"
@@ -107,6 +108,11 @@ func TestShippedArchetypesMatchTheReferenceProfiles(t *testing.T) {
 		// the lowest speed and the lowest dodge in the table plus a health line
 		// under the other front-column walls'.
 		{"monolith", 0, profile(3100, 600, 800, 60, 130, 20)},
+		// The element's first attacker. Every other water carrier spends its
+		// budget on armour — effective health 10132 to 11285 against this one's
+		// 6800 — and this is the trade taken the other way: attack second only to
+		// `slugger`, defence third thinnest in the table.
+		{"maelstrom", 0, profile(3400, 740, 300, 130, 170, 50)},
 	}
 	book := mustArchetypes(t)
 	if got, want := len(book.All()), len(design); got != want {
@@ -1073,6 +1079,46 @@ func TestNoElementIsOneCharacter(t *testing.T) {
 			continue
 		}
 		t.Errorf("%s is carried by %s alone, so the element cannot be brought twice and answering it is answering one character; ship a second carrier, or add a row to soleCarriers saying why not",
+			carried, held[0])
+	}
+}
+
+// TestNoElementIsOneDraftableCharacter is the sibling the test above says it is
+// not, and the difference between them is a whole game mode.
+//
+// `TestNoElementIsOneCharacter` counts every carrier, because a held-back
+// character still fights: `Hidden` is an authoring convenience the engine does
+// not read, so a saved squad may field Naruto and a wind element brought that way
+// is as real as any other. A **drafted** match is the case where the flag is a
+// rule rather than a convenience — `draft.NewPool` seats nobody who carries it —
+// so an element with one draftable carrier cannot be contested at all: the pool
+// is exclusive, whoever picks that character owns the element for the series, and
+// the other side's answer is to not have one.
+//
+// It asks the pool rather than reading `Hidden` here. Who a draft may seat is
+// `NewPool`'s statement and restating the flag beside it would be a second
+// declaration of one rule — the mistake this repository keeps a list of.
+func TestNoElementIsOneDraftableCharacter(t *testing.T) {
+	pool := draft.NewPool(mustCast(t).All())
+	if pool.Len() == 0 {
+		t.Fatal("the draft pool seats nobody, so this measures nothing")
+	}
+	carriers := map[element.Element][]string{}
+	for _, character := range pool.All() {
+		for _, member := range fieldableElements(character) {
+			carriers[member] = append(carriers[member], character.ID)
+		}
+	}
+	for _, carried := range element.All() {
+		held := carriers[carried]
+		if len(held) != 1 {
+			continue
+		}
+		if why, known := soleCarriers[carried.String()]; known {
+			t.Logf("%s is draftable only as %s, which is known: %s", carried, held[0], why)
+			continue
+		}
+		t.Errorf("%s has one draftable carrier, %s, so a drafted series cannot contest the element — whoever picks it owns it; ship a second draftable carrier, or add a row to soleCarriers saying why not",
 			carried, held[0])
 	}
 }

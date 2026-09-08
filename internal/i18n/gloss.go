@@ -239,6 +239,7 @@ var (
 		"manifold":    "kẻ tách thân",
 		"crooner":     "kẻ hát vang",
 		"monolith":    "khối đá đứng",
+		"maelstrom":   "kẻ cuốn nước",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

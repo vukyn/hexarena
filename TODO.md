@@ -111,6 +111,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-009` | done | Ally-aimed area support is single-target on every shipped board — REFUSED, with the measurement: the item's own `arc_up` candidate is a no-op, and `pierce`, the one shape that catches two, moved one battle in twelve hundred |
 | `DAT-011` | open | Happiny's cleanser slot is 20 per mille under its design floor on an honest instrument |
 | `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` — a reach guard and the probe-reading convention shipped; a board for a bonus to fire on did not |
+| `DAT-012` | done | A seat-swap rate is a reading about the SHELL as much as the seat — two shells answered opposite for one character, and the Gyarados line shipped on the honest one |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Traced Pokemon are waiting for a character — run the `comm` in the entry, never read a count off it |
 | `CAST-003` | shipped | A stage may declare its own element — the mechanism, and the onix line that fields it |
@@ -126,6 +127,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
 | `SCR-011` | done | Every scratch data directory copied 17 MB of art and re-ran the injection — BOTH FIXED; the ~1300s was Win… |
 | `SCR-012` | done | A draft's last pick can have one candidate, and the screen presented it as a choice — DONE. The mechanism was already shipped; the GAME CLIENT's record of it was… |
+| `SCR-013` | open | `SCR-011`'s own guard cannot pass in the environment `SCR-011` was measured in: five packages assert that art was SHARED, and Windows across two volumes refuses both kinds of link |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -1113,6 +1115,109 @@ is only so the shape is readable.
       `internal/tui/effects_test.go:20` name `phalanx x2 (always)` as layout
       literals rather than effect assertions. The three-place data-file rule does
       not bite — no new file.
+
+- [ ] `SCR-013` ⚠️ **`SCR-011`'s guard cannot pass in the environment `SCR-011` was
+      measured in.** Five packages now assert that a scratch data directory
+      **shared** the shipped art, and on Windows with the repository on one volume
+      and `TMP` on another, both kinds of link are refused — so the byte-copy
+      fallback is the normal path and the assertion is unconditionally red.
+
+      ```
+      --- FAIL: TestAScratchDataDirectorySharesTheShippedArt
+          66 of 66 shipped pictures were copied rather than shared
+      ```
+
+      `internal/forge` (twice, with `…StillSharesRatherThanCopies`),
+      `internal/screen`, `cmd/hexarena-tui` and `cmd/hexforge-tui`.
+
+      **Both legs measured rather than assumed**, source on `H:` and the scratch
+      directory under `C:\…\Temp`:
+
+      | call | result |
+      |---|---|
+      | hard link | `The system cannot move the file to a different disk drive` |
+      | symbolic link | `Administrator privilege required for this operation` |
+
+      ⚠️ **The fix itself is fine and this is not a request to revert it.**
+      `SCR-011` says so in as many words — *"a byte copy where neither is
+      available (Windows without developer mode, across two volumes)"* — so the
+      fallback is designed, and the entry's own numbers show the art was never the
+      expensive half anyway (23 ms sharing against 22 ms copying; the injection was
+      the lever). What is wrong is only that the **guard** for it is written as a
+      property of the machine: its doc explains it is there to catch *"a fallback
+      that had quietly become the normal path"*, which is exactly the state a
+      cross-volume Windows box is in permanently and legitimately.
+
+      Three ways out, each a decision rather than a patch: skip the assertion where
+      neither link is available and say which (a `t.Skip` naming the refusal, so
+      the test still fails on a box that *could* link and did not); assert the
+      cheaper invariant the entry already bounds — bytes written, which
+      `…StillSharesRatherThanCopies` caps at a megabyte and which a copy fails
+      whatever the reason; or put the scratch directory on the repository's own
+      volume so a hard link is available, which fixes the cost too and not just the
+      test.
+
+      ⚠️ Same family as `goldens-cannot-be-green-on-two-platforms`: a test that
+      pins the machine of whoever ran it. That one pins the path separator, this
+      one pins the filesystem's link support, and neither says so when it fails.
+
+- [x] `DAT-012` ⚠️ **A seat-swap rate is a reading about the SHELL as much as about
+      the seat. Two shells answered the opposite question for one character, with
+      identical data — and the tell was in a column that is not the rate.**
+
+      Shipping `pokemon.magikarp` (Magikarp → Gyarados, `maelstrom`) was measured
+      by putting it in a shipped squad's back seat and reading
+      `forge.FightSquads`, 200 seeds each way, every mirror control exactly 500‰.
+      Done twice, because the first answer was wrong.
+
+      **Shell A — `s02` (Blastoise + Gengar), Gyarados for Magnezone:**
+      1000‰ vs `s01`, 896‰ vs `s03`, 813‰ vs `s04`, against a control reading
+      717‰ / 120‰ / 378‰. Read on its own that is a character to cut in half.
+
+      **Shell B — `s04` (Machamp + Mew), Gyarados for Mewtwo, matched control in
+      the same run:**
+
+      | opponent | Gyarados in the seat | Mewtwo in the seat |
+      |---|---|---|
+      | `s01` | 632‰ | 907‰ |
+      | `s02` | 463‰ | 621‰ |
+      | `s03` | **95‰** | 452‰ |
+      | `s05` | 1000‰ | 1000‰ |
+      | head to head | 387‰ | — |
+
+      Same character, same numbers, opposite verdict: strong in A, weak in B.
+
+      ⚠️ **Shell A is the dishonest one and the `endless` column says so, not the
+      rate.** Blastoise brings four skills of nought power, so `s02`'s damage is
+      whatever sits in that back seat — which makes the seat's own contribution
+      the squad's whole offence, and it makes the shell freeze when the seat is
+      weakened. Measured while tuning the seat DOWN, shell A's own mirror went
+      **endless 50 → 88 → 126** of 400 and its `s03` matchup **92 → 144 → 222**,
+      while `Rate()` drops an endless battle from the denominator — so every
+      figure improved on a shrinking sample. Shell B ran **endless 0** throughout.
+      This is the same trap `hexarena-starter-squads` records and the second time
+      it has decided a conclusion here.
+
+      **The convention this fixes**, and it is cheap: a seat swap is read in a
+      shell whose **other two members can win without the seat**, the control is
+      fought **in the same run** over the **same opponents**, and the `endless`
+      count is quoted beside every rate. A shell that cannot finish is measuring
+      the shell.
+
+      **Where the character landed.** Between two shipped dealers — clearly above
+      Magnezone in shell A, consistently 158–357‰ below Mewtwo in shell B — and it
+      shipped there rather than being tuned to match Mewtwo, which would have made
+      water's first attacker top-tier on arrival. `hexforge check` reports no
+      problems; effective health 6800 of the 11500 budget, attack 740 second only
+      to `slugger`'s 760, defence third thinnest in the preset table.
+
+      ⚠️ **One reading is left unexplained rather than tidied away.** Gyarados is
+      water/wind against `s03`'s grass + electric/metal + fire, and the chart puts
+      water over metal and wind over fire — yet it reads **95‰** there where
+      **dark** Mewtwo, which is off the chart entirely, reads 452‰. So on that
+      board a two-way elemental advantage is worth less than the stat and speed gap
+      it is carried by. That is a question about how much an affinity is worth, not
+      about this character, and nothing here measured it.
 
 - [ ] `DAT-007` ⚠️ **The area axis is not priced below single-target burst — on every
       board a rate is read off, it DOES NOT EXIST. The repricing is refused for now
@@ -4829,7 +4934,12 @@ is only so the shape is readable.
 
       **No orphan form** — every line below is complete, and nothing `cast.json`
       names is missing from `assets/`. By line, as they would be authored:
-      **mareep → flaaffy → ampharos** · **magikarp → gyarados**.
+      **mareep → flaaffy → ampharos**, and that is the last one.
+      ⚠️ **`magikarp → gyarados` came off this list on 2026-09-08** (`DAT-012`),
+      authored in the order this entry queued it — water → water/**wind** as a
+      stage element, so `CAST-003` has its second user and Steelix is no longer
+      the only one. Both pictures passed
+      `TestTheShippedArtIsCutOutRatherThanFramed` on first contact, unchanged.
       ⚠️ **The onix line came off this list on 2026-09-08** (`CAST-003`), the same
       day the igglybuff line did, and the command above went from **seven files
       and three lines to five and two** in one day. Both of its pictures had been

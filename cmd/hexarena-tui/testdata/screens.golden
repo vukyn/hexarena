@@ -345,7 +345,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (26 trong 26 nhân vật)
 
   pokemon.pichu            pokemon        electric <điện>
 > pokemon.poliwag          pokemon        water <nước>
@@ -851,7 +851,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | cast =====
 
-danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (26 trong 26 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -1202,7 +1202,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  22 nhân vật  Pokémon
+  pokemon          anime   1997  23 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -2104,7 +2104,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (26 trong 26 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -2121,6 +2121,7 @@ danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
   pokemon.igglybuff        pokemon        light <ánh sáng>
   pokemon.lapras           pokemon        water/ice <nước/băng>
   pokemon.machop           pokemon        ground <đất>
+  pokemon.magikarp         pokemon        water <nước>
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
@@ -2154,7 +2155,6 @@ pokemon.poliwag — Poliwag
   cấp 46           hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 giai đoạn Poliwrath
   máu quy đổi      [================--------] 8048/11500, còn dư 3452
                    xuyên hết giáp thì chỉ đỡ được 3123
-
 
 
 
@@ -3402,7 +3402,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | cast =====
 
-danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (26 trong 26 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -3419,6 +3419,7 @@ danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
   pokemon.igglybuff        pokemon        light <ánh sáng>
   pokemon.lapras           pokemon        water/ice <nước/băng>
   pokemon.machop           pokemon        ground <đất>
+  pokemon.magikarp         pokemon        water <nước>
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
@@ -3444,7 +3445,6 @@ fixture-anime.adept — Example Adept
   cấp 60           hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 giai đoạn Example Adept
   máu quy đổi      [=======================-] 11397/11500, còn dư 103
                    xuyên hết giáp thì chỉ đỡ được 3100
-
 
 
 
@@ -4126,9 +4126,9 @@ nội tại  các nội tại đã khai báo, và ai mang
   ballast        trụ vững       pokemon.happiny@16 pokemon.onix@32 pokemon.squirtle@44
   composure      vững tâm       pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@4…
   elusive        huyền ảo       pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 p…
-  contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
+  contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.magikarp@20 pokemon.mew@40 pokemon.oddish@28
   spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
-  berserk        cuồng chiến    pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
+  berserk        cuồng chiến    pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.magikarp@32 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic…
   unyielding     bất khuất      pokemon.machop@24 pokemon.onix@48
   carapace       vỏ cứng        pokemon.happiny@40 pokemon.squirtle@48
   projection     hộ thể         pokemon.charmander@48
@@ -4293,7 +4293,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  22 nhân vật  Pokémon
+  pokemon          anime   1997  23 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -4691,7 +4691,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a forked detail pane =====
 
-cast  showing all origins (25 of 25 characters)
+cast  showing all origins (26 of 26 characters)
 
   pokemon.pichu            pokemon        electric
 > pokemon.poliwag          pokemon        water
@@ -5197,7 +5197,7 @@ squad bonuses  what a side is paid for what its units share
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | cast =====
 
-cast  showing all origins (25 of 25 characters)
+cast  showing all origins (26 of 26 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -5548,7 +5548,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  22 cast  Pokémon
+  pokemon          anime   1997  23 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -6450,7 +6450,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a forked detail pane =====
 
-cast  showing all origins (25 of 25 characters)
+cast  showing all origins (26 of 26 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -6467,6 +6467,7 @@ cast  showing all origins (25 of 25 characters)
   pokemon.igglybuff        pokemon        light
   pokemon.lapras           pokemon        water/ice
   pokemon.machop           pokemon        ground
+  pokemon.magikarp         pokemon        water
   pokemon.magnemite        pokemon        electric/metal
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
@@ -6494,7 +6495,6 @@ pokemon.poliwag — Poliwag
   level 46      hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 stage Poliwrath
   effective hp  [================--------] 8048 of 11500, 3452 to spare
                 3123 against damage that pierces its armour outright
-
 
 
 
@@ -7748,7 +7748,7 @@ squad bonuses  what a side is paid for what its units share
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | cast =====
 
-cast  showing all origins (25 of 25 characters)
+cast  showing all origins (26 of 26 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -7765,6 +7765,7 @@ cast  showing all origins (25 of 25 characters)
   pokemon.igglybuff        pokemon        light
   pokemon.lapras           pokemon        water/ice
   pokemon.machop           pokemon        ground
+  pokemon.magikarp         pokemon        water
   pokemon.magnemite        pokemon        electric/metal
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
@@ -7787,7 +7788,6 @@ fixture-anime.adept — Example Adept
   level 60      hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 stage Example Adept
   effective hp  [=======================-] 11397 of 11500, 103 to spare
                 3100 against damage that pierces its armour outright
-
 
 
 
@@ -8472,9 +8472,9 @@ traits  the declared traits, and who carries each
   ballast        pokemon.happiny@16 pokemon.onix@32 pokemon.squirtle@44
   composure      pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.onix@…
   elusive        pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@4…
-  contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
+  contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.magikarp@20 pokemon.mew@40 pokemon.oddish@28
   spiteful       pokemon.gastly@32 pokemon.poliwag@36
-  berserk        pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
+  berserk        pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.magikarp@32 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
   unyielding     pokemon.machop@24 pokemon.onix@48
   carapace       pokemon.happiny@40 pokemon.squirtle@48
   projection     pokemon.charmander@48
@@ -8639,7 +8639,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  22 cast  Pokémon
+  pokemon          anime   1997  23 cast  Pokémon
 
   note          A test fixture, not shipped.
 

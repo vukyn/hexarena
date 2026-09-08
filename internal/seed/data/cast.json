@@ -2237,6 +2237,158 @@
       ]
     },
     {
+      "id": "pokemon.magikarp",
+      "name": "Magikarp",
+      "origin": "pokemon",
+      "archetype": "maelstrom",
+      "image": "assets/magikarp.svg",
+      "element": "water",
+      "bio": "Cả ngày chỉ quẫy. Nước xiết thì nó trôi theo nước, ai lội qua cũng gạt nó sang một bên, và người ta bắt nó về rồi thả lại vì chẳng biết dùng làm gì. Nhưng nó quẫy suốt, không nghỉ, và cái ngày nó thôi quẫy thì chỗ khúc sông ấy không ai dám xuống nữa.",
+      "species": [
+        "leviathan"
+      ],
+      "stages": [
+        {
+          "name": "Magikarp",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 620,
+              "max": 1800
+            },
+            "attack": {
+              "base": 70,
+              "max": 200
+            },
+            "defense": {
+              "base": 55,
+              "max": 160
+            },
+            "speed": {
+              "base": 45,
+              "max": 130
+            },
+            "accuracy": {
+              "base": 38,
+              "max": 105
+            },
+            "dodge": {
+              "base": 14,
+              "max": 40
+            }
+          }
+        },
+        {
+          "name": "Gyarados",
+          "min_level": 20,
+          "image": "assets/gyarados.svg",
+          "element": [
+            "water",
+            "wind"
+          ],
+          "stats": {
+            "hp": {
+              "base": 1160,
+              "max": 3400
+            },
+            "attack": {
+              "base": 250,
+              "max": 740
+            },
+            "defense": {
+              "base": 100,
+              "max": 300
+            },
+            "speed": {
+              "base": 45,
+              "max": 130
+            },
+            "accuracy": {
+              "base": 58,
+              "max": 170
+            },
+            "dodge": {
+              "base": 17,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "soak"
+        },
+        {
+          "id": "body_slam"
+        },
+        {
+          "id": "tide_break",
+          "at_level": 8
+        },
+        {
+          "id": "bite",
+          "at_level": 12
+        },
+        {
+          "id": "brine",
+          "at_level": 16
+        },
+        {
+          "id": "hydro_pump",
+          "at_level": 20,
+          "stages": [
+            "Gyarados"
+          ]
+        },
+        {
+          "id": "gust",
+          "at_level": 20,
+          "stages": [
+            "Gyarados"
+          ]
+        },
+        {
+          "id": "taunt",
+          "at_level": 24
+        },
+        {
+          "id": "air_slash",
+          "at_level": 32,
+          "stages": [
+            "Gyarados"
+          ]
+        },
+        {
+          "id": "twister",
+          "at_level": 36,
+          "stages": [
+            "Gyarados"
+          ]
+        },
+        {
+          "id": "hurricane",
+          "at_level": 44,
+          "stages": [
+            "Gyarados"
+          ]
+        }
+      ],
+      "passives": [
+        {
+          "id": "contagion",
+          "at_level": 20
+        },
+        {
+          "id": "berserk",
+          "at_level": 32
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 44
+        }
+      ]
+    },
+    {
       "id": "pokemon.magnemite",
       "name": "Magnemite",
       "origin": "pokemon",

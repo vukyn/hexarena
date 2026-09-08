@@ -15,11 +15,25 @@ metadata:
 	  golden "… vào data\battles\phe-0-vs-phe-1-seed1.json"
 	  drawn  "… vào data/battles/phe-0-vs-phe-1-seed1.json"
 
-**Đúng 12 dòng**: 8 trong `cmd/hexarena-tui/testdata/screens.golden` (entry
-`a saved battle`, hai ngôn ngữ × hai cỡ, mỗi render hai dòng) và 4 trong
-`internal/screen/testdata/screens.golden` (entry `edited a skill`). Vào từ #319.
-`cmd/hexforge-tui`'s golden **không có dòng nào** — fixture của nó không vẽ note
-nào chứa đường dẫn.
+⚠️ **Hai câu ở đây từng SAI và sửa tại chỗ (2026-09-09).** Bản đầu viết *"đúng 12
+dòng"* và *"`cmd/hexforge-tui`'s golden **không có dòng nào**"*. Cả hai đã hết
+đúng: fixture của `hexforge-tui` **có** vẽ note đường dẫn (`data\skills.json`), và
+số dòng thì lớn dần theo mỗi màn mới. **Đừng đọc con số ở đây — dẫn xuất nó**, và
+đây là câu lệnh, chạy ngay sau `make golden`, đúng một dòng, không phụ thuộc bạn
+đang ở platform nào:
+
+	git diff -- '*.golden' | grep '^+' | grep '\\'
+
+Rỗng thì sạch. Không rỗng thì mỗi dòng in ra là một chuỗi cần trả về dạng đã
+commit. **Ba file chở chúng**: `cmd/hexarena-tui`, `cmd/hexforge-tui` và
+`internal/screen`.
+
+⚠️ **Sửa theo TỪNG CHUỖI, không theo từng file, và một lần replace không đủ.**
+Đo trong một session: lần đầu tôi chỉ khớp `..\seed\data\skills.json` và **sót**
+`data\skills.json` (không có tiền tố) — suýt commit một golden dạng Windows; lần
+sau, cùng một session, cần **bốn** chuỗi khác nhau (`data\battles\`,
+`battles\phe-`, `..\seed\data\skills.json`, `data\skills.json`). Nên chạy lại
+`grep` ở trên **sau khi** sửa, và chỉ tin khi nó rỗng.
 
 **Why:** ghi chú của một lần ghi file nêu **đường dẫn thật** và đường dẫn đó do
 `forge.Library` dựng bằng `filepath.Join`, tức `\` trên Windows và `/` ở mọi nơi
@@ -28,7 +42,8 @@ accept. Ai accept lần sau sẽ lật 12 dòng đó về phía mình và làm �
 vòng lặp, không phải một lần.
 
 **How to apply:**
-- ⚠️ **Đừng `make golden` rồi commit luôn nếu bạn ở macOS/Linux.** Chạy xong,
+- ⚠️ **Đừng `make golden` rồi commit luôn, ở BẤT KỲ platform nào** — bẫy đối
+  xứng, và trên Windows nó lật đúng những dòng đó về `\`. Chạy xong,
   **đọc diff** và trả 12 dòng đó về dạng đã commit (`\`), không thì PR của bạn
   chở một thay đổi platform chẳng liên quan gì. Bước 5b làm đúng vậy: dùng script
   chỉ lật lại dòng nào mà **dạng backslash của nó có trong file đã commit** —
