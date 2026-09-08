@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -301,6 +302,18 @@ func everyDraftScreen(t *testing.T, m model) map[string]model {
 	screens["a draft pick"] = pick
 	assertDraws(t, pick, pick.text(i18n.DraftYourPick))
 	assertDraws(t, pick, pick.text(i18n.DraftLoadoutOpen))
+	// ⚠️ **The half that stops the sentence below becoming a decoration.** A pick
+	// with a real choice must say nothing about there being nothing to choose, and
+	// it is asserted over the **whole pool** rather than over one id: the line
+	// names whoever is left, so a check against a single candidate would pass on a
+	// screen wrongly naming any of the other eleven.
+	assertNamesNobodyAsTheOnlyOne(t, pick)
+	// The last pick of a draft the pool fits exactly, which is the one decision in
+	// this game that is not one. → aForcedPickScreen.
+	forced := aForcedPickScreen(t, m)
+	screens["a draft with no choice left"] = forced
+	assertDraws(t, forced,
+		firstLine(forced.text(i18n.DraftOnlyOne, forced.draft.Live.Candidates[0])))
 	// The loadout, and the two lists it raises — which are the first pickers this
 	// client can reach at all. → model.picker.
 	loadout, subject := aDraftLoadoutScreen(t, m, pool)
@@ -434,6 +447,123 @@ func aDraftScreen(t *testing.T, m model, pool []cast.Character,
 	m.screen = screenDraft
 	m.picker = nil
 	return m
+}
+
+// aForcedPickScreen is the last pick of a draft whose pool the format spends
+// exactly: every ban used, every pick but one taken, and one character left — so
+// the side to decide is handed a list of one and has no decision to take.
+//
+// ⚠️ **The pinched pool is CONSTRUCTED and never hoped for.** `draft.Slack` was
+// nought at sixteen shipped characters, one at seventeen and is wider now, so a
+// fixture that reached this state out of the shipped pool would have reached it
+// for a few hours and then quietly stopped — which is the shape the screen's own
+// rule is written against. → pinchedDraftPoolIDs for what the pool is cut from,
+// and TestTheForcedPickEntryIsNotMovedByWhatTheCastShips for the measurement that
+// a character shipping cannot move this entry's bytes.
+//
+// ⚠️ **It is drawn from the GUEST's side of the table, and that is arithmetic
+// rather than variety.** The host decides first and the two sides alternate, so
+// the last pick of a draft is always the guest's — a reading that put this
+// entry's forced pick on the host would be a draft nobody could have played into.
+// It is therefore the one entry in this record whose "you" is the second seat,
+// which is worth having on its own.
+func aForcedPickScreen(t *testing.T, m model) model {
+	t.Helper()
+	forced := aPinchedPickScreen(t, m, 2*draft.PicksPerSide(wire.Format3v3)-1)
+	// The entry's own discrimination, and it is two questions rather than one: the
+	// marks have to leave exactly one row untaken — or the heading and the
+	// candidate list disagree about how forced this pick is — **and** the reading
+	// has to be read as forced.
+	if left := forced.draft.Left(); left != 1 {
+		t.Fatalf("the forced-pick fixture leaves %d of the pool untaken, so its heading and "+
+			"its candidate list disagree about how forced this pick is", left)
+	}
+	if _, one := forced.draft.Live.OnlyOne(); !one {
+		t.Fatal("the forced-pick fixture is not read as a decision with one candidate, so this " +
+			"entry records an ordinary pick twice")
+	}
+	return forced
+}
+
+// aPinchedPickScreen is a draft over the pinched pool with `done` picks already
+// taken, so the decision in front chooses from whatever the arithmetic leaves.
+//
+// ⚠️ **`done` is what makes the pair measurable.** One short of every pick is the
+// forced state; two short is the **neighbour** of it, and the neighbour is the
+// only reading that tells the screen's `len(Candidates) != 1` from any `<= n`
+// form somebody might write down instead — `internal/screen` measured exactly
+// that mutation surviving a fixture whose "real choice" was the whole pool.
+//
+// The side on turn is derived rather than named: the host decides first and the
+// two alternate, so an even count of picks taken leaves the host to decide and an
+// odd count the guest. `You` follows it, because a reading whose "you" is not the
+// seat being asked is a state no client ever holds.
+func aPinchedPickScreen(t *testing.T, m model, done int) model {
+	t.Helper()
+	pool := pinchedDraftPool(t)
+	bans, picks := draft.BansPerSide(wire.Format3v3), draft.PicksPerSide(wire.Format3v3)
+	if done < 0 || done >= 2*picks {
+		t.Fatalf("a 3v3 takes %d picks in all and this fixture was asked for a reading with "+
+			"%d already taken, which is not a pick still to come", 2*picks, done)
+	}
+	ids := func(from, count int) []string {
+		out := make([]string, 0, count)
+		for _, character := range pool[from : from+count] {
+			out = append(out, character.ID)
+		}
+		return out
+	}
+	// A pick with its loadout in, which is what the record claims of every pick
+	// already taken: the form and the kit are this file's, exactly as the
+	// neighbouring entries' are.
+	taken := func(from, count int) []draw.DraftPick {
+		out := make([]draw.DraftPick, 0, count)
+		for _, id := range ids(from, count) {
+			out = append(out, draw.DraftPick{Character: id, Stage: "one",
+				Skills: []string{"a", "b", "c", "d"}, Passives: []string{"e"}})
+		}
+		return out
+	}
+	// Both blocks are indexed by SEAT and not by whose reading this is, so they are
+	// named that way: the host picks on the even counts, so it holds the larger
+	// half of an odd number of them.
+	hostPicks, guestPicks := (done+1)/2, done/2
+	return aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+		live.Step, live.Yours = draw.DraftStepPick, true
+		live.OnTurn = live.Seats[done%2]
+		live.You = live.OnTurn
+		live.Bans[0], live.Bans[1] = ids(0, bans), ids(bans, bans)
+		live.Picks[0] = taken(2*bans, hostPicks)
+		live.Picks[1] = taken(2*bans+hostPicks, guestPicks)
+		// Every ban spent and every pick so far taken, each pick costing two
+		// records — the decision and the loadout that answers it.
+		live.Recorded = 2*bans + 2*done
+		live.Candidates = ids(2*bans+done, len(pool)-2*bans-done)
+	})
+}
+
+// assertNamesNobodyAsTheOnlyOne is the negative half of the one-candidate line: a
+// decision with a real choice must not say there is nothing to choose about
+// **any** character in the pool.
+//
+// ⚠️ **Over the whole pool rather than over one id.** The line names whoever is
+// left, so a check against a single candidate stays green on a screen that wrongly
+// names one of the others — and asserting the *unformatted* key would not compile
+// against a wording that is a format string.
+func assertNamesNobodyAsTheOnlyOne(t *testing.T, m model) {
+	t.Helper()
+	if candidates := len(m.draft.Live.Candidates); candidates < 2 {
+		t.Fatalf("this reading offers %d candidates, so it cannot tell a choice from a forced "+
+			"pick at all", candidates)
+	}
+	drawn := drawnBody(m)
+	for _, character := range m.draft.Live.Pool {
+		said := firstLine(m.text(i18n.DraftOnlyOne, character.ID))
+		if strings.Contains(drawn, said) {
+			t.Fatalf("a pick with %d candidates says %q:\n%s",
+				len(m.draft.Live.Candidates), said, drawn)
+		}
+	}
 }
 
 // aDraftLoadoutScreen is the loadout editor with a legal kit already chosen
@@ -1454,31 +1584,87 @@ var namedDraftPoolIDs = []string{
 // a separate cost with a separate owner. → TODO.md.
 //
 // namedDraftPool is those twelve out of the embedded cast, in the order named.
-//
-// ⚠️ It goes through `draft.NewPool` rather than round the outside, so the
-// held-back rule still applies: a character on this list that was later hidden
-// would be **absent** from the result, and the length check below is what turns
-// that into a red test rather than a quietly shorter pool and a moved count.
 func namedDraftPool(t *testing.T) []cast.Character {
+	t.Helper()
+	return namedPoolFrom(t, shippedCast(t), namedDraftPoolIDs)
+}
+
+// pinchedDraftPoolIDs is the forced-pick entry's pool, and it is the **named**
+// list cut to the size the format spends exactly.
+//
+// ⚠️ **The size is derived and the members are named, and it needs to be both.**
+// Derived, because what makes the last pick forced is arithmetic —
+// `2*PicksPerSide + 2*BansPerSide` characters leave `draft.Slack` at nought, so
+// the last picker sees `slack + 1` = one — and a written-down ten would stop
+// being that the day either figure moved. Named, because the members are what the
+// golden's rows say, and taking the first n of the *shipped* pool would move
+// every one of those rows the next time a character sorts ahead of the ones in
+// front. → TestTheForcedPickEntryIsNotMovedByWhatTheCastShips, which is the
+// measurement of the second half rather than an argument for it.
+func pinchedDraftPoolIDs(t *testing.T) []string {
+	t.Helper()
+	tight := 2*draft.PicksPerSide(wire.Format3v3) + 2*draft.BansPerSide(wire.Format3v3)
+	if slack := draft.Slack(tight, wire.Format3v3); slack != 0 {
+		t.Fatalf("a pool of %d sized to a 3v3 leaves %d slack, so this derivation is wrong "+
+			"rather than the screen", tight, slack)
+	}
+	if tight > len(namedDraftPoolIDs) {
+		t.Fatalf("a 3v3 spends %d characters and this file names %d, so the pinched pool "+
+			"cannot be cut out of the named list — name more of them rather than reaching "+
+			"for the shipped cast", tight, len(namedDraftPoolIDs))
+	}
+	return namedDraftPoolIDs[:tight]
+}
+
+// pinchedDraftPool is those out of the embedded cast.
+func pinchedDraftPool(t *testing.T) []cast.Character {
+	t.Helper()
+	return pinchedDraftPoolFrom(t, shippedCast(t))
+}
+
+// pinchedDraftPoolFrom is pinchedDraftPool over a cast the caller names, which is
+// what lets a test ask the same fixture the same question over a **wider** cast
+// and compare the two drawings.
+func pinchedDraftPoolFrom(t *testing.T, all []cast.Character) []cast.Character {
+	t.Helper()
+	return namedPoolFrom(t, all, pinchedDraftPoolIDs(t))
+}
+
+// shippedCast is the embedded cast as a plain list.
+func shippedCast(t *testing.T) []cast.Character {
 	t.Helper()
 	characters, err := seed.Cast()
 	if err != nil {
 		t.Fatalf("load the embedded cast: %v", err)
 	}
-	offered := draft.NewPool(characters.All())
-	pool := make([]cast.Character, 0, len(namedDraftPoolIDs))
-	for _, id := range namedDraftPoolIDs {
-		if !offered.Has(id) {
+	return characters.All()
+}
+
+// namedPoolFrom resolves a named list of ids out of a cast, in the order named.
+//
+// ⚠️ It goes through `draft.NewPool` rather than round the outside, so the
+// held-back rule still applies: a character on the list that was later hidden
+// would be **absent** from the result, and the checks below are what turn that
+// into a red test rather than a quietly shorter pool and a moved count.
+func namedPoolFrom(t *testing.T, all []cast.Character, ids []string) []cast.Character {
+	t.Helper()
+	offered := draft.NewPool(all)
+	held := offered.All()
+	pool := make([]cast.Character, 0, len(ids))
+	for _, id := range ids {
+		index := slices.IndexFunc(held, func(character cast.Character) bool {
+			return character.ID == id
+		})
+		if index < 0 {
 			t.Fatalf("the draft fixture names %q and the drafting pool no longer offers it — "+
 				"it was removed from the cast or held back. This list is named so the golden's "+
 				"count cannot move on a content commit, so answer it here rather than letting "+
 				"the pool quietly get shorter", id)
 		}
-		character, _ := characters.Get(id)
-		pool = append(pool, character)
+		pool = append(pool, held[index])
 	}
-	if len(pool) != len(namedDraftPoolIDs) {
-		t.Fatalf("the named pool resolved %d of %d", len(pool), len(namedDraftPoolIDs))
+	if len(pool) != len(ids) {
+		t.Fatalf("the named pool resolved %d of %d", len(pool), len(ids))
 	}
 	return pool
 }

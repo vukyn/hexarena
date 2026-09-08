@@ -240,6 +240,181 @@ func aDraftReading(pool draft.Pool, format wire.Format, candidates int) draw.Dra
 	}
 }
 
+// TestTheClientDrawsAForcedPickAsNoChoiceInBothLanguages is SCR-012's client
+// half, and it is a pair rather than one claim.
+//
+// `internal/screen` already holds this pair over the **drawing**
+// (TestADecisionWithOneCandidateSaysThereIsNoChoice). It cannot stand in for this
+// one: the two draw through different paths — this client fills a `draw.DraftLive`
+// through `draftLiveOf` and renders inside `frame`, where that package is handed a
+// reading and answers with a body and a footer — so a line lost to this client's
+// framing, or a mapping that stopped carrying the candidate list, leaves that test
+// green. Before this one existed the wording had **nought hits** in this client's
+// golden, in both languages.
+//
+// Both halves, because either alone is worth little: a screen that never draws
+// the line and a screen that always draws it are both wrong, and the second reads
+// as working.
+//
+// ⚠️ **The neighbour of one is what the negative half is drawn at.** Two
+// candidates, not the whole pool — a fixture whose "real choice" is twelve rows is
+// nowhere near the boundary, and `internal/screen` measured a `> 4` form of the
+// rule surviving exactly that.
+func TestTheClientDrawsAForcedPickAsNoChoiceInBothLanguages(t *testing.T) {
+	picks := draft.PicksPerSide(wire.Format3v3)
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		forced := aForcedPickScreen(t, m)
+		only := forced.draft.Live.Candidates[0]
+		said := firstLine(forced.text(i18n.DraftOnlyOne, only))
+		if !strings.Contains(drawnBody(forced), said) {
+			t.Errorf("in %s the client draws a forced pick as an ordinary list to choose "+
+				"from, saying nothing of %q:\n%s", lang, said, drawnBody(forced))
+		}
+		// And the other half: one decision earlier the same draft offers two, which
+		// is a choice, and the line must not be there.
+		pair := aPinchedPickScreen(t, m, 2*picks-2)
+		if got := len(pair.draft.Live.Candidates); got != 2 {
+			t.Fatalf("the neighbouring reading offers %d candidates rather than 2, so this "+
+				"half is not measured at the boundary at all", got)
+		}
+		assertNamesNobodyAsTheOnlyOne(t, pair)
+	}
+}
+
+// TestTheForcedPickEntryIsNotMovedByWhatTheCastShips is the fixture measured
+// rather than argued for.
+//
+// ⚠️ **#328 is what this is written against.** A fixture that picked characters by
+// **position** in the cast file moved 1,292 golden lines the day the cast was
+// sorted, with no screen having changed — and a golden's whole value is that a
+// line moving means a drawing moved. The forced-pick entry needs a pool of a
+// particular *size*, which is the shape most likely to be reached for by slicing
+// whatever is shipped, so the immunity is measured: the same entry is drawn twice,
+// once over the shipped cast and once over a cast one character wider, and the two
+// drawings have to be the same bytes.
+//
+// ⚠️ **The extra character goes in FRONT.** `cast.json` is held in id order, so a
+// character shipping can land anywhere in the list — and a fixture slicing the
+// front of the pool is only caught by an arrival that sorts ahead of what it was
+// taking. Appending would leave that mutation green.
+func TestTheForcedPickEntryIsNotMovedByWhatTheCastShips(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	shipped := shippedCast(t)
+	if len(shipped) == 0 {
+		t.Fatal("the embedded cast is empty, so nothing here is measured")
+	}
+	// A character the cast does not have, built by taking one it does and renaming
+	// it: what the pool does with an arrival is all this measures, so the arrival
+	// need only be a distinct id the draft would offer.
+	arrival := shipped[0]
+	arrival.ID = "arrival.before.everybody"
+	arrival.Hidden = false
+	if slices.ContainsFunc(shipped, func(character cast.Character) bool {
+		return character.ID == arrival.ID
+	}) {
+		t.Fatalf("%s is already in the shipped cast, so widening it adds nothing", arrival.ID)
+	}
+	widened := append([]cast.Character{arrival}, shipped...)
+	drawnOver := func(all []cast.Character) string {
+		t.Helper()
+		pool := pinchedDraftPoolFrom(t, all)
+		if slices.ContainsFunc(pool, func(character cast.Character) bool {
+			return character.ID == arrival.ID
+		}) {
+			t.Fatalf("the pinched pool took %s, so it is cut from whatever the cast happens "+
+				"to hold rather than from the named list", arrival.ID)
+		}
+		return drawnBody(aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+			live.Step, live.Yours, live.OnTurn = draw.DraftStepPick, true, live.Seats[1]
+			live.You = live.OnTurn
+			live.Candidates = []string{pool[len(pool)-1].ID}
+		}))
+	}
+	before := drawnOver(shipped)
+	after := drawnOver(widened)
+	if before != after {
+		t.Errorf("the forced-pick entry is drawn differently over a cast one character wider, "+
+			"so its golden moves on a content commit:\n%s", firstDifference(before, after))
+	}
+	// And the count this walk owes: the pool it is drawn from is the size the
+	// format spends, out of a cast that is bigger than that.
+	pool := pinchedDraftPool(t)
+	tight := 2*draft.PicksPerSide(wire.Format3v3) + 2*draft.BansPerSide(wire.Format3v3)
+	if len(pool) != tight {
+		t.Errorf("the pinched pool holds %d characters against the %d a 3v3 spends", len(pool),
+			tight)
+	}
+	if len(shipped) <= tight {
+		t.Fatalf("the shipped cast holds %d characters against the %d this pool needs, so a "+
+			"wider cast is not what this test is telling apart", len(shipped), tight)
+	}
+	t.Logf("the pinched pool is %d of %d shipped characters, and %d of them are named in this "+
+		"package", len(pool), len(shipped), len(namedDraftPoolIDs))
+}
+
+// TestAWatcherOfADraftingRoomIsHandedADraftThatNeverAdvances is the claim
+// SCR-012 was written on, measured.
+//
+// The item said *"a spectator draws the same draft"*, and half of that is true: a
+// watching client is welcomed into a drafting room with `Welcome.Drafts` set, so
+// it builds its own `*draft.Draft`, `Sight.Draft.Mirrored` is true and the model
+// really does put the draft screen in front of it. What it can never draw is a
+// draft anybody has *decided* anything in. `internal/room/draft.go` writes neither
+// `wire.Drafted` nor the pick clock's `wire.Closed` to `Room.watched` — its own
+// comment says so, and calls watching a draft step 7 — so a watcher's record is
+// empty until the draft closes and then holds the whole battle from its
+// `wire.Start`.
+//
+// So the state this item is about is **unreachable for a spectator today**: the
+// candidate list a watcher is handed is the opening one, whatever the two players
+// have taken out of the pool, and it is nineteen-odd rows rather than one. That is
+// what makes this item two goldens and not three.
+//
+// ⚠️ **The positive control is the battle.** A test asserting only that nothing
+// arrived passes on a watcher that joined nothing at all, so this waits for the
+// `wire.Start` the two players' finished draft produces — the watcher demonstrably
+// received the match — and only then reads what its draft was told.
+func TestAWatcherOfADraftingRoomIsHandedADraftThatNeverAdvances(t *testing.T) {
+	held, _ := openADraftingWatchableRoom(t)
+	watcher := aWatchingDrafter(t, held)
+	theDraftingOpponent(t, held)
+	theDraftingOpponent(t, held)
+	deadline := time.Now().Add(theWholeMatch)
+	for watcher.Mirror().Battle() == nil && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if watcher.Mirror().Battle() == nil {
+		t.Fatalf("the two players never drafted a battle inside %v, so this measures nothing "+
+			"about what a watcher was told", theWholeMatch)
+	}
+	if !watcher.Mirror().Watching() {
+		t.Fatal("this client took a seat rather than watching, so it is a third player and " +
+			"not a spectator")
+	}
+	view := watcher.Mirror().Draft()
+	if !view.Mirrored {
+		t.Fatal("a watcher of a drafting room holds no draft at all, so it cannot even reach " +
+			"the draft screen — which is a different finding from the one this test is about")
+	}
+	if view.Replayed != 0 {
+		t.Errorf("the watcher's draft took %d recorded decisions, so a spectator now sees the "+
+			"ban and pick and this test is the stale half rather than TODO.md", view.Replayed)
+	}
+	// And what that costs the item: the reading a watcher hands the screen is the
+	// opening one, so the forced last pick cannot be drawn from a watcher's seat
+	// however the draft went.
+	pool := draft.NewPool(held.deps.Characters.All()).All()
+	live := draftLiveOf(socket.Sight{Draft: view}, "", pool, draw.PlayClock{})
+	if _, one := live.OnlyOne(); one {
+		t.Error("a watcher's draft reading is read as a decision with one candidate, which " +
+			"nothing today can put it in")
+	}
+	t.Logf("the watcher was handed %d candidates out of a pool of %d with %d decisions "+
+		"replayed, after the two players drafted a whole match",
+		len(live.Candidates), len(pool), view.Replayed)
+}
+
 // TestTheScreenIsHandedThePoolTheRoomDrafts is the half `internal/screen` cannot
 // state about itself.
 //
@@ -909,6 +1084,52 @@ func openADraftingRoom(t *testing.T) (*aRoom, *forge.Library) {
 		Format: wire.Format3v3, Battles: 1, Drafts: true,
 		Allowance: room.DefaultAllowance, Seed: 11, TurnCap: room.DefaultTurnCap,
 	})
+}
+
+// openADraftingWatchableRoom is openADraftingRoom with somebody allowed to
+// watch, which room.Config.Validate accepts: the two settings are orthogonal —
+// nothing refuses a drafting room a spectator, and what such a spectator is told
+// is the finding rather than a refusal.
+func openADraftingWatchableRoom(t *testing.T) (*aRoom, *forge.Library) {
+	t.Helper()
+	return openARoomConfigured(t, room.Config{
+		Format: wire.Format3v3, Battles: 1, Drafts: true, Watchable: true,
+		Allowance: room.DefaultAllowance, Seed: 11, TurnCap: room.DefaultTurnCap,
+	})
+}
+
+// aWatchingDrafter is a plain socket.Client watching a room that drafts.
+//
+// ⚠️ **It is dialled with the cast book even though it decides nothing**, and
+// that is production rather than belt and braces: a welcome saying the room
+// drafts is where a client builds its own pool, and socket.Mirror.openDraft
+// **errors** — closing the connection — when it has no book to build one from. So
+// a watcher dialled without one could not join a drafting room at all, which is
+// why cmd/hexarena-tui hands Characters over on every dial and not only on the
+// ones that will take a seat. → session.dial.
+//
+// The chooser answers nothing: a watcher is never asked, and a battle chooser
+// that returned a decision would be this fixture playing the match it came to
+// watch.
+func aWatchingDrafter(t *testing.T, held *aRoom) *socket.Client {
+	t.Helper()
+	version, err := wire.Local(buildString())
+	if err != nil {
+		t.Fatalf("read the local version: %v", err)
+	}
+	client, err := socket.Dial(context.Background(), held.code, wire.Hello{
+		Version: version, Name: "Khách", Watch: true,
+	}, held.books, socket.ClientOptions{Characters: held.deps.Characters})
+	if err != nil {
+		t.Fatalf("the watcher could not join the drafting room: %v", err)
+	}
+	go func() {
+		_ = client.Play(context.Background(), func(*battle.Prompt) (battle.Choice, bool) {
+			return battle.Choice{}, false
+		})
+	}()
+	t.Cleanup(client.Close)
+	return client
 }
 
 // theDraftingOpponent is a plain socket.Client on the other seat, answering its

@@ -274,6 +274,29 @@ cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
     chưa chọn ai
     chưa cấm ai
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft with no choice left =====
+
+cấm và chọn tướng  còn 1 trên 10 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+  chỉ còn pokemon.dratini, nên ở đây không có gì để chọn.
+
+  pokemon.magnemite        của bên kia electric/metal <điện/kim loại>
+  pokemon.poliwag          của bên kia water <nước>
+  pokemon.mew              của bạn     neutral <trung tính>
+  pokemon.mewtwo           của bạn     dark <bóng tối>
+> pokemon.dratini          còn         wind <gió>
+
+  bạn — đã chọn 2 trên 3
+    pokemon.mew              one  4/4 chiêu, 1/1 nội tại
+    pokemon.mewtwo           one  4/4 chiêu, 1/1 nội tại
+    đã cấm pokemon.squirtle · pokemon.gastly
+  chủ phòng — đã chọn 3 trên 3
+    pokemon.machop           one  4/4 chiêu, 1/1 nội tại
+    pokemon.magnemite        one  4/4 chiêu, 1/1 nội tại
+    pokemon.poliwag          one  4/4 chiêu, 1/1 nội tại
+    đã cấm pokemon.bulbasaur · pokemon.charmander
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a finished match =====
 
 trận đấu đã xong
@@ -1902,6 +1925,65 @@ cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
 
 
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft with no choice left =====
+
+cấm và chọn tướng  còn 1 trên 10 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+  chỉ còn pokemon.dratini, nên ở đây không có gì để chọn.
+
+  pokemon.bulbasaur        bên kia cấm grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         bạn cấm     water <nước>
+  pokemon.gastly           bạn cấm     dark <bóng tối>
+  pokemon.machop           của bên kia ground <đất>
+  pokemon.magnemite        của bên kia electric/metal <điện/kim loại>
+  pokemon.poliwag          của bên kia water <nước>
+  pokemon.mew              của bạn     neutral <trung tính>
+  pokemon.mewtwo           của bạn     dark <bóng tối>
+> pokemon.dratini          còn         wind <gió>
+
+  bạn — đã chọn 2 trên 3
+    pokemon.mew              one  4/4 chiêu, 1/1 nội tại
+    pokemon.mewtwo           one  4/4 chiêu, 1/1 nội tại
+    đã cấm pokemon.squirtle · pokemon.gastly
+  chủ phòng — đã chọn 3 trên 3
+    pokemon.machop           one  4/4 chiêu, 1/1 nội tại
+    pokemon.magnemite        one  4/4 chiêu, 1/1 nội tại
+    pokemon.poliwag          one  4/4 chiêu, 1/1 nội tại
+    đã cấm pokemon.bulbasaur · pokemon.charmander
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a finished match =====
 
 trận đấu đã xong
@@ -4538,6 +4620,29 @@ ban and pick  12 of 12 still in the pool
     nobody picked yet
     banned nobody yet
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft with no choice left =====
+
+ban and pick  1 of 10 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+  pokemon.dratini is the only one left, so there is nothing to choose here.
+
+  pokemon.magnemite        theirs      electric/metal
+  pokemon.poliwag          theirs      water
+  pokemon.mew              yours       neutral
+  pokemon.mewtwo           yours       dark
+> pokemon.dratini          open        wind
+
+  you — 2 of 3 picked
+    pokemon.mew              one  4/4 skills, 1/1 traits
+    pokemon.mewtwo           one  4/4 skills, 1/1 traits
+    banned pokemon.squirtle · pokemon.gastly
+  host — 3 of 3 picked
+    pokemon.machop           one  4/4 skills, 1/1 traits
+    pokemon.magnemite        one  4/4 skills, 1/1 traits
+    pokemon.poliwag          one  4/4 skills, 1/1 traits
+    banned pokemon.bulbasaur · pokemon.charmander
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a finished match =====
 
 the match is over
@@ -6166,6 +6271,65 @@ ban and pick  12 of 12 still in the pool
 
 
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft with no choice left =====
+
+ban and pick  1 of 10 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+  pokemon.dratini is the only one left, so there is nothing to choose here.
+
+  pokemon.bulbasaur        they banned grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         you banned  water
+  pokemon.gastly           you banned  dark
+  pokemon.machop           theirs      ground
+  pokemon.magnemite        theirs      electric/metal
+  pokemon.poliwag          theirs      water
+  pokemon.mew              yours       neutral
+  pokemon.mewtwo           yours       dark
+> pokemon.dratini          open        wind
+
+  you — 2 of 3 picked
+    pokemon.mew              one  4/4 skills, 1/1 traits
+    pokemon.mewtwo           one  4/4 skills, 1/1 traits
+    banned pokemon.squirtle · pokemon.gastly
+  host — 3 of 3 picked
+    pokemon.machop           one  4/4 skills, 1/1 traits
+    pokemon.magnemite        one  4/4 skills, 1/1 traits
+    pokemon.poliwag          one  4/4 skills, 1/1 traits
+    banned pokemon.bulbasaur · pokemon.charmander
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a finished match =====
 
 the match is over
