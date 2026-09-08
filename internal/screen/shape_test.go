@@ -30,7 +30,7 @@ func TestTheShapeChooserDrawsWhatTheShapeCatches(t *testing.T) {
 		if err != nil {
 			t.Fatalf("look up %s: %v", name, err)
 		}
-		caught := shape.Targets(primary)
+		caught := shape.Targets(primary, hex.SideAlly)
 		if len(caught) == 0 || caught[0] != primary {
 			t.Fatalf("%s catches %v from %v, want the primary first", name, caught, primary)
 		}

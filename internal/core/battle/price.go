@@ -137,7 +137,7 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 	if err != nil {
 		return total
 	}
-	for _, cell := range covers(shape, declared, aim) {
+	for _, cell := range covers(shape, declared, aim, actor.Side) {
 		target := p.fight.occupant(cell)
 		if target == nil {
 			continue
@@ -209,7 +209,7 @@ func (p *pricing) finished(actor *Unit, declared skill.Skill, aim hex.Offset) in
 		return 0
 	}
 	total := int64(0)
-	for position, cell := range covers(shape, declared, aim) {
+	for position, cell := range covers(shape, declared, aim, actor.Side) {
 		// The primary cell only. A splashed target takes a reduced share of the
 		// power, so asking expected what the skill would do *aimed at that cell*
 		// would credit a shape with a kill its edge could not land — and pricing
@@ -269,7 +269,7 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 	// same caster for every cell its own bomb catches, and a gradient asks how
 	// hurt it is.
 	brought := p.fight.swingOf(declared, actor)
-	for position, cell := range covers(shape, declared, aim) {
+	for position, cell := range covers(shape, declared, aim, actor.Side) {
 		target := p.fight.occupant(cell)
 		if target == nil || target.Side != actor.Side {
 			continue
@@ -547,7 +547,7 @@ func (p *pricing) replied(actor *Unit, declared skill.Skill, aim hex.Offset) int
 	// only half kill.
 	remaining := actor.HP
 	total := int64(0)
-	for position, cell := range covers(shape, declared, aim) {
+	for position, cell := range covers(shape, declared, aim, actor.Side) {
 		holder := p.fight.occupant(cell)
 		// answer skips the caster by identity, and so does this: a shape that
 		// covers the cell it was cast from hurts its caster, but nobody is

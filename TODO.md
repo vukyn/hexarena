@@ -87,7 +87,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-009` | refused | A ceiling on `Skill.Power` |
 | `ENG-010` | refused | The queue as a third tie-break key |
 | `ENG-011` | done | `main` did not build, and no conflict was raised |
-| `ENG-012` | open | A pattern's splash is walked in absolute board directions, so the two halves are not each other's mirror |
+| `ENG-012` | done | A pattern's splash is walked in absolute board directions — FIXED, the walk is the caster's frame now and the control arm closes |
 | `RAT-001` | shipped | The opponent |
 | `RAT-002` | shipped | Measuring the opponent |
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
@@ -108,6 +108,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-007` | open | The area axis is not priced below single-target burst — on every board a rate… |
 | `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 forbids — and NEITHER can be re-pointed today: the composition-bonus effect vocabulary has nine slots and the shipped table uses all nine. Premise rewritten, measured, and a distinctness guard shipped |
 | `DAT-009` | done | Ally-aimed area support is single-target on every shipped board — REFUSED, with the measurement: the item's own `arc_up` candidate is a no-op, and `pierce`, the one shape that catches two, moved one battle in twelve hundred |
+| `DAT-011` | open | Happiny's cleanser slot is 20 per mille under its design floor on an honest instrument |
 | `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` — a reach guard and the probe-reading convention shipped; a board for a bonus to fire on did not |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
@@ -299,72 +300,121 @@ is only so the shape is readable.
 
 ## Not done
 
-- [ ] `ENG-012` **A pattern's splash is walked in absolute board directions, so an
-      authored formation does not play the same on the two halves.** Found on
+- [ ] `DAT-011` **Happiny's cleanser slot is under its design floor on an honest
+      instrument, and it has been at every reading that was not flattering it.**
+      Split out of `ENG-012` on 2026-09-08 rather than fixed there: what to do
+      about it is an authoring decision about a character, and a geometry fix is
+      not the place to make one.
+
+      `TestACleanserEarnsItsSlotWhereASparCannotSeeIt` holds that a slot a striker
+      holds better is a slot the cleanser should not be in, at a floor of 450 per
+      mille. The reading:
+
+      | instrument | vs a slugger | vs a blighter |
+      | --- | --- | --- |
+      | as first written | 526‰ | 478‰ |
+      | after the aim order was fixed (#196) | 485‰ | 460‰ |
+      | after `ENG-012`, 1200 seeds | **429‰** | **430‰** |
+
+      ⚠️ **Every step down was an instrument being repaired, not the game being
+      changed.** Happiny's own kit is untouched by either fix — `safeguard` and
+      `heal_bell` are `column`, which the rotation leaves alone, and `egg_bomb`
+      and `soft_boiled` are single-target — and so is the Machop it is measured
+      against, whose four skills are all single-target. What moved is the shared
+      wall's `bubble`, the one `arc_down` in the book.
+
+      **So the slot has never cleared its floor on an instrument that was not
+      flattering it**, and the debt is 20 per mille rather than the 58 the
+      shallow reading suggested. The test prints the shortfall against every run
+      and asserts a **collapse line of 400** instead — the regression it was
+      written against read 133 — so the floor stays named and visible rather than
+      being moved to meet the number.
+
+      ⚠️ **Raising attack is already refused**, and the refusal is recorded in the
+      test's own doc: pushing it until the squad won reached the floor at 660,
+      which is a bruiser's attack on a character whose whole shape is that it has
+      none. What got it to the floor the first time was the *kit* — trading a
+      self-buff the rating prices at nothing for `safeguard`, the first
+      column-wide absorb in the book. A second reading of the kit is the place to
+      look before the stat line.
+
+- [x] `ENG-012` **A pattern's splash was walked in absolute board directions, so an
+      authored formation did not play the same on the two halves.** Found on
       2026-09-08 while measuring the contested-speed alternation, by a control arm
-      that would not close.
+      that would not close. **Done** — `pattern.Targets` and `TargetsAcross` take
+      the caster's side and walk the shape in that frame.
 
-      **The control.** A squad against a copy of itself, fought one way and then
-      with the halves exchanged, must sum to 1000‰: they are the same battles
-      relabelled. Over 2000 seeds a squad, the five shipped squads read
+      **The control, before the fix.** A squad against a copy of itself, fought
+      one way and then with the halves exchanged, must sum to 1000‰: they are the
+      same battles relabelled. Over 2000 seeds a squad:
 
-      | squad | ally listed first | enemy first | sum |
-      | --- | --- | --- | --- |
-      | s01 | 629.5‰ | 370.5‰ | **1000‰ — exact** |
-      | s02 | 742.4‰ | 257.6‰ | **1000‰ — exact** |
-      | s03 | 614.0‰ | 505.0‰ | 1119‰ |
-      | s04 | 697.5‰ | 455.0‰ | 1153‰ |
-      | s05 | 582.5‰ | 474.5‰ | 1057‰ |
+      | squad | ally listed first | enemy first | sum before | sum after |
+      | --- | --- | --- | --- | --- |
+      | s01 | 629.5‰ | 370.5‰ | **1000‰** | **1000‰** |
+      | s02 | 742.4‰ | 257.6‰ | **1000‰** | **1000‰** |
+      | s03 | 614.0‰ | 505.0‰ | 1119‰ | **1000‰** |
+      | s04 | 697.5‰ | 455.0‰ | 1153‰ | **1000‰** |
+      | s05 | 582.5‰ | 474.5‰ | 1057‰ | **1000‰** |
 
-      ⚠️ **This is NOT the aim-order bug and that one is genuinely fixed.**
+      ⚠️ **This was NOT the aim-order bug and that one was genuinely fixed.**
       `battle.mirroredOrder` walks candidates by authoring slot and the synthetic
-      mirror it was measured on now sums to 1000‰ at one, two and three a side.
-      What survives is a second, independent asymmetry that the synthetic fixture
-      cannot reach because its kits carry no splashing skill.
+      mirror it was measured on summed to 1000‰ at one, two and three a side.
+      That fixture's kits are `strike` and `sweep`, which carry **no splash** — so
+      it confirmed the patch without confirming the property, and the shipped
+      squads were not re-measured for a week.
 
-      **The mechanism, localised to one line.** Driving both arms prompt by prompt
-      and comparing them under the mirror: the two arms are offered the **same
-      option list in the same order**, and `Suggest` returns a different aim
-      because the ratings themselves differ — s03 turn 1, `razor_leaf` on
-      Venusaur, rated 273 against 443 for the same aim. `pattern.targets` walks
-      `Splash` as absolute cube steps from the primary cell:
+      **The mechanism.** Driving both arms prompt by prompt: the two arms were
+      offered the **same options in the same order** and the *ratings* differed —
+      s03 turn 1, `razor_leaf` on Venusaur, 273 against 443 for the same aim.
+      `pattern.targets` walked `Splash` as absolute cube steps, `arc_up` is
+      `[["up"], ["upper_right"]]`, and `hex.Place` puts the enemy half down under
+      a **180 degree rotation** — which maps *up* to *down*. So `pierce` spread
+      back towards the midline in an enemy's hands instead of through the
+      formation, and `wedge_right` pointed at its own backline.
 
-      ```
-      arc_up   splash [["up"], ["upper_right"]]
-      ```
+      **The fix, and why it is this one.** The package's own doc already said the
+      shapes were caster-relative — "an ally always faces east", "both cells
+      deeper in", "how a shape can pierce into a formation" — so the walk was
+      wrong against its own stated contract rather than open to an authoring
+      decision. It is done by **conjugating the walk through `hex.Place`**, which
+      is its own inverse: rotate the aim into the caster's frame, walk the
+      absolute steps, rotate back. For an ally both calls are the identity, so
+      **an ally's cast is byte-identical to what it always was** —
+      `TestAnAllysShapeIsUnchangedByTheFrame` holds exactly that against a
+      written-out copy of the old walk — and an enemy's is that walk reflected,
+      **by construction** rather than by a table of mirrored direction names
+      somebody has to keep true.
+      ⚠️ Only 16 of the 151 shipped skills carry a shape this moves: `arc_up` (8),
+      `flank_up` (6), `wedge_right` (1), `arc_down` (1). `single` (114) and
+      `column` (21) are rotation-invariant — `column` is `up` and `down`, and the
+      rotation exchanges them.
+      ⚠️ The property test generates its shapes rather than reading the shipped
+      book: the book uses four of the six directions, so a test over it would
+      never walk `upper_left` or `lower_left` — which are exactly the two an
+      enemy's `pierce` lands on now.
 
-      `hex.Place` puts the enemy half down under a **180 degree rotation**, and a
-      rotation maps *up* to *down*. So a caster on the ally half and its opposite
-      number on the enemy half splash onto different neighbours of the same
-      authored slot, and the two halves stop being reflections. Every shipped
-      `arc_up` / `arc_down` / `wedge_*` / `flank_*` / `pierce` skill carries it;
-      s01 and s02 are exact only because their kits happen not to reach a splash
-      that catches a second unit.
+      **What it cost, and every one of the three was a MEASUREMENT fault rather
+      than a design one.**
 
-      **What it costs today.** Nothing about determinism or replay: a battle is
-      still a pure function of its seed and its decisions, `--verify` still
-      passes, and nothing here is nondeterministic. What it costs is
-      **measurement** — a one-way rate on a mirror is still not a number, so every
-      figure has to be read as a gap between two arms, which is what
-      `forge.FightSquads` already does and what the alternation above was measured
-      with.
-
-      **The two candidate answers, neither taken.**
-
-      1. Mirror the steps for a caster on the enemy half — `targets` takes the
-         caster's side and reflects each direction. That makes the halves
-         interchangeable and moves **every** balance figure ever taken, because it
-         changes what half the shipped skills hit.
-      2. Declare the board to have a real *up* and accept that the halves are not
-         mirrors — in which case `forge.FightSquads`'s swap is not cancelling what
-         it says it cancels, and the control arm should stop being described as
-         one.
-
-      ⚠️ It is an authoring call, not a bug fix: it is not obvious that a shape
-      called *arc up* should become *arc down* in the hands of the other side.
-      Whichever is chosen, `TestASwappedMirrorSwapsItsWinnerAtEverySquadSize`
-      cannot see it — its fixture kits are `strike` and `sweep` — so the fixture
-      needs a splashing kit before the property means anything.
+      1. `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` — the claim survives and
+         the depth was the problem. The margin read +56 before and +7 after over
+         600 battles, and **+42 and +41 over 2400 and 6000**. A claim of the form
+         "worth at least thirty" cannot be read off a rate that moves twenty
+         either way, so that test has its own `shapeSeeds` now.
+      2. `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` — the regeneration
+         row compared **totals** across two arms whose battle lengths were never
+         held equal, and a regeneration gives back health *per turn*. The stripped
+         arm ran 48,003 turns against 32,646 and its total came out **higher**
+         while its per-turn healing was a fifth lower. It reads a rate now, at
+         four times the depth, and the claim is what the rate says: the strip
+         takes at least a fifth off, measured at 25 a turn against 35. **"Halves
+         it at least" was never established.** The shielding row's healing is now
+         asserted to be *level*, which the doc had claimed for as long as the test
+         existed and nothing checked — and it is level only per turn, which is
+         what makes the normalisation mutation-provable.
+      3. `TestACleanserEarnsItsSlotWhereASparCannotSeeIt` — → `DAT-011`. The
+         reading has fallen at every repair of the instrument and it is 20 under
+         its floor now.
 
 - [x] `SCR-012` **A draft's last pick can have one candidate, and the screen
       presents it as a choice — DONE, and the mechanism was already shipped: what

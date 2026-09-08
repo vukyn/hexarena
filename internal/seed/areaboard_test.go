@@ -281,6 +281,10 @@ func TestAnAllyAimedShapeIsCatchableFromItsOwnCarriersHalf(t *testing.T) {
 // alliesCaughtOnHalf is the most occupied ALLY cells one cast of a shape catches
 // on a formation standing on one named half.
 //
+// The caster stands on the SAME half as the formation, because an ally-aimed
+// skill is cast by one of the units standing in it — and the caster's half is
+// the frame the shape's steps are read in. → package pattern's doc.
+//
 // It differs from mostOccupiedCellsCaught in the reduction and nothing else: one
 // half at a time rather than the better of the two. The aim set is every
 // occupied cell on that half, which is exactly what battle.aims offers an
@@ -301,7 +305,7 @@ func alliesCaughtOnHalf(shape pattern.Pattern, slots []hex.Offset, side hex.Side
 	best := 0
 	for _, aim := range aims {
 		caught := 0
-		for _, cell := range shape.Targets(aim) {
+		for _, cell := range shape.Targets(aim, side) {
 			if occupied[cell] {
 				caught++
 			}
@@ -317,9 +321,15 @@ func alliesCaughtOnHalf(shape pattern.Pattern, slots []hex.Offset, side hex.Side
 // It aims at occupied cells only, because `battle.aims` offers nothing else, and
 // it counts occupied cells only, because an empty cell in a shape takes no
 // damage and buys no splash. It answers for the formation standing on **either**
-// half, and takes the better: `forge.FightSquads` fields every squad on both,
-// and `hex.Place` turns an enemy formation through 180 degrees, which flips
-// column parity and so can move what an arc reaches.
+// half, and takes the better: `forge.FightSquads` fields every squad on both.
+//
+// ⚠️ **Since ENG-012 the two halves answer the same number**, and this kept the
+// reduction rather than collapsing it. `hex.Place` turns an enemy formation
+// through 180 degrees and the shape is now turned with it, so a formation
+// catches what it catches wherever it stands — which is the property the fix
+// bought, and a reduction that reads "the better of two equals" is the honest
+// way to keep asserting it holds. Before the fix the two halves genuinely
+// differed and this line was load-bearing.
 //
 // The walk is `covers` reduced to its geometry. A skill that crosses the midline
 // is not what this measures, since a formation is one side's worth.
@@ -339,9 +349,11 @@ func mostOccupiedCellsCaught(shape pattern.Pattern, slots []hex.Offset) int {
 				aims = append(aims, cell)
 			}
 		}
+		// The caster is on the far half: this measures an enemy-aimed shape, so
+		// whoever cast it is standing opposite the formation it lands on.
 		for _, aim := range aims {
 			caught := 0
-			for _, cell := range shape.Targets(aim) {
+			for _, cell := range shape.Targets(aim, side.Opposing()) {
 				if occupied[cell] {
 					caught++
 				}

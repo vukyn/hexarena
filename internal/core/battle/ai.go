@@ -307,7 +307,7 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 	// and a draining skill heals its caster inside the loop.
 	brought := b.swingOf(declared, actor)
 	total := int64(0)
-	for position, cell := range covers(shape, declared, aim) {
+	for position, cell := range covers(shape, declared, aim, actor.Side) {
 		target := b.occupant(cell)
 		// A unit on the caster's own side is skipped rather than counted as a
 		// negative: this is "expected damage", and the one skill that can hurt

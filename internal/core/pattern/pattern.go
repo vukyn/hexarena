@@ -1,10 +1,26 @@
 // Package pattern holds the shapes an area skill covers.
 //
 // A pattern is a primary cell plus a list of step chains leading away from it.
-// Because the battlefield's columns are fixed — an ally always faces east — the
-// six hex directions have stable names, so a shape can be authored as "the
+// The six hex directions have stable names, so a shape can be authored as "the
 // primary and the cell above it" or "the primary and both cells deeper in"
 // without the engine tracking facing.
+//
+// ⚠️ **The names are written in the ALLY's frame and a shape is walked in its
+// CASTER's**, which is why every entry point takes the caster's side. The
+// package used to say "an ally always faces east" and walk absolute steps for
+// everybody, and the second half did not follow from the first: hex.Place puts
+// the enemy half down under a 180 degree rotation, which maps up to down and
+// right to left, so an enemy holding a shape called `pierce` spread it back
+// towards the midline instead of through the formation, and `wedge_right`
+// pointed at its own backline. The whole board stopped being its own mirror —
+// measured on the shipped squads, a mirror match and its own reverse summed to
+// 1119, 1153 and 1057 per mille where they must sum to 1000. → TODO.md ENG-012.
+//
+// The walk is done in the caster's own frame by rotating into it and back out,
+// rather than by naming a second set of directions: hex.Place is its own
+// inverse, so conjugating the walk through it makes the two halves each other's
+// reflection **by construction** rather than by a table somebody has to keep
+// true.
 //
 // Resolution drops any cell that falls off the board or onto the other half of
 // the battlefield. A shape aimed at an enemy therefore never catches an ally,
@@ -135,8 +151,13 @@ func (p Pattern) Validate(maxTargets int) error {
 // Targets returns the cells the shape covers when aimed at a primary, primary
 // first. Cells off the board, cells on the other half of the battlefield, and
 // duplicates are dropped, so the result can be shorter than MaxTargets.
-func (p Pattern) Targets(primary hex.Offset) []hex.Offset {
-	return p.targets(primary, false)
+//
+// caster is the side holding the skill, and it is the frame the steps are read
+// in — not the side the primary belongs to. A shape spreads away from whoever
+// cast it. → the package doc, on why that is a parameter rather than an
+// assumption.
+func (p Pattern) Targets(primary hex.Offset, caster hex.Side) []hex.Offset {
+	return p.targets(primary, false, caster)
 }
 
 // TargetsAcross is Targets for a skill aimed at both halves of the battlefield:
@@ -149,11 +170,11 @@ func (p Pattern) Targets(primary hex.Offset) []hex.Offset {
 // question the two differ on. Which of them a caster gets is skill.Side's
 // CrossesSides, not a decision made here: this package knows what a side is and
 // nothing about what a skill aims at.
-func (p Pattern) TargetsAcross(primary hex.Offset) []hex.Offset {
-	return p.targets(primary, true)
+func (p Pattern) TargetsAcross(primary hex.Offset, caster hex.Side) []hex.Offset {
+	return p.targets(primary, true, caster)
 }
 
-func (p Pattern) targets(primary hex.Offset, across bool) []hex.Offset {
+func (p Pattern) targets(primary hex.Offset, across bool, caster hex.Side) []hex.Offset {
 	if !primary.OnBoard() {
 		return nil
 	}
@@ -162,11 +183,22 @@ func (p Pattern) targets(primary hex.Offset, across bool) []hex.Offset {
 	out = append(out, primary)
 	seen := map[hex.Offset]bool{primary: true}
 	for _, chain := range p.Splash {
-		cube := primary.Cube()
+		// Into the caster's frame, walk, and back out. hex.Place is the 180
+		// degree rotation that puts the enemy half down and it is its own
+		// inverse, so for an ally both calls are the identity and this is the
+		// walk it always was — and for an enemy it is that same walk reflected,
+		// which is what makes the two halves each other's mirror.
+		//
+		// ⚠️ Place is applied to a whole-board coordinate here rather than to an
+		// authoring slot. That is the same map: Col -> Cols-1-Col and
+		// Row -> Rows-1-Row is a bijection of the integer plane that carries the
+		// board onto itself, so a step that walks off the board walks off it in
+		// either frame and the OnBoard check below is not being fooled.
+		cube := hex.Place(caster, primary).Cube()
 		for _, step := range chain {
 			cube = cube.Add(step.Step())
 		}
-		cell := cube.Offset()
+		cell := hex.Place(caster, cube.Offset())
 		if !cell.OnBoard() || seen[cell] {
 			continue
 		}

@@ -1908,7 +1908,18 @@ func (p PlayScreen) splashUnder(c Context, option battle.Option) []hex.Offset {
 		return nil
 	}
 	aim := option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
-	coverage, err := c.Lib.AimCoverage(option.Skill, aim)
+	// The frame the shape is walked in is the CASTER's half, so it is read off
+	// the unit being prompted rather than off p.Side: the two are the same in
+	// every battle this screen opens, and reading the one that is true by
+	// definition rather than the one that happens to agree is what stops this
+	// from drawing the wrong cells the day it is not. → package pattern's doc.
+	caster := hex.SideAlly
+	if p.Fight != nil && p.Pending != nil {
+		if unit, known := p.Fight.Unit(p.Pending.Unit); known {
+			caster = unit.Side
+		}
+	}
+	coverage, err := c.Lib.AimCoverage(option.Skill, aim, caster)
 	if err != nil {
 		return nil
 	}

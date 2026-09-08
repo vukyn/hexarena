@@ -210,7 +210,7 @@ func TestEverySkillsReachIsUsable(t *testing.T) {
 					continue
 				}
 				reachable = true
-				if covered := len(shape.Targets(to)); covered > widest {
+				if covered := len(shape.Targets(to, hex.SideAlly)); covered > widest {
 					widest = covered
 				}
 			}
@@ -605,7 +605,7 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 	for _, shape := range patterns.Patterns() {
 		best, worst := 0, 99
 		for _, centre := range hex.SideCells(hex.SideEnemy) {
-			covered := len(shape.Targets(centre))
+			covered := len(shape.Targets(centre, hex.SideAlly))
 			if covered > best {
 				best = covered
 			}

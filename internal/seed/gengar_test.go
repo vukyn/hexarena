@@ -23,6 +23,17 @@ var (
 // mender's reading uses.
 const stripSeeds = 150
 
+// regenerationSeeds is the depth the regeneration row alone is taken at.
+//
+// ⚠️ **Four times the rest, because that row compares two arms whose battles do
+// not last the same.** Even normalised per turn the figure was still moving at
+// stripSeeds — measured after ENG-012, the stripped arm gave back four fifths of
+// the unstripped arm's per-turn healing over 150 seeds, and just under three
+// quarters over both 600 and 1500. The other two rows count strips and blocks,
+// which are counts of events rather than rates against a length, so they stay
+// where they were.
+const regenerationSeeds = 600
+
 // TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip is the character stated as
 // one measurement, and it is asked the way the mender's slot is: in a squad,
 // because a duel cannot see it.
@@ -36,13 +47,13 @@ const stripSeeds = 150
 // Two Gengars, alike in everything but one skill — `spite` against `bite` —
 // three hundred battles a row:
 //
-//	opponent wall     kit          strips   my blows blocked   the wall healed
-//	shields           with spite      508               1541            270722
-//	                  without           0               2434            276988
-//	only hits         with spite        0                  0                 0
-//	                  without           0                  0                 0
-//	regenerates       with spite      589                  0            297579
-//	                  without           0                  0            899834
+//	opponent wall     kit          strips   my blows blocked   healed a turn
+//	shields           with spite      656                518                 11
+//	                  without           0               1042                 12
+//	only hits         with spite        0                  0                  0
+//	                  without           0                  0                  0
+//	regenerates       with spite     2283                  0                 25
+//	                  without           0                  0                 35
 //
 // ⚠️ **The win rate is not what is being read**, and it moves 500 to 540 per
 // mille against the shielding wall — a shield is not the whole of a fight. What a
@@ -54,6 +65,19 @@ const stripSeeds = 150
 // squad carrying nothing to take, the skill strips nought and is a plain attack,
 // and the rate goes very slightly the *other* way. A utility skill that was worth
 // its slot everywhere would not be a utility skill.
+//
+// ⚠️⚠️ **The regeneration row used to read a TOTAL and the claim it made was
+// never established.** It held that taking a regeneration off halves it, off the
+// health the wall gave back across the whole run — and a regeneration gives back
+// health *per turn*, so that figure counts battle length as much as it counts
+// the strip. The two arms are two different kits and their battles do not last
+// the same: measured after ENG-012 closed the board's mirror, the stripped arm
+// ran 48,003 turns against 32,646 and its total came out **higher** while its
+// per-turn healing was a fifth lower. So the row reads a rate now, at four times
+// the depth, and the claim it holds is what the rate actually says: the strip
+// takes **at least a fifth** off, measured at 25 against 35 a turn. Halving it
+// is not something this skill does and never was — the old number said so only
+// because the lengths happened to be close. → healedPerTurn, TODO.md ENG-012.
 func TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip(t *testing.T) {
 	for _, against := range []struct {
 		name       string
@@ -70,17 +94,25 @@ func TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip(t *testing.T) {
 			true, false, true},
 	} {
 		t.Run(against.name, func(t *testing.T) {
-			with := readStrip(t, []string{"shadow_claw", "shadow_ball", "night_shade", "spite"},
-				against.wall)
-			without := readStrip(t, []string{"shadow_claw", "shadow_ball", "night_shade", "bite"},
-				against.wall)
+			// The regeneration row is a rate against a length and needs the
+			// depth; the other two count events and do not. → regenerationSeeds.
+			seeds := stripSeeds
+			if against.regenerate {
+				seeds = regenerationSeeds
+			}
+			with := readStripOver(t, []string{"shadow_claw", "shadow_ball", "night_shade", "spite"},
+				against.wall, seeds)
+			without := readStripOver(t, []string{"shadow_claw", "shadow_ball", "night_shade", "bite"},
+				against.wall, seeds)
 			for _, reading := range []struct {
 				name string
 				got  stripReading
 			}{{"with spite", with}, {"without", without}} {
-				t.Logf("%-12s %4d‰  %3d strips of %4d stacks, %4d blows blocked, %7d healed",
+				t.Logf("%-12s %4d‰  %3d strips of %4d stacks, %4d blows blocked, "+
+					"%7d healed over %6d turns (%d a turn)",
 					reading.name, reading.got.rate(), reading.got.strips, reading.got.stacks,
-					reading.got.blocked, reading.got.healed)
+					reading.got.blocked, reading.got.healed, reading.got.turns,
+					reading.got.healedPerTurn())
 			}
 
 			// The other kit never strips, whatever it is up against — it is the
@@ -114,17 +146,50 @@ func TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip(t *testing.T) {
 				t.Errorf("%d and %d blows were blocked by a wall that does not shield", with.blocked, without.blocked)
 			}
 
+			// ⚠️ **The shielding wall's healing is LEVEL, and it is level only
+			// per turn.** `withdraw` restores on the turn it is cast and a
+			// restore cannot be stripped, so the strip must not touch this
+			// figure — the doc above has said so for as long as this test has
+			// existed and nothing asserted it. It is asserted here because it is
+			// the one row that tells a rate from a total: measured, 11 a turn
+			// against 12, while the two totals are 343,981 and 420,984, which are
+			// nowhere near level. A reading that dropped the normalisation would
+			// pass the regeneration row below and fail this one.
+			if against.guards {
+				const level = 10
+				gap := with.healedPerTurn() - without.healedPerTurn()
+				if gap < 0 {
+					gap = -gap
+				}
+				if without.healedPerTurn() == 0 {
+					t.Fatalf("the shielding wall healed nothing, so the comparison is empty")
+				}
+				if gap*100 > without.healedPerTurn()*level {
+					t.Errorf("the shielding wall gave back %d a turn with the strip and "+
+						"%d without: a restore is not a regeneration and cannot be taken, "+
+						"so the two have to be level (%d healed over %d turns against %d "+
+						"over %d)",
+						with.healedPerTurn(), without.healedPerTurn(),
+						with.healed, with.turns, without.healed, without.turns)
+				}
+			}
+
 			// And a regeneration is counted in the health it no longer gives
 			// back. ⚠️ A *restore* is not a regeneration and cannot be taken: the
 			// shielding wall's `withdraw` heals on the turn it is cast, which is
 			// why that row's two healing figures are level.
 			if against.regenerate {
-				if without.healed == 0 {
+				if without.healedPerTurn() == 0 {
 					t.Fatalf("the wall healed nothing without the strip, so the comparison is empty")
 				}
-				if with.healed*2 >= without.healed {
-					t.Errorf("the wall healed %d against %d without the strip: taking a regeneration off is supposed to halve it at least",
-						with.healed, without.healed)
+				// A fifth, not a half. → the note on the regeneration row above,
+				// which carries what the old half was actually reading.
+				if with.healedPerTurn()*5 > without.healedPerTurn()*4 {
+					t.Errorf("the wall gave back %d a turn against %d without the strip: "+
+						"taking a regeneration off is supposed to be worth a fifth of it "+
+						"at least (%d healed over %d turns against %d over %d)",
+						with.healedPerTurn(), without.healedPerTurn(),
+						with.healed, with.turns, without.healed, without.turns)
 				}
 			}
 		})
@@ -140,6 +205,28 @@ type stripReading struct {
 	strips, stacks int
 	blocked        int
 	healed         int64
+	// turns is every turn taken across the run, and it is here because the
+	// healing figure is meaningless without it. → healedPerTurn.
+	turns int
+}
+
+// healedPerTurn is the regeneration figure, and it is a RATE because the total
+// is not comparable between two arms.
+//
+// ⚠️ **The total was compared for a long time and it was reading battle length
+// as often as it was reading the strip.** A regeneration gives back health per
+// turn, so a run whose battles last half again as long heals half again as much
+// with the same regeneration untouched — and the two arms here are two different
+// kits, so their battles do not last the same. Measured after ENG-012 closed the
+// board's mirror, over 150 seeds: the stripped arm ran 48,003 turns against the
+// unstripped arm's 32,646, and its *total* healing came out higher while its
+// healing per turn was a fifth lower. The old reading held only because the two
+// lengths happened to be close before.
+func (r stripReading) healedPerTurn() int64 {
+	if r.turns == 0 {
+		return 0
+	}
+	return r.healed / int64(r.turns)
 }
 
 func (r stripReading) rate() int {
@@ -178,6 +265,12 @@ func aHexerSquad(id string, kit, wall []string) placement.Squad {
 // under test, because both squads block and both heal.
 func readStrip(t *testing.T, kit, wall []string) stripReading {
 	t.Helper()
+	return readStripOver(t, kit, wall, stripSeeds)
+}
+
+// readStripOver is readStrip with the depth named. → regenerationSeeds.
+func readStripOver(t *testing.T, kit, wall []string, seeds int) stripReading {
+	t.Helper()
 	books, err := seed.Books()
 	if err != nil {
 		t.Fatalf("load the shipped books: %v", err)
@@ -192,7 +285,7 @@ func readStrip(t *testing.T, kit, wall []string) stripReading {
 		[]string{"shadow_claw", "shadow_ball", "night_shade", "bite"}, wall)
 
 	var total stripReading
-	for n := 1; n <= stripSeeds; n++ {
+	for n := 1; n <= seeds; n++ {
 		for _, swapped := range []bool{false, true} {
 			first, second, mine, ours := home, away, hex.SideAlly, "ally."
 			if swapped {
@@ -210,9 +303,11 @@ func readStrip(t *testing.T, kit, wall []string) stripReading {
 			if err != nil {
 				t.Fatalf("seed %d: %v", n, err)
 			}
-			if _, err := fought.RunToEnd(menderTurnLimit); err != nil {
+			took, err := fought.RunToEnd(menderTurnLimit)
+			if err != nil {
 				t.Fatalf("seed %d: %v", n, err)
 			}
+			total.turns += took
 			for _, event := range fought.Drain() {
 				switch {
 				case event.Kind == battle.StatusStripped && event.Skill == "spite" &&

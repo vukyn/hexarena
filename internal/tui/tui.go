@@ -282,7 +282,14 @@ func Extras(declared skill.Skill) string {
 
 // Aims lists the cells a chosen skill may be pointed at, with who is standing
 // there and what the shape would catch.
-func Aims(fight *battle.Battle, option battle.Option, tags map[string]string) string {
+//
+// caster is the half of the board the unit about to cast stands on, and it is
+// the frame the shape's steps are read in — not the side the aim lands on. It is
+// a parameter because this draws for whoever is being asked: a shape spreads
+// away from its caster, so drawing an enemy's aim in the ally's frame would list
+// cells the resolution does not touch. → package pattern's doc, TODO.md ENG-012.
+func Aims(fight *battle.Battle, option battle.Option, tags map[string]string,
+	caster hex.Side) string {
 	var b strings.Builder
 	books := fight.Books()
 	declared, err := books.Skills.Lookup(option.Skill)
@@ -301,7 +308,7 @@ func Aims(fight *battle.Battle, option battle.Option, tags map[string]string) st
 	}
 	for index, aim := range option.Aims {
 		caught := make([]string, 0, shape.MaxTargets())
-		for _, cell := range shape.Targets(aim) {
+		for _, cell := range shape.Targets(aim, caster) {
 			unit, standing := occupied[cell]
 			if !standing {
 				continue
