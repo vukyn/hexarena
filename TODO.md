@@ -104,8 +104,9 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-004` | done | A golden holds a state and says nothing about the path to it — SWEPT, and the… |
 | `DAT-005` | done | `reckless` is the dragon build's 22.1% — CLOSED. All four levers are measured… |
 | `DAT-006` | refused | Rebalancing `reckless` |
-| `DAT-007` | open | The area axis is priced far below single-target burst, and a kit made of it h… |
+| `DAT-007` | open | The area axis is not priced below single-target burst — on every board a rate… |
 | `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 for… |
+| `DAT-009` | open | Ally-aimed area support is single-target on every shipped board too — `rally`… |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
 | `SCR-001` | shipped | Reference screens |
@@ -420,9 +421,34 @@ is only so the shape is readable.
       option 3 from "we decided not to look" into "we decided, and the next
       collision fails".
 
-- [ ] `DAT-007` ⚠️ **The area axis is priced far below single-target burst, and a kit
-      made of it has no finisher. `pokemon.igglybuff` shipped weak on purpose —
-      the numbers are here so nobody re-measures them.**
+- [ ] `DAT-007` ⚠️ **The area axis is not priced below single-target burst — on every
+      board a rate is read off, it DOES NOT EXIST. The repricing is refused for now
+      and the premise is rewritten; `pokemon.igglybuff` still ships weak, and the
+      numbers are here so nobody re-measures them.** Raised 2026-09-08 with the
+      figures below, re-opened and re-measured the same day. Nothing about
+      `splash_power`, the authored power of any area skill, or any character
+      changed; what shipped is an occupancy guard and this measurement.
+
+      **The coverage table is what dissolves the premise.** Derived off
+      `squads.json`, `roster.json` and `patterns.json` by replaying `hex.Place` and
+      `pattern.Targets` — the most **occupied** cells one cast can catch, aiming
+      only where `battle.aims` would let a unit aim:
+
+      | shape | fielded by | best on any board `FightSquads` fights | best on `roster.json` |
+      |---|---|---|---|
+      | `column` | `s01` `s02` `s03` `s04` `s05` (7 units) | **1** | 2 |
+      | `flank_up` | `s02` `s04` (2 units) | **1** | 2 |
+      | `arc_up` | `s03` `s04` `s05` (4 units) | 2 (on `s02`) | 3 |
+      | `arc_down` | no squad unit; `roster.json` only | 2 (geometry only) | 3 |
+
+      Cause, one sentence: **`s02`–`s05` stand their three units at `(2,1) (1,1)
+      (0,1)` and `s01` at `(2,0) (2,2) (0,1)` — every unit alone in its own column
+      — while `column` splashes `up`/`down`, i.e. *within* a column.** The shipped
+      squads are hex-adjacent along `upper_right` only, which is why the two arcs
+      are the only shapes that ever reach a second occupant and only from one aim.
+      `pattern.Book.Power` pays full power at index 0 and `splash_power` from index
+      1, so **`splash_power` is never reached for a `column` on any board this
+      repository has ever quoted a squad rate off.**
 
       `crooner` was authored as light's area dealer: `dazzle` (column 900),
       `refrain` (arc_up 1200, `fester` 400‰), `patter` (single 380×3), `plunge`
@@ -478,10 +504,156 @@ is only so the shape is readable.
       brings four skills of nought power, and removing that squad's only damage
       engine is what froze it. The shipped `s05` mirror reads **endless 0**.
 
-      What is open is the repricing, not the character. The candidate is
-      `patterns.json`'s `splash_power` (500‰ today) or the authored power of every
-      area skill in the book — which reaches every element and every balance
-      golden, so it is a PR of its own rather than a follow-up to a character.
+      **The census says the rating is not the defect.** `hexforge census
+      igglybuff.vang --against <squad> --seeds 40`, 80 battles each, casts per
+      slot — the kit IS played, and the one slot that goes quiet is the one the
+      board makes worthless:
+
+      | board | `dazzle` (column 900) | `refrain` (arc_up 1200) | `hyper_voice` (arc_up 900) | `sing` (flank_up) |
+      |---|---|---|---|---|
+      | `s01` | 63 | 82 | 64 | 94 |
+      | `s02` | 31 | 92 | 57 | 71 |
+      | `s04` | **0 — silent** | 77 | 12 | 80 |
+      | `s05` | 68 | 80 | 25 | 80 |
+
+      `refrain` — the one skill in the kit that can reach a second occupied cell on
+      `s02`–`s05` — is preferred everywhere. `dazzle` goes silent on exactly the
+      board where a column is worth least. **The rating prices what the skill
+      really does**, so hypothesis "the rating under-values area, so a carrier
+      never plays its kit" is refused by measurement. So is "the engine
+      under-delivers the authored power": `covers` is one declaration for both
+      callers (`internal/core/battle/turn.go:742`) and the splash line is
+      byte-identical in `turn.go:1278` and `ai.go:496`.
+
+      ⚠️ **The obvious repair was BUILT, MEASURED and THROWN AWAY: a sixth squad
+      that stacks.** `s06` duplicated `s04`'s three members exactly — same
+      characters, levels, stages, kits, passives — at `roster.json`'s stacked
+      formation `(1,0) (1,1)` with the ace behind at `(0,1)`, so the placement was
+      the only variable and `s04` vs `s06` was a pure control. It made the axis
+      real: on `s06` a `column` catches **2** and an `arc_up` catches **3**, and
+      `dazzle` stopped being silent (**0 → 13** casts against the same three
+      opponents). `forge.FightSquads`, 200 seeds each way, endless beside every
+      rate:
+
+      | row | rate | W / L / D | endless | median turns |
+      |---|---|---|---|---|
+      | `s05` vs `s01` | 5‰ | 2 / 398 / 0 | 0 of 400 | 54 |
+      | `s05` vs `s04` | 0‰ | 0 / 400 / 0 | 0 of 400 | 38 |
+      | **`s05` vs `s06`** | **2‰** | 1 / 399 / 0 | 0 of 400 | 38 |
+      | `s01` vs `s04` | 92‰ | 37 / 363 / 0 | 0 of 400 | 48 |
+      | `s01` vs `s06` | 85‰ | 34 / 366 / 0 | 0 of 400 | 47 |
+      | `s04` vs `s06` | **752‰** | 301 / 99 / 0 | 0 of 400 | 41 |
+      | `s06` vs `s04` | 247‰ | 99 / 301 / 0 | 0 of 400 | 41 |
+      | `s01` vs `s01` | 500‰ | 199 / 199 / 0 | 2 of 400 | 78 |
+      | `s04` vs `s04` | 500‰ | 200 / 200 / 0 | 0 of 400 | 43 |
+      | `s05` vs `s05` | 500‰ | 200 / 200 / 0 | 0 of 400 | 52 |
+      | `s06` vs `s06` | 500‰ | 200 / 200 / 0 | 0 of 400 | 39 |
+
+      The gate was written down before the run: `s05` vs `s06` at **≥ 150‰** (clear
+      of the entire single-variable band above, and in the region the whole-kit swap
+      reached), the formation control moving less than half as far, every mirror
+      exactly 500‰. **It failed on both counts.** The area carrier moved **2‰** —
+      0‰ → 2‰ — on a board where its column really does catch two and its arc three;
+      the non-area control moved **−7‰**, further than the subject. Nine parts per
+      thousand of relative shift, against a floor of a hundred and fifty. So `s06`
+      was dropped and nothing in `squads.json` changed.
+
+      ⚠️ **Why it failed is already written down in `docs/balance.md`, and that is
+      the real finding: STACKING COSTS MORE THAN THE AREA BUYS.** `s04` vs `s06` is
+      **752‰** — the identical three characters lose about 253‰ purely from three
+      slot numbers, because the stacked shape puts two units in the first occupied
+      rank and drops the ace from depth 3 to depth 2, and reach is counted in
+      **occupied ranks**. The composition-bonus work measured the same trade
+      independently: *"a squad re-slotted into one column reads 464‰ against `s01`
+      where it reads 677‰ spread out — stacking costs about 213‰"*. Two
+      measurements, two instruments, the same order of magnitude. **An area axis
+      that can only be redeemed by paying a defensive price twice its size is not
+      an axis a formation will ever take**, which is the question this item now has
+      to answer before any number is touched.
+
+      ⚠️ **The item's own decisive row was a POWER comparison, not an area one.**
+      *"all three area skills → three heavy single-target, 172‰ / 237‰"* replaced
+      skills of 900 / 1200 / 380×3 with skills of about 2400 — and **all six of
+      them, before and after, resolved against exactly one target** on the boards
+      they were fought on. Nothing in that row is evidence about area.
+
+      ⚠️ **The peer argument is corrected in place rather than deleted.**
+      `discharge`, `night_shade` and `magnetise` are `column` too, so they are
+      single-target on every fought board as well. The peers were never evidence
+      that a column is worth 900; they were four more skills priced against
+      geometry no board exercises.
+
+      ⚠️ **Candidate (a) — raise `splash_power` — was dead on arithmetic before it
+      was tried.** It is unreachable for all 21 `column` skills on every shipped
+      squad. Candidate (b) — reprice the authored power of the 37 area skills — is a
+      raw buff to compensate for geometry no fought board exercises, moves every
+      balance golden, and over-delivers the day a player stacks a column in a
+      five-unit squad (`hex.MaxTeamSize` is 5; every shipped squad fields 3).
+
+      ⚠️ **A shipped 3-unit squad prices a `column` at one target, exactly as
+      `spar` does.** The duel warning above was one board short: the same sentence
+      is true of the squad harness that was reached for to escape it.
+
+      **What shipped instead of what was asked for.**
+      `TestAShippedFormationIsCatchableByTheShapesItFields`
+      (`internal/seed/areaboard_test.go`) derives the fielded area shapes from
+      `seed.Squads()` × `seed.Roster()` × `seed.SkillBook()` — never a written-down
+      skill list — and asserts each of them catches more than one occupant on
+      **some** shipped formation. Today it passes on `roster.json` alone and logs,
+      per shape, that the count on every fought board is 1: the finding is in the
+      test's output rather than in a red assertion, because filing an open item as
+      a failing test is not filing it. What the assertion holds is the floor —
+      flatten the roster too and `splash_power` becomes unreachable in the entire
+      game. Mutation-checked: splitting the roster's pair off its column reddens it
+      on `column` and `flank_up`.
+      `TestShippedPatternBook` gained one comment saying its width check is about
+      cells and pointing at this one.
+
+      What is open is still the repricing, and it now has a prior question:
+      **which formation is the repricing FOR?** A number chosen against boards that
+      never stack is a number chosen against nothing, and a board that stacks pays
+      more for the privilege than the shape returns. The measurement any candidate
+      has to be taken on is the one above.
+
+- [ ] `DAT-009` ⚠️ **Ally-aimed area support is single-target on every shipped board
+      too — `rally`, `chorus`, `heal_bell`, `safeguard` and `slipstream` are all
+      `column`, and no formation stacks a column.** Raised 2026-09-08 out of
+      `DAT-007`, and filed rather than folded in because it is the same geometry on
+      the friendly half and wants its own measurement.
+
+      `DAT-007` measured the hostile half: a `column` catches exactly one occupied
+      cell on all five shipped squads, so `splash_power` is never reached and every
+      column attack resolves as a single-target one. The friendly half is the same
+      board. `s01`'s clefable carries `rally` (column, ally, power 0) and buffs
+      **exactly one** ally with it, because `s01` stands at `(2,0) (2,2) (0,1)` and
+      a column splashes within a column. The four support columns nobody fields —
+      `chorus`, `heal_bell`, `safeguard`, `slipstream` — would do the same on any
+      squad in the file.
+
+      ⚠️ **It is worse here than on the hostile half, because a support column has
+      no primary to fall back on.** A `column` attack at least lands its full power
+      on the aim; a buff or a cleanse aimed at one ally is a turn spent on a skill
+      whose whole design is that it reaches the units standing together. Nothing in
+      the repository measures that: `hexforge spar` cannot see support at all (the
+      mender note), and the squad harness is exactly the boards this item is about.
+
+      ⚠️ **The shape vocabulary is where the cheap answer might be, and it is a
+      one-line data change rather than a repricing.** Of the 14 ally-aimed skills in
+      the book, 9 are `single` and **all 5 area ones are `column`** — not one uses
+      an arc or a wedge. Yet `arc_up` and `arc_down` are exactly the shapes that DO
+      reach a second occupant on the shipped squads, because the squads are
+      hex-adjacent along `upper_right`: `patterns.json` already declares the shape
+      the friendly half needs, and no support skill is authored on it. Moving one
+      of the five onto `arc_up` would make the axis real on `s01` without moving a
+      slot, a power or `splash_power`.
+
+      What it needs is a measurement first, not a change: how much a support column
+      is worth once it catches two, priced against the alternative of stacking —
+      which `DAT-007` measured at about **250‰** on `s04` vs a stacked copy of
+      itself, and `docs/balance.md` measured independently at about 213‰. The
+      instrument is `hexforge census` for whether the slot is cast at all beside
+      `forge.FightSquads` for what it is worth, because a rate cannot say a build
+      played its kit.
 
 - [x] `ENG-003` ⚠️ **A one-way mirror rate stopped being a measurement above one unit a
       side — FOUND AND FIXED.** The skill that resolved in an order that does not

@@ -1665,3 +1665,53 @@ slot fires *somewhere*, stopping at the first board that leaves nothing silent.
 five stacks of `heft` and `brace` grants them a battle at a time, so its gate is
 only crossed in a battle that runs long enough. That is what set the seed count,
 and it is the sort of floor that has to be measured rather than picked.
+
+## An area shape is worth its splash share only where a formation stacks
+
+`pattern.Book.Power` pays full power at index 0 and `splash_power` — 500‰ today —
+at every cell after it, so an area skill is priced against its second and third
+cells and against nothing else. **That price is redeemable only where two units
+stand where one cast catches both, which is a fact about the placement data
+rather than about the shape or the number.** Read a shape's worth off the
+formation before reading it off the book.
+
+Measured 2026-09-08 off `squads.json`, `roster.json` and `patterns.json` — the
+most **occupied** cells one cast can catch, aiming only where `battle.aims` would
+let a unit aim:
+
+| shape | best on any board `forge.FightSquads` fights | best on `roster.json` |
+|---|---|---|
+| `column` | **1** | 2 |
+| `flank_up` | **1** | 2 |
+| `arc_up` | 2 (on `s02`) | 3 |
+| `arc_down` | 2 (geometry; no squad unit fields it) | 3 |
+
+⚠️ **So `splash_power` is never reached for a `column` on any board a squad rate
+has ever been taken on.** `s02`–`s05` stand their three at `(2,1) (1,1) (0,1)`
+and `s01` at `(2,0) (2,2) (0,1)` — every unit alone in its own column — while
+`column` splashes `up`/`down`, i.e. *within* a column. The shipped squads are
+hex-adjacent along `upper_right` only, which is why the two arcs are the sole
+shapes that reach a second occupant. `dazzle` (column 900) is a **single-target
+900** in every squad figure this repository has quoted, and so are `discharge`,
+`night_shade` and `magnetise`. → `TODO.md` `DAT-007`.
+
+⚠️ **The obvious repair is not available at this price: stacking costs more than
+the area buys.** A sixth squad duplicating `s04`'s three members at
+`roster.json`'s stacked formation was built and measured — it did make the axis
+real (`column` catches 2, `arc_up` catches 3, and the area carrier's `dazzle`
+went from silent to cast) and the carrier's rate moved **0‰ → 2‰** while the
+non-area control moved −7‰. What the formation cost its own side was **about
+253‰**: the same three characters read 247‰ against a spread copy of themselves,
+because the stacked shape puts two units in the first occupied rank and drops the
+ace from depth 3 to depth 2, and reach is counted in **occupied ranks**. That is
+the same trade the column bonus measured independently at ~213‰, above.
+
+⚠️ **`TestAShippedFormationIsCatchableByTheShapesItFields`
+(`internal/seed/areaboard_test.go`) is the floor under this, not a fix for it.**
+It derives the fielded area shapes from the squads, the roster and the skill book
+— never a written-down list — and asserts each catches more than one occupant on
+*some* shipped formation. Today only `roster.json` carries it, which is why
+flattening that board (`memory/hexarena-roster-placement.md` warns it "reads as a
+tidy-up") would make `splash_power` unreachable in the entire game.
+`TestShippedPatternBook` is the other half and is blind to this one: its width
+check is about CELLS, not occupants.
