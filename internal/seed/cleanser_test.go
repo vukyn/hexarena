@@ -58,8 +58,37 @@ import (
 // than moving the line to meet the number. **What is asserted is a collapse
 // floor**, which is the regression this test was written against — the first
 // draft read 133 — and the design floor is printed against every run.
-// → `TODO.md` `DAT-011`, which is the authoring decision this needs and which is
-// not a test's to make.
+//
+// ⚠️⚠️⚠️ **DAT-011 SWEPT EVERY LEVER AND THEY ARE ALL CLOSED, AND THE FLOOR
+// TURNED OUT NOT TO BE A LINE ANY SHIPPED BUILD CLEARS.** Measured over 400
+// seeds a side unless noted, against the slugger and the blighter:
+//
+//	lever                            vs slugger   vs blighter
+//	the kit, seven alternatives      base wins every one of them
+//	  drop safeguard for hyper_voice        163           345
+//	  drop soft_boiled for hyper_voice      401           363
+//	  drop heal_bell for hyper_voice        491           333
+//	the trait, all six                endurance wins
+//	  ballast                                21           332
+//	  carapace                              276           648
+//	defence 220 -> 400 (200 seeds)          392 -> 622   447 -> 352
+//	the whole mender stat line              473           652   (113 per mille stalls)
+//
+// Three of those say the same thing in three vocabularies: **every way of
+// buying survival moves the two matchups in OPPOSITE directions**, and the two
+// that buy the most (defence past 340, the mender's whole stat line) push the
+// board past the ten per mille of unresolved battles a reading here may carry.
+// `heal_bell` is the only slot in the kit whose REMOVAL improves a matchup —
+// +84 against a squad with nothing to cleanse, −123 against one that has — which
+// is the character's own archetype being the thing that costs it the floor.
+//
+// ⚠️ **And the comparison was never level.** The mender's fixture kit is a
+// hybrid of its two catalogued builds and reads 601/508/518; the builds
+// themselves read **340**/615/864 (`cleffa.mend`) and **205**/197/180
+// (`cleffa.hex`). The cleanser was being measured on its only kit against a
+// figure no shipped build produces. It is now fought from a catalogued build
+// like anything else — `happiny.tend`, which is the optimum the sweep found —
+// and `TODO.md` `DAT-013` holds the mender's own builds.
 func TestACleanserEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	books, err := seed.Books()
 	if err != nil {
@@ -69,8 +98,7 @@ func TestACleanserEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load the cast: %v", err)
 	}
-	cleanser := aSquadOf("with-cleanser", aThirdMember("pokemon.happiny",
-		"egg_bomb", "safeguard", "heal_bell", "soft_boiled"))
+	cleanser := aSquadOf("with-cleanser", aThirdMemberFrom(t, "happiny.tend"))
 	// The floor the slot is supposed to clear, and it does not. It stays here,
 	// named and printed, because a design floor deleted for being unmet is a
 	// design floor nobody will remember to restore. → the note above.

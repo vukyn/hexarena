@@ -51,12 +51,50 @@ func aThirdMember(character string, kit ...string) placement.Placement {
 // aThirdMemberAs names the form, which a line that forks has to: Take resolves
 // through the same refusal Resolve does, so a placement leaving the arm open is
 // a squad that cannot be fielded at all.
+//
+// ⚠️ **The trait is fixed at `endurance` for every third member this builds**,
+// including the opponents. That is a constant rather than a choice, and it is
+// not free: swept over the cleanser's six traits, `endurance` is its best and
+// `ballast` reads **21 per mille** against a slugger — seventeen wins in eight
+// hundred battles, because `encumber` lands on the slowest unit on the board.
+// A fixture that fixes a slot cannot report what that slot is worth, which is
+// why aThirdMemberFrom exists beside it. → `TODO.md` `DAT-011`.
 func aThirdMemberAs(character, stage string, kit ...string) placement.Placement {
 	return placement.Placement{
 		ID: "third", Character: character, Level: progression.LevelCap, Stage: stage,
 		Slot:     hex.Offset{Col: 0, Row: 1},
 		Skills:   kit,
 		Passives: []string{"endurance"},
+	}
+}
+
+// aThirdMemberFrom fields a CATALOGUED build in the third slot — its four skills
+// and its trait, both read off `builds.json` rather than written out here.
+//
+// ⚠️ **It exists because a hand-written kit is not a reading of the character,
+// and DAT-011 is what proved that.** The mender's fixture kit takes moonblast
+// and moonlight from `cleffa.mend` and charm and solar_beam from `cleffa.hex`;
+// it reads 601 per mille against a slugger while the two builds the catalogue
+// actually carries read **340** and **205** against the same opponent. So a
+// floor cleared by the hybrid says nothing about a floor a shipped build
+// clears, and a support measured on its own only kit is being held to a line
+// the comparison never had to meet.
+func aThirdMemberFrom(t *testing.T, id string) placement.Placement {
+	t.Helper()
+	catalogue, err := seed.Builds()
+	if err != nil {
+		t.Fatalf("load the build catalogue: %v", err)
+	}
+	built, ok := catalogue.Get(id)
+	if !ok {
+		t.Fatalf("no build is called %q, so there is nothing to field", id)
+	}
+	return placement.Placement{
+		ID: "third", Character: built.Character, Level: progression.LevelCap,
+		Stage:    built.Stage,
+		Slot:     hex.Offset{Col: 0, Row: 1},
+		Skills:   built.Skills,
+		Passives: built.Passives,
 	}
 }
 
@@ -76,6 +114,29 @@ func aThirdMemberAs(character, stage string, kit ...string) placement.Placement 
 // the same wall in two squads, differing only in the third slot, fought both ways
 // round over the same seeds. A mender that cannot hold that slot against a
 // striker is a mender not worth authoring.
+//
+// ⚠️ **THE KIT BELOW IS NOT A BUILD ANYBODY CAN PICK OUT OF THE CATALOGUE**, and
+// that was found by DAT-011 rather than here. It takes moonblast and moonlight
+// from `cleffa.mend` and charm and solar_beam from `cleffa.hex` — a hybrid of
+// the two, which the squad builder will let a player assemble (OpenSkills offers
+// the whole learnset) but which `builds.json` does not carry. Over 300 seeds
+// against the three opponents these fixtures use:
+//
+//	kit                       slugger   blighter   bruiser
+//	this hybrid                   601        508       518
+//	cleffa.mend  (catalogued)     340        615       864
+//	cleffa.hex   (catalogued)     205        197       180
+//
+// So this test is green on a kit that clears the floor while **neither shipped
+// build does**, and the figures it was written against — 525 and 543 — are a
+// third reading, stale since ENG-012. Fixing that is a balance change to the
+// mender's own builds and is filed as `TODO.md` `DAT-013`; changing the kit here
+// first would only turn a green test red without moving the game. The cleanser
+// beside it already fields a catalogued build — see aThirdMemberFrom.
+//
+// ⚠️ **`cleffa.hex` at 168 to 212 per mille across every opponent is the larger
+// finding of the two**, and much larger than the twenty per mille DAT-011 was
+// opened for: it is a shipped direction that loses four battles in five.
 func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	books, err := seed.Books()
 	if err != nil {

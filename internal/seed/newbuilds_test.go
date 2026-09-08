@@ -27,6 +27,16 @@ var (
 
 	mendBuild = []string{"moonlight", "wish", "rally", "moonblast"}
 	hexBuild  = []string{"charm", "sing", "smokescreen", "solar_beam"}
+
+	// The cleanser's steady direction, and the one build in this record that was
+	// chosen by SWEEPING the alternatives rather than by authoring a pair: over
+	// 400 seeds a side, each of the other three slots given up for the only other
+	// damaging skill in the learnset costs 244, 6 and −84 per mille, and each of
+	// the other five traits costs between 10 and 386. So these four and
+	// `endurance` are the optimum rather than a direction, which is why
+	// TestACleanserEarnsItsSlotWhereASparCannotSeeIt reads its 429 and 430 off
+	// this build through aThirdMemberFrom. → `TODO.md` `DAT-011`.
+	tendBuild = []string{"egg_bomb", "safeguard", "heal_bell", "soft_boiled"}
 )
 
 // newBuildSeeds is how many battles each reading is averaged over. Sixty is what

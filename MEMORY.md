@@ -44,7 +44,9 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena PvP plan](memory/hexarena-pvp-plan.md) — mirror client; bo1|bo3 KHÔNG bo2; 3 số version, digest là cửa
 - [thế hoà = thứ tự roster](memory/hexarena-side-is-worth-60-points.md) — seq = slice order, CALLER quyết; ĐÃ kéo cần gạt: room.alternateContested, gap −45% ở 3v3
 - [⚠️ mirror một chiều: ĐÃ VÁ CẢ 2](memory/one-way-mirror-not-a-measurement.md) — aim order + splash tuyệt đối (ENG-012); 5/5 squad ship = 1000‰; 3 test balance vỡ là lỗi PHÉP ĐO
-- [lỗi PHÉP ĐO ≠ lỗi thiết kế](memory/measurement-faults-not-design-faults.md) — biên cần độ sâu; tổng phải chia theo lượt; fixture không chạm ca thì xác nhận bản vá chứ không phải tính chất
+- [lỗi PHÉP ĐO ≠ lỗi thiết kế](memory/measurement-faults-not-design-faults.md) — biên cần độ sâu; tổng phải chia theo lượt; ⚠️ mục "lỗi thiết kế thật" ĐÃ SỬA — sàn lấy từ kit hybrid không ai ship
+- [effHP mua burst, mất attrition](memory/hexarena-effective-hp-buys-burst-and-loses-attrition.md) — ⚠️ hai matchup NGƯỢC DẤU nên sweep stat vô nghĩa; def 400 = 40‰ stall, 418 bị trần khớp từ chối
+- [chiêu archetype là slot tốn sàn](memory/hexarena-a-cleanse-is-a-matchup-dependent-slot.md) — ⚠️ bỏ `heal_bell` LỜI 84‰ vs slugger; `safeguard` mới chịu lực (−244); `ballast` ra 21‰
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [consumer thứ hai cần cursor thứ hai](memory/hexarena-a-second-consumer-needs-a-second-cursor.md) — log PvP phải đọc từ 0; ⚠️ cursor phòng đặt SAU bàn mở → 291 ghi vs 300 re-run
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
