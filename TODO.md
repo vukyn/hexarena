@@ -81,7 +81,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-003` | done | A one-way mirror rate stopped being a measurement above one unit a side — FOU… |
 | `ENG-004` | done | The two-number surface is a different pair — CLOSED. The grid is REFUSED and… |
 | `ENG-005` | done | A field inside a `modifier` was dropped silently in all three books — DONE, a… |
-| `ENG-006` | open | A gate at the top of the health bar — `passive.Condition.AboveHealth`: steps 1 and 2 of 3 SHIPPED, step 3 (the first subject) open |
+| `ENG-006` | done | A gate at the top of the health bar — `passive.Condition.AboveHealth`: all three steps SHIPPED, the first subject is `pristine` on Magnezone |
 | `ENG-007` | open | Four ways of playing the board that the engine cannot express yet |
 | `ENG-008` | refused | Re-rolling the turn-order tie-break from the seed |
 | `ENG-009` | refused | A ceiling on `Skill.Power` |
@@ -6085,19 +6085,19 @@ is only so the shape is readable.
       here rather than raising separately: it is the same subcommand with the
       opponent named instead of the squad.
 
-- [ ] `ENG-006` **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
+- [x] `ENG-006` **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
       Built and measured on 2026-09-07 while closing the `reckless` item, reverted
       because that trait is not the one that wants it, and kept here because the
       *mechanism* is sound and is the only cost shape this engine cannot currently
       express.
 
-      **Steps 1 and 2 of three are SHIPPED (2026-09-08): the term exists, parses,
-      round-trips, is worded, the pricing defect it exposed is fixed, and a grant
-      may now carry a gate of its own.** The item stays open on **step 3, the
-      first subject**, which is named below. Nothing shipped carries either the
-      term or a gated grant yet — the mechanism arrived before the first subject
-      for it, deliberately — so every walk over the shipped books is blind to both
-      and says so in as many words where that matters.
+      **All three steps are SHIPPED (2026-09-08).** Steps 1 and 2 built the
+      mechanism — the term exists, parses, round-trips, is worded, the pricing
+      defect it exposed is fixed, and a grant may carry a gate of its own — and
+      **step 3 shipped the first subject, `pristine`, priced by measurement.**
+      Until it landed nothing shipped carried either the term or a gated grant,
+      so every walk over the shipped books was blind to both; each now walks
+      exactly one trait.
 
       What step 1 landed:
       - `scale.AtOrAboveShare`, the twin of `AtOrBelowShare`. The overlap at the
@@ -6138,10 +6138,10 @@ is only so the shape is readable.
         is where `answer` reads it, and the comment arguing the old imprecision was
         safe is gone.
 
-      ⚠️ **What no test can hold yet, said plainly rather than implied.** No golden
-      records the new wording, because a golden over the shipped books cannot see a
-      term no shipped trait carries — `describe.golden` did not move and must not
-      until step 3 ships a subject. The same reason makes three of step 1's tests
+      ⚠️ **What no test could hold at step 1, said plainly rather than implied.**
+      No golden recorded the new wording, because a golden over the shipped books
+      cannot see a term no shipped trait carries — `describe.golden` did not move
+      and could not until step 3 shipped a subject, which it now has. The same reason makes three of step 1's tests
       **hand-built fixtures** rather than walks: the i18n wording test constructs
       its two traits, `cmd/hexforge`'s writes them into a scratch data directory,
       and `internal/core/battle`'s pricing case adds `fresh_spikes` /
@@ -6205,29 +6205,91 @@ is only so the shape is readable.
         unchanged, and the understatement at the top of the bar is still a step-3
         measurement.
 
-      ⚠️ **What no test can hold yet, again.** No golden moved and none could:
-      `describe.golden` cannot see a term no shipped trait carries. Every test for
+      ⚠️ **What no test could hold at step 2, again.** No golden moved and none
+      could: `describe.golden` cannot see a term no shipped trait carries. Every test for
       step 2 is therefore a hand-built fixture — `internal/core/passive`'s own
       book, `internal/core/battle`'s golden-free fixture book (a `fortified`
       status and four traits), `internal/i18n`'s constructed traits, and scratch
       data directories in `internal/forge` and `cmd/hexforge`. The seed share-floor
-      walk gained a grant-gate arm that **walks nothing today**, deliberately, the
-      way the trait-level arm did before `blaze`.
+      walk gained a grant-gate arm that walked **nothing** the day it was
+      written, deliberately, the way the trait-level arm did before `blaze`; it
+      walks `pristine` since step 3.
 
       ⚠️ **Two refusals had no test before this.** Mutating the absorb refusal to
       read the grant's own field reddened **nothing** in the repository until the
       new table arrived — "a pool is refilled every time a gate reopens" was
       written and never measured.
 
-      **Still open — step 3, the first subject.** A guard that holds while its
-      holder is fresh, priced by measurement. ⚠️ Two things step 1 met that this has
-      to settle: `forge.Library.Held` skips a gated grant at **both** ends, so a
-      preview understates a trait gated at the top of the bar — deciding otherwise
-      is a measurement, and the reason for the current answer is in that function's
-      comment; and `internal/screen`, `internal/tui` and both TUI clients render a
-      gate only through `i18n.DescribePassive`, so they need nothing, but the
-      goldens under `testdata/` will move the moment a shipped trait carries the
-      term and **that** is the diff to read as the design record.
+      **Step 3 is SHIPPED (2026-09-08): `pristine`, on Magnezone at level 48.**
+      An ungated `plated` (a new permanent buff, +10% defence) beside the shipped
+      `fortified` (+25%) behind `above_health: 700`. The gated tier reuses
+      `fortified` rather than getting a number of its own, because that is what
+      `ballast` pays `encumber` for — the gate and the encumbrance are two prices
+      for the same goods, which is what makes the two traits a choice rather than
+      a ladder. The two tiers may not be the same status: `ParseBook` refuses
+      `grants %q twice; say the stack count instead`, and a gated re-grant of what
+      the trait already grants ungated is exactly that shape.
+
+      **The measurement, and it is the whole reason the item existed.** Build
+      duels on the established instrument — both arrangements over the same seeds,
+      500 seeds a side, 1000 battles a cell, fixture arms patched into the parsed
+      passive book in memory — with the **mirror control reading exactly 500‰ at
+      every rung of every sweep**.
+
+      | opponent | floor | gated | payload | tier ungated | tier behind the gate |
+      |---|---:|---:|---:|---:|---:|
+      | Cleffa | 460 | 682 | 708 | **+248** | **+222** |
+      | Gastly | 222 | 260 | 438 | **+216** | **+38** |
+
+      **A magnitude cannot separate those two matchups and a duration does.**
+      Ungated the tier is worth 248 and 216 — 15% apart, so no amount of it would
+      ever have been a lever between them. Behind the gate it is worth 222 and 38,
+      **5.8 times apart**. That is the item's thesis measured, and it is the first
+      reading in the repository where a trait's worth separates two matchups by
+      more than a rounding error.
+
+      ⚠️ **The axis is not battle length and the naive reading is backwards.**
+      Cleffa is the *longer* matchup (42 turns against 20), and the gate is open
+      for a comparable share of both timelines (369 and 323 parts per thousand).
+      What differs is **where along the bar the fight is decided** — decomposed by
+      fighting the same tier gated at the other end, Cleffa's payload is +222
+      above the gate and +228 below it, Gastly's +38 and +122. So the item's own
+      phrase, "a rout that ends at full health", is the axis and "a short battle"
+      is not.
+
+      **Both numbers are the last rung before a cliff.** The gate swept at
+      200/300/500/600/700/800/900 delivers 100/90/90/89/89/4/3 per cent of its
+      payload against Cleffa and 75/67/44/29/17/10/6 against Gastly: below 700 the
+      two arms converge into a discount on a stat, at 800 the whole thing dies.
+      The ungated tier swept at 5/10/15 per cent is better than `endurance`
+      against 2/10/12 of the other 21 characters and worse against 11/4/2 — at 5%
+      nobody would take it and at 15% it is `endurance` plus a bonus, so **10% is
+      the only rung of the three that is a trade**.
+
+      **`forge.Library.Held` was left skipping a gated grant at both ends and its
+      stated reason was replaced.** That reason — a raise that "lapses on the
+      first blow" is worse to show than none — is false at the top of the bar: the
+      gate holds until its holder has spent three tenths of its health and is in
+      force for about a third of a battle. A third is what settles it: the
+      function returns one number, its two available answers are nought and the
+      whole tier, and nought is the nearer of the two. Reading the gate at full
+      health instead would make the preview equal the opening board and overstate
+      by two thirds where this understates by one (373 against 452).
+
+      **The goldens moved and the diff is the record.** `describe.golden` gained
+      seventeen lines and they are the first appearance of
+      `BlurbTraitGrantsWhileAbove` anywhere — *"Always carries plated. / Carries
+      fortified at or above 70% health."* — against the trailing whole-trait clause
+      `blaze` prints instead. The three screen goldens gained a status row and a
+      trait row (`pristine  nguyên vẹn  pokemon.magnemite@48`, since the traits
+      pane lists who carries each), the status picker went 43 → 44, and the
+      statuses reference pane pushed `bastion` off its visible window — a scroll
+      rather than a cut. **No balance golden moved**: no shipped placement fields
+      the trait, exactly as none fields `carapace`.
+
+      → `README.md` § *What a guard that holds while its holder is fresh is worth*
+      for the full tables, and `internal/seed/pristine_test.go` for the four tests
+      that hold it.
 
       ⚠️ **`internal/core/skill`'s `Condition` was left alone, on purpose.** It
       carries its own `BelowHealth` and the two types share arithmetic rather than
@@ -6291,8 +6353,8 @@ is only so the shape is readable.
       a character has trait slots and one idea may not cost two of them.
       `Grant.While` is that field and it ships; the trait-level clause is kept for
       the whole-trait case, the two may not be combined over one grant, and both
-      refusals came down with the gate. **Nothing about the schema is left to
-      settle here — what is left is the pricing.**
+      refusals came down with the gate. **The pricing is above, and it closed the
+      item.**
 
       ⚠️ **Two tiers do not add up to the sum of their faces.** `modifier.Set.Stat`
       saturates a change towards a floor rather than applying it — a −400‰ term on a

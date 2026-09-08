@@ -548,6 +548,18 @@ healed unit above its own maximum) or that **holds a pool** (hold and release ru
 the grant again every time the gate reopens, so a barrier behind one comes back
 full each time it is crossed). Both read the **effective** gate — the trait's or
 the grant's own — because they are rules about the grant. → `passive.GateOver`.
+⚠️ **The first subject ships, so neither end of the bar is a latent branch any
+more.** `pristine` grants a thin `plated` that never lapses beside the shipped
+`fortified` behind `above_health: 700`, and Magnezone carries it — which makes it
+the first trait to gate a *grant*, the first to gate at the *top* of the bar, and
+the only thing in the shipped books that any walk over either can see. It is a
+**trade** against `endurance` rather than an upgrade over it: the ungated tier is
+deliberately smaller than what `endurance` grants outright, because a placement
+brings one trait and a trait that is another trait plus something retires it. And
+its size is a measurement rather than a taste — the gate at 700 was the last rung
+before a cliff, and the ungated tier at 10% the only one of three that was a
+trade at all. → `README.md` § *What a guard that holds while its holder is fresh
+is worth*.
 
 **A resistance belongs at `battle.inflict`, never at `status.Set.Apply`.**
 `Apply` is the choke point every status passes through, which makes it the obvious

@@ -124,7 +124,13 @@ var (
 		"kindled":   "bùng cháy",
 		"quickened": "gia tốc",
 		"fortified": "kiên cố",
-		"encumber":  "nặng nề",
+		// The small permanent twin of the one above, and a different kind of word
+		// on purpose: "kiên cố" and "kiên cường" are both what a unit IS, and this
+		// is a layer somebody put ON it. A trait that hands out a thin standing
+		// plating and a thick one behind a gate needs the two to read as different
+		// amounts of the same thing rather than as two moods.
+		"plated":   "bọc giáp",
+		"encumber": "nặng nề",
 		// A debuff, so a verb, like every other one here. It names the wound
 		// rather than the mechanism: what the holder has is a sore that will not
 		// close, and "less healing received" is the arithmetic under it.

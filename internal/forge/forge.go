@@ -315,13 +315,25 @@ func (l *Library) Held(base progression.Values, traits []string) (progression.Va
 			// ⚠️ Both ends of the bar are skipped, which understates a grant
 			// gated at the *top* of it: such a grant really is in force on a unit
 			// at full health, so a preview that leaves it out shows a stat line
-			// lower than the one the battle opens with. It is skipped anyway,
-			// because the figure this function answers is what a character
-			// carries for the whole fight and a gated grant is not that at either
-			// end — a preview showing a raise that lapses on the first blow would
-			// be worse than one showing none. Deciding otherwise is a measurement
-			// rather than an edit; nothing shipped is gated at the top of the bar
-			// yet. → TODO.md § ENG-006, step 3.
+			// lower than the one the battle opens with. `pristine` is the shipped
+			// case and the understatement is the whole of its second tier —
+			// 373 defence here against the 452 Magnezone opens a battle on.
+			//
+			// It is skipped anyway, and **the reason is a measurement rather than
+			// the argument that used to be written here.** That argument was that
+			// a raise which "lapses on the first blow" is worse to show than none,
+			// and it is simply false at the top of the bar: the shipped gate holds
+			// until its holder has spent three tenths of its health, and measured
+			// over a thousand battles it is in force for about **a third of the
+			// timeline** of the fight (369 and 323 parts per thousand in the two
+			// matchups ENG-006 was priced on). A third is what makes the answer:
+			// this function returns ONE number, the two available answers are
+			// nought and the whole tier, and nought is the nearer of the two to a
+			// third. Reading the gate at full health instead — which would make
+			// the preview equal the opening board, and is the arrangement
+			// battle.grant uses — would overstate by two thirds where this
+			// understates by one. → README.md § *What a guard that holds while its
+			// holder is fresh is worth*.
 			if held.GateOver(grant) != nil {
 				continue
 			}

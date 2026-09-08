@@ -1094,7 +1094,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   unleashed    bộc phát
   kindled      bùng cháy
   fortified    kiên cố
-  quickened    gia tốc
+  plated       bọc giáp
 
   Tăng thủ 15%.
   Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
@@ -4015,6 +4015,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   unleashed    bộc phát
   kindled      bùng cháy
   fortified    kiên cố
+  plated       bọc giáp
   quickened    gia tốc
   evasive      khinh công
   stoked       nóng máy
@@ -4041,7 +4042,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   charge       nhiễm điện
   absorb       lá chắn, thấm sát thương cho tới khi cạn
   aegis        lá chắn
-  bastion      thành trì
 
   Tăng thủ 15%.
   Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
@@ -4136,12 +4136,12 @@ nội tại  các nội tại đã khai báo, và ai mang
   convalescence  ẩn thân        pokemon.happiny@48
   static         tê điện        pokemon.pichu@16
   magic_guard    tường tâm      pokemon.abra@16
+  pristine       nguyên vẹn     pokemon.magnemite@48
   quickening     lên đà         pokemon.torchic@16
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
     Luôn mang kiên cường.
-
 
 
 
@@ -5440,7 +5440,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   unleashed    
   kindled      
   fortified    
-  quickened    
+  plated       
 
   Raises defence by 15%.
   Raises a stat · always in force · 1 stack.
@@ -8361,6 +8361,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   unleashed    
   kindled      
   fortified    
+  plated       
   quickened    
   evasive      
   stoked       
@@ -8387,7 +8388,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   charge       
   absorb       soaks up damage until it is used up
   aegis        
-  bastion      
 
   Raises defence by 15%.
   Raises a stat · always in force · 1 stack.
@@ -8482,11 +8482,11 @@ traits  the declared traits, and who carries each
   convalescence  pokemon.happiny@48
   static         pokemon.pichu@16
   magic_guard    pokemon.abra@16
+  pristine       pokemon.magnemite@48
   quickening     pokemon.torchic@16
 
   endurance
     Always carries toughened.
-
 
 
 

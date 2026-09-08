@@ -981,6 +981,11 @@ Cái giá phải trả đi đâu mất giữa đường, không ai thấy nó t�
 Miễn nhiễm trúng độc.
 Miễn nhiễm bỏng.
 
+[trait] pristine
+Lúc còn lành lặn thì đứng đâu cũng như đứng sau tường, sứt sát rồi thì chỗ nào cũng hở.
+Luôn mang bọc giáp.
+Mang kiên cố khi còn >=70% máu.
+
 [trait] quickening
 Mỗi lượt đứng được là một lượt lấy lại được nhịp, và nhịp thì không tự mất đi.
 Đầu mỗi lượt của mình lại nhận nóng máy, 100% khả năng.
@@ -1062,6 +1067,10 @@ Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] fortified
 Tăng thủ 25%.
+Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
+
+[status] plated
+Tăng thủ 10%.
 Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] quickened
@@ -2167,6 +2176,10 @@ Whatever damages it has a 6% chance of catching stun.
 Refuses poison outright.
 Refuses burn outright.
 
+[trait] pristine
+Always carries plated.
+Carries fortified at or above 70% health.
+
 [trait] quickening
 Takes stoked again at the start of each of its own turns, 100% of the time.
 
@@ -2247,6 +2260,10 @@ Raises a stat · always in force · 1 stack.
 
 [status] fortified
 Raises defence by 25%.
+Raises a stat · always in force · 1 stack.
+
+[status] plated
+Raises defence by 10%.
 Raises a stat · always in force · 1 stack.
 
 [status] quickened

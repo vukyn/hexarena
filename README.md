@@ -4218,9 +4218,16 @@ third of its health, Charmander's kit hits harder.
 A gate covers the **whole** trait — its grants, its resistances and its riders
 come and go together. That is why the burn immunity `blaze` used to carry moved
 to a trait of its own: a fire creature that only resisted burns while it was
-losing would be a rule nobody could state. **A trait wanting one gated half and
-one ungated half is two traits**, and saying so is what keeps a gate from
-becoming a per-field flag that has to be read out of the data.
+losing would be a rule nobody could state.
+
+⚠️ **"A trait wanting one gated half and one ungated half is two traits" was
+written here and it is no longer true.** `passive.Grant.While` gates one grant,
+so a trait may hold an ungated tier beside a gated one — and the reason the rule
+was relaxed is the reason it was stated: two traits was never an option, because
+a placement brings **one** trait and one idea may not cost two slots. What is
+still refused is a grant behind *both* gates at once, which is a conjunction
+wearing one clause; a trait is gated as a whole or on its grants, never both.
+The first subject is `pristine`, priced in the section below.
 
 Four things it needed, and they were worked out before any of it was written:
 
@@ -4262,6 +4269,207 @@ proved by a hand-played battle in `TestEveryEventKindIsReachable` rather than by
 widening the sweep until the rare case turned up, because "a player heals and the
 opponent does not" is the actual reason, and a test that passed at seed 3,197
 would have hidden it.
+
+### What a guard that holds while its holder is fresh is worth
+
+Shipped, as `pristine`, and it is the first trait in the book to carry a gate at
+the **top** of the health bar and the first to carry a gate on a **grant** rather
+than on itself. It is `blaze` turned around: where that one arrives as its holder
+is worn down, this one leaves.
+
+```json
+{ "id": "pristine", "grants": [
+    {"status": "plated",    "stacks": 1},
+    {"status": "fortified", "stacks": 1, "while": {"above_health": 700}}] }
+```
+
+**Two tiers, and neither of them is a new number.** The tier that never lapses is
+`plated`, a new permanent buff worth 10% of defence; the tier behind the gate is
+the shipped `fortified`, worth 25%, which is exactly what `ballast` already
+grants. That reuse is the design rather than thrift: **the gate and `ballast`'s
+`encumber` are two prices for the same goods.** A unit may buy standing armour by
+giving up speed for the whole battle, or have it free and keep it only while it
+is unhurt, and reading the two traits beside each other is what makes that a
+choice. Authoring a second big defence buff instead would have made them two
+unrelated numbers that happen to be equal.
+
+The two tiers may not be the same status, and the parser says so — `grants
+fortified twice; say the stack count instead` — which is worth knowing because a
+gated re-grant of what a trait already grants ungated is exactly that shape.
+
+**And they do not add up.** On Magnezone's line, measured:
+
+| held | defence |
+|---|---:|
+| bare | 340 |
+| `plated` alone | 373 |
+| `fortified` alone | 421 |
+| **both tiers** | **452** |
+| the two faces, added | 459 |
+
+`modifier.Set.Stat` saturates a change towards a ceiling instead of applying it,
+so the gated tier lands in a stat the ungated one has already moved and buys 79
+there against the 81 it buys alone. Small at this magnitude and never nought:
+**price a two-tier trait by measuring it, never by adding its two faces.**
+
+#### The carrier
+
+Magnezone, at level 48, and the reason is three-part — four with the fiction,
+which is the part the data can say out loud: Magnemite's species is `construct`,
+so its protection is a **casing** rather than a mood. It is the one thing in the
+cast for which "whole, or dented" is a physical fact.
+
+Its **line** is the one this trait reads on: a modest 340 defence with a 3000
+frame, so a share of defence has somewhere to go and the top of the bar is a long
+way from the bottom. Its **role** is artillery — a bombardier wants not to be
+touched at all and has no answer once it is being ground down, which is the exact
+shape of protection that is at its best before the first blow. And it is the
+carrier the decoupling below was **measurable** on: a trait whose duels all read
+0 or 1000 has no room to show anything, and a 20-seed scan of all twenty-two
+characters against all the others — used to choose a carrier rather than to price
+one — put ten of Magnezone's opponents inside a movable band.
+
+⚠️ **The tank is the wrong carrier, which is the opposite of the instinct.** A
+guard that lapses as its holder is worn down is worth least on the character
+built to be worn down. Swept as a carrier, Blastoise's duels run 24 to 535 turns
+and **eighteen of its twenty-one matchups last forty turns or more against one
+that lasts twenty or fewer** — a fight that goes that long is a fight spent under
+the gate, whatever the trait says above it.
+
+#### The instrument
+
+The build duel that priced `bare` and `reckless`, unchanged: one character's kit
+and one trait against a shipped character, **both arrangements over the same
+seeds**, 500 seeds a side, so every figure is 1000 battles. The fixture arms are
+patched into the parsed passive book in memory rather than written into the
+shipped file, which is how every trait sweep above was taken.
+
+**The mirror control reads exactly 500‰ at every rung of every sweep below** —
+the same kit and the same trait on both halves, which has to come to even or the
+instrument is tilted before an arm is read.
+
+Three arms of the same tier, because a null needs a payload beside it:
+
+- **floor** — the ungated tier alone, which is what the trait is worth once its
+  gate has shut;
+- **gated** — the shipped trait;
+- **payload** — the same two tiers with **no gate at all**, which is what a plain
+  stat of this size is worth.
+
+Without the payload, "the gate is worth little here" cannot be told from "the
+tier is worth little here".
+
+#### The decoupling
+
+| opponent | floor | gated | payload | the tier ungated | the tier behind the gate |
+|---|---:|---:|---:|---:|---:|
+| Cleffa | 460 | 682 | 708 | **+248** | **+222** |
+| Gastly | 222 | 260 | 438 | **+216** | **+38** |
+
+Read the last two columns against each other, because that is the whole argument
+of the item this shipped under.
+
+**A magnitude cannot tell these two matchups apart.** Ungated, the same tier is
+worth 248 against one and 216 against the other — 15% apart. No amount of it
+would ever have been a lever between them, and that is not a property of this
+tier: every dial a trait offered before this one was a stat, and both gates a
+stat moves are the same event, a strike crossing a kill threshold.
+
+**The same tier behind the same gate is worth 222 against one and 38 against the
+other — 5.8 times apart.** Duration is not a stat, and this is the first reading
+in the repository where a trait's worth separates two matchups by more than a
+rounding error.
+
+#### Which end of the bar the fight is decided in
+
+The mechanism, decomposed by fighting the *same* tier gated at the other end
+(`below_health: 700`), so the two arms partition the bar:
+
+| opponent | tier above the gate | tier below it | tier ungated |
+|---|---:|---:|---:|
+| Cleffa | +222 | +228 | +248 |
+| Gastly | +38 | +122 | +216 |
+
+Against Cleffa nine tenths of the whole tier's value sits in the top three tenths
+of the bar, and either half alone recovers almost all of it — that matchup turns
+on margins so thin that armour anywhere flips the same seeds. Against Gastly less
+than a fifth of it does, and the bottom of the bar is worth three times the top.
+
+⚠️ **The axis is not battle length, and the naive reading is backwards.** Cleffa
+is the *longer* of the two at 42 turns against Gastly's 20. It is also not how
+long the gate stays open: measured over the same battles the gate is in force for
+369 and 323 parts per thousand of the two timelines — within a quarter of each
+other while the value differs by a factor of six. What differs is **where along
+the bar the fight is decided**, which is a property of the matchup and not of the
+trait, and it is exactly the item's own phrase — "a rout that ends at full
+health" — rather than "a short battle".
+
+#### The threshold, swept
+
+Both arms, every rung, as a share of the payload the gate delivers:
+
+| `above_health` | Cleffa | Gastly | apart |
+|---|---:|---:|---:|
+| 200 | 100% | 75% | 1.3x |
+| 300 | 90% | 67% | 1.3x |
+| 500 | 90% | 44% | 2.0x |
+| 600 | 89% | 29% | 3.1x |
+| **700** | **89%** | **17%** | **5.2x** |
+| 800 | 4% | 10% | — |
+| 900 | 3% | 6% | — |
+
+**700 is the rung, and the curve says why.** Below it the two arms converge —
+a gate low enough to be open nearly all the time is a discount on a stat rather
+than a different dial. Above it the whole thing dies: at 800 the gate delivers
+4% and 10%, which is a trait that parses and does nothing. There is one rung
+where the separation is largest and the tier is still worth having, and it is the
+last one before the cliff.
+
+#### The floor, swept, and why it is 10% rather than 15%
+
+A placement brings one trait, so a trait that is another trait plus something is
+not a choice — it retires the other one. `endurance` grants `toughened`, worth
+15% of defence, and the ungated tier has to sit **under** that or `pristine` is
+`endurance` with a bonus. Swept against all twenty-one other characters, 1000
+battles each, gate at 700:
+
+| ungated tier | better than `endurance` against | worse against | level | mean rate |
+|---|---:|---:|---:|---:|
+| 5% | 2 | 11 | 8 | 328 (`endurance` 333) |
+| **10%** | **10** | **4** | **7** | **360** |
+| 15% | 12 | 2 | 7 | 378 |
+
+At 5% nobody would take it — it is worse on average than the trait it competes
+with. At 15% it is `endurance` plus a gated tier and the two rows it loses are
+both by six thousandths, which is noise. **10% is the only rung of the three that
+is a trade**: below the gate the trait is 373 defence against `endurance`'s 389,
+and above it 452.
+
+#### What the preview says, and what it does not
+
+`forge.Library.Held` skips a gated grant at both ends, so `hexforge check` shows
+Magnezone at 373 under `pristine` where the battle opens at 452. That answer was
+kept and **its stated reason was wrong**: the comment argued that a raise
+"lapses on the first blow", and a gate at the top of the bar does not — it holds
+until its holder has spent three tenths of its health, and it is in force for
+about a third of a battle's timeline. A third is what settles it. The function
+returns one number, the two answers available to it are nought and the whole
+tier, and nought is the nearer of the two; reading the gate at full health
+instead — which would make the preview equal the opening board — would overstate
+by two thirds where this understates by one.
+
+#### What moved
+
+`describe.golden` gained seventeen lines and they are the point: it is the first
+time `BlurbTraitGrantsWhileAbove` appears in a record at all, reading *"Always
+carries plated. / Carries fortified at or above 70% health."* against the trailing
+whole-trait clause a gated trait like `blaze` prints instead. The three screen
+goldens gained a status row and a trait row — the traits pane lists who carries
+each, so `pristine  nguyên vẹn  pokemon.magnemite@48` is the carrier entering the
+design record — the status picker went from 43 to 44, and the statuses reference
+pane pushed `bastion` off its visible window, which is a scroll rather than a cut.
+No balance golden moved: no shipped placement fields the trait, exactly as none
+fields `carapace`.
 
 ### Two builds for one character, which is what the trait work is for
 
@@ -4408,8 +4616,9 @@ the poison answer means not bringing the sustain, and the other way round.
 any one trait does, and fails if the slot count grows or a direction loses its last
 entry.
 
-Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While` on a
-grant, and `venom_blood` the only one using `Replies`.
+Nothing shipped uses `Applies` yet; `blaze` and `last_gasp` are the only traits
+gated as a whole, `pristine` the only one carrying a gate on a **grant**, and
+`venom_blood` the only one using `Replies`.
 
 **And it answers with poison alone.** The reply's 40 per mille of counter-damage
 was sold to buy chance, because at 25 per mille the poison landed **0.27 times a
