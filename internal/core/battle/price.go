@@ -572,14 +572,21 @@ func (p *pricing) replied(actor *Unit, declared skill.Skill, aim hex.Offset) int
 			if err != nil || !held.Replies.Answers() {
 				continue
 			}
-			// ⚠️ The gate is read on the holder as the board stands, while answer
-			// reads it on the holder as this very blow left it. The two can only
-			// differ one way: passive.Condition carries nothing but BelowHealth, so
-			// a gate can turn *on* as its holder is hurt and can never turn off. So
-			// this misses a trait the attack itself wakes up and over-charges for
-			// none, which is the direction every cap in this file errs in — and it
-			// costs no hypothetical unit to be exact about.
-			if !p.fight.inForce(holder, held) {
+			// The gate is read on the holder as **this very blow leaves it**,
+			// which is exactly where answer reads it, so the two agree exactly
+			// rather than approximately.
+			//
+			// ⚠️ It used to be read on the board as it stands, on the argument
+			// that passive.Condition carried nothing but BelowHealth — so a gate
+			// could only turn *on* as its holder was hurt, and the miss fell in
+			// the direction every cap in this file errs in. **That argument died
+			// the day passive.Condition.AboveHealth landed**: a gate at the top of
+			// the bar turns *off* as its holder is hurt, so the old line charged
+			// for a reply that will never be made, which is the one direction this
+			// file does not err in. dealt is strictly between nought and the
+			// holder's health by the guard above, so this is a real reading of a
+			// living unit.
+			if !p.fight.inForceAt(holder, held, holder.HP-dealt) {
 				continue
 			}
 			cost, lethal := int64(0), false

@@ -328,9 +328,18 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		}
 		// A gate is only worth a column when there is one, and the share is read
 		// as a percentage for the same reason every other permille is.
+		//
+		// ⚠️ The word comes off the gate's own end rather than being a constant.
+		// It was "under" for every gate in the book, which was true while the only
+		// term was a threshold at the bottom of the bar and became a cell stating
+		// the opposite of the data the moment a gate could sit at the top of it.
 		gate := ""
 		if held.While != nil {
-			gate = "under " + forge.Percent(held.While.BelowHealth) + " health"
+			side := "under "
+			if held.While.AtTop() {
+				side = "over "
+			}
+			gate = side + forge.Percent(held.While.Threshold()) + " health"
 		}
 		rendered.add(held.ID, held.Name, strings.Join(grants, ", "),
 			adds, answers, drains, strings.Join(resists, ", "),

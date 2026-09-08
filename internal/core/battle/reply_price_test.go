@@ -273,3 +273,135 @@ func describeAnswering(fight *battle.Battle) string {
 	}
 	return out.String()
 }
+
+// TestAReplyTheBlowItselfSwitchesOffIsNotCharged is the defect a gate at the top
+// of the health bar exposed, and it is the whole reason price.go moved.
+//
+// The rating used to read a holder's gate on the board **as it stands**, with a
+// comment saying why that was safe: passive.Condition carried nothing but
+// BelowHealth, so a gate could only turn *on* as its holder was hurt — the line
+// missed a trait the attack itself woke up and over-charged for none, which is
+// the direction every cap in that file errs in.
+//
+// ⚠️ **That argument died with passive.Condition.AboveHealth.** A gate at the top
+// of the bar turns *off* as its holder is hurt, so the old expression charged for
+// an answer the blow itself switches off — an attack declined, or a target
+// avoided, for a reply that will never be made. Battle.answer reads the gate on
+// the holder as the blow left it, so the rating now reads it there too and the
+// two agree exactly rather than approximately.
+//
+// ⚠️ **It cannot be measured on shipped data and this is the fixture that says
+// so.** No shipped trait carries a while and a replies at once — blaze and
+// last_gasp gate; venom_blood, thorns, ballast and static reply — so the fix is a
+// no-op on the whole book and a test built out of it passes either way. Both
+// traits here are written for this case.
+//
+// The premise arm is a test rather than a comment: strike deals 342 against these
+// stats, so a holder at 3000 is left at 2658 — under nine tenths of its maximum
+// and over eight tenths. A fixture whose damage moved would quietly make the
+// first case pass for the wrong reason.
+func TestAReplyTheBlowItselfSwitchesOffIsNotCharged(t *testing.T) {
+	// The premise. Resolved rather than asserted from arithmetic, because what
+	// this needs to be true of is the engine and not a multiplication written
+	// out twice.
+	const (
+		full = int64(3000)
+		left = int64(2658) // over 800 per thousand, under 900
+	)
+	resolved := provoking(t, []string{"strike"}, 0, nil, nil)
+	prompt, err := resolved.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	struck, known := resolved.Unit("first")
+	if !known {
+		t.Fatal("no unit first")
+	}
+	if struck.HP != full {
+		t.Fatalf("the premise: first stands at %d, want %d", struck.HP, full)
+	}
+	if _, ok := resolved.Suggest(prompt); !ok {
+		t.Fatal("Suggest offered nothing at all")
+	}
+	if err := resolved.Act("strike", struck.Cell); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	if struck.HP != left {
+		t.Fatalf("the premise: strike left first at %d, want %d — the fixture's "+
+			"damage has moved and the two gates below no longer straddle it",
+			struck.HP, left)
+	}
+
+	// The fix. fresh_spikes answers only at or above nine tenths, and the blow
+	// takes its holder under that — so the answer will never be made, nothing is
+	// charged for it, and the tie falls to the first cell offered.
+	closing := provoking(t, []string{"strike"}, 0, []string{"fresh_spikes"}, nil)
+	if aim := aimedAt(t, closing, chosen(t, closing)); aim != "first" {
+		t.Errorf("Suggest aimed at %s away from a gate its own blow closes: the reply "+
+			"is being priced against the board as it stands rather than against the "+
+			"health the blow leaves, so the rating is paying for an answer that will "+
+			"never be made", aim)
+	}
+
+	// The control, and it is what stops the case above being passed by a term
+	// that has simply stopped charging for gated replies at all. sturdy_spikes
+	// answers at or above eight tenths, which the same blow leaves standing — so
+	// it is charged, and the aim moves away from it.
+	holding := provoking(t, []string{"strike"}, 0, []string{"sturdy_spikes"}, nil)
+	if aim := aimedAt(t, holding, chosen(t, holding)); aim != "second" {
+		t.Errorf("Suggest aimed at %s with a gate its blow leaves open: a reply that "+
+			"will be made is not being charged", aim)
+	}
+}
+
+// TestTheEngineAndTheRatingReadAGateAtTheSameMoment is the same claim read off
+// the resolving side, so the two halves cannot drift apart with both green.
+//
+// The rating above declines to charge for fresh_spikes; this is the engine
+// declining to resolve it. If Battle.answer read the gate before the blow — or
+// the rating after it — one of the two would be wrong and only a case that
+// asserts both would say which.
+func TestTheEngineAndTheRatingReadAGateAtTheSameMoment(t *testing.T) {
+	fight := provoking(t, []string{"strike"}, 0, []string{"fresh_spikes"}, nil)
+	attacker, known := fight.Unit("a")
+	if !known {
+		t.Fatal("no unit a")
+	}
+	before := attacker.HP
+	holder, known := fight.Unit("first")
+	if !known {
+		t.Fatal("no unit first")
+	}
+	if _, err := fight.Advance(); err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if err := fight.Act("strike", holder.Cell); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	if attacker.HP != before {
+		t.Errorf("the attacker took %d from a reply whose gate its own blow closed: "+
+			"the engine is reading the gate before the blow lands", before-attacker.HP)
+	}
+	// And the other end of the same reading: a gate the blow leaves open does
+	// answer, so the arm above is not simply a reply that never fires.
+	open := provoking(t, []string{"strike"}, 0, []string{"sturdy_spikes"}, nil)
+	opener, known := open.Unit("a")
+	if !known {
+		t.Fatal("no unit a")
+	}
+	standing := opener.HP
+	target, known := open.Unit("first")
+	if !known {
+		t.Fatal("no unit first")
+	}
+	if _, err := open.Advance(); err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if err := open.Act("strike", target.Cell); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	if opener.HP >= standing {
+		t.Errorf("the attacker took nothing from a reply whose gate its blow leaves " +
+			"open: the fixture answers nothing and the case above measures nothing")
+	}
+}

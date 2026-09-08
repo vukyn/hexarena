@@ -1108,8 +1108,15 @@ func (l Lang) DescribePassive(held passive.Passive, kinds *status.Book) string {
 				share(first.Chance), l.stacked(first.Status, first.Stacks, kinds)))
 		}
 	}
+	// The end the gate is written at decides the wording, and the figure comes
+	// from Threshold rather than from either field: reading BelowHealth directly
+	// prints a nought for every gate at the top of the bar.
 	if held.While != nil {
-		lines = append(lines, l.Say(BlurbTraitWhile, share(held.While.BelowHealth)))
+		gate := BlurbTraitWhile
+		if held.While.AtTop() {
+			gate = BlurbTraitWhileAbove
+		}
+		lines = append(lines, l.Say(gate, share(held.While.Threshold())))
 	}
 	if len(lines) == 0 {
 		return l.Text(BlurbTraitNone)

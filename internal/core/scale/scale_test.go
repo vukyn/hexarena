@@ -124,3 +124,123 @@ func TestApply(t *testing.T) {
 		}
 	}
 }
+
+// TestTheTwoSharesOverlapAtExactlyOnePoint is the property a pair of traits
+// either side of one number rests on, and it is two claims rather than one.
+//
+// **Nobody falls through.** For every value on the bar at least one of the two
+// answers yes, so a trait gated below a threshold and one gated above the same
+// threshold cover the whole bar between them — which is why the ends are written
+// "at or under" and "at or over" rather than one of them being made strict.
+//
+// **And the overlap is one point, not a region.** The only value both answer yes
+// to is the threshold itself, so the pair costs one point of double cover and
+// not a band. Making either end strict would trade that one shared point for a
+// one-point hole, which is strictly worse: an overlap is visible in a
+// description, a hole is a trait that silently does nothing at one health.
+//
+// The maximum is chosen so the threshold divides exactly (3000 at 500 per
+// thousand is 1500), because on integers the shared point only exists when it
+// does — see the sweep's own count for the case where it does not.
+func TestTheTwoSharesOverlapAtExactlyOnePoint(t *testing.T) {
+	const (
+		maximum = int64(3000)
+		share   = 500
+	)
+	both, neither, checked := 0, 0, 0
+	for value := int64(0); value <= maximum; value++ {
+		below := scale.AtOrBelowShare(value, maximum, share)
+		above := scale.AtOrAboveShare(value, maximum, share)
+		checked++
+		switch {
+		case below && above:
+			both++
+			if value != 1500 {
+				t.Errorf("both ends admit a health of %d, and the threshold is 1500", value)
+			}
+		case !below && !above:
+			neither++
+			t.Errorf("a health of %d satisfies neither end, so a pair of traits "+
+				"either side of the threshold would leave it uncovered", value)
+		}
+	}
+	// The count, so a sweep that ran no iterations cannot pass by walking nothing.
+	if checked != int(maximum)+1 {
+		t.Fatalf("walked %d values, want %d", checked, maximum+1)
+	}
+	if both != 1 {
+		t.Errorf("%d values satisfy both ends, want exactly one (the threshold)", both)
+	}
+	if neither != 0 {
+		t.Errorf("%d values satisfy neither end, want none", neither)
+	}
+}
+
+// TestEachShareIsExclusiveOffItsThreshold is the other half of the sentence
+// above: either side of the line exactly one of the two answers yes.
+//
+// Tabled rather than swept, because what a reader wants to check here is the
+// three interesting rows and not three thousand.
+func TestEachShareIsExclusiveOffItsThreshold(t *testing.T) {
+	const share = 500
+	cases := []struct {
+		name           string
+		value, maximum int64
+		below, above   bool
+	}{
+		{"on the threshold, both", 1500, 3000, true, true},
+		{"a point under it, only the lower end", 1499, 3000, true, false},
+		{"a point over it, only the upper end", 1501, 3000, false, true},
+		{"empty, only the lower end", 0, 3000, true, false},
+		{"full, only the upper end", 3000, 3000, false, true},
+		// Neither end can be answered without a maximum, and both say so the
+		// same way rather than one of them dividing by nought.
+		{"no maximum, neither", 0, 0, false, false},
+		{"no maximum and some health, neither", 10, 0, false, false},
+	}
+	rows := 0
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			rows++
+			if got := scale.AtOrBelowShare(test.value, test.maximum, share); got != test.below {
+				t.Errorf("AtOrBelowShare(%d, %d, %d) = %v, want %v",
+					test.value, test.maximum, share, got, test.below)
+			}
+			if got := scale.AtOrAboveShare(test.value, test.maximum, share); got != test.above {
+				t.Errorf("AtOrAboveShare(%d, %d, %d) = %v, want %v",
+					test.value, test.maximum, share, got, test.above)
+			}
+		})
+	}
+	if rows != len(cases) {
+		t.Fatalf("ran %d rows, want %d", rows, len(cases))
+	}
+}
+
+// TestAShareIsNotAFraction is the exactness the cross-multiplication buys, at
+// the upper end this time.
+//
+// 333 parts per thousand is a hair under a third, so a unit at exactly a third
+// of its maximum is *above* a threshold written that way and not at or under it.
+// Written as a comparison against Apply(maximum, share) the threshold would
+// round down to 999 and the answer would be the same by luck; written the other
+// way round — Apply(value, Base) against share — it would not. The point of the
+// row is that the two ends agree about which side of the line the value is on,
+// whatever the arithmetic does.
+func TestAShareIsNotAFraction(t *testing.T) {
+	const (
+		share   = 333
+		maximum = int64(3000)
+		third   = int64(1000)
+	)
+	if scale.AtOrBelowShare(third, maximum, share) {
+		t.Error("333 per thousand admitted a health of exactly one third as at or under")
+	}
+	if !scale.AtOrAboveShare(third, maximum, share) {
+		t.Error("333 per thousand refused a health of exactly one third as at or over")
+	}
+	// And the point they really do share, which is 999 rather than 1000.
+	if !scale.AtOrBelowShare(999, maximum, share) || !scale.AtOrAboveShare(999, maximum, share) {
+		t.Error("the shared point of a 333 threshold on a maximum of 3000 is not 999")
+	}
+}

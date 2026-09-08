@@ -36,6 +36,31 @@ func AtOrBelowShare(value, maximum int64, share int) bool {
 	return value*Base <= int64(share)*maximum
 }
 
+// AtOrAboveShare reports whether a value is at or over a share of its maximum.
+//
+// It is the twin of AtOrBelowShare and is written the same way, as a
+// cross-multiplication rather than as a comparison against Apply(maximum,
+// share), for the same reason: dividing first rounds the threshold down and puts
+// a value sitting exactly on the line on the wrong side of it.
+//
+// ⚠️ **The two overlap at exactly one point, and that is the design rather than
+// an edge to tidy away.** A value *on* the threshold satisfies both, so a pair of
+// rules written either side of one number covers the whole bar with nobody
+// falling through: for every value at least one of the two answers yes, and the
+// only value both answer yes to is the threshold itself. Narrowing this to
+// strictly-above would open a gap of one point that no rule covered, which is
+// worse than an overlap a reader can see.
+//
+// A maximum of nought answers no rather than dividing by it, exactly as the
+// other end does — something with no maximum is neither low nor high — so the
+// two still agree where neither can be answered.
+func AtOrAboveShare(value, maximum int64, share int) bool {
+	if maximum <= 0 {
+		return false
+	}
+	return value*Base >= int64(share)*maximum
+}
+
 // Saturate applies a change to a base value with diminishing returns, so the
 // result approaches a limit without ever reaching it.
 //

@@ -523,10 +523,12 @@ func (b *Battle) grant(unit *Unit, ids []string) error {
 		// authoring order deciding whether a trait starts on.
 		//
 		// A gate is read here rather than assumed open, and at enlistment a unit
-		// is at full health — so a trait gated on being hurt starts off, and
-		// turns on the first time it is. Checking the gate rather than
-		// special-casing enlistment is what keeps one rule: a trait is on when
-		// its condition holds, from the first moment to the last.
+		// is at full health — so a trait gated on being *hurt* starts off and
+		// turns on the first time it is, while one gated on being *fresh* starts
+		// on and lapses the first time its holder is hurt. Checking the gate
+		// rather than special-casing enlistment is what keeps one rule and is why
+		// the second end of the bar needed no change here: a trait is on when its
+		// condition holds, from the first moment to the last.
 		unit.HP = b.MaxHP(unit)
 		if !b.inForce(unit, held) {
 			continue
@@ -593,9 +595,10 @@ func (b *Battle) Begin() {
 			if err != nil {
 				continue
 			}
-			// Only what is actually on the unit. A gated trait is off at full
-			// health, and announcing a grant the opening board does not show
-			// would be the log describing a different unit from the one being
+			// Only what is actually on the unit. A gated trait may be off at full
+			// health — one gated at the bottom of the bar is, one gated at the top
+			// of it is not — and announcing a grant the opening board does not
+			// show would be the log describing a different unit from the one being
 			// drawn beside it.
 			if !b.inForce(unit, held) {
 				continue

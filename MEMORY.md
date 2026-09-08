@@ -37,6 +37,7 @@ that owns the subject wins and the note is the thing to fix.
 ## This repository
 
 - [tách màn hình XONG (12 PR)](memory/hexarena-screen-extraction.md) — hexforge-tui 10.144→3.315; chặn là 2 closure trên model
+- [thêm term trước khi có người dùng = mọi walk mù](memory/a-term-with-no-subject-is-invisible-to-every-walk.md) — seed + i18n XANH với mutation; 3 kiểu carrier tự dựng
 - [3 golden thấy 3 thứ khác nhau](memory/goldens-see-different-screens.md) — ⚠️ cả 3 hình dạng mù đo được; golden≠transition
 - [⚠️ golden không xanh được ở 2 platform](memory/goldens-cannot-be-green-on-two-platforms.md) — TRIỆU CHỨNG hết (accept lại trên máy `/`); NGUYÊN NHÂN còn: golden ghi filepath.Join xanh ở platform accept sau cùng
 - [hexarena PvP plan](memory/hexarena-pvp-plan.md) — mirror client; bo1|bo3 KHÔNG bo2; 3 số version, digest là cửa

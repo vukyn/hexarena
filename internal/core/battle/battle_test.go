@@ -329,6 +329,8 @@ func books(t *testing.T) battle.Books {
 	  {"id":"spiked","name":"gai","replies":{"power":500}},
 	  {"id":"caustic","replies":{"applies":[{"status":"poison","chance":1000}]}},
 	  {"id":"cornered_spikes","while":{"below_health":500},"replies":{"power":500}},
+	  {"id":"fresh_spikes","while":{"above_health":900},"replies":{"power":500}},
+	  {"id":"sturdy_spikes","while":{"above_health":800},"replies":{"power":500}},
 	  {"id":"thirst","name":"khát","drains":250},
 	  {"id":"barbed","name":"gai khát","replies":{"power":500},"drains":250},
 	  {"id":"venom_barb","name":"gai độc","drains":250,
