@@ -381,7 +381,7 @@ vào phòng đấu
   xem thay vì chơi chơi — vào phòng ngồi một ghế
 
 
-  máy này — data 6537b5d935f7 · build 0123456789ab+dirty
+  máy này — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -406,7 +406,7 @@ vào phòng đấu
   chưa dựng đội nào. Phòng cấm-chọn tướng thì vốn không cần đội — hai bên chọn ngay ở đó — nhưng phòng thường sẽ không
   cho vào; dựng đội ở mục các đội đã dựng
 
-  máy này — data 6537b5d935f7 · build 0123456789ab+dirty
+  máy này — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -499,7 +499,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data 6537b5d935f7 · build 0123456789ab+dirty
+  máy này — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -2130,7 +2130,7 @@ vào phòng đấu
   xem thay vì chơi chơi — vào phòng ngồi một ghế
 
 
-  máy này — data 6537b5d935f7 · build 0123456789ab+dirty
+  máy này — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -2191,7 +2191,7 @@ vào phòng đấu
   chưa dựng đội nào. Phòng cấm-chọn tướng thì vốn không cần đội — hai bên chọn ngay ở đó — nhưng phòng thường sẽ không
   cho vào; dựng đội ở mục các đội đã dựng
 
-  máy này — data 6537b5d935f7 · build 0123456789ab+dirty
+  máy này — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -2428,7 +2428,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data 6537b5d935f7 · build 0123456789ab+dirty
+  máy này — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -4564,7 +4564,7 @@ join a room
   watch instead of play playing — this join takes a seat
 
 
-  this machine — data 6537b5d935f7 · build 0123456789ab+dirty
+  this machine — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -4589,7 +4589,7 @@ join a room
   no squad has been built. A room that drafts wants none anyway — the two of you ban and pick there — but a room that
   does not will turn this join away; build a side under the squad catalogue
 
-  this machine — data 6537b5d935f7 · build 0123456789ab+dirty
+  this machine — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -4682,7 +4682,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data 6537b5d935f7 · build 0123456789ab+dirty
+  this machine — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 tab next field · ←/→ squad · ctrl+w watch · enter join · ctrl+l tiếng Việt · esc back
@@ -6313,7 +6313,7 @@ join a room
   watch instead of play playing — this join takes a seat
 
 
-  this machine — data 6537b5d935f7 · build 0123456789ab+dirty
+  this machine — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -6374,7 +6374,7 @@ join a room
   no squad has been built. A room that drafts wants none anyway — the two of you ban and pick there — but a room that
   does not will turn this join away; build a side under the squad catalogue
 
-  this machine — data 6537b5d935f7 · build 0123456789ab+dirty
+  this machine — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 
@@ -6611,7 +6611,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data 6537b5d935f7 · build 0123456789ab+dirty
+  this machine — data xxxxxxxxxxxx · build 0123456789ab+dirty
 
 
 

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/i18n"
+	"github.com/vukyn/hexarena/internal/wire"
 )
 
 var update = flag.Bool("update", false, "rewrite the golden files instead of comparing against them")
@@ -171,9 +172,105 @@ func everyScreenDrawn(t *testing.T) string {
 			}
 		}
 	}
-	body := out.String()
+	body := withoutTheRunningDataDigest(t, out.String())
 	noAbsolutePath(t, body)
 	return body
+}
+
+// digestPlaceholder stands in for the data digest wherever a screen draws it.
+//
+// ⚠️ **Same length as what it replaces**, which is the reason this redacts rather
+// than dropping the line the way bodyOf drops the header. The digest sits in the
+// *body* of a screen, so its row's presence and its position are part of what the
+// golden holds — and a row that clips has to clip here where it clips there. A
+// shorter stand-in would move a clip point and record a screen nobody draws.
+//
+// ⚠️ **Only the short form, because only the short form is drawn.** A stand-in
+// for the sixty-four-character `Digest.String()` was written and then deleted: no
+// screen prints it — the join line is `Short()` and `-version` is not a screen —
+// so the branch could not fire, and a branch that cannot fire reads as a
+// protection somebody is relying on. If a screen ever starts drawing the long
+// form, TestTheCommittedGoldenNamesNoDataDigest fails on it and the redaction is
+// what to add.
+const digestPlaceholder = "xxxxxxxxxxxx"
+
+// withoutTheRunningDataDigest takes this build's data digest out of the recorded
+// body.
+//
+// ⚠️ **This golden moved on every data commit, and only this line did it.**
+// Measured 2026-09-06: hiding one character left `internal/screen`'s record
+// holding and moved this one on six entries, every one of them the join screen's
+// `máy này — data <digest>`. That is not a defect in the line — the digest is
+// what a player reads to a friend before blaming the game, and `-version` prints
+// the same figure — so the cost had a reason and the question was only whether a
+// screen record needs to carry it. It does not: the line is asserted whole, in
+// both languages, by TestTheJoinScreenDrawsThisBinarysOwnVersion, and
+// TestTheJoinScreenDrawsTheDigestItHoldsRatherThanOneOfItsOwn holds the half a
+// screen reading the real digest cannot give. Both are about the digest; this
+// golden is about the drawing.
+//
+// ⚠️ **A no-op redaction is a failure here rather than a quiet return**, which is
+// the same rule bodyOf's assertion follows. If the wording ever draws the digest
+// some other way, ReplaceAll matches nothing and the raw digest goes straight back
+// into the capture. Three things would then notice, at three different moments,
+// and only the first says why:
+//
+//   - this guard, the moment the wording moves, naming the cause;
+//   - the golden comparison, as a mismatch between a raw digest and a redacted
+//     record — a diff that says the screen moved, which is not what happened;
+//   - TestTheCommittedGoldenNamesNoDataDigest, but only *after* somebody accepts
+//     that diff with `make golden` — measured: with this guard deleted and the
+//     wording moved, that test is still green until the golden is rewritten.
+//
+// So the guard is not the only net and is the only clear one.
+func withoutTheRunningDataDigest(t *testing.T, body string) string {
+	t.Helper()
+	local, err := wire.Local(buildString())
+	if err != nil {
+		t.Fatalf("read this build's data digest: %v", err)
+	}
+	short := local.Data.Short()
+	if len(short) != len(digestPlaceholder) {
+		t.Fatalf("a short digest is %d characters and the stand-in is %d: a redaction of a "+
+			"different length moves a clip point", len(short), len(digestPlaceholder))
+	}
+	if !strings.Contains(body, short) {
+		t.Fatalf("no render draws the data digest %s, so this redaction took nothing out. "+
+			"Either the join screen stopped drawing it, or the wording changed and this "+
+			"golden is about to start moving on every data commit again", short)
+	}
+	return strings.ReplaceAll(body, short, digestPlaceholder)
+}
+
+// TestTheCommittedGoldenNamesNoDataDigest is the anti-churn guard itself, and it
+// reads the file on disk rather than the freshly drawn body.
+//
+// The redaction above runs inside the capture, so a capture that stopped
+// redacting would simply record the digest and this file's own diff would be the
+// only complaint — a diff a person accepts with `make golden` without reading, on
+// a line that looks like every other data-commit churn. This asserts the
+// **committed** bytes, which is where the cost was being paid.
+func TestTheCommittedGoldenNamesNoDataDigest(t *testing.T) {
+	held, err := os.ReadFile(filepath.Join("testdata", "screens.golden"))
+	if err != nil {
+		t.Fatalf("read the golden: %v", err)
+	}
+	local, err := wire.Local(buildString())
+	if err != nil {
+		t.Fatalf("read this build's data digest: %v", err)
+	}
+	body := string(held)
+	for _, form := range []string{local.Data.Digest.String(), local.Data.Short()} {
+		if strings.Contains(body, form) {
+			t.Errorf("the committed golden carries this build's data digest %s: it will move "+
+				"on the next data commit, which is what withoutTheRunningDataDigest exists "+
+				"to stop", form)
+		}
+	}
+	if !strings.Contains(body, digestPlaceholder) {
+		t.Error("the committed golden holds no redacted digest at all, so either the join " +
+			"screen is not in the record or the redaction stopped running")
+	}
 }
 
 // startOverARelativeDataDir is startIn over a data directory named by a
