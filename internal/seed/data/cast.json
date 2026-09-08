@@ -2927,6 +2927,167 @@
       ]
     },
     {
+      "id": "pokemon.onix",
+      "name": "Onix",
+      "origin": "pokemon",
+      "archetype": "monolith",
+      "image": "assets/onix.svg",
+      "element": "ground",
+      "bio": "Nằm dưới đất chẳng biết bao lâu, tới lúc trồi lên thì đã cứng như thứ nó nằm cạnh. Onix không né, không lùi, cũng không vội — cái gì đập vào cũng chỉ nghe một tiếng rồi thôi, còn nó thì vẫn ở đúng chỗ ấy.",
+      "species": [
+        "mineral"
+      ],
+      "stages": [
+        {
+          "name": "Onix",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 820,
+              "max": 2400
+            },
+            "attack": {
+              "base": 140,
+              "max": 400
+            },
+            "defense": {
+              "base": 215,
+              "max": 620
+            },
+            "speed": {
+              "base": 18,
+              "max": 45
+            },
+            "accuracy": {
+              "base": 45,
+              "max": 110
+            },
+            "dodge": {
+              "base": 7,
+              "max": 18
+            }
+          }
+        },
+        {
+          "name": "Steelix",
+          "min_level": 32,
+          "image": "assets/steelix.svg",
+          "element": [
+            "ground",
+            "metal"
+          ],
+          "stats": {
+            "hp": {
+              "base": 1030,
+              "max": 3100
+            },
+            "attack": {
+              "base": 200,
+              "max": 600
+            },
+            "defense": {
+              "base": 265,
+              "max": 800
+            },
+            "speed": {
+              "base": 20,
+              "max": 60
+            },
+            "accuracy": {
+              "base": 44,
+              "max": 130
+            },
+            "dodge": {
+              "base": 7,
+              "max": 20
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "rock_throw"
+        },
+        {
+          "id": "dig"
+        },
+        {
+          "id": "seismic_toss",
+          "at_level": 8
+        },
+        {
+          "id": "stone_edge",
+          "at_level": 16
+        },
+        {
+          "id": "taunt",
+          "at_level": 20
+        },
+        {
+          "id": "earthquake",
+          "at_level": 28
+        },
+        {
+          "id": "metal_claw",
+          "at_level": 32,
+          "stages": [
+            "Steelix"
+          ]
+        },
+        {
+          "id": "sand_tomb",
+          "at_level": 32
+        },
+        {
+          "id": "flash_cannon",
+          "at_level": 36,
+          "stages": [
+            "Steelix"
+          ]
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 40
+        },
+        {
+          "id": "steel_beam",
+          "at_level": 44,
+          "stages": [
+            "Steelix"
+          ]
+        },
+        {
+          "id": "metal_sound",
+          "at_level": 48,
+          "stages": [
+            "Steelix"
+          ]
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "thorns",
+          "at_level": 24
+        },
+        {
+          "id": "ballast",
+          "at_level": 32
+        },
+        {
+          "id": "composure",
+          "at_level": 40
+        },
+        {
+          "id": "unyielding",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.pichu",
       "name": "Pichu",
       "origin": "pokemon",

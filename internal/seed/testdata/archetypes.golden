@@ -265,4 +265,16 @@ crooner, formation column 2
            absorbs 7927 of the 11500 budget, 3573 to spare
   kit      dazzle refrain patter plunge sing charm moonblast hyper_voice body_slam taunt rally
 
-22 presets
+monolith, formation column 0
+  the one that is still standing when everything else has been spent: it takes the armour to the ceiling and pays for it with the slowest turn and the thinnest dodge in the cast, so what it does to a fight is decide how long the fight lasts
+  demands  a character built from it must carry ground
+  hp 1030->3100  attack 200->600  defense 265->800  speed 20->60  accuracy 44->130  dodge 7->20
+  level 1  hp 1030, atk 200, def 265, spd 20, acc 44, ddg 7
+           absorbs 1943 of the 11500 budget, 9557 to spare
+  level 30 hp 2047, atk 396, def 527, spd 39, acc 86, ddg 13
+           absorbs 5654 of the 11500 budget, 5846 to spare
+  level 60 hp 3100, atk 600, def 800, spd 60, acc 130, ddg 20
+           absorbs 11397 of the 11500 budget, 103 to spare
+  kit      rock_throw dig seismic_toss stone_edge earthquake sand_tomb brace taunt withdraw wide_guard
+
+23 presets

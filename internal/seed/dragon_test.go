@@ -547,6 +547,16 @@ func fielded(t *testing.T, id string) (progression.Values, element.Affinity, []s
 // fieldedAs is fielded with the arm named, which a line that FORKS has to do:
 // progression.Furthest is two answers there and Resolve refuses rather than
 // picking. Every linear caller goes through fielded and is unchanged.
+//
+// ⚠️ **The affinity comes back from cast.Character.ElementAt(form), never from
+// character.Element**, and the difference is a whole element. A stage may
+// declare an affinity of its own, so a line that is one element as a root and
+// two as a grown form has no single answer to "its element" — and this helper's
+// whole job is to field ONE named form. Reading the character's here would hand
+// every measurement in this package the root's affinity while the stat line,
+// the kit and the traits were all the grown form's: a fixture that is wrong
+// about one column and silent about it, which is the shape a reading cannot
+// survive. It is inert on every line that declares no stage element.
 func fieldedAs(t *testing.T, id, stage string) (progression.Values, element.Affinity, []string, []string) {
 	t.Helper()
 	book, err := seed.Cast()
@@ -569,7 +579,7 @@ func fieldedAs(t *testing.T, id, stage string) (progression.Values, element.Affi
 	if len(traits) > cast.TraitSlots {
 		traits = traits[:cast.TraitSlots]
 	}
-	return stats, character.Element, kit, traits
+	return stats, character.ElementAt(form), kit, traits
 }
 
 // grownForms is every form a character reaches at the cap: one on a line that

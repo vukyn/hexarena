@@ -102,6 +102,11 @@ func TestShippedArchetypesMatchTheReferenceProfiles(t *testing.T) {
 		{"stoker", 0, profile(3000, 700, 340, 120, 165, 62)},
 		{"manifold", 1, profile(3400, 660, 300, 150, 170, 55)},
 		{"crooner", 2, profile(4400, 560, 240, 95, 145, 36)},
+		// The first preset to sit a stat ON a ceiling rather than under one:
+		// defence 800 is progression.json's own ceiling, and what pays for it is
+		// the lowest speed and the lowest dodge in the table plus a health line
+		// under the other front-column walls'.
+		{"monolith", 0, profile(3100, 600, 800, 60, 130, 20)},
 	}
 	book := mustArchetypes(t)
 	if got, want := len(book.All()), len(design); got != want {

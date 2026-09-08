@@ -24,6 +24,135 @@ kept every fact either copy had.
 file for why a finished thing is the way it is.** The order below is the order
 the entries were written in, which is roughly the order they landed.
 
+- [x] **A stage may declare its own element — `CAST-003`, and the line that
+      fields it. DONE, in two parts.** Until now `Character.Element` was
+      character-level, so an evolution could be six numbers and a name and nothing
+      else. It could not be a **matchup change**, which is the one fact about a
+      unit the form could not own while the form already owned its name, its stat
+      line, its learnset gate and its picture. That was an inconsistency rather
+      than a design, and closing it completes a decision the repository had
+      already made twice.
+
+      **The schema is one optional field.** `progression.Stage.Element
+      *element.Affinity`, beside `Image`, for `Image`'s own written reason — what
+      a form is called, what it looks like and what it is made of are all facts
+      about the form, and a parallel map keyed by stage name would be a second
+      thing to keep in step, stale exactly when a stage is renamed. **A pointer,
+      and that is load-bearing**: the zero `Affinity` is a *valid* single-neutral
+      affinity, so a value field would have read "this form is neutral" on every
+      stage that declared nothing — a silent wrong answer rather than an absence,
+      the same trap `Values.UnmarshalJSON` guards with `*int64`. `progression`
+      does not validate it, because it has no chart, which is the layer split
+      `Stage.Image` already records; `cast.resolveCharacter` does, per stage,
+      beside the image loop. **The fallback has one home**, `Character.ElementAt`,
+      mirroring `StageArt`, and no caller reads `Stage.Element` directly.
+
+      **The carry check went per form, with "all" semantics.** A book only *some*
+      form could carry is a book `battle.enlist` refuses at the moment somebody
+      plays it — the exact gap between the authoring layer and the engine that
+      `CLAUDE.md` § *One rule, one declaration* records as already fixed once.
+      `Unlock.Stages` is what makes a gated metal skill invisible to a
+      ground root, and it already shipped, so the parser gained a quantifier and
+      nothing else. ⚠️ **Reachability alone would sometimes have sufficed and that
+      is a trap**: an ungated `metal_claw @40` on a line evolving at 32 is only
+      ever held by the grown form, so a purely reachability-based rule accepts it
+      — until somebody moves the evolution level and it silently becomes illegal.
+      The parser accepts both and **the shipped data writes the explicit gate**.
+
+      **It is a fielding-time property, decisively.** `internal/core/battle`
+      never imports `internal/core/cast`, `battle.Roster` carries an already
+      resolved `Affinity`, and no unit evolves mid-fight — so there are **zero**
+      changes under `battle`, no replay can break and `replay.golden` cannot move.
+      Three sites produce an affinity from a character (`Placement.resolve`,
+      `seed.resolveReference`, `forge.Library.duellist`) and all three already
+      held the resolved stage on the line above. `duellist` is the single funnel
+      for spar, weigh and carriers, so the whole measurement stack inherited the
+      fix from one line.
+
+      **What it buys, in one measurement nothing here could take before.**
+      `TestASecondElementIsWorthWhatTheChartSaysItIs` holds a body still and
+      varies only the affinity its two forms resolve to: against grass the chart
+      says `ground` takes 1500 and `ground/metal` 1000, against ice 1500 and 2250,
+      **so the sign has to flip**. Measured over sixty duels an arm: 211 → 143 a
+      blow against Bulbasaur (a ratio of 0.68 where the chart says 0.67) and
+      170 → 255 against Lapras (1.50 where the chart says 1.50). ⚠️ **A win rate
+      would have measured nothing there**: grass and ice are this character's two
+      counters and it reads 0 of 80 against both, so a rate would be nought
+      against nought in both arms while the mechanism worked perfectly.
+
+      ⚠️ **One trap the golden is the only guard against.** Neither
+      `cast.ParseBook` nor `progression` uses `DisallowUnknownFields`, so a
+      mistyped `"elemnt"` on a stage is silently ignored and reads as "the
+      character's" — and the nil-pointer guard cannot fire, because nil is legal.
+      `castReport` therefore prints the **resolved** element on every stage line,
+      which is what makes such a typo a diff in `cast.golden`. Do not remove that
+      half of the change.
+
+      **The mechanism ships with one user and one queued user.** `pokemon.onix`
+      fields it; `magikarp → gyarados` is traced and is next (water →
+      water/**wind**). `charmander → charizard` would want it and was deliberately
+      **not** taken: it re-prices a shipped character and moves every Charmander
+      golden. That is honest rather than ideal — it does not clear "two independent
+      users on day one" — but it does clear the bar this repository actually
+      keeps, that *a mechanism no shipped placement fields is a mechanism nothing
+      measures*.
+
+- [x] **The second wall — `pokemon.onix` and the `monolith` preset, `CAST-002`.
+      DONE.** Twenty-third character, twenty-third preset, first `mineral`, and
+      the first shipped stage to sit a stat **on** a ceiling rather than under
+      one: Steelix's defence is 800, which is `progression.json`'s own ceiling,
+      and 3100 health behind it absorbs 11,397 of the 11,500 joint budget —
+      **103 to spare**, where the previous tightest line, Blastoise, had 215. What
+      pays for it is the lowest speed (60) and the lowest dodge (20) in the cast
+      and a health line under the warden's.
+
+      **Attack is the one number that was tuned, and it was tuned against a
+      measurement.** At the 500 the design started from, `hexforge spar --stage
+      Steelix --seeds 40` read **198‰** — under the 250–450 target band, third
+      weakest in the cast. Accuracy turned out not to be the lever (130 → 160 → 180
+      moved the overall by 0.4 points at a fixed attack, because a hit chance
+      saturates), so attack went 500 → 600, the lowest round value clearing the
+      band: **264‰ overall, mirror exactly 500‰, 0 endless anywhere, longest row
+      63 turns.** The root form at the cap is the control rather than a balance
+      reading and comes back at **1‰** — 2 wins of 1920 — which is what giving up
+      an evolution costs on this line.
+
+      ⚠️ **The slot measurement swaps the WALL, not the flex member, and the
+      difference between the two shells is a reading and a category error.**
+      `aSquadOf` holds a striker and a wall and varies the third slot, which is
+      right for a mender and wrong for a second wall: it makes the home squad two
+      walls and a striker against two strikers and a wall, so what comes back
+      prices the composition. Measured in that slot the wall build reads **381‰
+      against a slugger and 360‰ against a bruiser**, both under the mender's
+      floor, with the character behaving exactly as designed. In the slot it is
+      actually chosen for — striker and flex held, wall varied — it reads **491‰
+      against the warden's own squad**, with the shell's control (the warden
+      against a copy of itself) coming to exactly 500‰.
+
+      **Two builds, and the second is the first entry in the catalogue that a
+      FORM rather than a character can hold.** `onix.wall` (`taunt`,
+      `wide_guard`, `stone_edge`, `dig` + `thorns`) and `onix.forge` (`steel_beam`,
+      `flash_cannon`, `metal_sound`, `metal_claw` + `ballast`) — every skill in
+      the second is metal and gated on the grown stage, so the root form could not
+      carry one of them.
+
+      ⚠️ **The preset is `monolith` because `bulwark` is not available**, and the
+      reason is worth writing down once: `internal/testfixture` **appends** its
+      five presets to the shipped `archetypes.json` in every scratch data
+      directory, so `bulwark`, `vanguard`, `sentinel`, `duelist` and `skirmisher`
+      are reserved names that a shipped preset may not take. Taking one fails
+      about forty tests across three packages with *"archetype "bulwark" is
+      declared twice"*, and all five are **already glossed**, so finding the id in
+      `archetypeGloss` is a false signal that the gloss step is finished.
+
+      ⚠️ **One finding logged rather than fixed: `unyielding` cannot fire on
+      anything the game ships.** It resists `taunting` at 1000, and `taunting` has
+      exactly one source in the whole book — `taunt`, which applies it to **its
+      own caster**. So the trait can only ever refuse its holder's own taunt, and
+      on a unit not carrying `taunt` it is inert. `machop.sure` ships with it
+      today. It is left in this character's learnset as a choice and it is not
+      what either build spends its trait slot on.
+
 - [x] **`weigh` can price a skill that deals none. DONE.** The refusal was
       right and its **evidence** was mis-specified. *Worth nothing* and *not
       rated* are still different answers and a row that did nothing is still

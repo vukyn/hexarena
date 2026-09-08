@@ -138,7 +138,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (24 trong 24 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
 
   pokemon.pichu            pokemon        electric <điện>
 > pokemon.poliwag          pokemon        water <nước>
@@ -506,9 +506,9 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
 
-nhân vật nào được học chiêu này  0/24
+nhân vật nào được học chiêu này  0/25
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (24 trong 24)
+đang xem tất cả nguồn (25 trong 25)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -552,7 +552,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | browse =====
 
-danh sách nhân vật  đang xem tất cả nguồn (24 trong 24 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -622,7 +622,7 @@ ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | check =====
 
 kiểm tra  ĐẠT — không có vấn đề gì
-data: 5 nguồn, 27 mẫu vai trò, 25 nhân vật
+data: 5 nguồn, 28 mẫu vai trò, 26 nhân vật
 
   nhân vật                 ảnh      máu quy đổi so với hạn mức, ở trần cấp
 > fixture-anime.adept      có       [===========-] 11397/11500
@@ -713,9 +713,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | filtered picker =====
 
-nhân vật nào được học chiêu này  0/24
+nhân vật nào được học chiêu này  0/25
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem fixture-anime (1 trong 24)
+đang xem fixture-anime (1 trong 25)
 
 >      fixture-anime.adept
 
@@ -880,7 +880,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  21 nhân vật  Pokémon
+  pokemon          anime   1997  22 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -1060,12 +1060,12 @@ gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l Engl
 
 thử trận  fixture-anime.adept — Example Adept
   cấp 60, dạng Example Adept
-  25 hàng · 100 hạt giống mỗi chỗ · 5000 trận tất cả
+  26 hàng · 100 hạt giống mỗi chỗ · 5200 trận tất cả
 
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [==----------] 21.4%
+  tỉ lệ chung      [==----------] 24.4%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
@@ -1104,7 +1104,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | species picker =====
 
-loài nào được học chiêu này  0/16
+loài nào được học chiêu này  0/17
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >      dragon     rồng
@@ -1276,7 +1276,7 @@ nội tại  các nội tại đã khai báo, và ai mang
   blood_thirst   khát máu       pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu…
   reckless       liều mạng      pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         phản đòn       pokemon.squirtle@32
+  thorns         phản đòn       pokemon.onix@24 pokemon.squirtle@32
   swiftness      thần tốc       naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@…
 
   endurance <bền bỉ>
@@ -1665,7 +1665,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (24 trong 24 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -1686,6 +1686,7 @@ danh sách nhân vật  đang xem tất cả nguồn (24 trong 24 nhân vật)
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
   pokemon.oddish           pokemon        grass <cỏ>
+  pokemon.onix             pokemon        ground <đất>
   pokemon.pichu            pokemon        electric <điện>
 > pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
@@ -1714,7 +1715,6 @@ pokemon.poliwag — Poliwag
   cấp 46           hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 giai đoạn Poliwrath
   máu quy đổi      [================--------] 8048/11500, còn dư 3452
                    xuyên hết giáp thì chỉ đỡ được 3123
-
 
 
 
@@ -2609,9 +2609,9 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
 
-nhân vật nào được học chiêu này  0/24
+nhân vật nào được học chiêu này  0/25
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (24 trong 24)
+đang xem tất cả nguồn (25 trong 25)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -2632,6 +2632,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
        pokemon.mew
        pokemon.mewtwo
        pokemon.oddish
+       pokemon.onix
        pokemon.pichu
        pokemon.poliwag
        pokemon.riolu
@@ -2639,7 +2640,6 @@ space để chọn · để trống thì ai cũng học được chiêu này
        pokemon.torchic
 
   chưa chọn gì
-
 
 
 
@@ -2727,7 +2727,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | browse =====
 
-danh sách nhân vật  đang xem tất cả nguồn (24 trong 24 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (25 trong 25 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -2748,6 +2748,7 @@ danh sách nhân vật  đang xem tất cả nguồn (24 trong 24 nhân vật)
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
   pokemon.oddish           pokemon        grass <cỏ>
+  pokemon.onix             pokemon        ground <đất>
   pokemon.pichu            pokemon        electric <điện>
   pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
@@ -2768,7 +2769,6 @@ fixture-anime.adept — Example Adept
   cấp 60           hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 giai đoạn Example Adept
   máu quy đổi      [=======================-] 11397/11500, còn dư 103
                    xuyên hết giáp thì chỉ đỡ được 3100
-
 
 
 
@@ -2905,7 +2905,7 @@ ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | check =====
 
 kiểm tra  ĐẠT — không có vấn đề gì
-data: 5 nguồn, 27 mẫu vai trò, 25 nhân vật
+data: 5 nguồn, 28 mẫu vai trò, 26 nhân vật
 
   nhân vật                 ảnh      máu quy đổi so với hạn mức, ở trần cấp
 > fixture-anime.adept      có       [===========-] 11397/11500
@@ -2927,6 +2927,7 @@ data: 5 nguồn, 27 mẫu vai trò, 25 nhân vật
   pokemon.mew              có       [=========---] 9498/11500
   pokemon.mewtwo           có       [======------] 5802/11500
   pokemon.oddish           có       [========----] 8173/11500
+  pokemon.onix             có       [===========-] 11397/11500
   pokemon.pichu            có       [=====-------] 5609/11500
   pokemon.poliwag          có       [===========-] 10632/11500
   pokemon.poliwag          có       [===========-] 11176/11500
@@ -2936,7 +2937,6 @@ data: 5 nguồn, 27 mẫu vai trò, 25 nhân vật
 
 phần này đọc file trên đĩa; game chạy từ bản nhúng sẵn, nên sửa xong phải
 build lại thì mới vào được trận
-
 
 
 
@@ -3140,9 +3140,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | filtered picker =====
 
-nhân vật nào được học chiêu này  0/24
+nhân vật nào được học chiêu này  0/25
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem fixture-anime (1 trong 24)
+đang xem fixture-anime (1 trong 25)
 
 >      fixture-anime.adept
 
@@ -3322,7 +3322,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 > id                                                    
   tên                                                   
   nguồn        < fixture-anime — Example Anime >  1/5
-  mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass) >  1/27
+  mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass) >  1/28
   ảnh          < assets/abra.svg >  1/69
   loài         không thuộc loài nào  space để chọn
   bộ chiêu     vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space để chọn
@@ -3559,7 +3559,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  21 nhân vật  Pokémon
+  pokemon          anime   1997  22 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -4027,12 +4027,12 @@ gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l Engl
 
 thử trận  fixture-anime.adept — Example Adept
   cấp 60, dạng Example Adept
-  25 hàng · 100 hạt giống mỗi chỗ · 5000 trận tất cả
+  26 hàng · 100 hạt giống mỗi chỗ · 5200 trận tất cả
 
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [==----------] 21.4%
+  tỉ lệ chung      [==----------] 24.4%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
@@ -4054,6 +4054,7 @@ thử trận  fixture-anime.adept — Example Adept
   pokemon.mew                     0.0%    0-200-0         64     +0.0%
   pokemon.mewtwo                  0.0%    0-200-0         27     +0.0%
   pokemon.oddish                  67.0%   134-66-0        55     +0.0%
+  pokemon.onix                    97.0%   194-6-0         46     +0.0%
   pokemon.pichu                   0.0%    0-200-0         17     +0.0%
   pokemon.poliwag                 0.0%    0-200-0         32     +0.0%
   pokemon.poliwag                 16.0%   32-168-0        40     +0.0%
@@ -4064,7 +4065,6 @@ thử trận  fixture-anime.adept — Example Adept
 hai bên đều mang 4 kỹ năng và 1 nội tại đầu tiên mà nhân vật khai báo.
 mỗi cặp đấu ở cả hai chỗ rồi cộng lại: hàng đợi lượt phá hòa bằng thứ tự xếp,
 nên số đi trước ở hàng đối chứng chính là giá trị riêng của chỗ đứng.
-
 
 
 
@@ -4103,6 +4103,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   brood      loài ấp trứng
   rodent     gặm nhấm
   esper      ngoại cảm
+  mineral    khoáng thạch
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -4139,11 +4140,10 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 
 
 
-
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | species picker =====
 
-loài nào được học chiêu này  0/16
+loài nào được học chiêu này  0/17
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >      dragon     rồng
@@ -4162,9 +4162,9 @@ space để chọn · số là thứ tự trong bộ · dấu ! là chiêu khôn
        brood      loài ấp trứng
        rodent     gặm nhấm
        esper      ngoại cảm
+       mineral    khoáng thạch
 
   chưa chọn gì
-
 
 
 
@@ -4567,15 +4567,15 @@ nội tại  các nội tại đã khai báo, và ai mang
   blood_thirst   khát máu       pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 pokemon.gastly@16 pokemon.gib…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       liều mạng      pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         phản đòn       pokemon.squirtle@32
+  thorns         phản đòn       pokemon.onix@24 pokemon.squirtle@32
   swiftness      thần tốc       naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 po…
-  ballast        trụ vững       pokemon.happiny@16 pokemon.squirtle@44
+  ballast        trụ vững       pokemon.happiny@16 pokemon.onix@32 pokemon.squirtle@44
   composure      vững tâm       pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@4…
   elusive        huyền ảo       pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 p…
   contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
   berserk        cuồng chiến    pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
-  unyielding     bất khuất      pokemon.machop@24
+  unyielding     bất khuất      pokemon.machop@24 pokemon.onix@48
   carapace       vỏ cứng        pokemon.happiny@40 pokemon.squirtle@48
   projection     hộ thể         pokemon.charmander@48
   rending        xé giáp        pokemon.machop@48 pokemon.riolu@44
@@ -4634,12 +4634,12 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   brood      loài ấp trứng
   rodent     gặm nhấm
   esper      ngoại cảm
+  mineral    khoáng thạch
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
 
   chưa nhân vật nào thuộc loài này
-
 
 
 
@@ -4812,7 +4812,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a forked detail pane =====
 
-cast  showing all origins (24 of 24 characters)
+cast  showing all origins (25 of 25 characters)
 
   pokemon.pichu            pokemon        electric
 > pokemon.poliwag          pokemon        water
@@ -5180,9 +5180,9 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
 
-characters allowed to carry it  0 of 24
+characters allowed to carry it  0 of 25
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (24 of 24)
+showing all origins (25 of 25)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -5226,7 +5226,7 @@ squad bonuses  what a side is paid for what its units share
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | browse =====
 
-cast  showing all origins (24 of 24 characters)
+cast  showing all origins (25 of 25 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -5296,7 +5296,7 @@ ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | check =====
 
 check  PASSED — no problems found
-data: 5 origins, 27 archetypes, 25 characters
+data: 5 origins, 28 archetypes, 26 characters
 
   character                art      effective hp of the budget, at the cap
 > fixture-anime.adept      present  [===========-] 11397/11500
@@ -5387,9 +5387,9 @@ elements  the affinity chart: what beats what, and by how much
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | filtered picker =====
 
-characters allowed to carry it  0 of 24
+characters allowed to carry it  0 of 25
 space chooses · leaving it empty lets anyone carry the skill
-showing fixture-anime (1 of 24)
+showing fixture-anime (1 of 25)
 
 >      fixture-anime.adept
 
@@ -5554,7 +5554,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  21 cast  Pokémon
+  pokemon          anime   1997  22 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -5734,12 +5734,12 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 spar  fixture-anime.adept — Example Adept
   level 60 as Example Adept
-  25 rows · 100 seeds from each slot · 5000 battles in all
+  26 rows · 100 seeds from each slot · 5200 battles in all
 
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [==----------] 21.4%
+  overall       [==----------] 24.4%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
@@ -5778,7 +5778,7 @@ species  the declared kinds, and where each line is drawn
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | species picker =====
 
-kinds of creature allowed to carry it  0 of 16
+kinds of creature allowed to carry it  0 of 17
 space chooses · the number is the order · ! is one this character cannot take
 
 >      dragon
@@ -5950,7 +5950,7 @@ traits  the declared traits, and who carries each
   blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 poke…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         pokemon.squirtle@32
+  thorns         pokemon.onix@24 pokemon.squirtle@32
   swiftness      naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@32 pokemon.gast…
 
   endurance
@@ -6339,7 +6339,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a forked detail pane =====
 
-cast  showing all origins (24 of 24 characters)
+cast  showing all origins (25 of 25 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -6360,6 +6360,7 @@ cast  showing all origins (24 of 24 characters)
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
   pokemon.oddish           pokemon        grass
+  pokemon.onix             pokemon        ground
   pokemon.pichu            pokemon        electric
 > pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
@@ -6382,7 +6383,6 @@ pokemon.poliwag — Poliwag
   level 46      hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 stage Poliwrath
   effective hp  [================--------] 8048 of 11500, 3452 to spare
                 3123 against damage that pierces its armour outright
-
 
 
 
@@ -7283,9 +7283,9 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====
 
-characters allowed to carry it  0 of 24
+characters allowed to carry it  0 of 25
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (24 of 24)
+showing all origins (25 of 25)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -7306,6 +7306,7 @@ showing all origins (24 of 24)
        pokemon.mew
        pokemon.mewtwo
        pokemon.oddish
+       pokemon.onix
        pokemon.pichu
        pokemon.poliwag
        pokemon.riolu
@@ -7313,7 +7314,6 @@ showing all origins (24 of 24)
        pokemon.torchic
 
   nothing chosen yet
-
 
 
 
@@ -7401,7 +7401,7 @@ squad bonuses  what a side is paid for what its units share
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | browse =====
 
-cast  showing all origins (24 of 24 characters)
+cast  showing all origins (25 of 25 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -7422,6 +7422,7 @@ cast  showing all origins (24 of 24 characters)
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
   pokemon.oddish           pokemon        grass
+  pokemon.onix             pokemon        ground
   pokemon.pichu            pokemon        electric
   pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
@@ -7439,7 +7440,6 @@ fixture-anime.adept — Example Adept
   level 60      hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 stage Example Adept
   effective hp  [=======================-] 11397 of 11500, 103 to spare
                 3100 against damage that pierces its armour outright
-
 
 
 
@@ -7579,7 +7579,7 @@ ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | check =====
 
 check  PASSED — no problems found
-data: 5 origins, 27 archetypes, 25 characters
+data: 5 origins, 28 archetypes, 26 characters
 
   character                art      effective hp of the budget, at the cap
 > fixture-anime.adept      present  [===========-] 11397/11500
@@ -7601,6 +7601,7 @@ data: 5 origins, 27 archetypes, 25 characters
   pokemon.mew              present  [=========---] 9498/11500
   pokemon.mewtwo           present  [======------] 5802/11500
   pokemon.oddish           present  [========----] 8173/11500
+  pokemon.onix             present  [===========-] 11397/11500
   pokemon.pichu            present  [=====-------] 5609/11500
   pokemon.poliwag          present  [===========-] 10632/11500
   pokemon.poliwag          present  [===========-] 11176/11500
@@ -7610,7 +7611,6 @@ data: 5 origins, 27 archetypes, 25 characters
 
 this reads the files from disk; the game boots from the embedded copy, so an
 edit needs a rebuild before it reaches a battle
-
 
 
 
@@ -7814,9 +7814,9 @@ elements  the affinity chart: what beats what, and by how much
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | filtered picker =====
 
-characters allowed to carry it  0 of 24
+characters allowed to carry it  0 of 25
 space chooses · leaving it empty lets anyone carry the skill
-showing fixture-anime (1 of 24)
+showing fixture-anime (1 of 25)
 
 >      fixture-anime.adept
 
@@ -7996,7 +7996,7 @@ new character  every check here is the write's own, at level 60
 > id                                                  
   name                                                
   origin     < fixture-anime — Example Anime >  1 of 5
-  archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass) >  1 of 27
+  archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass) >  1 of 28
   art        < assets/abra.svg >  1 of 69
   species    nothing in particular  space to choose
   kit        vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space to choose
@@ -8233,7 +8233,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  21 cast  Pokémon
+  pokemon          anime   1997  22 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -8701,12 +8701,12 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 spar  fixture-anime.adept — Example Adept
   level 60 as Example Adept
-  25 rows · 100 seeds from each slot · 5000 battles in all
+  26 rows · 100 seeds from each slot · 5200 battles in all
 
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [==----------] 21.4%
+  overall       [==----------] 24.4%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
@@ -8728,6 +8728,7 @@ spar  fixture-anime.adept — Example Adept
   pokemon.mew                   0.0%    0-200-0         64     +0.0%
   pokemon.mewtwo                0.0%    0-200-0         27     +0.0%
   pokemon.oddish                67.0%   134-66-0        55     +0.0%
+  pokemon.onix                  97.0%   194-6-0         46     +0.0%
   pokemon.pichu                 0.0%    0-200-0         17     +0.0%
   pokemon.poliwag               0.0%    0-200-0         32     +0.0%
   pokemon.poliwag               16.0%   32-168-0        40     +0.0%
@@ -8738,7 +8739,6 @@ spar  fixture-anime.adept — Example Adept
 both sides bring the first 4 skills and 1 trait their learnset declares.
 every pairing is fought from both slots and added up: the turn queue breaks a
 tie by placement, so the control row shows what a slot alone is worth.
-
 
 
 
@@ -8777,6 +8777,7 @@ species  the declared kinds, and where each line is drawn
   brood
   rodent
   esper
+  mineral
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -8813,11 +8814,10 @@ species  the declared kinds, and where each line is drawn
 
 
 
-
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | species picker =====
 
-kinds of creature allowed to carry it  0 of 16
+kinds of creature allowed to carry it  0 of 17
 space chooses · the number is the order · ! is one this character cannot take
 
 >      dragon
@@ -8836,9 +8836,9 @@ space chooses · the number is the order · ! is one this character cannot take
        brood
        rodent
        esper
+       mineral
 
   nothing chosen yet
-
 
 
 
@@ -9241,15 +9241,15 @@ traits  the declared traits, and who carries each
   blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.i…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         pokemon.squirtle@32
+  thorns         pokemon.onix@24 pokemon.squirtle@32
   swiftness      naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 pokemon.magnemite…
-  ballast        pokemon.happiny@16 pokemon.squirtle@44
-  composure      pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliw…
+  ballast        pokemon.happiny@16 pokemon.onix@32 pokemon.squirtle@44
+  composure      pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.onix@…
   elusive        pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@4…
   contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       pokemon.gastly@32 pokemon.poliwag@36
   berserk        pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
-  unyielding     pokemon.machop@24
+  unyielding     pokemon.machop@24 pokemon.onix@48
   carapace       pokemon.happiny@40 pokemon.squirtle@48
   projection     pokemon.charmander@48
   rending        pokemon.machop@48 pokemon.riolu@44
@@ -9308,12 +9308,12 @@ species  the declared kinds, and where each line is drawn
   brood
   rodent
   esper
+  mineral
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
 
   no character is one
-
 
 
 

@@ -302,10 +302,19 @@ regenerated on autopilot:
 - `replay.golden` is a whole battle rendered from its log.
 - `skills.golden`, `elements.golden`, `progression.golden`, `combat.golden` are
   the tables each book produces.
-- `origins.golden`, `archetypes.golden`, `cast.golden` are the same for the cast:
-  which works are catalogued and who was borrowed from each, every preset's curve
-  with what it spends of the effective-health budget, and every character
-  resolved at each of its stage boundaries and at the cap.
+- `origins.golden`, `species.golden`, `archetypes.golden`, `cast.golden` are the
+  same for the cast: which works are catalogued and who was borrowed from each,
+  what a unit can be and who is one, every preset's curve with what it spends of
+  the effective-health budget, and every character resolved at each of its stage
+  boundaries and at the cap. ⚠️ `cast.golden`'s stage line carries the form's
+  **resolved element** (`stage "Steelix" owns levels 32 to 60, ground/metal,
+  showing assets/steelix.svg`), and that half is not decoration: neither
+  `cast.ParseBook` nor `progression` uses `DisallowUnknownFields`, so a mistyped
+  `"elemnt"` on a stage is silently ignored and reads as "the character's" — this
+  diff is the only thing that shows it.
+  ⚠️ **Adding one character moves SEVEN goldens, not four**: those four plus all
+  three `screens.golden`, every one of which draws the cast listing, the species
+  table, the origins table and the trait carriers.
 - `cmd/hexforge-tui/testdata/screens.golden` is the **rendered client**: every
   entry `everyScreen` registers, in both languages, at the 120x24 floor and at
   160x60 — 200 renders, 8200 lines. It was the only golden in a `cmd` package

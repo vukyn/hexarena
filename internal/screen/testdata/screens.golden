@@ -317,7 +317,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a forked cast row =====
-danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (23 trong 23 nhân vật)
 
   pokemon.pichu            pokemon        electric <điện>
 > pokemon.poliwag          pokemon        water <nước>
@@ -773,9 +773,9 @@ nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
-nhân vật nào được học chiêu này  0/22
+nhân vật nào được học chiêu này  0/23
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (22 trong 22)
+đang xem tất cả nguồn (23 trong 23)
 
 >      naruto.naruto
        pokemon.abra
@@ -935,7 +935,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | browse =====
-danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (23 trong 23 nhân vật)
 
 > naruto.naruto            naruto         wind <gió>
   pokemon.abra             pokemon        dark <bóng tối>
@@ -1068,9 +1068,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | filtered picker =====
-nhân vật nào được học chiêu này  0/22
+nhân vật nào được học chiêu này  0/23
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem naruto (1 trong 22)
+đang xem naruto (1 trong 23)
 
 >      naruto.naruto
 
@@ -1140,7 +1140,7 @@ space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · c
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
 > naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  21 nhân vật  Pokémon
+  pokemon          anime   1997  22 nhân vật  Pokémon
 
 2 tác phẩm · loại: anime film series game comic novel
 ----- footer -----
@@ -1362,7 +1362,7 @@ nội tại  các nội tại đã khai báo, và ai mang
   blood_thirst   khát máu       pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu…
   reckless       liều mạng      pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         phản đòn       pokemon.squirtle@32
+  thorns         phản đòn       pokemon.onix@24 pokemon.squirtle@32
   swiftness      thần tốc       naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@…
 
   endurance <bền bỉ>
@@ -1892,7 +1892,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a forked cast row =====
-danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (23 trong 23 nhân vật)
 
   naruto.naruto            naruto         wind <gió>
   pokemon.abra             pokemon        dark <bóng tối>
@@ -1911,6 +1911,7 @@ danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
   pokemon.oddish           pokemon        grass <cỏ>
+  pokemon.onix             pokemon        ground <đất>
   pokemon.pichu            pokemon        electric <điện>
 > pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
@@ -2561,9 +2562,9 @@ nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
-nhân vật nào được học chiêu này  0/22
+nhân vật nào được học chiêu này  0/23
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (22 trong 22)
+đang xem tất cả nguồn (23 trong 23)
 
 >      naruto.naruto
        pokemon.abra
@@ -2582,6 +2583,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
        pokemon.mew
        pokemon.mewtwo
        pokemon.oddish
+       pokemon.onix
        pokemon.pichu
        pokemon.poliwag
        pokemon.riolu
@@ -2745,7 +2747,7 @@ bonus xếp đội  một phe được trả gì cho thứ các thành viên chi
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | browse =====
-danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (23 trong 23 nhân vật)
 
 > naruto.naruto            naruto         wind <gió>
   pokemon.abra             pokemon        dark <bóng tối>
@@ -2764,6 +2766,7 @@ danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
   pokemon.oddish           pokemon        grass <cỏ>
+  pokemon.onix             pokemon        ground <đất>
   pokemon.pichu            pokemon        electric <điện>
   pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
@@ -2976,9 +2979,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | filtered picker =====
-nhân vật nào được học chiêu này  0/22
+nhân vật nào được học chiêu này  0/23
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem naruto (1 trong 22)
+đang xem naruto (1 trong 23)
 
 >      naruto.naruto
 
@@ -3120,7 +3123,7 @@ space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · c
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
 > naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  21 nhân vật  Pokémon
+  pokemon          anime   1997  22 nhân vật  Pokémon
 
 2 tác phẩm · loại: anime film series game comic novel
 ----- footer -----
@@ -3247,6 +3250,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   brood      loài ấp trứng
   rodent     gặm nhấm
   esper      ngoại cảm
+  mineral    khoáng thạch
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -3532,15 +3536,15 @@ nội tại  các nội tại đã khai báo, và ai mang
   blood_thirst   khát máu       pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 pokemon.gastly@16 pokemon.gib…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       liều mạng      pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         phản đòn       pokemon.squirtle@32
+  thorns         phản đòn       pokemon.onix@24 pokemon.squirtle@32
   swiftness      thần tốc       naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 po…
-  ballast        trụ vững       pokemon.happiny@16 pokemon.squirtle@44
+  ballast        trụ vững       pokemon.happiny@16 pokemon.onix@32 pokemon.squirtle@44
   composure      vững tâm       pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@4…
   elusive        huyền ảo       pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 p…
   contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
   berserk        cuồng chiến    pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
-  unyielding     bất khuất      pokemon.machop@24
+  unyielding     bất khuất      pokemon.machop@24 pokemon.onix@48
   carapace       vỏ cứng        pokemon.happiny@40 pokemon.squirtle@48
   projection     hộ thể         pokemon.charmander@48
   rending        xé giáp        pokemon.machop@48 pokemon.riolu@44
@@ -3574,6 +3578,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   brood      loài ấp trứng
   rodent     gặm nhấm
   esper      ngoại cảm
+  mineral    khoáng thạch
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -4002,7 +4007,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a forked cast row =====
-cast  showing all origins (22 of 22 characters)
+cast  showing all origins (23 of 23 characters)
 
   pokemon.pichu            pokemon        electric
 > pokemon.poliwag          pokemon        water
@@ -4447,9 +4452,9 @@ point wind_shuriken at  .. is a splash cell, at 50%
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
-characters allowed to carry it  0 of 22
+characters allowed to carry it  0 of 23
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (22 of 22)
+showing all origins (23 of 23)
 
 >      naruto.naruto
        pokemon.abra
@@ -4609,7 +4614,7 @@ squad bonuses  what a side is paid for what its units share
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | browse =====
-cast  showing all origins (22 of 22 characters)
+cast  showing all origins (23 of 23 characters)
 
 > naruto.naruto            naruto         wind
   pokemon.abra             pokemon        dark
@@ -4735,9 +4740,9 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | filtered picker =====
-characters allowed to carry it  0 of 22
+characters allowed to carry it  0 of 23
 space chooses · leaving it empty lets anyone carry the skill
-showing naruto (1 of 22)
+showing naruto (1 of 23)
 
 >      naruto.naruto
 
@@ -4807,7 +4812,7 @@ space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l ti
 origins  the works the cast is borrowed from
 
 > naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  21 cast  Pokémon
+  pokemon          anime   1997  22 cast  Pokémon
 
 2 works · media: anime film series game comic novel
 ----- footer -----
@@ -5026,7 +5031,7 @@ traits  the declared traits, and who carries each
   blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 poke…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         pokemon.squirtle@32
+  thorns         pokemon.onix@24 pokemon.squirtle@32
   swiftness      naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@32 pokemon.gast…
 
   endurance
@@ -5555,7 +5560,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a forked cast row =====
-cast  showing all origins (22 of 22 characters)
+cast  showing all origins (23 of 23 characters)
 
   naruto.naruto            naruto         wind
   pokemon.abra             pokemon        dark
@@ -5574,6 +5579,7 @@ cast  showing all origins (22 of 22 characters)
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
   pokemon.oddish           pokemon        grass
+  pokemon.onix             pokemon        ground
   pokemon.pichu            pokemon        electric
 > pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
@@ -6214,9 +6220,9 @@ point wind_shuriken at  .. is a splash cell, at 50%
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====
-characters allowed to carry it  0 of 22
+characters allowed to carry it  0 of 23
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (22 of 22)
+showing all origins (23 of 23)
 
 >      naruto.naruto
        pokemon.abra
@@ -6235,6 +6241,7 @@ showing all origins (22 of 22)
        pokemon.mew
        pokemon.mewtwo
        pokemon.oddish
+       pokemon.onix
        pokemon.pichu
        pokemon.poliwag
        pokemon.riolu
@@ -6398,7 +6405,7 @@ squad bonuses  what a side is paid for what its units share
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | browse =====
-cast  showing all origins (22 of 22 characters)
+cast  showing all origins (23 of 23 characters)
 
 > naruto.naruto            naruto         wind
   pokemon.abra             pokemon        dark
@@ -6417,6 +6424,7 @@ cast  showing all origins (22 of 22 characters)
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
   pokemon.oddish           pokemon        grass
+  pokemon.onix             pokemon        ground
   pokemon.pichu            pokemon        electric
   pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
@@ -6622,9 +6630,9 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | filtered picker =====
-characters allowed to carry it  0 of 22
+characters allowed to carry it  0 of 23
 space chooses · leaving it empty lets anyone carry the skill
-showing naruto (1 of 22)
+showing naruto (1 of 23)
 
 >      naruto.naruto
 
@@ -6766,7 +6774,7 @@ space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l ti
 origins  the works the cast is borrowed from
 
 > naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  21 cast  Pokémon
+  pokemon          anime   1997  22 cast  Pokémon
 
 2 works · media: anime film series game comic novel
 ----- footer -----
@@ -6891,6 +6899,7 @@ species  the declared kinds, and where each line is drawn
   brood
   rodent
   esper
+  mineral
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -7168,15 +7177,15 @@ traits  the declared traits, and who carries each
   blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.diglett@48 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.i…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
-  thorns         pokemon.squirtle@32
+  thorns         pokemon.onix@24 pokemon.squirtle@32
   swiftness      naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.diglett@16 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 pokemon.magnemite…
-  ballast        pokemon.happiny@16 pokemon.squirtle@44
-  composure      pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliw…
+  ballast        pokemon.happiny@16 pokemon.onix@32 pokemon.squirtle@44
+  composure      pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.onix@…
   elusive        pokemon.abra@36 pokemon.cleffa@40 pokemon.diglett@36 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@4…
   contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       pokemon.gastly@32 pokemon.poliwag@36
   berserk        pokemon.gible@44 pokemon.igglybuff@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
-  unyielding     pokemon.machop@24
+  unyielding     pokemon.machop@24 pokemon.onix@48
   carapace       pokemon.happiny@40 pokemon.squirtle@48
   projection     pokemon.charmander@48
   rending        pokemon.machop@48 pokemon.riolu@44
@@ -7209,6 +7218,7 @@ species  the declared kinds, and where each line is drawn
   brood
   rodent
   esper
+  mineral
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào

@@ -232,6 +232,7 @@ var (
 		"stoker":      "kẻ tăng tốc",
 		"manifold":    "kẻ tách thân",
 		"crooner":     "kẻ hát vang",
+		"monolith":    "khối đá đứng",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its
