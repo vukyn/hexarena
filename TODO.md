@@ -3513,7 +3513,10 @@ is only so the shape is readable.
             deletes that refusal — and whichever of the three games it chooses,
             `draft.Config.First` is already the parameter that lets "the previous
             winner bans first" be expressed.
-      - [ ] **mDNS room browsing — the HOST half is done; the client half is not.**
+      - [ ] **mDNS room browsing — the HOST half is DONE and shipped; the CLIENT
+            half is PENDING, deliberately.** A player still joins by pasting the
+            room code, and nothing in the game lists a room. → the platform note
+            at the foot, which is why the second half is parked rather than next.
             `internal/discovery` speaks real DNS-SD over
             `github.com/libp2p/zeroconf/v2`, and `hexarena-host -browse`
             announces the open room as `_hexarena._tcp`. Verified with the
@@ -3561,24 +3564,45 @@ is only so the shape is readable.
             **What is left: the client lists what it hears.** `discovery.Browse`
             is written and is not called by anything.
 
-            ⚠️ **And it cannot be verified on this machine, which is the thing to
-            read before starting it.** Measured 2026-09-08 on macOS 25.6: a Go
-            process receives **no inbound mDNS at all**. A raw
+            ⚠️ **And it cannot be verified on this machine, which is why the
+            client half is PENDING rather than next.** Measured 2026-09-08 on
+            macOS 25.6: a Go process receives **no inbound mDNS at all**. A raw
             `net.ListenMulticastUDP` on 224.0.0.251:5353 binds without error,
             reports a local address and reads nothing for three seconds, while
             Apple's `dns-sd -B` lists four services on two interfaces at the same
             moment. `zeroconf.Browse` likewise returns a nil error and hears
             nothing, on every interface and on both IP families. **Sending is
             unaffected** — the advertisement above is visible immediately — so it
-            is the inbound half that macOS withholds, silently, on a per-app
-            local-network permission a `go test` binary has never been granted.
-            `TestARoomAnnouncedOnThisMachineIsHeardByABrowse` probes for exactly
-            that and skips naming it, rather than failing over an operating
+            is the inbound half macOS withholds, silently, on a per-app
+            local-network permission.
+
+            ⚠️ **It is NOT about a `go test` binary, and this entry said it was.**
+            The first reading was taken through `go run` and `go test`, and the
+            obvious explanation — a temporary binary at a path that changes every
+            run cannot hold a permission grant — was written down here as though
+            it had been measured. It had not. Re-measured the same day with a
+            **compiled binary at a fixed path** (`/tmp/mcheck/mcheck`, plain
+            `net.ListenMulticastUDP`, five seconds): **0 packets**, exactly as
+            before. So a `make build` binary is in the same position as a test
+            one, and step 2's problem is a permission that has to be **granted**,
+            not a build shape that can be worked around.
+
+            `TestARoomAnnouncedOnThisMachineIsHeardByABrowse` probes for the
+            condition and skips naming it, rather than failing over an operating
             system's privacy setting.
-            So the client half needs a machine that delivers multicast, and the
-            listing needs to say something useful when it hears nothing — because
-            "nobody is hosting" and "this machine is not allowed to hear them"
-            look identical, and on macOS the second is the likely one.
+
+            **What step 2 needs, therefore:**
+            1. A machine that delivers multicast to the client — on macOS that is
+               Local Network permission for whatever runs the binary, and it is a
+               setting a **person** grants, not something the code can ask for
+               from a terminal.
+            2. A listing that says something useful when it hears nothing.
+               "Nobody is hosting" and "this machine is not allowed to hear them"
+               look identical, and on macOS the second is the likely one — so an
+               empty list that only says "no rooms" would send every macOS player
+               to check their network for a problem that is on their own machine.
+            3. The ordinary screen work: an entry in `everyScreen`, both language
+               books, the width floor, and three goldens.
       - [ ] A chess clock — a budget per player rather than per turn.
       - [ ] Prove the mirror across architectures: the same seed and the same
             digest on amd64 and arm64. Friends are not all on one machine, and
