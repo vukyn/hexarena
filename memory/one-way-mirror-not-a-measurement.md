@@ -1,6 +1,6 @@
 ---
 name: one-way-mirror-not-a-measurement
-description: "hexarena — ĐÃ TÌM RA VÀ VÁ 2026-09-07: aims duyệt theo thứ tự ô TUYỆT ĐỐI, mà Place xoay 180° nên hai nửa bàn nhận ứng viên NGƯỢC nhau; giờ duyệt theo slot"
+description: "hexarena — HAI nguyên nhân, không phải một: aim order ĐÃ VÁ 2026-09-07, splash pattern tuyệt đối VẪN MỞ (ENG-012) — control arm ở squad ship vẫn 1119/1153/1057‰"
 metadata:
   type: reference
 ---
@@ -31,6 +31,36 @@ Ví dụ đo được: slot `{1,1}` và `{1,0}` → phe ta ở ô `1,0` rồi `1
 **Vá**: `battle.mirroredOrder` duyệt theo **slot tác giả**, nửa đối phương trước. ⚠️ Nửa đối phương đi trước chứ không phải nửa mình: chỉ chiêu all-sided phân biệt được, và để nửa mình trước là dời hoà giá của mọi chiêu đó về phía mình — đổi cân bằng khoác áo sửa determinism.
 
 **Sau khi vá**: 1000‰ ở **cả 1, 2 và 3 unit/phe**, và **200/200 seed lật** kết quả khi đổi thứ tự liệt kê (trước: 200/200, 176/200, 134/200).
+
+## ⚠️ NHƯNG CHƯA XONG — có nguyên nhân THỨ HAI (2026-09-08, ENG-012)
+
+Vá trên đo trên fixture **tổng hợp** (kit `strike`+`sweep`, không splash). Chạy lại
+control arm trên **squad ship**, 2000 seed mỗi arm:
+
+| squad | ally trước | enemy trước | tổng |
+|---|---|---|---|
+| s01 | 629.5‰ | 370.5‰ | **1000‰ — ĐÚNG CHẰN** |
+| s02 | 742.4‰ | 257.6‰ | **1000‰ — ĐÚNG CHẰN** |
+| s03 | 614.0‰ | 505.0‰ | 1119‰ ✗ |
+| s04 | 697.5‰ | 455.0‰ | 1153‰ ✗ |
+| s05 | 582.5‰ | 474.5‰ | 1057‰ ✗ |
+
+**Thủ phạm 2: `pattern.targets` duyệt splash bằng bước cube TUYỆT ĐỐI.**
+`arc_up` = `[["up"],["upper_right"]]`, mà `hex.Place` xoay 180° → *up* ánh xạ thành
+*down*. Nên cùng một slot tác giả, hai nửa bàn splash trúng hàng xóm **khác nhau**.
+s01/s02 đúng chằn chỉ vì kit của chúng không có splash chạm được unit thứ hai.
+
+Cách khoanh vùng (làm lại được): chạy hai arm **từng prompt một**, so `Prompt.Options`
+sau khi ánh xạ mirror. Options **giống hệt, cùng thứ tự** — cái khác là **giá trị
+rating**: s03 lượt 1 `razor_leaf` được 273 ở arm này, 443 ở arm kia.
+
+⚠️ **Bài học riêng của lần này: vá đúng một nguyên nhân KHÔNG đóng được control arm.**
+Note này từng ghi headline "ĐÃ TÌM RA VÀ VÁ" và số 1000‰ — đúng, nhưng chỉ trên fixture
+mình tự dựng. Fixture tổng hợp không chạm tới splash, nên nó xác nhận bản vá mà **không**
+xác nhận tính chất. Muốn kết luận "control arm đã đóng" thì phải đo trên **dữ liệu ship**.
+
+⚠️ Nên tới giờ: **mọi số vẫn phải đọc là KHOẢNG CÁCH giữa hai arm**, không phải tỉ lệ một
+arm. `forge.FightSquads` cộng hai chiều — vẫn đúng phương pháp. Xem [[hexarena-side-is-worth-60-points]].
 
 ⚠️ **Giả thuyết KIT ở dưới là SAI.** Đội 2 người ship bù nhau đúng chằn không phải vì kit, mà vì kit đó không tạo hoà giá ở chỗ thứ tự khác nhau — cùng một lỗi, chỉ là fixture không chạm tới. Giữ lại đoạn dưới vì nó ghi lại hai giả thuyết đã loại đúng (bàn cờ, cấu trúc).
 

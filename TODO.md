@@ -87,6 +87,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-009` | refused | A ceiling on `Skill.Power` |
 | `ENG-010` | refused | The queue as a third tie-break key |
 | `ENG-011` | done | `main` did not build, and no conflict was raised |
+| `ENG-012` | open | A pattern's splash is walked in absolute board directions, so the two halves are not each other's mirror |
 | `RAT-001` | shipped | The opponent |
 | `RAT-002` | shipped | Measuring the opponent |
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
@@ -297,6 +298,73 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [ ] `ENG-012` **A pattern's splash is walked in absolute board directions, so an
+      authored formation does not play the same on the two halves.** Found on
+      2026-09-08 while measuring the contested-speed alternation, by a control arm
+      that would not close.
+
+      **The control.** A squad against a copy of itself, fought one way and then
+      with the halves exchanged, must sum to 1000‰: they are the same battles
+      relabelled. Over 2000 seeds a squad, the five shipped squads read
+
+      | squad | ally listed first | enemy first | sum |
+      | --- | --- | --- | --- |
+      | s01 | 629.5‰ | 370.5‰ | **1000‰ — exact** |
+      | s02 | 742.4‰ | 257.6‰ | **1000‰ — exact** |
+      | s03 | 614.0‰ | 505.0‰ | 1119‰ |
+      | s04 | 697.5‰ | 455.0‰ | 1153‰ |
+      | s05 | 582.5‰ | 474.5‰ | 1057‰ |
+
+      ⚠️ **This is NOT the aim-order bug and that one is genuinely fixed.**
+      `battle.mirroredOrder` walks candidates by authoring slot and the synthetic
+      mirror it was measured on now sums to 1000‰ at one, two and three a side.
+      What survives is a second, independent asymmetry that the synthetic fixture
+      cannot reach because its kits carry no splashing skill.
+
+      **The mechanism, localised to one line.** Driving both arms prompt by prompt
+      and comparing them under the mirror: the two arms are offered the **same
+      option list in the same order**, and `Suggest` returns a different aim
+      because the ratings themselves differ — s03 turn 1, `razor_leaf` on
+      Venusaur, rated 273 against 443 for the same aim. `pattern.targets` walks
+      `Splash` as absolute cube steps from the primary cell:
+
+      ```
+      arc_up   splash [["up"], ["upper_right"]]
+      ```
+
+      `hex.Place` puts the enemy half down under a **180 degree rotation**, and a
+      rotation maps *up* to *down*. So a caster on the ally half and its opposite
+      number on the enemy half splash onto different neighbours of the same
+      authored slot, and the two halves stop being reflections. Every shipped
+      `arc_up` / `arc_down` / `wedge_*` / `flank_*` / `pierce` skill carries it;
+      s01 and s02 are exact only because their kits happen not to reach a splash
+      that catches a second unit.
+
+      **What it costs today.** Nothing about determinism or replay: a battle is
+      still a pure function of its seed and its decisions, `--verify` still
+      passes, and nothing here is nondeterministic. What it costs is
+      **measurement** — a one-way rate on a mirror is still not a number, so every
+      figure has to be read as a gap between two arms, which is what
+      `forge.FightSquads` already does and what the alternation above was measured
+      with.
+
+      **The two candidate answers, neither taken.**
+
+      1. Mirror the steps for a caster on the enemy half — `targets` takes the
+         caster's side and reflects each direction. That makes the halves
+         interchangeable and moves **every** balance figure ever taken, because it
+         changes what half the shipped skills hit.
+      2. Declare the board to have a real *up* and accept that the halves are not
+         mirrors — in which case `forge.FightSquads`'s swap is not cancelling what
+         it says it cancels, and the control arm should stop being described as
+         one.
+
+      ⚠️ It is an authoring call, not a bug fix: it is not obvious that a shape
+      called *arc up* should become *arc down* in the hands of the other side.
+      Whichever is chosen, `TestASwappedMirrorSwapsItsWinnerAtEverySquadSize`
+      cannot see it — its fixture kits are `strike` and `sweep` — so the fixture
+      needs a splashing kit before the property means anything.
 
 - [x] `SCR-012` **A draft's last pick can have one candidate, and the screen
       presents it as a choice — DONE, and the mechanism was already shipped: what
@@ -1605,15 +1673,60 @@ is only so the shape is readable.
             two different matches sharing a fight, exactly. Every counter-based
             generator has that shape, so a derivation from two numbers needs a
             function of two numbers.
-      - [ ] The lead of each contested speed group alternates, on top of the seed
-            picking the side. ⚠️ **Deferred on purpose and not forgotten.** It
-            needs the roster slice composed against the queue rather than as the
-            squads were authored, the side is worth **up to sixty points** in a
-            mirror, and what it is worth at 3v3 or 5v5 is **unmeasured** — the
-            two-unit mirror reads 49.6% for alternating against 54.2% for
-            ally-first, and above one unit a side a one-way rate is not a
-            measurement at all. Not something to implement on a hunch. The room
-            leaves the roster slice order as the squads were authored.
+      - [x] The lead of each contested speed group alternates, on top of the seed
+            picking the side. **Done** — `room.alternateContested`, called by
+            `begin` over the slice `append(home, away...)` builds. A contested
+            group is the units of **both** sides sharing one speed, and the lead
+            of each changes hands.
+            ⚠️ **The lead alternates per PAIR and runs across the groups**, not
+            once a group. The two readings differ only where a group holds more
+            than one unit a side, which a mirror of distinct speeds never
+            produces — `TestTheLeadChangesHandsInsideOneSpeedGroupToo` is the
+            fixture built to reach it, and a per-group version passes every other
+            test in the file. Per pair leaves the two sides' lead counts
+            differing by at most one over the whole roster.
+            ⚠️ **An uncontested speed spends none of the alternation.** A speed
+            only one side holds is not a tie: nobody wins it, so it must not move
+            the turn of whoever leads the next contested pair. Deleting that
+            guard reads as a simplification and shifts the phase of every group
+            after the first uncontested one.
+            ⚠️ **The grouping is on the ENLISTED speed, not the authored line,
+            and that is what costs the extra `battle.New`.** `enlist` applies the
+            composition bonuses and the passives before `queue.Add` reads a
+            speed: the shipped s03 fields a Magnezone authored at 110 that
+            enlists at **117**, and a squad holding a second electric unit moves
+            the same Magnezone to **123** while its opposite number stays at 117.
+            Grouping on `Roster.Stats` would call those two a contested pair and
+            alternate a tie that does not exist. So the speeds are read off a
+            battle built for the purpose and thrown away —
+            `TestTheSpeedsDoNotDependOnTheOrderTheRosterIsIn` is the property
+            that makes the probe honest, because a grant that read the units
+            already enlisted would make it measure a battle nobody fights.
+            **What it was measured at, which is what this item was deferred for.**
+            The gap between the two arms of the swap, over 2000 seeds a squad,
+            each shipped squad against a copy of itself:
+
+            | squad | home enlisted whole | leads alternating |
+            | --- | --- | --- |
+            | s01 | ±129.5‰ | ±76.4‰ |
+            | s02 | ±242.4‰ | ±89.4‰ |
+            | s03 | ±54.5‰ | ±42.8‰ |
+            | s04 | ±121.3‰ | ±93.3‰ |
+            | s05 | ±54.0‰ | ±26.5‰ |
+
+            Smaller on every one of the five and 45% smaller on the mean. At five
+            a side, on squads composed for the size because none of the shipped
+            five is five strong: ±46.0‰ became ±2.5‰ on one and ±125.7‰ became
+            ±69.3‰ on the other. `TestAlternatingTheLeadIsWorthLessToTheSideThatGetsIt`
+            is the small fast statement of the direction — 100‰ against 0‰ over
+            150 seeds — and the table is the record.
+            ⚠️ **The gap and not either arm, because a one-way mirror rate is
+            still not a measurement here.** s03, s04 and s05 sum to 1119, 1153
+            and 1057 per mille over 2000 seeds. The residual is not the turn
+            order and it is no longer unexplained → `ENG-012`.
+            ⚠️ **It does not replace fighting both ways round.** `Config.HomeFor`
+            is what cancels the residual as well as the tie; this is worth having
+            on top of it, per battle.
       - [x] The per-turn allowance belongs in the room's configuration beside the
             format. **Done** — `Config.Allowance`, seconds, handed to both clients
             on `wire.Welcome` and never counted down here.

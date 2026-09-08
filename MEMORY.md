@@ -41,8 +41,8 @@ that owns the subject wins and the note is the thing to fix.
 - [3 golden thấy 3 thứ khác nhau](memory/goldens-see-different-screens.md) — ⚠️ cả 3 hình dạng mù đo được; golden≠transition
 - [⚠️ golden không xanh được ở 2 platform](memory/goldens-cannot-be-green-on-two-platforms.md) — TRIỆU CHỨNG hết (accept lại trên máy `/`); NGUYÊN NHÂN còn: golden ghi filepath.Join xanh ở platform accept sau cùng
 - [hexarena PvP plan](memory/hexarena-pvp-plan.md) — mirror client; bo1|bo3 KHÔNG bo2; 3 số version, digest là cửa
-- [thế hoà = thứ tự roster](memory/hexarena-side-is-worth-60-points.md) — seq = slice order, CALLER quyết; +62% ở 1v1, +8.5pp ở 2v2
-- [⚠️ mirror một chiều: ĐÃ VÁ](memory/one-way-mirror-not-a-measurement.md) — aims duyệt ô TUYỆT ĐỐI mà Place xoay 180° → hai nửa ngược thứ tự
+- [thế hoà = thứ tự roster](memory/hexarena-side-is-worth-60-points.md) — seq = slice order, CALLER quyết; ĐÃ kéo cần gạt: room.alternateContested, gap −45% ở 3v3
+- [⚠️ mirror một chiều: VÁ 1/2](memory/one-way-mirror-not-a-measurement.md) — aim order đã vá; splash pattern tuyệt đối VẪN MỞ (ENG-012), squad ship còn 1119‰
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [consumer thứ hai cần cursor thứ hai](memory/hexarena-a-second-consumer-needs-a-second-cursor.md) — log PvP phải đọc từ 0; ⚠️ cursor phòng đặt SAU bàn mở → 291 ghi vs 300 re-run
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
