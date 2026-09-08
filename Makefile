@@ -4,7 +4,7 @@
 # -update is declared only in the packages that own golden files, so
 # `go test ./... -update` fails on every other package.
 
-.PHONY: build install run auto play-tui forge forge-tui forge-tui-en host test golden fmt vet check clean
+.PHONY: build install run auto play-tui forge forge-tui forge-tui-en host test golden cross-arch fmt vet check clean
 
 build:
 	@go build -o bin/ ./cmd/hexarena ./cmd/hexarena-tui ./cmd/hexforge ./cmd/hexforge-tui ./cmd/hexarena-host
@@ -70,6 +70,23 @@ test:
 # record. Add a package here when it gains one.
 golden:
 	@go test ./cmd/hexarena-tui ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui ./internal/wire -update
+
+# The other architecture. PvP rests on two people on two machines producing the
+# same digest from the same seed, and this is the half a single-architecture run
+# cannot show — so it builds for GOARCH=amd64 and runs the engine and the
+# protocol against the same committed figures.
+#
+# ⚠️ On an Apple machine the binaries run under Rosetta. That is a real amd64
+# binary executing amd64 instructions, so it exercises the compiler's amd64 code
+# generation and integer widths, which is where a difference in code like this
+# would come from — it is NOT a second silicon vendor. → internal/seed's
+# architecture_test.go, which says the same thing where the figure is.
+#
+# GOARCH is inverted rather than fixed, so this is "the other one" on either kind
+# of machine and not "amd64" on a machine that already is one.
+cross-arch:
+	@echo "this machine: $$(go env GOARCH)"
+	@other=$$([ "$$(go env GOARCH)" = "amd64" ] && echo arm64 || echo amd64); 		echo "the other one: $$other"; 		GOARCH=$$other go test -count=1 			./internal/core/... ./internal/seed/... ./internal/wire/... 			./internal/room/... ./internal/socket/... ./internal/draft/...
 
 fmt:
 	@gofmt -w .
