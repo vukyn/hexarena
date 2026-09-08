@@ -120,6 +120,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
 | `SCR-011` | open | Every scratch data directory copied 17 MB of art — FIXED; the ~1300s was Win… |
+| `SCR-012` | open | A draft's last pick can have one candidate, and the screen presents it as a … |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -295,6 +296,35 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [ ] `SCR-012` **A draft's last pick can have one candidate, and the screen
+      presents it as a choice.** Split out of `NET-001`'s ban-and-pick item on
+      2026-09-08, which named it and shipped without it; that was the only thing
+      keeping that box open.
+
+      `draft.Slack` is `pool - 2*picks - 2*bans` — both sides, because both spend
+      out of one pool — and the exhaustive walk holds the tight form: with every
+      ban spent, the final pick sees exactly `slack + 1` candidates. So **slack of
+      nought means the last picker has no decision to make**, and the screen draws
+      it as a list to choose from anyway.
+
+      ⚠️ **It is not reachable on the shipped cast today, and that is not a reason
+      to skip it.** Slack was nought at sixteen characters (`pokemon.gible`), one
+      at seventeen (`pokemon.pichu`) and is wider now — so the state is behind the
+      cast rather than gone, and it returns the moment a format changes the
+      arithmetic or 5v5's pool is counted against a bigger ban allowance. A screen
+      that reads correctly only because of a content figure is the shape this
+      repository has been caught by before.
+
+      **What it is, concretely:** when the offered list holds exactly one
+      candidate, say it is the only one left rather than drawing a cursor over a
+      single row. The figure is `draft.Slack`'s and has to be read from it rather
+      than counted on the screen — a second expression for one rule is how the two
+      come to disagree about which pick was forced.
+
+      ⚠️ **Both clients and both language books**: the draft screen is
+      `cmd/hexarena-tui`'s and a spectator draws the same draft. Three goldens
+      move.
 
 - [ ] `SCR-011` ⚠️ **Every scratch data directory copied the whole 17 MB data
       directory — FIXED, the art is shared now. But the ~1300s in this item's
@@ -2182,7 +2212,16 @@ is only so the shape is readable.
                   `TestTheWatchFlagIsWhatTheRoomIsOpenedWith` (through the **flag
                   set**, because setting `chosen.watch` directly proves nothing
                   about a flag that was never registered).
-      - [ ] **Ban and pick, and a spectator watching it.** Before a match, the
+      - [x] **Ban and pick, and a spectator watching it — DONE.** Every numbered
+            step ships: the wire vocabulary, the arrange phase, the draft on the
+            wire, the room hosting it, the client's mirror, the draft and arrange
+            screens, and `-draft` on the host. A spectator watches the draft as
+            well as the battle. ⚠️ **The one thing this entry named and did not
+            build is now `SCR-012`** — a final pick with a single candidate should
+            say so rather than present a list of one — and it was the only reason
+            this box stayed open after step 6.
+
+            Before a match, the
             two sides take turns banning a character and picking one, out of a
             **shared pool**, so a 3v3 fields six different characters and a 5v5
             ten. A pick carries the character **and its skills**. A spectator
@@ -2471,11 +2510,10 @@ is only so the shape is readable.
             ⚠️ **The last pick is not a decision whenever slack is nought**, and
             slack is `pool - 2*picks - 2*bans` — both sides, since both spend out
             of one pool; `draft.Slack` is that expression and nothing else, and
-            it is the note above's surviving half. Worth drawing on the screen: a
-            draft whose final pick has one candidate should say so rather than
-            present a list of one. The exhaustive walk asserts the tight form of
-            it: with every ban spent the final pick sees exactly `slack + 1`
-            candidates.
+            it is the note above's surviving half. The exhaustive walk asserts the
+            tight form of it: with every ban spent the final pick sees exactly
+            `slack + 1` candidates. → `SCR-012` for the screen's half, which is the
+            one thing this entry named and did not build.
       - [x] **The arrange phase — step 2b. Done 2026-09-05.** Once picking
             closes, each side puts its three (or five) picks on its own 3x3
             formation, **privately and simultaneously**, and the draft finishes
