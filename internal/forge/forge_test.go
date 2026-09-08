@@ -2267,7 +2267,7 @@ func TestTheShapeDiagramCellShowsTheMostOfEveryShape(t *testing.T) {
 		if err != nil {
 			t.Fatalf("look up %s: %v", name, err)
 		}
-		here, there := len(shape.Targets(chosen)), len(shape.Targets(mirror))
+		here, there := len(shape.Targets(chosen, hex.SideAlly)), len(shape.Targets(mirror, hex.SideAlly))
 		if here != there {
 			t.Errorf("%s catches %d cells from %v and %d from its mirror %v",
 				name, here, chosen, there, mirror)
@@ -2285,7 +2285,7 @@ func TestTheShapeDiagramCellShowsTheMostOfEveryShape(t *testing.T) {
 			if err != nil {
 				t.Fatalf("look up %s: %v", name, err)
 			}
-			if len(shape.Targets(cell)) != shape.MaxTargets() {
+			if len(shape.Targets(cell, hex.SideAlly)) != shape.MaxTargets() {
 				all = false
 				break
 			}

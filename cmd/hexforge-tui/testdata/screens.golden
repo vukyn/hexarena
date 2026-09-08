@@ -258,15 +258,15 @@ cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
-A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
+A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
 E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
-     phân thân 1          [########..]  1120/1360     53   -
-     phân thân 2          [######....]   932/1360     53   -
+E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
      phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [########..]  1098/1360     53   -
+     phân thân 2          [#######...]   989/1360     43   mire (2t)
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [######....]   858/1360     43   mire (2t)
 
 A3 Sennin, lượt 3
 > kunai          70% công · tầm 2
@@ -1070,7 +1070,7 @@ thử trận  fixture-anime.adept — Example Adept
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
-  naruto.naruto                   0.0%    0-200-0         57     +0.0%
+  naruto.naruto                   0.0%    0-200-0         58     +0.0%
   pokemon.abra                    21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
   pokemon.charmander              4.0%    8-192-0         25     +0.0%
@@ -1960,7 +1960,7 @@ thế đứng
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
 ===== vi | 160x60 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 97-120/120
+trận đấu  seed 1  diễn biến 108-131/131
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1974,42 +1974,42 @@ trận đấu  seed 1  diễn biến 97-120/120
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
-A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
+A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
 E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
-     phân thân 1          [########..]  1120/1360     53   -
-     phân thân 2          [######....]   932/1360     53   -
+E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
      phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [########..]  1098/1360     53   -
+     phân thân 2          [#######...]   989/1360     43   mire (2t)
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [######....]   858/1360     43   mire (2t)
 
-next: E3 A2 E2 ally.2,2#1 ally.2,2#2 A3
+next: E3 A2 E2 ally.2,2#1 enemy.2,2#1 ally.2,2#2
 
-    A2   hits E3 for 494 (weak), 1996 left
-    A2   poison <trúng độc> x1 on E3, now 1
-  
-  E2  turn 4
-    E2  uses venom_fang <nanh độc> at 2,2
-    E2   hits A3 for 494 (weak), 2762 left
-    E2   A3 resists poison <trúng độc> (90%)
-  
-  A1  turn 2
     A1  uses riptide <sóng ngầm> at 3,1
-    A1   hits E2 for 150 (resisted), 848 left
+    A1   hits E2 for 150 (resisted), 802 left
     A1   misses E2 (77%)
     A1   mire <sa lầy> x1 on E2, now 1
-    A1   hits enemy.2,2#2 for 131, 1229 left
-    A1   hits enemy.2,2#2 for 131, 1098 left
-    A1   enemy.2,2#2 resists mire <sa lầy> (55%)
+    A1   hits enemy.2,2#2 for 131, 989 left
+    A1   hits enemy.2,2#2 for 131, 858 left
+    A1   mire <sa lầy> x1 on enemy.2,2#2, now 1
     E2  speed 200 to 161
+    enemy.2,2#2 speed 53 to 43
   
   E1  turn 2
     E1  takes 91 from poison <trúng độc> x1
-    E1  stun <choáng> wears off
-    E1  loses the turn (stun)
+    E1  uses riptide <sóng ngầm> at 2,1
+    E1   hits A2 for 150 (resisted), 771 left
+    E1   hits A2 for 150 (resisted), 621 left
+    E1   mire <sa lầy> x1 on A2, now 1
+    E1   hits ally.2,2#2 for 131, 989 left
+    E1   misses ally.2,2#2 (87%)
+    E1   mire <sa lầy> x1 on ally.2,2#2, now 1
+    A2  speed 200 to 161
+    ally.2,2#2 speed 53 to 43
   
   A3  turn 3
+    A3  takes 206 from poison <trúng độc> x1
 
 A3 Sennin, lượt 3
 > kunai          70% công · tầm 2
@@ -4037,7 +4037,7 @@ thử trận  fixture-anime.adept — Example Adept
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
-  naruto.naruto                   0.0%    0-200-0         57     +0.0%
+  naruto.naruto                   0.0%    0-200-0         58     +0.0%
   pokemon.abra                    21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
   pokemon.charmander              4.0%    8-192-0         25     +0.0%
@@ -4932,15 +4932,15 @@ the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
-A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
+A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
 E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
-     phân thân 1          [########..]  1120/1360     53   -
-     phân thân 2          [######....]   932/1360     53   -
+E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
      phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [########..]  1098/1360     53   -
+     phân thân 2          [#######...]   989/1360     43   mire (2t)
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [######....]   858/1360     43   mire (2t)
 
 A3 Sennin, turn 3
 > kunai          70% attack · range 2
@@ -5744,7 +5744,7 @@ spar  fixture-anime.adept — Example Adept
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
-  naruto.naruto                 0.0%    0-200-0         57     +0.0%
+  naruto.naruto                 0.0%    0-200-0         58     +0.0%
   pokemon.abra                  21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
   pokemon.charmander            4.0%    8-192-0         25     +0.0%
@@ -6634,7 +6634,7 @@ the formation
 ↑/↓ field · ←/→ change · enter choose · esc done
 ===== en | 160x60 | a scrolled battle log =====
 
-the battle  seed 1  log 97-120/120
+the battle  seed 1  log 108-131/131
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6648,42 +6648,42 @@ the battle  seed 1  log 97-120/120
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [#####.....]  1105/2200    200   phalanx x2 (always)
-A3   Sennin               [########..]  2762/3400    134   toughened (always), phalanx x2 (always)
+A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
+A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
 E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   848/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1996/3400    134   toughened (always), phalanx x2 (always), poison (3t)
-     phân thân 1          [########..]  1120/1360     53   -
-     phân thân 2          [######....]   932/1360     53   -
+E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
+E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
      phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [########..]  1098/1360     53   -
+     phân thân 2          [#######...]   989/1360     43   mire (2t)
+     phân thân 1          [##########]  1360/1360     53   -
+     phân thân 2          [######....]   858/1360     43   mire (2t)
 
-next: E3 A2 E2 ally.2,2#1 ally.2,2#2 A3
+next: E3 A2 E2 ally.2,2#1 enemy.2,2#1 ally.2,2#2
 
-    A2   hits E3 for 494 (weak), 1996 left
-    A2   poison x1 on E3, now 1
-  
-  E2  turn 4
-    E2  uses venom_fang at 2,2
-    E2   hits A3 for 494 (weak), 2762 left
-    E2   A3 resists poison (90%)
-  
-  A1  turn 2
     A1  uses riptide at 3,1
-    A1   hits E2 for 150 (resisted), 848 left
+    A1   hits E2 for 150 (resisted), 802 left
     A1   misses E2 (77%)
     A1   mire x1 on E2, now 1
-    A1   hits enemy.2,2#2 for 131, 1229 left
-    A1   hits enemy.2,2#2 for 131, 1098 left
-    A1   enemy.2,2#2 resists mire (55%)
+    A1   hits enemy.2,2#2 for 131, 989 left
+    A1   hits enemy.2,2#2 for 131, 858 left
+    A1   mire x1 on enemy.2,2#2, now 1
     E2  speed 200 to 161
+    enemy.2,2#2 speed 53 to 43
   
   E1  turn 2
     E1  takes 91 from poison x1
-    E1  stun wears off
-    E1  loses the turn (stun)
+    E1  uses riptide at 2,1
+    E1   hits A2 for 150 (resisted), 771 left
+    E1   hits A2 for 150 (resisted), 621 left
+    E1   mire x1 on A2, now 1
+    E1   hits ally.2,2#2 for 131, 989 left
+    E1   misses ally.2,2#2 (87%)
+    E1   mire x1 on ally.2,2#2, now 1
+    A2  speed 200 to 161
+    ally.2,2#2 speed 53 to 43
   
   A3  turn 3
+    A3  takes 206 from poison x1
 
 A3 Sennin, turn 3
 > kunai          70% attack · range 2
@@ -8711,7 +8711,7 @@ spar  fixture-anime.adept — Example Adept
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
-  naruto.naruto                 0.0%    0-200-0         57     +0.0%
+  naruto.naruto                 0.0%    0-200-0         58     +0.0%
   pokemon.abra                  21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
   pokemon.charmander            4.0%    8-192-0         25     +0.0%

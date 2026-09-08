@@ -223,7 +223,7 @@ func TestASingleCellShapeDrawsNoSplashRows(t *testing.T) {
 	p.Aiming = true
 	var measured int
 	for index, option := range p.Pending.Options {
-		coverage, err := c.Lib.AimCoverage(option.Skill, option.Aims[0])
+		coverage, err := c.Lib.AimCoverage(option.Skill, option.Aims[0], hex.SideAlly)
 		if err != nil || coverage.Max > 1 {
 			continue
 		}

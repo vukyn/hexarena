@@ -1,6 +1,6 @@
 ---
 name: one-way-mirror-not-a-measurement
-description: "hexarena — HAI nguyên nhân, không phải một: aim order ĐÃ VÁ 2026-09-07, splash pattern tuyệt đối VẪN MỞ (ENG-012) — control arm ở squad ship vẫn 1119/1153/1057‰"
+description: "hexarena — HAI nguyên nhân, cả hai ĐÃ VÁ: aim order (2026-09-07) + splash pattern tuyệt đối (ENG-012, 2026-09-08); giờ 5/5 squad ship cộng đúng 1000‰"
 metadata:
   type: reference
 ---
@@ -32,7 +32,7 @@ Ví dụ đo được: slot `{1,1}` và `{1,0}` → phe ta ở ô `1,0` rồi `1
 
 **Sau khi vá**: 1000‰ ở **cả 1, 2 và 3 unit/phe**, và **200/200 seed lật** kết quả khi đổi thứ tự liệt kê (trước: 200/200, 176/200, 134/200).
 
-## ⚠️ NHƯNG CHƯA XONG — có nguyên nhân THỨ HAI (2026-09-08, ENG-012)
+## ⚠️ NGUYÊN NHÂN THỨ HAI — ĐÃ VÁ 2026-09-08 (ENG-012)
 
 Vá trên đo trên fixture **tổng hợp** (kit `strike`+`sweep`, không splash). Chạy lại
 control arm trên **squad ship**, 2000 seed mỗi arm:
@@ -59,8 +59,43 @@ Note này từng ghi headline "ĐÃ TÌM RA VÀ VÁ" và số 1000‰ — đúng
 mình tự dựng. Fixture tổng hợp không chạm tới splash, nên nó xác nhận bản vá mà **không**
 xác nhận tính chất. Muốn kết luận "control arm đã đóng" thì phải đo trên **dữ liệu ship**.
 
-⚠️ Nên tới giờ: **mọi số vẫn phải đọc là KHOẢNG CÁCH giữa hai arm**, không phải tỉ lệ một
-arm. `forge.FightSquads` cộng hai chiều — vẫn đúng phương pháp. Xem [[hexarena-side-is-worth-60-points]].
+**Bản vá**: `pattern.targets` đi bằng **khung của người ra chiêu**, bọc qua `hex.Place`
+(tự nghịch đảo): xoay aim vào khung caster → đi bước tuyệt đối → xoay ra. Phe ally ra
+chiêu thì **y hệt như cũ từng byte** (`TestAnAllysShapeIsUnchangedByTheFrame` giữ điều đó
+so với bản chép lại của walk cũ), phe enemy là ảnh phản chiếu **do cấu trúc**, không phải
+do một bảng tên hướng đảo mà ai đó phải giữ cho đúng. Sau vá: **cả 5 squad ship cộng đúng
+1000‰**.
+
+⚠️ Chỉ **16/151 chiêu** bị đổi: `arc_up` 8, `flank_up` 6, `wedge_right` 1, `arc_down` 1.
+`single` (114) và `column` (21) bất biến dưới xoay 180° — `column` = {up, down}, xoay đổi
+chỗ hai cái, ra cùng tập hợp.
+
+⚠️ **Test tính chất phải TỰ SINH hình, đừng đọc book ship.** Book chỉ dùng 4/6 hướng, nên
+test trên nó không bao giờ đi `upper_left`/`lower_left` — đúng hai hướng mà `pierce` của
+phe enemy rơi vào sau khi vá.
+
+⚠️ Vẫn giữ: **mọi số phải đọc là KHOẢNG CÁCH giữa hai arm**, không phải tỉ lệ một arm —
+đó là phương pháp, không phải cách vá lỗi. `forge.FightSquads` cộng hai chiều.
+Xem [[hexarena-side-is-worth-60-points]].
+
+## ⚠️ Giá phải trả: 3 test balance đỏ, cả 3 là LỖI PHÉP ĐO chứ không phải lỗi thiết kế
+
+| test | vỡ thế nào | hoá ra là gì |
+|---|---|---|
+| shape earns its power | biên +56 → +7 | **độ sâu**: +42 và +41 ở 2400 và 6000 trận |
+| strip earns its slot | tường hồi máu NHIỀU hơn khi bị strip | con số là **TỔNG**, không chuẩn hoá theo số lượt |
+| cleanser earns its slot | 485/460 → 429/430 | thật, và đã tụt ở mọi lần sửa dụng cụ → DAT-011 |
+
+⚠️ **Biên (margin) cần nhiều trận hơn mức (level).** Tỉ lệ đọc trên 600 trận xê dịch ±20‰,
+nên đòi "đáng ít nhất 30" ở độ sâu đó là đọc nhiễu. +56 trước khi vá là may, không phải
+bằng chứng.
+
+⚠️ **Regeneration là máu MỖI LƯỢT, nên so tổng giữa hai arm là so độ dài trận.** Arm có
+strip chạy 48.003 lượt so với 32.646 → tổng hồi máu cao hơn trong khi mỗi lượt thấp hơn
+1/5. Đọc theo lượt: **25 so với 35**. "Ít nhất một nửa" chưa bao giờ được chứng minh.
+Và hàng `withdraw` giờ phải **bằng nhau** — chỉ bằng nhau khi tính theo lượt (11 vs 12,
+trong khi tổng là 343.981 vs 420.984) — đó là assertion khiến việc chuẩn hoá có thể chứng
+minh bằng mutation.
 
 ⚠️ **Giả thuyết KIT ở dưới là SAI.** Đội 2 người ship bù nhau đúng chằn không phải vì kit, mà vì kit đó không tạo hoà giá ở chỗ thứ tự khác nhau — cùng một lỗi, chỉ là fixture không chạm tới. Giữ lại đoạn dưới vì nó ghi lại hai giả thuyết đã loại đúng (bàn cờ, cấu trúc).
 

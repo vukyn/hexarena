@@ -185,8 +185,24 @@ func refuseTooManyStalls(t *testing.T, subject string, endless, battles int) {
 func fightSquads(t *testing.T, books battle.Books, characters *cast.Book,
 	home, away placement.Squad) (wins, losses, endless int) {
 	t.Helper()
+	return fightSquadsOver(t, books, characters, home, away, menderSeeds)
+}
+
+// fightSquadsOver is fightSquads with the depth named, for a reading whose
+// claim is a MARGIN rather than a level.
+//
+// ⚠️ **A margin needs more battles than a level does, and menderSeeds is not
+// enough for one.** A rate read off six hundred battles moves tens of parts per
+// thousand between instruments; a claim of the form "this is worth at least
+// thirty" is then reading the noise as often as the effect. Measured on the
+// bombardier's shape after ENG-012 closed the mirror: +7 over 300 seeds, +42
+// over 1200 and +41 over 3000 — the same claim, true, and invisible at the depth
+// the rest of this file uses. → TestAShapeEarnsItsPowerWhereASparCannotSeeIt.
+func fightSquadsOver(t *testing.T, books battle.Books, characters *cast.Book,
+	home, away placement.Squad, seeds int) (wins, losses, endless int) {
+	t.Helper()
 	books.Bonuses = nil
-	for n := 1; n <= menderSeeds; n++ {
+	for n := 1; n <= seeds; n++ {
 		for _, swapped := range []bool{false, true} {
 			first, second := home, away
 			mine := hex.SideAlly

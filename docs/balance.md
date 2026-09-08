@@ -1891,5 +1891,46 @@ stop being reflections of each other.
 Nothing about determinism or replay is affected: a battle is still a pure function
 of its seed and its decisions and `--verify` still passes. What is affected is
 **measurement** — so every figure in this file is a gap between two arms, which is
-what `forge.FightSquads` has always summed. → `TODO.md` `ENG-012`, which carries
-the two candidate answers and why neither has been taken.
+what `forge.FightSquads` has always summed.
+
+### Fixed on 2026-09-08, and what it cost
+
+The walk is the **caster's** frame now, done by conjugating through `hex.Place`,
+which is its own inverse: rotate the aim into the caster's frame, walk the
+absolute steps, rotate back. An ally's cast comes out byte-identical to what it
+always was — `TestAnAllysShapeIsUnchangedByTheFrame` holds it against a
+written-out copy of the old walk — and an enemy's is its reflection by
+construction. All five shipped squads sum to **1000‰** now.
+
+⚠️ Only **16 of the 151** shipped skills carry a shape this moves: `arc_up` (8),
+`flank_up` (6), `wedge_right` (1), `arc_down` (1). `single` (114) and `column`
+(21) are unchanged by a 180 degree rotation — `column` is `up` and `down`, and
+the rotation exchanges them, which is why `discharge`, `heal_bell`, `safeguard`,
+`night_shade` and `fire_spin` all read exactly as before.
+
+**Three shipped readings moved, and every one of the three was a measurement
+fault rather than a design one.**
+
+| test | what broke | what it turned out to be |
+| --- | --- | --- |
+| a shape earns its power | margin fell from +56 to +7 | the depth: **+42 and +41** over 2400 and 6000 battles |
+| a strip earns its slot | the wall healed *more* with the strip | the figure was a **total**, not a rate against battle length |
+| a cleanser earns its slot | 485‰ and 460‰ fell to 429‰ and 430‰ | real, and it had fallen at every earlier repair too → `DAT-011` |
+
+⚠️ **A margin needs more battles than a level does.** The bombardier's claim is
+"the shape is worth at least thirty", and a rate read off six hundred battles
+moves twenty either way — so at the package's usual depth that test was reading
+the noise as often as the effect, and the +56 it happened to read before the fix
+was luck rather than evidence. It has its own `shapeSeeds` now.
+
+⚠️ **A regeneration is health per turn, so comparing totals across two arms
+compares their battle lengths.** The strip test did that for as long as it
+existed. The stripped arm ran 48,003 turns against the unstripped arm's 32,646,
+so its *total* healing came out higher while its per-turn healing was a fifth
+lower. The row reads a rate now, at four times the depth: **25 a turn against
+35**, a cut of just under a third. "Halves it at least" was never established —
+the old number said so only because the two lengths happened to be close. The
+*shielding* row's healing is now asserted to be **level**, which the test's own
+doc had claimed for as long as it existed and nothing checked, and which is level
+only per turn — 11 a turn against 12, where the totals are 343,981 and 420,984.
+That is the assertion that makes the normalisation mutation-provable.

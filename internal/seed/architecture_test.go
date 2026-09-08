@@ -63,7 +63,7 @@ import (
 // annoying: a different skill book is a different battle, and two peers on
 // different data are already refused at the gate by the data digest. What it must
 // never do is differ between two machines running the same commit.
-const theWholeBattleDigest = "3ed1b9ffd84ac1d1876530bc48a2bd893fa7f82afefeaa627d4cc2493cdecee0"
+const theWholeBattleDigest = "33cb730dd32bc9e9d937ec46a068597de406bda9290c85440ea32b594291c4c0"
 
 // TestTheEventDigestIsTheSameOnEveryArchitecture is the assumption PvP rests on,
 // pinned.

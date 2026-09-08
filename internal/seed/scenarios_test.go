@@ -112,7 +112,7 @@ func TestShippedPatternBook(t *testing.T) {
 	for _, shape := range book.Patterns() {
 		best := 0
 		for _, centre := range hex.SideCells(hex.SideEnemy) {
-			if covered := len(shape.Targets(centre)); covered > best {
+			if covered := len(shape.Targets(centre, hex.SideAlly)); covered > best {
 				best = covered
 			}
 		}
@@ -266,7 +266,7 @@ func shapeCoverage(shape pattern.Pattern) (average, full int64) {
 			}
 			aims++
 			hits := int64(0)
-			for _, cell := range shape.Targets(primary) {
+			for _, cell := range shape.Targets(primary, hex.SideAlly) {
 				if occupied[cell] {
 					hits++
 				}
@@ -508,7 +508,7 @@ func writeAreaScenario(b *strings.Builder, rules combat.Rules, book *pattern.Boo
 		mean, full := shapeCoverage(shape)
 		best, worst := 0, 99
 		for _, centre := range hex.SideCells(hex.SideEnemy) {
-			covered := len(shape.Targets(centre))
+			covered := len(shape.Targets(centre, hex.SideAlly))
 			if covered > best {
 				best = covered
 			}
@@ -528,7 +528,7 @@ func writeAreaScenario(b *strings.Builder, rules combat.Rules, book *pattern.Boo
 	for _, shape := range shapes {
 		fmt.Fprintf(b, "%-12s", shape.Name)
 		for _, centre := range hex.SideCells(hex.SideEnemy) {
-			fmt.Fprintf(b, "%6d", len(shape.Targets(centre)))
+			fmt.Fprintf(b, "%6d", len(shape.Targets(centre, hex.SideAlly)))
 		}
 		b.WriteString("\n")
 	}

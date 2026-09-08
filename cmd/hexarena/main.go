@@ -497,7 +497,7 @@ func choose(current *session, prompt *battle.Prompt, input *bufio.Scanner) (outc
 			fmt.Printf("  %s cannot be used: %s\n", option.Skill, option.Reason)
 			continue
 		}
-		aim, chosen, wantsOut := chooseAim(current, option, input)
+		aim, chosen, wantsOut := chooseAim(current, prompt, option, input)
 		if wantsOut {
 			return quit, nil
 		}
@@ -514,15 +514,34 @@ func choose(current *session, prompt *battle.Prompt, input *bufio.Scanner) (outc
 	}
 }
 
+// casterSideOf is the half of the board the unit being asked stands on, which is
+// the frame an area shape is walked in.
+//
+// ⚠️ It reads the prompt it is handed rather than session.pending, which the
+// loop clears the moment it takes a turn — so a reading from there would be
+// hex.SideAlly on every turn of the game and would be right only because this
+// client plays the ally half.
+func casterSideOf(fight *battle.Battle, prompt *battle.Prompt) hex.Side {
+	if fight == nil || prompt == nil {
+		return hex.SideAlly
+	}
+	unit, known := fight.Unit(prompt.Unit)
+	if !known {
+		return hex.SideAlly
+	}
+	return unit.Side
+}
+
 // chooseAim asks where a skill is pointed. A skill with one legal cell does not
 // ask at all, because a question with one answer is not a decision.
-func chooseAim(current *session, option battle.Option, input *bufio.Scanner) (aim hex.Offset, chosen, wantsOut bool) {
+func chooseAim(current *session, prompt *battle.Prompt, option battle.Option,
+	input *bufio.Scanner) (aim hex.Offset, chosen, wantsOut bool) {
 	if len(option.Aims) == 1 {
 		return option.Aims[0], true, false
 	}
 	for {
 		fmt.Printf("\naim %s at:\n", option.Skill)
-		fmt.Println(tui.Aims(current.fight, option, current.tags))
+		fmt.Println(tui.Aims(current.fight, option, current.tags, casterSideOf(current.fight, prompt)))
 		fmt.Println("  b) go back")
 		answer, ok := ask(input, "> ")
 		if !ok {

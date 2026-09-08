@@ -95,9 +95,15 @@ func (l *Library) ShapeCoverage(shape, target string) (ShapeCoverage, error) {
 		return ShapeCoverage{}, err
 	}
 	primary := ShapeDiagramCell()
-	cells := found.Targets(primary)
+	// Drawn in the ALLY's frame, which is the frame the direction names are
+	// written in: a diagram of a shape has no caster, so the question "which way
+	// does up point" has to be answered by a convention rather than by a board,
+	// and `up` meaning up is the only convention the data files could be read
+	// against. An enemy holding the same shape catches its reflection. → package
+	// pattern's doc.
+	cells := found.Targets(primary, hex.SideAlly)
 	if aimedAt.CrossesSides() {
-		cells = found.TargetsAcross(primary)
+		cells = found.TargetsAcross(primary, hex.SideAlly)
 	}
 	coverage := ShapeCoverage{
 		Shape: found.Name, AimedAt: aimedAt, Primary: primary, Max: found.MaxTargets(),
@@ -125,11 +131,16 @@ func (l *Library) ShapeCoverage(shape, target string) (ShapeCoverage, error) {
 // this, so the cells drawn are the cells the resolution would walk. Same
 // predicate, three callers, one declaration — skill.Side.CrossesSides.
 //
+// ⚠️ caster is a different question and IS passed in: which half of the board
+// holds the unit about to cast. It is the frame the shape's steps are read in,
+// so a screen drawing an enemy's aim with the ally's frame would promise the
+// wrong cells. → package pattern's doc, and TODO.md ENG-012.
+//
 // ⚠️ It answers about CELLS and not about damage. A cell in the result may hold
 // a unit the resolution then refuses — a burrowed target takes nothing off a
 // splash it is standing in — so a caller may say "this reaches these cells" and
 // may not say "these will be hit".
-func (l *Library) AimCoverage(id string, aim hex.Offset) (ShapeCoverage, error) {
+func (l *Library) AimCoverage(id string, aim hex.Offset, caster hex.Side) (ShapeCoverage, error) {
 	declared, err := l.skills.Lookup(id)
 	if err != nil {
 		return ShapeCoverage{}, err
@@ -138,9 +149,9 @@ func (l *Library) AimCoverage(id string, aim hex.Offset) (ShapeCoverage, error) 
 	if err != nil {
 		return ShapeCoverage{}, err
 	}
-	cells := shape.Targets(aim)
+	cells := shape.Targets(aim, caster)
 	if declared.Target.CrossesSides() {
-		cells = shape.TargetsAcross(aim)
+		cells = shape.TargetsAcross(aim, caster)
 	}
 	coverage := ShapeCoverage{
 		Shape: shape.Name, AimedAt: declared.Target, Primary: aim, Max: shape.MaxTargets(),

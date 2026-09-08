@@ -4,9 +4,9 @@ trận đấu  seed 1  diễn biến 71-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -46,12 +46,12 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | a battle over =====
 
-trận đấu  seed 1  diễn biến 224-228/228
+trận đấu  seed 1  diễn biến 223-227/227
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t) +1
 E1   Bloom                [#######...]  1866/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -441,9 +441,9 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 71-71/
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -464,9 +464,9 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 67-71/
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -487,9 +487,9 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 67-71/
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -556,9 +556,9 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -575,20 +575,20 @@ nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 124-124/163
+trận đấu  seed 1  diễn biến 123-123/162
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        [#.........]    97/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
-A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#.........]    60/3100     90   phalanx x2 (always), tidewell x2 (always)
+A3   Example Adept        [########..]  2507/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    E1   A2 resists poison <trúng độc> (65%)
+    E1   is blocked by A2, 0 charges left
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
@@ -625,9 +625,9 @@ trận đấu  seed 1  diễn biến 71-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -694,9 +694,9 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
@@ -717,9 +717,9 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
@@ -1177,9 +1177,9 @@ trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 67-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -1232,9 +1232,9 @@ trận đấu  seed 1  diễn biến 44-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -1242,10 +1242,10 @@ E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison <trúng độc> (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison <trúng độc> x1 on A3, now 2
+    E3   A3 resists poison <trúng độc> (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison <trúng độc> x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
@@ -1263,7 +1263,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -1337,7 +1337,7 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a battle over =====
 
-trận đấu  seed 1  diễn biến 197-228/228
+trận đấu  seed 1  diễn biến 196-227/227
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1351,7 +1351,7 @@ trận đấu  seed 1  diễn biến 197-228/228
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t) +1
 E1   Bloom                [#######...]  1866/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -1361,17 +1361,17 @@ next: E3 E1 E2 E3 E1 E2
 
   E1  turn 9
     E1  uses venom_fang <nanh độc> at 2,2
-    E1   hits A3 for 219, 1348 left
+    E1   hits A3 for 219, 1412 left
     E1   poison <trúng độc> x0 on A3, now 3, 1 wasted at the cap
   
   E2  turn 9
     E2  uses venom_fang <nanh độc> at 2,2
-    E2   hits A3 for 219, 1129 left
+    E2   hits A3 for 219, 1193 left
     E2   poison <trúng độc> x0 on A3, now 3, 1 wasted at the cap
   
   E3  turn 9
     E3  uses venom_fang <nanh độc> at 2,2
-    E3   hits A3 for 219, 910 left
+    E3   hits A3 for 219, 974 left
     E3   poison <trúng độc> x0 on A3, now 3, 1 wasted at the cap
   
   A3  turn 4
@@ -1381,7 +1381,7 @@ next: E3 E1 E2 E3 E1 E2
   
   E1  turn 10
     E1  uses arc_bolt <hồ quang> at 2,2
-    E1   hits A3 for 618 (doubly weak!), 19 left
+    E1   hits A3 for 618 (doubly weak!), 83 left
     E1   stun <choáng> x1 on A3, now 1
   
   E2  turn 10
@@ -2353,9 +2353,9 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 44-71/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -2363,10 +2363,10 @@ E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison <trúng độc> (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison <trúng độc> x1 on A3, now 2
+    E3   A3 resists poison <trúng độc> (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison <trúng độc> x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
@@ -2384,7 +2384,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -2412,9 +2412,9 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 40-71/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -2426,10 +2426,10 @@ next: A3 E1 E2 E3 E1 E2
     E3  uses creeping_rot <mục rữa> at 2,1
     E3   hits A2 for 128, 2716 left
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison <trúng độc> (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison <trúng độc> x1 on A3, now 2
+    E3   A3 resists poison <trúng độc> (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison <trúng độc> x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
@@ -2447,7 +2447,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -2471,9 +2471,9 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 40-71/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -2485,10 +2485,10 @@ next: A3 E1 E2 E3 E1 E2
     E3  uses creeping_rot <mục rữa> at 2,1
     E3   hits A2 for 128, 2716 left
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison <trúng độc> (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison <trúng độc> x1 on A3, now 2
+    E3   A3 resists poison <trúng độc> (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison <trúng độc> x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
@@ -2506,7 +2506,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -2648,16 +2648,16 @@ trận đấu  seed 1  diễn biến 48-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    E3   poison <trúng độc> x1 on A3, now 2
+    E3   poison <trúng độc> x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
@@ -2675,7 +2675,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -2694,7 +2694,7 @@ nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 124-151/163
+trận đấu  seed 1  diễn biến 123-150/162
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2708,42 +2708,42 @@ trận đấu  seed 1  diễn biến 124-151/163
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        [#.........]    97/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
-A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#.........]    60/3100     90   phalanx x2 (always), tidewell x2 (always)
+A3   Example Adept        [########..]  2507/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
 next: E1 E2 E3 E1 E2 E3
 
+    E1   is blocked by A2, 0 charges left
     E1   A2 resists poison <trúng độc> (65%)
     E1   is blocked by A3, 0 charges left
     E1   poison <trúng độc> x1 on A3, now 1
   
   E2  turn 5
-    E2  uses creeping_rot <mục rữa> at 2,2
-    E2   hits A3 for 128, 2598 left
-    E2   A3 resists poison <trúng độc> (65%)
-    E2   is blocked by A2, 0 charges left
-    E2   poison <trúng độc> x1 on A2, now 1
+    E2  uses creeping_rot <mục rữa> at 2,1
+    E2   hits A2 for 128, 2042 left
+    E2   A2 resists poison <trúng độc> (65%)
+    E2   hits A3 for 64, 2753 left
+    E2   poison <trúng độc> x1 on A3, now 2
   
   E3  turn 5
     E3  uses creeping_rot <mục rữa> at 2,1
-    E3   hits A2 for 128, 2042 left
+    E3   hits A2 for 128, 1914 left
     E3   A2 resists poison <trúng độc> (65%)
-    E3   hits A3 for 64, 2534 left
+    E3   hits A3 for 64, 2689 left
     E3   A3 resists poison <trúng độc> (65%)
   
   E1  turn 6
     E1  uses arc_bolt <hồ quang> at 2,1
-    E1   hits A2 for 618 (doubly weak!), 1424 left
+    E1   hits A2 for 618 (doubly weak!), 1296 left
     E1   stun <choáng> x1 on A2, now 1
   
   E2  turn 6
     E2  uses arc_bolt <hồ quang> at 2,1
-    E2   hits A2 for 618 (doubly weak!), 806 left
+    E2   hits A2 for 618 (doubly weak!), 678 left
     E2   A2 resists stun <choáng> (25%)
-  
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
@@ -2825,9 +2825,9 @@ trận đấu  seed 1  diễn biến 44-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -2835,10 +2835,10 @@ E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison <trúng độc> (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison <trúng độc> x1 on A3, now 2
+    E3   A3 resists poison <trúng độc> (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison <trúng độc> x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
@@ -2856,7 +2856,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -3002,9 +3002,9 @@ trận đấu  seed 1  diễn biến 49-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -3028,7 +3028,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -3061,9 +3061,9 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 49-71/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -3087,7 +3087,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -4241,9 +4241,9 @@ trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 40-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -4255,10 +4255,10 @@ next: A3 E1 E2 E3 E1 E2
     E3  uses creeping_rot <mục rữa> at 2,1
     E3   hits A2 for 128, 2716 left
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison <trúng độc> (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison <trúng độc> x1 on A3, now 2
+    E3   A3 resists poison <trúng độc> (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison <trúng độc> x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
@@ -4276,7 +4276,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 91 from poison <trúng độc> x1
+    A1  takes 182 from poison <trúng độc> x2
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
@@ -4350,9 +4350,9 @@ the battle  seed 1  log 71-71/71
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -4392,12 +4392,12 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | a battle over =====
 
-the battle  seed 1  log 224-228/228
+the battle  seed 1  log 223-227/227
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t) +1
 E1   Bloom                [#######...]  1866/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -4787,9 +4787,9 @@ the battle  seed 1  your turn 1:12 · them 1:30  log 71-71/71
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -4810,9 +4810,9 @@ the battle  seed 1  you 1:30 · their turn 1:12  log 67-71/71
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -4833,9 +4833,9 @@ the battle  seed 1  you 1:30 · their turn 1:12  log 67-71/71
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -4902,9 +4902,9 @@ the battle  seed 1
 the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -4921,20 +4921,20 @@ the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a scrolled battle log =====
 
-the battle  seed 1  log 124-124/163
+the battle  seed 1  log 123-123/162
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        [#.........]    97/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
-A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#.........]    60/3100     90   phalanx x2 (always), tidewell x2 (always)
+A3   Example Adept        [########..]  2507/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    E1   A2 resists poison (65%)
+    E1   is blocked by A2, 0 charges left
 
 A3 Example Adept, turn 3
 > strike      100% attack · range 1
@@ -4971,9 +4971,9 @@ the battle  seed 1  log 71-71/71
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -5040,9 +5040,9 @@ the battle  seed 1
 the window is too short for: board, 1 unit, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
@@ -5063,9 +5063,9 @@ the battle  seed 1  your turn 1:12 · them 1:30
 the window is too short for: board, 1 unit, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
@@ -5523,9 +5523,9 @@ the battle  seed 1  A on turn 1:12 · E 1:30  log 67-71/71
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -5578,9 +5578,9 @@ the battle  seed 1  log 44-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -5588,10 +5588,10 @@ E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison x1 on A3, now 2
+    E3   A3 resists poison (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
@@ -5609,7 +5609,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -5683,7 +5683,7 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a battle over =====
 
-the battle  seed 1  log 197-228/228
+the battle  seed 1  log 196-227/227
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5697,7 +5697,7 @@ the battle  seed 1  log 197-228/228
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 A3   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t) +1
 E1   Bloom                [#######...]  1866/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -5707,17 +5707,17 @@ next: E3 E1 E2 E3 E1 E2
 
   E1  turn 9
     E1  uses venom_fang at 2,2
-    E1   hits A3 for 219, 1348 left
+    E1   hits A3 for 219, 1412 left
     E1   poison x0 on A3, now 3, 1 wasted at the cap
   
   E2  turn 9
     E2  uses venom_fang at 2,2
-    E2   hits A3 for 219, 1129 left
+    E2   hits A3 for 219, 1193 left
     E2   poison x0 on A3, now 3, 1 wasted at the cap
   
   E3  turn 9
     E3  uses venom_fang at 2,2
-    E3   hits A3 for 219, 910 left
+    E3   hits A3 for 219, 974 left
     E3   poison x0 on A3, now 3, 1 wasted at the cap
   
   A3  turn 4
@@ -5727,7 +5727,7 @@ next: E3 E1 E2 E3 E1 E2
   
   E1  turn 10
     E1  uses arc_bolt at 2,2
-    E1   hits A3 for 618 (doubly weak!), 19 left
+    E1   hits A3 for 618 (doubly weak!), 83 left
     E1   stun x1 on A3, now 1
   
   E2  turn 10
@@ -6699,9 +6699,9 @@ the battle  seed 1  your turn 1:12 · them 1:30  log 44-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -6709,10 +6709,10 @@ E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison x1 on A3, now 2
+    E3   A3 resists poison (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
@@ -6730,7 +6730,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -6758,9 +6758,9 @@ the battle  seed 1  you 1:30 · their turn 1:12  log 40-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -6772,10 +6772,10 @@ next: A3 E1 E2 E3 E1 E2
     E3  uses creeping_rot at 2,1
     E3   hits A2 for 128, 2716 left
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison x1 on A3, now 2
+    E3   A3 resists poison (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
@@ -6793,7 +6793,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -6817,9 +6817,9 @@ the battle  seed 1  you 1:30 · their turn 1:12  log 40-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -6831,10 +6831,10 @@ next: A3 E1 E2 E3 E1 E2
     E3  uses creeping_rot at 2,1
     E3   hits A2 for 128, 2716 left
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison x1 on A3, now 2
+    E3   A3 resists poison (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
@@ -6852,7 +6852,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -6994,16 +6994,16 @@ the battle  seed 1  log 48-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    E3   poison x1 on A3, now 2
+    E3   poison x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
@@ -7021,7 +7021,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -7040,7 +7040,7 @@ the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a scrolled battle log =====
 
-the battle  seed 1  log 124-151/163
+the battle  seed 1  log 123-150/162
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -7054,42 +7054,42 @@ the battle  seed 1  log 124-151/163
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A2   Example Adept        [#.........]    97/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
-A3   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#.........]    60/3100     90   phalanx x2 (always), tidewell x2 (always)
+A3   Example Adept        [########..]  2507/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 
 next: E1 E2 E3 E1 E2 E3
 
+    E1   is blocked by A2, 0 charges left
     E1   A2 resists poison (65%)
     E1   is blocked by A3, 0 charges left
     E1   poison x1 on A3, now 1
   
   E2  turn 5
-    E2  uses creeping_rot at 2,2
-    E2   hits A3 for 128, 2598 left
-    E2   A3 resists poison (65%)
-    E2   is blocked by A2, 0 charges left
-    E2   poison x1 on A2, now 1
+    E2  uses creeping_rot at 2,1
+    E2   hits A2 for 128, 2042 left
+    E2   A2 resists poison (65%)
+    E2   hits A3 for 64, 2753 left
+    E2   poison x1 on A3, now 2
   
   E3  turn 5
     E3  uses creeping_rot at 2,1
-    E3   hits A2 for 128, 2042 left
+    E3   hits A2 for 128, 1914 left
     E3   A2 resists poison (65%)
-    E3   hits A3 for 64, 2534 left
+    E3   hits A3 for 64, 2689 left
     E3   A3 resists poison (65%)
   
   E1  turn 6
     E1  uses arc_bolt at 2,1
-    E1   hits A2 for 618 (doubly weak!), 1424 left
+    E1   hits A2 for 618 (doubly weak!), 1296 left
     E1   stun x1 on A2, now 1
   
   E2  turn 6
     E2  uses arc_bolt at 2,1
-    E2   hits A2 for 618 (doubly weak!), 806 left
+    E2   hits A2 for 618 (doubly weak!), 678 left
     E2   A2 resists stun (25%)
-  
 
 A3 Example Adept, turn 3
 > strike      100% attack · range 1
@@ -7171,9 +7171,9 @@ the battle  seed 1  log 44-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -7181,10 +7181,10 @@ E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison x1 on A3, now 2
+    E3   A3 resists poison (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
@@ -7202,7 +7202,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -7348,9 +7348,9 @@ the battle  seed 1  log 49-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -7374,7 +7374,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -7407,9 +7407,9 @@ the battle  seed 1  your turn 1:12 · them 1:30  log 49-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -7433,7 +7433,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   
@@ -8587,9 +8587,9 @@ the battle  seed 1  A on turn 1:12 · E 1:30  log 40-71/71
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A1   Example Adept        [##........]   872/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (2t)
 A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
-A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison (3t)
 E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
 E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
@@ -8601,10 +8601,10 @@ next: A3 E1 E2 E3 E1 E2
     E3  uses creeping_rot at 2,1
     E3   hits A2 for 128, 2716 left
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 64, 2908 left
-    E3   A1 resists poison (65%)
     E3   hits A3 for 64, 2908 left
-    E3   poison x1 on A3, now 2
+    E3   A3 resists poison (65%)
+    E3   hits A1 for 64, 2908 left
+    E3   poison x1 on A1, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
@@ -8622,7 +8622,7 @@ next: A3 E1 E2 E3 E1 E2
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 91 from poison x1
+    A1  takes 182 from poison x2
     A1  stun wears off
     A1  loses the turn (stun)
   

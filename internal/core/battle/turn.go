@@ -755,11 +755,17 @@ func (b *Battle) taunters(unit *Unit) []hex.Offset {
 // rating one — because they have to agree: an aim rated over cells the resolution
 // would not touch is a hint that lies, and the mistake would only show on the
 // skills aimed at both sides, which are the ones nothing else covers.
-func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset) []hex.Offset {
+// caster is the side holding the skill, and it is the frame the shape's steps
+// are read in rather than the side the aim lands on: a shape spreads away from
+// whoever cast it, and reading it in board coordinates made an enemy's `pierce`
+// spread back towards the midline. → package pattern's own doc, and TODO.md
+// ENG-012.
+func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset,
+	caster hex.Side) []hex.Offset {
 	if known.Target.CrossesSides() {
-		return shape.TargetsAcross(aim)
+		return shape.TargetsAcross(aim, caster)
 	}
-	return shape.Targets(aim)
+	return shape.Targets(aim, caster)
 }
 
 // chainFrom is every unit the current reaches: the carrier the skill is aimed
@@ -989,7 +995,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		return err
 	}
 	var bitten []*Unit
-	for position, cell := range covers(shape, known, aim) {
+	for position, cell := range covers(shape, known, aim, unit.Side) {
 		target := b.occupant(cell)
 		if target == nil {
 			continue

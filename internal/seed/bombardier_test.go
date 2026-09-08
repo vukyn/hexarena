@@ -21,6 +21,18 @@ import (
 // is worth seventy-two.
 const shapeMargin = 30
 
+// shapeSeeds is the depth this reading is taken at, and it is four times the
+// rest of the package's because this claim is a MARGIN and not a level.
+//
+// ⚠️ **At menderSeeds it read the noise.** Measured after ENG-012 closed the
+// board's mirror, the same swap on the same squads: +7 over 300 seeds, +42 over
+// 1200 and +41 over 3000. The +7 is what six hundred battles happened to say and
+// it would have failed a claim that is true; the reading before ENG-012 was +56
+// at the same depth, and the gap between those two is the instrument rather than
+// the game. A margin of thirty needs a rate steadier than plus or minus twenty,
+// and this is what that costs.
+const shapeSeeds = 1200
+
 // TestAShapeEarnsItsPowerWhereASparCannotSeeIt prices the thing the bombardier
 // preset is, against the tool that is structurally blind to it — and then prices
 // the answer to it, which is the half this test did not have.
@@ -50,6 +62,16 @@ const shapeMargin = 30
 // shape wins; against one of nearly twice the power (`flash_cannon`) it still
 // loses. A splash lands at half, so a column caught twice is worth one and a
 // half hits, and that is the whole of what a pattern buys.
+//
+// ⚠️ **Re-taken after ENG-012, at four times the depth.** Closing the board's
+// mirror — an enemy's shape is the reflection of an ally's now, rather than the
+// same absolute steps — moved this reading, and the first thing it moved was the
+// noise: the margin read +56 before and +7 after over six hundred battles, and
+// +42 and +41 over 2400 and 6000. So the claim holds and the depth was the
+// problem. `discharge`'s own shape is `column`, which is unchanged by the fix —
+// up and down exchange and the pair is the same set — so what moved here is the
+// board around it, chiefly the shared wall's `bubble`, the one `arc_down` in the
+// book. → shapeSeeds.
 //
 // ⚠️⚠️ **A WALL STANDING IN THE COLUMN IS THE ANSWER TO A SHAPE, and this test
 // used to hide that.** Its opposition carries `withdraw`, and until the rating
@@ -140,8 +162,8 @@ func TestAShapeEarnsItsPowerWhereASparCannotSeeIt(t *testing.T) {
 func rateAgainst(t *testing.T, books battle.Books, characters *cast.Book,
 	home, away placement.Squad) int {
 	t.Helper()
-	wins, losses, endless := fightSquads(t, books, characters, home, away)
-	refuseTooManyStalls(t, home.ID, endless, menderSeeds*2)
+	wins, losses, endless := fightSquadsOver(t, books, characters, home, away, shapeSeeds)
+	refuseTooManyStalls(t, home.ID, endless, shapeSeeds*2)
 	decided := wins + losses
 	if decided == 0 {
 		t.Fatalf("%s: no battle was decided, so there is no rate to read", home.ID)

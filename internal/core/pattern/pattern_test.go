@@ -67,7 +67,7 @@ func TestTargetsStayOnTheTargetsOwnSide(t *testing.T) {
 	shape := pattern.Pattern{Name: "wedge_left", Splash: [][]pattern.Direction{
 		{pattern.UpperLeft}, {pattern.LowerLeft},
 	}}
-	got := shape.Targets(hex.Offset{Col: 3, Row: 1})
+	got := shape.Targets(hex.Offset{Col: 3, Row: 1}, hex.SideAlly)
 	if len(got) != 1 || got[0] != (hex.Offset{Col: 3, Row: 1}) {
 		t.Errorf("aiming left from the enemy frontline covered %v, want the primary alone", got)
 	}
@@ -83,11 +83,11 @@ func TestTargetsDropsCellsOffTheBoard(t *testing.T) {
 		{pattern.Up}, {pattern.Down},
 	}}
 	// Row 0 has nothing above it, so the shape covers two cells rather than three.
-	top := shape.Targets(hex.Offset{Col: 4, Row: 0})
+	top := shape.Targets(hex.Offset{Col: 4, Row: 0}, hex.SideAlly)
 	if len(top) != 2 {
 		t.Errorf("aiming at the top row covered %v, want two cells", top)
 	}
-	middle := shape.Targets(hex.Offset{Col: 4, Row: 1})
+	middle := shape.Targets(hex.Offset{Col: 4, Row: 1}, hex.SideAlly)
 	if len(middle) != 3 {
 		t.Errorf("aiming at the middle row covered %v, want three cells", middle)
 	}
@@ -98,7 +98,7 @@ func TestTargetsDropsCellsOffTheBoard(t *testing.T) {
 
 func TestTargetsRejectsAPrimaryOffTheBoard(t *testing.T) {
 	shape := pattern.Pattern{Name: "single"}
-	if got := shape.Targets(hex.Offset{Col: 9, Row: 9}); got != nil {
+	if got := shape.Targets(hex.Offset{Col: 9, Row: 9}, hex.SideAlly); got != nil {
 		t.Errorf("a primary off the board covered %v, want nothing", got)
 	}
 }
@@ -108,7 +108,7 @@ func TestTargetsDeduplicates(t *testing.T) {
 	shape := pattern.Pattern{Name: "loop", Splash: [][]pattern.Direction{
 		{pattern.Up, pattern.Down},
 	}}
-	got := shape.Targets(hex.Offset{Col: 4, Row: 1})
+	got := shape.Targets(hex.Offset{Col: 4, Row: 1}, hex.SideAlly)
 	if len(got) != 1 {
 		t.Errorf("a chain returning to the primary covered %v, want one cell", got)
 	}
@@ -118,7 +118,7 @@ func TestPierceReachesPastItsNeighbour(t *testing.T) {
 	shape := pattern.Pattern{Name: "pierce", Splash: [][]pattern.Direction{
 		{pattern.UpperRight}, {pattern.UpperRight, pattern.UpperRight},
 	}}
-	got := shape.Targets(hex.Offset{Col: 3, Row: 2})
+	got := shape.Targets(hex.Offset{Col: 3, Row: 2}, hex.SideAlly)
 	if len(got) != 3 {
 		t.Fatalf("the shape covered %v, want three cells", got)
 	}
@@ -232,8 +232,8 @@ func TestTargetsAcrossKeepsWhatTheMidlineDrops(t *testing.T) {
 	// The enemy frontline: both of the shape's cells sit one column back, which
 	// is the caster's own half.
 	frontline := hex.Offset{Col: 3, Row: 1}
-	stopped := wedge.Targets(frontline)
-	crossed := wedge.TargetsAcross(frontline)
+	stopped := wedge.Targets(frontline, hex.SideAlly)
+	crossed := wedge.TargetsAcross(frontline, hex.SideAlly)
 	if len(stopped) != 1 {
 		t.Errorf("the midline let %v through from %v, want the primary alone",
 			stopped, frontline)
@@ -254,17 +254,17 @@ func TestTargetsAcrossKeepsWhatTheMidlineDrops(t *testing.T) {
 	// Everything else the walk drops, it still drops. The board's edge is not a
 	// side.
 	edge := hex.Offset{Col: 0, Row: 1}
-	if got := wedge.TargetsAcross(edge); len(got) != 1 {
+	if got := wedge.TargetsAcross(edge, hex.SideAlly); len(got) != 1 {
 		t.Errorf("crossing the midline also crossed the board's edge: %v", got)
 	}
-	if got := wedge.TargetsAcross(hex.Offset{Col: -1, Row: 0}); got != nil {
+	if got := wedge.TargetsAcross(hex.Offset{Col: -1, Row: 0}, hex.SideAlly); got != nil {
 		t.Errorf("a primary off the board caught %v, want nothing", got)
 	}
 	// A shape whose chains land on one cell twice still reports it once.
 	twice := pattern.Pattern{Name: "twice", Splash: [][]pattern.Direction{
 		{pattern.UpperLeft}, {pattern.UpperLeft},
 	}}
-	if got := twice.TargetsAcross(frontline); len(got) != 2 {
+	if got := twice.TargetsAcross(frontline, hex.SideAlly); len(got) != 2 {
 		t.Errorf("a repeated cell was counted twice: %v", got)
 	}
 
@@ -274,7 +274,7 @@ func TestTargetsAcrossKeepsWhatTheMidlineDrops(t *testing.T) {
 		{pattern.Up}, {pattern.Down},
 	}}
 	for _, cell := range hex.Cells() {
-		if got, want := column.TargetsAcross(cell), column.Targets(cell); !equalOffsets(got, want) {
+		if got, want := column.TargetsAcross(cell, hex.SideAlly), column.Targets(cell, hex.SideAlly); !equalOffsets(got, want) {
 			t.Errorf("from %v the two walks give %v and %v", cell, got, want)
 		}
 	}

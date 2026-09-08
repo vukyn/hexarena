@@ -22,21 +22,21 @@ A1 Mew, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a battle over =====
-trận đấu  seed 1  diễn biến 502-506/506
+trận đấu  seed 1  diễn biến 588-592/592
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (2t)
-A2   Venusaur             fallen                     100   phalanx x2 (always), expose (1t), stun (1t)
-A3   Machamp              fallen                      85   phalanx x2 (always), heft x2 (4t)
-E1   Mew                  [###.......]  1248/3600    110   evasive (always), phalanx x2 (always), poison (2t)
-E2   Venusaur             [#####.....]  2134/3800    100   phalanx x2 (always)
-E3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t), poison (2t)
+A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always)
+A2   Venusaur             fallen                     100   phalanx x2 (always)
+A3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t)
+E1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (1t)
+E2   Venusaur             [###.......]  1474/3800    100   phalanx x2 (always)
+E3   Machamp              fallen                      85   phalanx x2 (always), heft x4 (4t)
 
-next: E2 E1 E2 E1 E2 E1
+next: E2 E2 E2 E2 E2 E2
 
-    E1   hits A2 for 274, 0 left
-    E1   stun <choáng> x1 on A2, now 1
+    E2   hits A2 for 141, 0 left
+    E2  drains 84, 60% of what it dealt, 1474 hp left
     A2  falls at 2,1
   
   the enemy side wins
@@ -579,8 +579,8 @@ cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
-A2   Venusaur             [#########.]  3447/3800    100   phalanx x2 (always)
-A3   Machamp              [#.........]   245/3300     85   phalanx x2 (always), heft (4t)
+A2   Venusaur             [########..]  3136/3800    100   phalanx x2 (always)
+A3   Machamp              [##........]   744/3300     85   phalanx x2 (always), heft (4t)
 E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
 E2   Venusaur             [########..]  3190/3800    100   phalanx x2 (always)
 E3   Machamp              [#####.....]  1760/3300     85   phalanx x2 (always), heft x2 (4t), stun (1t)
@@ -1488,7 +1488,7 @@ A1 Mew, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a battle over =====
-trận đấu  seed 1  diễn biến 475-506/506
+trận đấu  seed 1  diễn biến 561-592/592
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1498,47 +1498,47 @@ trận đấu  seed 1  diễn biến 475-506/506
 /  \__/  \__/  \__/
 \__/  \__/E2\__/  \
 /  \__/  \__/  \__/
-\__/  \__/E1\__/  \
+\__/  \__/  \__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (2t)
-A2   Venusaur             fallen                     100   phalanx x2 (always), expose (1t), stun (1t)
-A3   Machamp              fallen                      85   phalanx x2 (always), heft x2 (4t)
-E1   Mew                  [###.......]  1248/3600    110   evasive (always), phalanx x2 (always), poison (2t)
-E2   Venusaur             [#####.....]  2134/3800    100   phalanx x2 (always)
-E3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t), poison (2t)
+A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always)
+A2   Venusaur             fallen                     100   phalanx x2 (always)
+A3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t)
+E1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (1t)
+E2   Venusaur             [###.......]  1474/3800    100   phalanx x2 (always)
+E3   Machamp              fallen                      85   phalanx x2 (always), heft x4 (4t)
 
-next: E2 E1 E2 E1 E2 E1
+next: E2 E2 E2 E2 E2 E2
 
-    A2   hits E1 for 171 (through 40% of the armour), 1353 left
-    A2   hits E2 for 83 (through 40% of the armour), 2217 left
-    A2   hits E2 for 83 (through 40% of the armour), 2134 left
+    E1  falls at 3,2
+    A2   hits E2 for 83 (through 40% of the armour), 1716 left
+    A2   hits E2 for 104 (through 40% of the armour) (critical), 1612 left
     E2   A2 is immune to poison <trúng độc>
   
-  E2  turn 20
+  E2  turn 23
+    E2  uses razor_leaf <phi diệp> at 2,1
+    E2   hits A2 for 166 (through 40% of the armour), 439 left
+    E2   hits A2 for 166 (through 40% of the armour), 273 left
+    A2   E2 is immune to poison <trúng độc>
+  
+  A2  turn 24
+    A2  uses vine_whip <roi dây leo> at 3,1
+    A2   hits E2 for 222, 1390 left
+    E2   A2 is immune to poison <trúng độc>
+  
+  E2  turn 24
     E2  uses vine_whip <roi dây leo> at 2,1
-    E2   hits A2 for 222, 310 left
+    E2   hits A2 for 222, 51 left
     A2   E2 is immune to poison <trúng độc>
   
-  E1  turn 23
-    E1  uses psychic <niệm lực> at 2,1
-    E1   hits A2 for 308, 2 left
-    E1   expose <phá giáp> x1 on A2, now 1
-    A2   E1 resists poison <trúng độc> (4%)
+  A2  turn 25
+    A2  uses leech_seed <hạt ký sinh> at 3,1
+    A2   misses E2 (91%)
   
-  A2  turn 21
-    A2  uses poison_powder <phấn độc> at 3,2
-    A2   poison <trúng độc> x1 on E1, now 1
-    A2   E2 is immune to poison <trúng độc>
-  
-  E2  turn 21
-    E2  loses the turn (nothing usable)
-  
-  E1  turn 24
-    E1  takes 105 from poison <trúng độc> x1
-    E1  uses body_slam <lấy thịt đè người> at 2,1
-    E1   hits A2 for 274, 0 left
-    E1   stun <choáng> x1 on A2, now 1
+  E2  turn 25
+    E2  uses leech_seed <hạt ký sinh> at 2,1
+    E2   hits A2 for 141, 0 left
+    E2  drains 84, 60% of what it dealt, 1474 hp left
     A2  falls at 2,1
   
   the enemy side wins
@@ -2255,8 +2255,8 @@ trận đấu  seed 1  diễn biến 89-116/128
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
-A2   Venusaur             [#########.]  3447/3800    100   phalanx x2 (always)
-A3   Machamp              [#.........]   245/3300     85   phalanx x2 (always), heft (4t)
+A2   Venusaur             [########..]  3136/3800    100   phalanx x2 (always)
+A3   Machamp              [##........]   744/3300     85   phalanx x2 (always), heft (4t)
 E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
 E2   Venusaur             [########..]  3190/3800    100   phalanx x2 (always)
 E3   Machamp              [#####.....]  1760/3300     85   phalanx x2 (always), heft x2 (4t), stun (1t)
@@ -2265,7 +2265,7 @@ next: E1 A3 E3 A2 E2 A1
 
   E2  turn 3
     E2  uses leech_seed <hạt ký sinh> at 2,2
-    E2   hits A3 for 230 (weak), 1027 left
+    E2   hits A3 for 230 (weak), 1260 left
     E2  drains 138, 60% of what it dealt, 3564 hp left
   
   A3  turn 3
@@ -2283,7 +2283,7 @@ next: E1 A3 E3 A2 E2 A1
   
   E1  turn 4
     E1  uses body_slam <lấy thịt đè người> at 2,2
-    E1   hits A3 for 250, 777 left
+    E1   hits A3 for 250, 1010 left
     E1   A3 resists stun <choáng> (25%)
   
   A2  turn 4
@@ -3707,21 +3707,21 @@ A1 Mew, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a battle over =====
-the battle  seed 1  log 502-506/506
+the battle  seed 1  log 588-592/592
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (2t)
-A2   Venusaur             fallen                     100   phalanx x2 (always), expose (1t), stun (1t)
-A3   Machamp              fallen                      85   phalanx x2 (always), heft x2 (4t)
-E1   Mew                  [###.......]  1248/3600    110   evasive (always), phalanx x2 (always), poison (2t)
-E2   Venusaur             [#####.....]  2134/3800    100   phalanx x2 (always)
-E3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t), poison (2t)
+A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always)
+A2   Venusaur             fallen                     100   phalanx x2 (always)
+A3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t)
+E1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (1t)
+E2   Venusaur             [###.......]  1474/3800    100   phalanx x2 (always)
+E3   Machamp              fallen                      85   phalanx x2 (always), heft x4 (4t)
 
-next: E2 E1 E2 E1 E2 E1
+next: E2 E2 E2 E2 E2 E2
 
-    E1   hits A2 for 274, 0 left
-    E1   stun x1 on A2, now 1
+    E2   hits A2 for 141, 0 left
+    E2  drains 84, 60% of what it dealt, 1474 hp left
     A2  falls at 2,1
   
   the enemy side wins
@@ -4253,8 +4253,8 @@ the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
-A2   Venusaur             [#########.]  3447/3800    100   phalanx x2 (always)
-A3   Machamp              [#.........]   245/3300     85   phalanx x2 (always), heft (4t)
+A2   Venusaur             [########..]  3136/3800    100   phalanx x2 (always)
+A3   Machamp              [##........]   744/3300     85   phalanx x2 (always), heft (4t)
 E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
 E2   Venusaur             [########..]  3190/3800    100   phalanx x2 (always)
 E3   Machamp              [#####.....]  1760/3300     85   phalanx x2 (always), heft x2 (4t), stun (1t)
@@ -5151,7 +5151,7 @@ A1 Mew, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a battle over =====
-the battle  seed 1  log 475-506/506
+the battle  seed 1  log 561-592/592
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5161,47 +5161,47 @@ the battle  seed 1  log 475-506/506
 /  \__/  \__/  \__/
 \__/  \__/E2\__/  \
 /  \__/  \__/  \__/
-\__/  \__/E1\__/  \
+\__/  \__/  \__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (2t)
-A2   Venusaur             fallen                     100   phalanx x2 (always), expose (1t), stun (1t)
-A3   Machamp              fallen                      85   phalanx x2 (always), heft x2 (4t)
-E1   Mew                  [###.......]  1248/3600    110   evasive (always), phalanx x2 (always), poison (2t)
-E2   Venusaur             [#####.....]  2134/3800    100   phalanx x2 (always)
-E3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t), poison (2t)
+A1   Mew                  fallen                     110   evasive (always), phalanx x2 (always)
+A2   Venusaur             fallen                     100   phalanx x2 (always)
+A3   Machamp              fallen                      85   phalanx x2 (always), heft x3 (4t)
+E1   Mew                  fallen                     110   evasive (always), phalanx x2 (always), poison (1t)
+E2   Venusaur             [###.......]  1474/3800    100   phalanx x2 (always)
+E3   Machamp              fallen                      85   phalanx x2 (always), heft x4 (4t)
 
-next: E2 E1 E2 E1 E2 E1
+next: E2 E2 E2 E2 E2 E2
 
-    A2   hits E1 for 171 (through 40% of the armour), 1353 left
-    A2   hits E2 for 83 (through 40% of the armour), 2217 left
-    A2   hits E2 for 83 (through 40% of the armour), 2134 left
+    E1  falls at 3,2
+    A2   hits E2 for 83 (through 40% of the armour), 1716 left
+    A2   hits E2 for 104 (through 40% of the armour) (critical), 1612 left
     E2   A2 is immune to poison
   
-  E2  turn 20
+  E2  turn 23
+    E2  uses razor_leaf at 2,1
+    E2   hits A2 for 166 (through 40% of the armour), 439 left
+    E2   hits A2 for 166 (through 40% of the armour), 273 left
+    A2   E2 is immune to poison
+  
+  A2  turn 24
+    A2  uses vine_whip at 3,1
+    A2   hits E2 for 222, 1390 left
+    E2   A2 is immune to poison
+  
+  E2  turn 24
     E2  uses vine_whip at 2,1
-    E2   hits A2 for 222, 310 left
+    E2   hits A2 for 222, 51 left
     A2   E2 is immune to poison
   
-  E1  turn 23
-    E1  uses psychic at 2,1
-    E1   hits A2 for 308, 2 left
-    E1   expose x1 on A2, now 1
-    A2   E1 resists poison (4%)
+  A2  turn 25
+    A2  uses leech_seed at 3,1
+    A2   misses E2 (91%)
   
-  A2  turn 21
-    A2  uses poison_powder at 3,2
-    A2   poison x1 on E1, now 1
-    A2   E2 is immune to poison
-  
-  E2  turn 21
-    E2  loses the turn (nothing usable)
-  
-  E1  turn 24
-    E1  takes 105 from poison x1
-    E1  uses body_slam at 2,1
-    E1   hits A2 for 274, 0 left
-    E1   stun x1 on A2, now 1
+  E2  turn 25
+    E2  uses leech_seed at 2,1
+    E2   hits A2 for 141, 0 left
+    E2  drains 84, 60% of what it dealt, 1474 hp left
     A2  falls at 2,1
   
   the enemy side wins
@@ -5908,8 +5908,8 @@ the battle  seed 1  log 89-116/128
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
-A2   Venusaur             [#########.]  3447/3800    100   phalanx x2 (always)
-A3   Machamp              [#.........]   245/3300     85   phalanx x2 (always), heft (4t)
+A2   Venusaur             [########..]  3136/3800    100   phalanx x2 (always)
+A3   Machamp              [##........]   744/3300     85   phalanx x2 (always), heft (4t)
 E1   Mew                  [##########]  3600/3600    110   evasive (always), phalanx x2 (always)
 E2   Venusaur             [########..]  3190/3800    100   phalanx x2 (always)
 E3   Machamp              [#####.....]  1760/3300     85   phalanx x2 (always), heft x2 (4t), stun (1t)
@@ -5918,7 +5918,7 @@ next: E1 A3 E3 A2 E2 A1
 
   E2  turn 3
     E2  uses leech_seed at 2,2
-    E2   hits A3 for 230 (weak), 1027 left
+    E2   hits A3 for 230 (weak), 1260 left
     E2  drains 138, 60% of what it dealt, 3564 hp left
   
   A3  turn 3
@@ -5936,7 +5936,7 @@ next: E1 A3 E3 A2 E2 A1
   
   E1  turn 4
     E1  uses body_slam at 2,2
-    E1   hits A3 for 250, 777 left
+    E1   hits A3 for 250, 1010 left
     E1   A3 resists stun (25%)
   
   A2  turn 4

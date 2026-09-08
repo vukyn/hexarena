@@ -305,7 +305,7 @@ func TestAimsNamesWhoIsCaught(t *testing.T) {
 	if area.Skill == "" {
 		t.Skip("the opening unit has no area skill available")
 	}
-	rendered := tui.Aims(fight, area, tags)
+	rendered := tui.Aims(fight, area, tags, hex.SideAlly)
 	lines := strings.Split(rendered, "\n")
 	if len(lines) != len(area.Aims) {
 		t.Fatalf("%d lines for %d cells", len(lines), len(area.Aims))
@@ -484,12 +484,19 @@ func TestOpeningGolden(t *testing.T) {
 	fmt.Fprintf(&b, "\n%s %s, turn %d at %s\n", tags[unit.ID], unit.Name, prompt.Turn, unit.Cell)
 	b.WriteString(tui.Menu(fight, prompt, tags))
 	b.WriteString("\n")
+	// The caster's half, which is the frame an area shape is walked in — read
+	// off the unit being prompted rather than assumed, exactly as the clients
+	// read it. → package pattern's doc.
+	caster := hex.SideAlly
+	if unit, known := fight.Unit(prompt.Unit); known {
+		caster = unit.Side
+	}
 	for _, option := range prompt.Options {
 		if !option.Available() {
 			continue
 		}
 		fmt.Fprintf(&b, "\naim %s at:\n", option.Skill)
-		b.WriteString(tui.Aims(fight, option, tags))
+		b.WriteString(tui.Aims(fight, option, tags, caster))
 		b.WriteString("\n")
 	}
 

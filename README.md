@@ -3292,16 +3292,26 @@ restates the redaction itself now.
   `battle.mirroredOrder` walks by authoring slot, and the synthetic mirror now
   sums to 1000‰ at one, two and three a side.
 
-  The second is still open and was found on 2026-09-08, again by this control
-  arm: **`pattern.targets` walks a splash as absolute cube steps**, and a
-  rotation maps *up* to *down*, so a shape called `arc_up` catches different
-  neighbours in the hands of the two sides. Measured on the shipped squads, s01
-  and s02 sum to exactly 1000‰ — their kits reach no splash that catches a second
-  unit — while s03, s04 and s05 read 1119, 1153 and 1057. Driving both arms
-  prompt by prompt, the option lists are identical and the *ratings* differ: s03
-  turn one, `razor_leaf`, 273 against 443 for the same aim. → `TODO.md`,
-  `ENG-012`, which carries the two candidate answers and why neither has been
-  taken.
+  The second was found on 2026-09-08, again by this control arm, and is **fixed
+  too**: `pattern.targets` walked a splash as absolute cube steps, and a rotation
+  maps *up* to *down*, so a shape called `arc_up` caught different neighbours in
+  the hands of the two sides — `pierce` spread back towards the midline instead
+  of through the formation. Before the fix, s01 and s02 summed to exactly 1000‰,
+  their kits reaching no splash that catches a second unit, while s03, s04 and
+  s05 read 1119, 1153 and 1057. Driving both arms prompt by prompt, the option
+  lists were identical and the *ratings* differed: s03 turn one, `razor_leaf`,
+  273 against 443 for the same aim.
+
+  ⚠️ **The synthetic fixture that proved the first patch could not see the
+  second**, because its kits are `strike` and `sweep` and carry no splash. A
+  fixture that cannot reach a case confirms a patch without confirming the
+  property.
+
+  **All five sum to 1000‰ now.** The walk is conjugated through `hex.Place`,
+  which is its own inverse: rotate the aim into the caster's frame, walk, rotate
+  back. An ally's cast is byte-identical to what it always was, and an enemy's is
+  its reflection by construction rather than by a table of mirrored direction
+  names. → `TODO.md` `ENG-012`, and `docs/balance.md` for what it cost.
 
   `forge.FightSquads` sums both ways, which is right, and that swap is what
   every figure in this repository is read as: a **gap between two arms** rather
