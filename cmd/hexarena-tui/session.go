@@ -144,6 +144,19 @@ type session struct {
 	// here that a wall clock reaches. → clock.go, which is the whole of this
 	// package's clock.
 	clock matchClock
+	// redial is everything a second Dial to the same room needs, kept from the
+	// first one. It is nil until a match has been dialled.
+	//
+	// ⚠️ **The hello it holds is the one that was sent, with the seat token put
+	// on it before each attempt.** The squad and the name are the ones this
+	// client joined with, and the room ignores both on a rejoin — what matters is
+	// that the hello is otherwise the same one, because a rejoin that arrived
+	// carrying a different version or password would be refused before the token
+	// was ever looked at.
+	redial *redial
+	// reconnecting is this client having lost its socket mid-match and being in
+	// the middle of trying to take its seat back. It is read by the screen.
+	reconnecting bool
 	// left says this match has been left, so leaving twice is free.
 	//
 	// ⚠️ **A bool under the mutex rather than a sync.Once**, and the difference
@@ -307,6 +320,11 @@ func (s *session) send(message tea.Msg) {
 func (s *session) dial(code wire.RoomCode, hello wire.Hello, books battle.Books,
 	characters *cast.Book) tea.Cmd {
 	ctx := s.drafting(characters)
+	// Kept before the dial rather than after it, for the reason the match is
+	// armed before it: what this holds is what a *second* dial needs, and the
+	// window in which the first one can fail is exactly where a client would
+	// otherwise be left with nothing to try again with.
+	s.remember(&redial{code: code, hello: hello, books: books, characters: characters})
 	return func() tea.Msg {
 		client, err := socket.Dial(ctx, code, hello, books, socket.ClientOptions{
 			Characters: characters,
@@ -350,7 +368,19 @@ func (s *session) open() context.Context {
 	// left, and it has to be cleared here for the reason the clock is: a player
 	// who leaves a room and joins another gets every guarantee back.
 	s.characters, s.pooled = nil, nil
+	// A redial for the room this client has left would be a reconnection to
+	// somebody else's match, and it is cleared here for the reason the clock and
+	// the pool are: a player who leaves a room and joins another gets every
+	// guarantee back.
+	s.redial, s.reconnecting = nil, false
 	return ctx
+}
+
+// remember keeps what a second dial to this room would need. → the redial field.
+func (s *session) remember(held *redial) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.redial = held
 }
 
 // drafting is open with the cast a drafting room's pool comes out of.
@@ -396,7 +426,7 @@ func (s *session) begin(client *socket.Client) {
 	done, ctx := s.done, s.ctx
 	s.mu.Unlock()
 	go func() {
-		err := client.Play(ctx, s.choose)
+		err := s.playing(ctx, client)
 		s.mu.Lock()
 		s.err = err
 		s.mu.Unlock()
@@ -405,6 +435,28 @@ func (s *session) begin(client *socket.Client) {
 		close(done)
 		s.send(matchEndedMsg{})
 	}()
+}
+
+// playing is Play, and then Play again on the seat this client got back.
+//
+// ⚠️ **The loop is here rather than in the model**, and the reason is what
+// `matchEndedMsg` means: it is the match being over, and a socket closing in the
+// middle of one is not that. A model told a match had ended and then told it had
+// started again would have to unpick the difference on a screen; a client that
+// simply carries on has nothing to unpick, because from the room's side nothing
+// happened at all — the seat was held and the board never moved.
+func (s *session) playing(ctx context.Context, client *socket.Client) error {
+	for {
+		err := client.Play(ctx, s.choose)
+		next := s.reconnect(ctx, standingOf(client))
+		if next == nil {
+			return err
+		}
+		s.mu.Lock()
+		s.client = next
+		s.mu.Unlock()
+		client = next
+	}
 }
 
 // choose is the chooser Play calls when the turn is this client's, and it is the

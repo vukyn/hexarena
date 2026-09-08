@@ -279,8 +279,34 @@ func (s *Server) join(ctx context.Context, stop func(), code wire.RoomCode, entr
 	if answered.Watching {
 		return s.watched(ctx, stop, code, entry, peer, answered)
 	}
+	// ⚠️ **The window is stopped before anything is written, and stopping it is
+	// what makes this a rejoin rather than a race.** The room has already given
+	// the seat back — it matched a token, which is the only way Rejoined is true —
+	// so the timer still running is one that would tell the room this client left
+	// a match it is sitting in. The caller holds exchange, which is what lets a
+	// stopped timer and a re-seated connection be one act.
+	if index, seated := indexOfSeat(answered.Seat); seated {
+		entry.rejoinable[index] = answered.Rejoinable
+	}
+	if answered.Rejoined {
+		entry.release(answered.Seat)
+	}
 	entry.seat(answered.Seat, peer)
 	s.send(ctx, entry, peer, answered.Out)
+	// ⚠️ **After the welcome and before anything else**, which is the order a
+	// mirror was built for: it takes its seat off the welcome and then applies
+	// bodies, so a record arriving first would be replayed by a mirror that does
+	// not yet know which half it plays. Same order the watcher path uses, and for
+	// the same reason.
+	if len(answered.Resumed) > 0 {
+		if err := peer.send(ctx, answered.Resumed...); err != nil {
+			if !ended(err) {
+				s.failed(fmt.Errorf("hand %s the %d recorded bodies of room %s: %w",
+					answered.Seat, len(answered.Resumed), code, err))
+			}
+			return room.Admission{}, false
+		}
+	}
 	s.settled(ctx, code, entry, answered)
 	// The second seat's join is what opens the first battle, so it is an exchange
 	// that records — the wire.Start every watcher already attached is owed.
@@ -562,16 +588,53 @@ func (s *Server) timedOut(ctx context.Context, code wire.RoomCode, entry *table,
 	}
 }
 
-// left tells the room a peer went away, which with no rejoin is a match ending.
+// left is a peer's socket closing, and it is now two different things.
 //
-// The seat is freed **before** the room is told, so the wire.Closed the room
-// addresses to the other seat cannot be delivered to the connection that has
-// just gone — and so that a seat freed before the first battle (which is what
+// ⚠️ **A seat that can be come back to is HELD rather than reported**, which is
+// the whole of the rejoin: the transport cannot tell a wifi hiccup from somebody
+// walking away — a socket closing is a socket closing — so with no window every
+// blip killed a match. The room is not told, so the board, the series and the
+// clock stay exactly as they were and a client that returns needs nothing
+// rebuilt; what is given up is the connection, and if the allowance runs out
+// meanwhile the room passes that turn as it would for anybody thinking too long.
+//
+// The seat is freed **before** either branch, so the wire.Closed the room
+// addresses to the other seat cannot be delivered to the connection that has just
+// gone — and so that a seat freed before the first battle (which is what
 // room.Left does then) is free here too, for the next joiner.
 func (s *Server) left(code wire.RoomCode, entry *table, peer *connection, seat wire.Seat) {
 	entry.exchange.Lock()
 	defer entry.exchange.Unlock()
 	entry.free(seat, peer)
+	if entry.hold(seat, s.timings.RejoinWindow, func() { s.windowClosed(code, entry, seat) }) {
+		return
+	}
+	s.abandon(code, entry, seat)
+}
+
+// windowClosed is the reconnect window running out: the client did not come back,
+// so the room hears what it would have heard at once before rejoins existed.
+//
+// It takes exchange itself, because it runs on the timer's own goroutine rather
+// than on the departing connection's.
+func (s *Server) windowClosed(code wire.RoomCode, entry *table, seat wire.Seat) {
+	entry.exchange.Lock()
+	defer entry.exchange.Unlock()
+	// ⚠️ **The race is decided here rather than in Stop.** A hello that arrived
+	// while this timer was already firing released the window and re-seated the
+	// connection, and telling the room that seat left would end a match somebody
+	// is sitting in. `held` is false in exactly that case, because release clears
+	// the slot under the same lock this is holding.
+	if !entry.held(seat) {
+		return
+	}
+	entry.release(seat)
+	s.abandon(code, entry, seat)
+}
+
+// abandon tells the room a peer went away, which is a match ending. The caller
+// holds exchange.
+func (s *Server) abandon(code wire.RoomCode, entry *table, seat wire.Seat) {
 	answered, err := s.rooms.Left(code, seat)
 	if err != nil {
 		s.failed(fmt.Errorf("report that %s left room %s: %w", seat, code, err))
@@ -825,6 +888,15 @@ func (s *Server) stopping(ctx context.Context) {
 	for _, held := range s.held() {
 		entry := held.table
 		entry.exchange.Lock()
+		// ⚠️ **Every reconnect window is stopped first**, and stopping them is
+		// not tidiness. A window that fired after this point would call
+		// Registry.Left on a room CloseAll has already retired, and would do it
+		// on a timer's goroutine after Shutdown had returned — so the one thing
+		// this function promises, that nothing is left running, would be false
+		// for up to a whole window. There is also nothing left to hold a seat
+		// FOR: the host is stopping, so the match this seat belongs to is over
+		// whatever its client does next.
+		entry.releaseAll()
 		// Two connections in a fixed order rather than a walk over a collection:
 		// a room has exactly two seats, and the order they are told in is an
 		// output. → table, which is two fields for the same reason.

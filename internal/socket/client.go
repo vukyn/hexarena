@@ -202,6 +202,25 @@ func (c *Client) Watching() bool { return c.mirror.Watching() }
 // thinner than one.
 func (c *Client) Mirror() *Mirror { return c.mirror }
 
+// Token is what this client shows to take its seat back after the socket closes,
+// and is empty for a watcher and for a room that issues none.
+//
+// ⚠️ **It is kept and never drawn.** A seat token is a capability: whoever holds
+// it is that seat, so it belongs in the memory of the process that took the seat
+// and nowhere else — not on a screen, not in a log, not in a file. wire.SeatToken
+// redacts itself under %s and %v, which is what makes a careless format string a
+// non-event rather than a match given away.
+//
+// It is a reading off the welcome rather than a field, for Watching's reason: the
+// room said it once and a second copy is a second thing to keep in step.
+func (c *Client) Token() wire.SeatToken {
+	welcome, seated := c.mirror.Welcome()
+	if !seated {
+		return ""
+	}
+	return welcome.Token
+}
+
 // Close ends the connection with a normal closure, which is what the far end
 // reads as an ordinary departure rather than a fault.
 func (c *Client) Close() { c.conn.bye(websocket.StatusNormalClosure, "leaving") }

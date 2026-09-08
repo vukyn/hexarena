@@ -1188,6 +1188,9 @@ const (
 	// the separators either side of it, and nothing measures what is left. A
 	// live battle names neither `u`, `n` nor the save key.
 	PlayLiveWaiting
+	// The line a live screen draws in place of the one above while this client
+	// has lost its socket and is taking its seat back. → PlayScreen.waiting.
+	PlayLiveReconnecting
 	PlayLiveFooter
 	PlayLiveAimFooter
 	PlayLiveOverFooter

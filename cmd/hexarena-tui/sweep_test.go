@@ -205,6 +205,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	screens["waiting for the other player"] = waitingForTheOtherPlayer(t, m)
 	screens["a live battle"] = aLiveBattle(t, m)
 	screens["a live battle waiting on the other player"] = aLiveBattleWaiting(t, m)
+	screens["a live battle reconnecting"] = aLiveBattleReconnecting(t, m)
 	screens["aiming in a live battle"] = aimingInALiveBattle(t, m)
 	screens["watching a battle"] = watchingABattle(t, m)
 	screens["a finished match"] = aFinishedMatch(t, m)
@@ -705,6 +706,32 @@ func aLiveBattleWaiting(t *testing.T, m model) model {
 			"ordinary battle twice:\n%s", drawnBody(waiting))
 	}
 	return waiting
+}
+
+// aLiveBattleReconnecting is the same board with the socket gone under it, which
+// is the state a player is in for up to the whole window the seat is held for.
+//
+// ⚠️ **It is registered because a frozen board is the failure it exists to
+// prevent.** A live battle that has stopped moving and one whose client has lost
+// its connection draw identically without this line, and the two want opposite
+// things from a reader: one is nothing to do about, and the other is somebody
+// staring at a screen deciding whether to quit — which, inside the window, is the
+// one thing that actually loses the match.
+func aLiveBattleReconnecting(t *testing.T, m model) model {
+	t.Helper()
+	live := attachedTo(t, withAFullLog(t, m.enter(screenBattle)), false)
+	live.battle.Reconnecting = true
+	drawn := drawnBody(live)
+	if !strings.Contains(drawn, live.text(i18n.PlayLiveReconnecting)) {
+		t.Fatalf("a reconnecting live battle says nothing about the connection:\n%s", drawn)
+	}
+	// And it is the reconnecting line INSTEAD of the waiting one, not beside it:
+	// two sentences about the same row would be a screen telling the reader both
+	// that the other player is thinking and that this client is not connected.
+	if strings.Contains(drawn, live.text(i18n.PlayLiveWaiting)) {
+		t.Fatalf("a reconnecting live battle still says it is waiting on the other player:\n%s", drawn)
+	}
+	return live
 }
 
 // aimingInALiveBattle is the second question a turn asks, on a battle this

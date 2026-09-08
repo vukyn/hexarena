@@ -106,7 +106,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-006` | refused | Rebalancing `reckless` |
 | `DAT-007` | open | The area axis is not priced below single-target burst — on every board a rate… |
 | `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 for… |
-| `DAT-009` | open | Ally-aimed area support is single-target on every shipped board too — `rally`… |
+| `DAT-009` | done | Ally-aimed area support is single-target on every shipped board — REFUSED, with the measurement: the item's own `arc_up` candidate is a no-op, and `pierce`, the one shape that catches two, moved one battle in twelve hundred |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
 | `SCR-001` | shipped | Reference screens |
@@ -120,6 +120,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
 | `SCR-011` | done | Every scratch data directory copied 17 MB of art and re-ran the injection — BOTH FIXED; the ~1300s was Win… |
+| `SCR-012` | open | A draft's last pick can have one candidate, and the screen presents it as a … |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -295,6 +296,35 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [ ] `SCR-012` **A draft's last pick can have one candidate, and the screen
+      presents it as a choice.** Split out of `NET-001`'s ban-and-pick item on
+      2026-09-08, which named it and shipped without it; that was the only thing
+      keeping that box open.
+
+      `draft.Slack` is `pool - 2*picks - 2*bans` — both sides, because both spend
+      out of one pool — and the exhaustive walk holds the tight form: with every
+      ban spent, the final pick sees exactly `slack + 1` candidates. So **slack of
+      nought means the last picker has no decision to make**, and the screen draws
+      it as a list to choose from anyway.
+
+      ⚠️ **It is not reachable on the shipped cast today, and that is not a reason
+      to skip it.** Slack was nought at sixteen characters (`pokemon.gible`), one
+      at seventeen (`pokemon.pichu`) and is wider now — so the state is behind the
+      cast rather than gone, and it returns the moment a format changes the
+      arithmetic or 5v5's pool is counted against a bigger ban allowance. A screen
+      that reads correctly only because of a content figure is the shape this
+      repository has been caught by before.
+
+      **What it is, concretely:** when the offered list holds exactly one
+      candidate, say it is the only one left rather than drawing a cursor over a
+      single row. The figure is `draft.Slack`'s and has to be read from it rather
+      than counted on the screen — a second expression for one rule is how the two
+      come to disagree about which pick was forced.
+
+      ⚠️ **Both clients and both language books**: the draft screen is
+      `cmd/hexarena-tui`'s and a spectator draws the same draft. Three goldens
+      move.
 
 - [x] `SCR-011` ⚠️ **Every scratch data directory copied the whole 17 MB data
       directory AND re-ran the fixture injection — BOTH FIXED. But the ~1300s in
@@ -710,46 +740,6 @@ is only so the shape is readable.
       never stack is a number chosen against nothing, and a board that stacks pays
       more for the privilege than the shape returns. The measurement any candidate
       has to be taken on is the one above.
-
-- [ ] `DAT-009` ⚠️ **Ally-aimed area support is single-target on every shipped board
-      too — `rally`, `chorus`, `heal_bell`, `safeguard` and `slipstream` are all
-      `column`, and no formation stacks a column.** Raised 2026-09-08 out of
-      `DAT-007`, and filed rather than folded in because it is the same geometry on
-      the friendly half and wants its own measurement.
-
-      `DAT-007` measured the hostile half: a `column` catches exactly one occupied
-      cell on all five shipped squads, so `splash_power` is never reached and every
-      column attack resolves as a single-target one. The friendly half is the same
-      board. `s01`'s clefable carries `rally` (column, ally, power 0) and buffs
-      **exactly one** ally with it, because `s01` stands at `(2,0) (2,2) (0,1)` and
-      a column splashes within a column. The four support columns nobody fields —
-      `chorus`, `heal_bell`, `safeguard`, `slipstream` — would do the same on any
-      squad in the file.
-
-      ⚠️ **It is worse here than on the hostile half, because a support column has
-      no primary to fall back on.** A `column` attack at least lands its full power
-      on the aim; a buff or a cleanse aimed at one ally is a turn spent on a skill
-      whose whole design is that it reaches the units standing together. Nothing in
-      the repository measures that: `hexforge spar` cannot see support at all (the
-      mender note), and the squad harness is exactly the boards this item is about.
-
-      ⚠️ **The shape vocabulary is where the cheap answer might be, and it is a
-      one-line data change rather than a repricing.** Of the 14 ally-aimed skills in
-      the book, 9 are `single` and **all 5 area ones are `column`** — not one uses
-      an arc or a wedge. Yet `arc_up` and `arc_down` are exactly the shapes that DO
-      reach a second occupant on the shipped squads, because the squads are
-      hex-adjacent along `upper_right`: `patterns.json` already declares the shape
-      the friendly half needs, and no support skill is authored on it. Moving one
-      of the five onto `arc_up` would make the axis real on `s01` without moving a
-      slot, a power or `splash_power`.
-
-      What it needs is a measurement first, not a change: how much a support column
-      is worth once it catches two, priced against the alternative of stacking —
-      which `DAT-007` measured at about **250‰** on `s04` vs a stacked copy of
-      itself, and `docs/balance.md` measured independently at about 213‰. The
-      instrument is `hexforge census` for whether the slot is cast at all beside
-      `forge.FightSquads` for what it is worth, because a rate cannot say a build
-      played its kit.
 
 - [x] `ENG-003` ⚠️ **A one-way mirror rate stopped being a measurement above one unit a
       side — FOUND AND FIXED.** The skill that resolved in an order that does not
@@ -1537,7 +1527,114 @@ is only so the shape is readable.
             **and a malformed hello whose bytes hold the password** over real
             connections and greps the sink for the characters, and cannot see a
             print nothing happened to reach on the day it ran.
-      - [ ] A seat token and a rejoin. ⚠️ **The ground this item used to give was
+      - [x] **A seat token and a rejoin — DONE.** A dropped socket no longer costs
+            a match: the seat is held, the client dials again with its token on
+            its own, and the board it comes back to is the one it left. A room issues a seat token
+            (`room.Deps.Tokens`, `wire.NewSeatToken`), the welcome carries it, and
+            a hello showing it takes that seat back **before** the room is asked
+            whether it is full — which is the whole shape, since a rejoining
+            client's own seat is exactly what makes it full. The transport holds a
+            seat for `socket.DefaultRejoinWindow` (60s) instead of reporting the
+            departure, and tells the room only when the window runs out.
+
+            ⚠️ **The room is not told a socket closed, and that is what makes a
+            rejoin cheap.** The board, the series and the clock are exactly where
+            they were, so a returning client needs nothing rebuilt. The allowance
+            is NOT paused: a player does not buy thinking time by pulling out a
+            cable, so a seat that stays away past its allowance is passed by
+            `TimedOut` as if its holder were staring at the screen.
+
+            ⚠️ **A seat with no token is not held at all.** Whether a room can
+            issue tokens is `Deps.Tokens`, which the transport never sees, so the
+            gate says it on `Admission.Rejoinable` — holding a seat for a client
+            that cannot prove it is that client is a minute of the other player's
+            evening spent on nothing. Every test written before this rides on it:
+            the socket fixtures pass no token source, so a departure still ends a
+            match at once there.
+
+            ⚠️ **`seatFor` had two guards and now has one.** `!token.Set()` and
+            `held.token.Set()` each close the empty-against-empty case alone, so
+            with both present a mutation removing either left the other doing the
+            job and no test moved. One guard a mutation reddens is worth more than
+            two that cover for each other.
+
+            ⚠️ **A rejoin re-sends the SAME token**, because the seat is the same:
+            issuing a fresh one would leave a client that reconnected twice
+            holding a token for a seat under a name the room has forgotten.
+
+            ⚠️ **Step 2 shipped 2026-09-08: a returning client rebuilds the board
+            and plays the match out.** `Room.Resume(seat)` hands back the whole
+            record, and the transport sends it after the welcome — so a client
+            that lost its socket comes back to the board it left, mid-battle, and
+            finishes the series. Held by
+            `TestAReturningClientRebuildsTheBoardAndPlaysTheMatchOut`, which
+            asserts the **verdict** rather than the state: a mirror that rebuilt
+            wrongly would not fail visibly, it would send decisions for a battle it
+            was mis-seeing, so playing the match to its end is the only assertion
+            that catches it.
+
+            ⚠️ **The record cannot be replayed by a player unchanged**, and this
+            is the trap. A `wire.Start` carries the *side* its recipient plays and
+            the recorded one is the **host's** — a watcher plays neither half, so
+            it is given the seat a room hands out first. Handed to a returning
+            **guest** it seats that client on the wrong half of its own board, and
+            nothing complains: the roster is legal, the battle is real, and every
+            digest simply disagrees while both peers think they are playing.
+            `Resume` re-sides each Start; `TestAReturningGUESTIsSeatedOnItsOwnHalf`
+            is the arm the host cannot test.
+
+            ⚠️ **The open prompt does NOT travel, and this entry said it must.**
+            The note below on `Reading` claimed a rejoin wanted a deep copy of
+            `Room.Pending`, because passing the room's own `*battle.Prompt` out of
+            its goroutine is exactly the sharing the registry exists to prevent.
+            The premise was wrong rather than the reasoning: **a mirror derives the
+            prompt.** It calls `Begin` itself and advances to the same one after
+            the last recorded turn — which is what a watcher already does, and the
+            reason no `wire.Turn` carries the opening board either. What travels is
+            the decisions. That note predates the watcher record; the record is
+            what made it obsolete, and it is corrected in `registry.go`.
+
+            ⚠️ **Step 3 shipped 2026-09-08: the client dials again by itself.**
+            `session.playing` is Play and then Play again on the seat it got back,
+            and the loop is there rather than in the model because of what
+            `matchEndedMsg` means — a match being over, which a socket closing in
+            the middle of one is not. A model told a match had ended and then told
+            it had started again would have to unpick the difference on a screen;
+            a client that carries on has nothing to unpick, because from the
+            room's side nothing happened.
+
+            ⚠️ **It decides by asking the MIRROR, never by reading the error.** A
+            dropped socket, a cancelled context and a match played to its end all
+            come back from `Play` as an error — so a reconnection that inspected
+            one would be this client deciding what a network failure looks like.
+            `standing` is the three readings taken off the client instead, which
+            also makes the decision testable with no live socket to drop.
+
+            ⚠️ **A refusal ends it and a network error does not.** A refusal is the
+            room's answer — the window ran out, or the match is over and the code
+            names nothing — and retrying against that is asking a question that has
+            been answered. `reconnectFor` (90s) is only the backstop for a host
+            whose process is gone, and it is longer than the server's window on
+            purpose so the server's answer is what ends this rather than a race
+            between two timers.
+
+            ⚠️ **The screen says so, and that is not decoration.** A board that
+            simply stopped moving is indistinguishable from the other player
+            thinking, and the two want opposite things from a reader: one is
+            nothing to do about, the other is somebody staring at a frozen screen
+            deciding whether to quit — which, inside the window, is the one thing
+            that actually loses the match. `PlayLiveReconnecting` takes the row the
+            waiting line already has, because this screen has no row to give.
+
+            ⚠️ **The reconnect clock went into `clock.go`** rather than onto the
+            module's clock allowlist as a seventh entry: that list says of itself
+            that it is only worth keeping while the answer to "where is the clock
+            in this package" stays short, and `TestEveryClockInTheModuleIsOnThe
+            Allowlist` is what caught the new file.
+
+            The reasoning this item was raised on, kept because it is what the
+            window is bounded by:
+            ⚠️ **The ground this item used to give was
             wrong** — it was filed as cheap because the cursor makes catching up
             cheap, which is true and is not the reason it matters. The real one:
             **the transport cannot tell a wifi hiccup from a departure.** A socket
@@ -2278,7 +2375,16 @@ is only so the shape is readable.
                   `TestTheWatchFlagIsWhatTheRoomIsOpenedWith` (through the **flag
                   set**, because setting `chosen.watch` directly proves nothing
                   about a flag that was never registered).
-      - [ ] **Ban and pick, and a spectator watching it.** Before a match, the
+      - [x] **Ban and pick, and a spectator watching it — DONE.** Every numbered
+            step ships: the wire vocabulary, the arrange phase, the draft on the
+            wire, the room hosting it, the client's mirror, the draft and arrange
+            screens, and `-draft` on the host. A spectator watches the draft as
+            well as the battle. ⚠️ **The one thing this entry named and did not
+            build is now `SCR-012`** — a final pick with a single candidate should
+            say so rather than present a list of one — and it was the only reason
+            this box stayed open after step 6.
+
+            Before a match, the
             two sides take turns banning a character and picking one, out of a
             **shared pool**, so a 3v3 fields six different characters and a 5v5
             ten. A pick carries the character **and its skills**. A spectator
@@ -2567,11 +2673,10 @@ is only so the shape is readable.
             ⚠️ **The last pick is not a decision whenever slack is nought**, and
             slack is `pool - 2*picks - 2*bans` — both sides, since both spend out
             of one pool; `draft.Slack` is that expression and nothing else, and
-            it is the note above's surviving half. Worth drawing on the screen: a
-            draft whose final pick has one candidate should say so rather than
-            present a list of one. The exhaustive walk asserts the tight form of
-            it: with every ban spent the final pick sees exactly `slack + 1`
-            candidates.
+            it is the note above's surviving half. The exhaustive walk asserts the
+            tight form of it: with every ban spent the final pick sees exactly
+            `slack + 1` candidates. → `SCR-012` for the screen's half, which is the
+            one thing this entry named and did not build.
       - [x] **The arrange phase — step 2b. Done 2026-09-05.** Once picking
             closes, each side puts its three (or five) picks on its own 3x3
             formation, **privately and simultaneously**, and the draft finishes
@@ -5346,6 +5451,200 @@ is only so the shape is readable.
       whole thing on a working `withdraw` was worth*.
       → the `weigh`-shaped trait instrument is still missing and is still its own
       piece of work; this measured four more readings by hand.
+
+- [x] `DAT-009` ⚠️ **Ally-aimed area support is single-target on every shipped board
+      — DONE, REFUSED, with the measurement. The item's own cheap candidate was
+      wrong, is corrected below rather than deleted, and the shape that does work
+      was built, measured and thrown away.** Raised 2026-09-08 out of `DAT-007`,
+      measured and closed the same day. **Nothing in `internal/seed/data` changed.**
+      What shipped is this entry and one test.
+
+      ⚠️ **`arc_up` catches ONE on `s01`, exactly as `column` does.** The item read
+      *"moving one of the five onto `arc_up` would make the axis real on `s01`"*,
+      and that sentence is false. `s01` stands `(2,0) (2,2) (0,1)` and **all three
+      pairwise hex distances are 2**, so no shape whose splash is one step can
+      catch two on it. `DAT-007`'s coverage table was right; what it did not say is
+      that `arc_up`'s 2 was read on `s02`–`s05`, which field no ally-aimed skill.
+
+      **The friendly-half table**, derived the same way `DAT-007`'s was — replaying
+      `hex.Place` and `pattern.Pattern.targets` over `squads.json` /
+      `patterns.json`, aiming only where `battle.aims` permits. Read *ally half /
+      enemy half*:
+
+      | shape | `s01` | `s02` | `s03` | `s04` | `s05` |
+      |---|---|---|---|---|---|
+      | `single` | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+      | `flank_up` | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+      | `flank_down` | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+      | **`column`** (all 5 support skills) | **1 / 1** | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+      | `wedge_right` | 1 / 1 | 2 / 2 | 2 / 2 | 2 / 2 | 2 / 2 |
+      | `wedge_left` | 1 / 1 | 2 / 2 | 2 / 2 | 2 / 2 | 2 / 2 |
+      | **`pierce`** (fielded by nobody) | **2 / 2** | 2 / 2 | 2 / 2 | 2 / 2 | 2 / 2 |
+      | **`arc_up`** (the item's candidate) | **1 / 1** | 2 / 2 | 2 / 2 | 2 / 2 | 2 / 2 |
+      | `arc_down` | 1 / 1 | 2 / 2 | 2 / 2 | 2 / 2 | 2 / 2 |
+
+      **The friendly half is not a different board.** On all five squads it is
+      identical to the hostile half, shape for shape. The 180° rotation only bites
+      on `roster.json`, where `DAT-007` recorded the divergence (`arc_up` 2 against
+      3, `wedge_right` 3 against 2) — and `roster.json` fields no ally-aimed skill
+      at all.
+
+      ⚠️ **`single` and `column` are the only two shapes in the book closed under
+      that rotation.** `hex.Place` maps `up`↔`down`, `upper_right`↔`lower_left`,
+      `lower_right`↔`upper_left`; every other shape is a *different* shape on the
+      enemy half. That is very likely *why* all 14 ally-aimed skills sit on one of
+      those two, and it is the thing to check before putting an ally-aimed skill on
+      a new shape. It cancels on the five squads only because their formations are
+      row-symmetric.
+
+      ⚠️ **`splash_power` is not the friendly half's gate, so `DAT-007`'s framing
+      does not transfer.** `resolveAgainst` scales only `power` at `position > 0`
+      (`turn.go:1278`); a status application is not scaled and `restore` is. All
+      five support skills declare `"power": 0` and deliver `applies`/`strips`, so a
+      support skill catching two allies delivers **two full-strength buffs**, not
+      one and a half. The rating already prices it that way: `pricing.rate` walks
+      `covers` and sums `restored + granted + cleansed` per occupant with the
+      `position` index deliberately unused (`price.go:136-179`) — no friendly path,
+      no friendly discount.
+
+      **What is fielded, which is the whole reason this is one measurement and not
+      five.** Of the 14 ally-aimed skills, 9 are `single` and all 5 area ones are
+      `column`:
+
+      | skill | fielded in a squad | in a build | in a learnset |
+      |---|---|---|---|
+      | `rally` | **yes — `s01`/clefable, slot (0,1)** | `cleffa.mend`, `poliwag.chorus` | 9 characters |
+      | `chorus` | no | `poliwag.chorus` | 1 |
+      | `heal_bell` | no | none | 1 |
+      | `safeguard` | no | none | 2 |
+      | `slipstream` | no | none | 1 |
+
+      **`rally` on `s01` is the only ally-aimed area skill any rate in this
+      repository has ever been taken over.** The other four cannot be measured off
+      a squad rate without first putting them on a board, and a placement change is
+      the ~253‰ `DAT-007` priced on `s04` vs `s06`. They were not fielded to
+      measure them.
+
+      **The gate, written down before any subject arm ran.** Subject: `rally`
+      `column` → `pierce`, coverage on `s01` 1 → 2 on both halves, nothing else
+      touched. All four had to hold: (1) the aggregate over the included boards
+      rises by **≥ 50‰** — two to three and a half sigma on a 400-battle binomial,
+      deliberately far below `DAT-007`'s 150‰ because this changes one slot on one
+      unit and only has to clear sampling; (2) **every included board moves the same
+      way**; (3) **`AsAlly` and `AsEnemy` both move**, neither more than twice the
+      other; (4) the null control reproduces the baseline exactly and every mirror
+      reads exactly 500‰. Board inclusion, also written down first: baseline rate
+      inside **50…950‰**, `Endless` under a fifth of the row. `s05` fell out at
+      995‰; `s02`, `s03` and `s04` are the gate.
+
+      **Four arms, `forge.FightSquads`, 200 seeds each way, `s01` as home, endless
+      beside every rate and the halves kept apart.** Every row is `endless 0 of
+      400` except the mirror, which is `2 of 400` in all four arms.
+
+      | arm | `s02` | `s03` | `s04` | `s05` (excluded) | mirror `s01` | aggregate |
+      |---|---|---|---|---|---|---|
+      | **baseline `column`** | 282‰ | 60‰ | 92‰ | 995‰ | **500‰** | **145‰** |
+      | **`arc_up` null** | 282‰ | 60‰ | 92‰ | 995‰ | **500‰** | **145‰** |
+      | **`pierce` subject** | 285‰ | 75‰ | **77‰** | 1000‰ | **500‰** | **145‰** |
+      | `fury` ×2 calibration | 192‰ | 75‰ | 87‰ | 1000‰ | **500‰** | 118‰ |
+
+      The aggregate is the three included boards pooled: baseline 174 wins of 1200,
+      `pierce` **175** of 1200. **One battle in twelve hundred, against a floor of
+      fifty parts per thousand.** `s01` vs `s04` reads 92‰, 37 / 363 / 0, median 48
+      on the baseline — `DAT-007`'s published row, reproduced, which is what says
+      this is `DAT-007`'s harness.
+
+      Halves, subject against baseline: `s02` `AsAlly` 345 → 360 and `AsEnemy`
+      220 → 210 — **opposite directions**; `s03` 60 → 75 on both; `s04` 100 → 85
+      and 85 → 70. Median turns: `s02` 77 → 77, `s03` 61 → 63, `s04` 48 → 48, the
+      mirror **78 → 104**.
+
+      **Verdict: three of the four conditions fail.** (1) +0‰ against ≥ 50‰. (2)
+      `s04` moves −15‰ while `s02` and `s03` move +3‰ and +15‰. (3) `s02`'s two
+      halves move opposite ways. Only (4) holds, and it holds completely.
+
+      ⚠️ **The `arc_up` arm reproduced the baseline BATTLE FOR BATTLE** — same
+      rate, same W/L/D, same `Endless`, same median turns, same `AsAlly`/`AsEnemy`
+      split, every row. That is the exact-null control the derivation predicted
+      (`covers` skips empty cells, `pricing.rate` prices per occupant, and nothing
+      outside `covers` reads the shape name during a battle) and it is what retires
+      the item's own candidate: **the change `DAT-009` asked for is a no-op.**
+
+      ⚠️ **The calibration arm is what stops this being "the instrument is
+      blind".** It leaves `rally` on `column` and raises its own application from
+      one `fury` stack to two — twice as much buff on one ally, no geometry at all
+      — and the board **sees it plainly**: the aggregate moves **−27‰**, `s02`'s
+      `AsEnemy` collapses **220‰ → 5‰**, and the mirror's median goes 78 → 111
+      turns. So the harness can price what `rally` *delivers*; it cannot price a
+      second *recipient*. That is `DAT-007`'s finding repeating on the friendly
+      half, and it is the refusal. (The calibration arm moving **downward** is a
+      second reading nobody asked for and its mechanism is **not** measured here —
+      `fury` is +300‰ attack and stats saturate, so a second stack may simply be
+      worth less than the turn; do not quote it as a balance number.) The
+      calibration arm was discarded and never went near `skills.json`.
+
+      **The census says the slot is played**, which is the half a rate cannot
+      answer — `hexforge census cleffa.mend --against <squad> --seeds 40`, 80
+      battles each, `rally` casts:
+
+      | board | `column` (shipped) | `pierce` (scratch) |
+      |---|---|---|
+      | `s01` | 369 | 290 |
+      | `s02` | 232 | 233 |
+      | `s04` | 80 | 80 |
+
+      Never silent, on either shape, unlike `dazzle` on `s04` in `DAT-007`. So "the
+      rating under-values support, so the carrier never plays the slot" is refused
+      by measurement as well.
+
+      ⚠️ **`hexforge census` substitutes the subject into `squad.Units[0].Slot`**
+      (`census.go:118`), and `s01`'s `Units[0]` is the **machamp at (2,0)**, not the
+      clefable at (0,1). So a census `--against s01` is **not** the `s01` board: its
+      counts are evidence about the slot's liveness and never about coverage.
+
+      ⚠️ **Do not quote a `hexforge spar` number against any of this.** Spar cannot
+      see support at all — `memory/hexarena-poliwag-bruiser.md`, where Politoed
+      reads 14.2% because spar takes the four earliest-learned skills and the
+      support half sits at 32/36.
+
+      **What shipped instead of the data change.**
+      `TestAnAllyAimedShapeIsCatchableFromItsOwnCarriersHalf`
+      (`internal/seed/areaboard_test.go`), a sibling of
+      `TestAShippedFormationIsCatchableByTheShapesItFields` rather than a widening
+      of it, because it needs a different reduction: that one takes the **better**
+      of the two halves, which is right for an enemy-aimed shape and wrong for an
+      ally-aimed one, since `forge.FightSquads` fights both arrangements and a
+      support shape is bounded by its **worse** half. It derives its carriers from
+      `seed.Squads()` × `seed.Roster()` × `seed.SkillBook()` — never a written-down
+      list — filters to `Target == Ally` with `MaxTargets() > 1`, and logs the
+      per-half count with a pointer here, exactly as its neighbour logs `DAT-007`.
+      Mutation-checked three ways on `skills.json`, each reverted by hand: `rally`
+      → `pierce` moves the log 1/1 → **2/2**; `rally` → `arc_up` leaves it at
+      **1/1**, which is what proves it is not reading the neighbour's
+      max-over-formations number (that one reads 2 for `arc_up`, on `s02`); `rally`
+      → `single` empties the derived set and the "measured nothing" guard goes red.
+      ⚠️ Whether the two halves AGREE is **logged and not asserted**, deliberately:
+      every shipped squad formation is symmetric under the 180° rotation, so no
+      shape can tell the halves apart on any board a rate is read off, and an
+      assertion whose branch no shipped data can exercise is a fixture hiding a
+      branch. `mostOccupiedCellsCaught` gained one comment saying it is
+      carrier-blind and takes the better half, pointing here.
+
+      **What stays open, and it is not this item.** The four unfielded support
+      columns are unmeasurable without a placement change, and a placement change
+      costs about 250‰ (`DAT-007`'s `s04` vs `s06`; `docs/balance.md` reads ~213‰
+      independently) — an order of magnitude more than anything the shape returned
+      here. **Do not follow this up by re-slotting `s01`**: `DAT-007` already
+      answered that the axis can only be redeemed by paying a defensive price twice
+      its size. Flag, do not act.
+      → `pierce` remains declared in `patterns.json` and carried by zero skills.
+      That is now a measured fact rather than an oversight: on the boards this game
+      ships, a second buffed ally is worth one battle in twelve hundred.
+      → If a support shape is ever wanted for its own sake, the open question is
+      whether it is authored as a NEW skill on `pierce` rather than by reshaping
+      `rally` — `rally` is carried by nine learnsets and two builds and its clause
+      reads *"vang dọc trận địa"*, along the line, which `pierce` is not. That is a
+      character-identity call for the author, not a measurement.
 
 ## Decided against — do not re-raise
 

@@ -435,6 +435,29 @@ A2 Example Adept, lượt 1
   guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 120x24 | a live battle reconnecting =====
+
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 67-71/71
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+
+next: A3 E1 E2 E3 E1 E2
+
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 273 from poison <trúng độc> x3
+
+mất kết nối — đang lấy lại chỗ ngồi, bàn cờ vẫn còn nguyên
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 120x24 | a live battle waiting on the other player =====
 
 trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 67-71/71
@@ -2291,6 +2314,65 @@ A2 Example Adept, lượt 1
   riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
   guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 160x60 | a live battle reconnecting =====
+
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 40-71/71
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E3  turn 1
+    E3  uses creeping_rot <mục rữa> at 2,1
+    E3   hits A2 for 128, 2716 left
+    E3   poison <trúng độc> x1 on A2, now 3
+    E3   hits A1 for 64, 2908 left
+    E3   A1 resists poison <trúng độc> (65%)
+    E3   hits A3 for 64, 2908 left
+    E3   poison <trúng độc> x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 618 (doubly weak!), 2290 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 618 (doubly weak!), 1672 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 618 (doubly weak!), 1054 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 91 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 273 from poison <trúng độc> x3
+
+mất kết nối — đang lấy lại chỗ ngồi, bàn cờ vẫn còn nguyên
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 160x60 | a live battle waiting on the other player =====
 
@@ -4617,6 +4699,29 @@ A2 Example Adept, turn 1
   guard_wall  self block x2 · itself · cd 4
   purify      strips 3 harmful · an ally · range 2 · cd 3
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 120x24 | a live battle reconnecting =====
+
+the battle  seed 1  you 1:30 · their turn 1:12  log 67-71/71
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+
+next: A3 E1 E2 E3 E1 E2
+
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 273 from poison x3
+
+the connection dropped — taking your seat back, the board is still there
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 120x24 | a live battle waiting on the other player =====
 
 the battle  seed 1  you 1:30 · their turn 1:12  log 67-71/71
@@ -6473,6 +6578,65 @@ A2 Example Adept, turn 1
   riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
   guard_wall  self block x2 · itself · cd 4
   purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 160x60 | a live battle reconnecting =====
+
+the battle  seed 1  you 1:30 · their turn 1:12  log 40-71/71
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [###.......]   963/3100     90   phalanx x2 (always), tidewell x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2443/3100     90   phalanx x2 (always), tidewell x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2908/3100     90   phalanx x2 (always), tidewell x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E2   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+E3   Bloom                [##########]  2416/2416    209   phalanx x2 (always), galvanise (always), heartwood (always)
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E3  turn 1
+    E3  uses creeping_rot at 2,1
+    E3   hits A2 for 128, 2716 left
+    E3   poison x1 on A2, now 3
+    E3   hits A1 for 64, 2908 left
+    E3   A1 resists poison (65%)
+    E3   hits A3 for 64, 2908 left
+    E3   poison x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 618 (doubly weak!), 2290 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 618 (doubly weak!), 1672 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 618 (doubly weak!), 1054 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 91 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 273 from poison x3
+
+the connection dropped — taking your seat back, the board is still there
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 160x60 | a live battle waiting on the other player =====
 

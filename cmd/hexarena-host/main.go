@@ -460,7 +460,14 @@ func dependenciesOf(stamp string) (room.Deps, error) {
 	if err != nil {
 		return room.Deps{}, err
 	}
-	return room.Deps{Books: books, Characters: characters, Version: version}, nil
+	// The room draws no randomness of its own — that is what keeps it a state
+	// machine a test can drive a message at a time — so the source is handed in
+	// here, where a binary that is already reading the clock and the network is
+	// the honest place for it. → room.Deps.Tokens.
+	return room.Deps{
+		Books: books, Characters: characters, Version: version,
+		Tokens: wire.NewSeatToken,
+	}, nil
 }
 
 // hosted is a bound listener with one room open behind it, serving.
