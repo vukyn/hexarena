@@ -533,18 +533,13 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 		Drafts:    chosen.draft,
 		Watchable: chosen.watch,
 	}
-	// ⚠️ **A drafting bo3 is refused HERE, in words, rather than by Config.Validate.**
-	// The room refuses it too and its sentence is the authority on *why* — decision
-	// (d), "a ban lasts the match, and the first cut is bo1 only" — but a refusal
-	// surfaced from Open names `battles` and `drafts` as fields of a struct nobody
-	// at a terminal typed. What was typed is two flags, so the refusal names two
-	// flags. → the note below on surfacing the room's own words, which still holds
-	// for every refusal that is not about a flag pairing.
-	if chosen.draft && chosen.battles != 1 {
-		return nil, fmt.Errorf("-draft and -battles %d cannot be asked for together: a ban lasts the "+
-			"match, so drafting a series is a different game and is not built; open a bo1 with "+
-			"-draft, or a bo%d without it", chosen.battles, chosen.battles)
-	}
+	// ⚠️ **A drafting bo3 used to be refused here, in words, and is not any
+	// more.** The refusal named two flags rather than two struct fields, because
+	// what a host types is flags — and it stood while "what a draft means across
+	// a series" was undecided. It is decided: a draft a battle, out of a fresh
+	// pool each time, so `-draft -battles 3` is three ban-and-picks and up to
+	// three different squads. → room.Room.redraft, and the banner below, which
+	// says so where a host reads it.
 	// ⚠️ **Five a side is held back at this flag and nowhere else.**
 	// wire.Format5v5 stays valid on the wire on purpose: taking it out of
 	// Format.Valid would be a protocol change, and a peer one version either way
@@ -720,6 +715,15 @@ func banner(held *hosted, how string, out io.Writer) {
 	// stops being read.
 	if held.config.Drafts {
 		fmt.Fprintf(out, "  draft       yes — both sides ban and pick here; JOIN WITH NO SQUAD\n")
+		// ⚠️ **Said only in a series**, for the draft line's own reason: a line
+		// every ordinary drafting host reads past is how the one that matters
+		// stops being read. What it has to say is that the squads are not kept —
+		// a player who drafted a side they liked will otherwise expect it back
+		// in battle two, and it is a fresh pool and a fresh pick every time.
+		if held.config.Battles > 1 {
+			fmt.Fprintf(out, "  draft       ...once per battle — %d ban-and-picks, out of a fresh pool each time\n",
+				held.config.Battles)
+		}
 	}
 	// ⚠️ **What a host has to be told is that there is no second code.** The
 	// room code decision the whole feature rests on is that a spectator pastes

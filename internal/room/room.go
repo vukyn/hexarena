@@ -289,26 +289,7 @@ func New(config Config, deps Deps) (*Room, error) {
 	}
 	opened := &Room{config: config, deps: deps, onTurn: -1}
 	if config.Drafts {
-		drafting, err := draft.New(draft.Config{
-			Format: config.Format,
-			Pool:   draft.NewPool(deps.Characters.All()),
-			// ⚠️ **The host decides first, always, and this constant is
-			// deliberately NOT on the wire.** A client knows its own seat from
-			// wire.Welcome.Seat and knows a draft is coming from
-			// wire.Welcome.Drafts, so it computes the same answer this line
-			// does — where a `first` field would be a *second statement of a
-			// constant*, and a second statement is the one place two peers can
-			// disagree. → wire.Decide, which carries no seat for the same
-			// reason.
-			//
-			// ⚠️ **It is bo1's rule.** "The previous winner bans first" is a
-			// real question for a bo3 draft, that is deliberately a different
-			// game, and Config.Validate refuses a drafting series for exactly
-			// that reason — so today there is no previous winner for this to
-			// have to be about. draft.Config.First is a parameter rather than a
-			// constant precisely so that item can answer it differently.
-			First: seats[0],
-		})
+		drafting, err := newDraft(config, deps)
 		if err != nil {
 			return nil, fmt.Errorf("a room that drafts: %w", err)
 		}
@@ -759,6 +740,12 @@ func (r *Room) close() ([]Outbound, error) {
 	}
 	r.fight, r.prompt, r.onTurn = nil, nil, -1
 	if !r.seriesOver() {
+		// ⚠️ **A drafting series bans and picks again rather than beginning**,
+		// and it sends nothing while it does — the same shape bothTaken has when
+		// it opens the first one. → redraft, where the pool's reset is argued.
+		if r.config.Drafts {
+			return nil, r.redraft()
+		}
 		return r.begin()
 	}
 	leader := r.leader()

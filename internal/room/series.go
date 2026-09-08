@@ -109,8 +109,12 @@ type Config struct {
 	// internal/draft's own New rests on. Measured on the shipped cast: a pool of
 	// **19**, so 3v3 has nine characters to spare and 5v5 has three.
 	//
-	// ⚠️ What Validate **can** say about it is that the series is a bo1, which is
-	// below.
+	// ⚠️ **A series drafts once a battle**, so three battles can be three
+	// different squads out of three fresh pools. That was the open question this
+	// field's refusal used to stand in for — "what a draft means across a series"
+	// — and it is answered: → Room.redraft, where the pool's reset and the ban
+	// order are argued. Validate therefore says nothing about the two together
+	// any more.
 	Drafts bool
 	// Watchable says a client that asked to **watch** (→ wire.Hello.Watch) is
 	// welcomed rather than turned away. It is **off by default**, which is the
@@ -169,21 +173,6 @@ func (c Config) Validate() error {
 	}
 	if c.TurnCap <= 0 {
 		return fmt.Errorf("a turn cap of %d ends every battle before it starts", c.TurnCap)
-	}
-	// ⚠️ **The ban and pick is bo1's, by name, and this refusal is a design
-	// decision rather than a bounds check** — the same kind as the bo2 above.
-	// "A ban lasts the match, and the first cut is bo1 only" is what was settled;
-	// what a draft means in a *series* is three different games — three drafts,
-	// one draft carried across all three battles, or a draft per battle with the
-	// previous winner banning first — and choosing one of them by accepting the
-	// configuration would be taking that decision here. A room that accepted it
-	// would silently ship the second reading. → TODO.md § "Ban and pick for a
-	// bo3", which is its own item.
-	if c.Drafts && c.Battles != 1 {
-		return fmt.Errorf("a drafting room of %d battles has no rule to run under: a ban lasts "+
-			"the match and the first cut is bo1 only, so what a draft means across a series — "+
-			"three drafts, one draft carried, or a draft a battle with the previous winner "+
-			"banning first — is a decision nobody has taken", c.Battles)
 	}
 	return nil
 }

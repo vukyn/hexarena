@@ -442,6 +442,24 @@ func (m *mirror) sending(decision wire.DraftDecision) wire.Body {
 	return wire.Decide{DraftDecision: decision}
 }
 
+// due is what this client sends when the room says its input is owed, dispatched
+// on the client's **own** reading of what is being asked for.
+//
+// ⚠️ **That dispatch is an assertion and not a convenience.** The room says which
+// seat is due; this says whether the thing due is a draft decision or a battle
+// turn, off state the client computed from the record alone. A room that opened a
+// draft the client did not — or began a battle while the client still held one —
+// fails here on the first disagreement, where a test that dispatched on the
+// room's own state would agree with the room by construction and run to a
+// plausible-looking end.
+func (m *mirror) due() wire.Body {
+	m.t.Helper()
+	if m.drafting != nil && !m.drafting.Done() && !m.drafting.Cancelled() {
+		return m.decide()
+	}
+	return m.answer()
+}
+
 // candidate is what a decision naming a character takes — the first the pool
 // still offers — and the assertion that there was one to take. A draft
 // draft.New allowed cannot run out of characters, so an empty list here is that
@@ -580,6 +598,15 @@ func (m *mirror) apply(turn wire.Turn) {
 			m.seat, turn.Decision.Unit, turn.Decision.Turn, turn.Events.Short(), digest.Short())
 	}
 	m.compared++
+	// ⚠️ **A drafting series opens its next ban and pick here, computed and not
+	// announced** — the same three facts the room uses and the real
+	// socket.Mirror uses: the series length off the welcome, that the room
+	// drafts off the welcome, and this battle having ended off its own engine.
+	// The room sends nothing, because a wire.Drafted carries recorded decisions
+	// and none have been taken. → room.Room.redraft.
+	if m.welcome.Drafts && m.fight.Finished() && len(m.starts) < m.welcome.Battles {
+		m.openDraft()
+	}
 }
 
 // answer is what this client sends when the room asks it: the rating's choice,

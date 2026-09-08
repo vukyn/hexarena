@@ -1,7 +1,11 @@
 package room
 
 import (
+	"fmt"
 	"slices"
+
+	"github.com/vukyn/hexarena/internal/core/placement"
+	"github.com/vukyn/hexarena/internal/draft"
 
 	"github.com/vukyn/hexarena/internal/wire"
 )
@@ -286,4 +290,70 @@ func (r *Room) draftTimedOut(seat wire.Seat) ([]Outbound, error) {
 	}
 	r.result = Result{Verdict: VerdictAbandoned}
 	return r.both(wire.Closed{Reason: wire.ClosureDraftExpired}), nil
+}
+
+// newDraft builds one ban and pick: the format's, over a fresh pool, with the
+// host deciding first.
+//
+// ⚠️ **One declaration, two callers, and the second is what made it one.** New
+// built the room's first draft inline; a bo3 opens a new one between battles, and
+// a second literal would be the place the two could come to disagree about the
+// pool or about who bans first. → redraft.
+//
+// ⚠️ **The host decides first, always, and this constant is deliberately NOT on
+// the wire.** A client knows its own seat from wire.Welcome.Seat and knows a
+// draft is coming from wire.Welcome.Drafts, so it computes the same answer this
+// line does — where a `first` field would be a *second statement of a constant*,
+// and a second statement is the one place two peers can disagree. → wire.Decide,
+// which carries no seat for the same reason.
+//
+// ⚠️ **It stays the host in every battle of a series, which is a decision rather
+// than the absence of one.** "The previous winner bans first" was the other
+// reading and is expressible — `draft.Config.First` is a parameter precisely so
+// it could be — and it was not taken: it would need a stated answer for a drawn
+// battle, and it would hand the ban order to whoever is already ahead. What the
+// series swaps between battles is the SIDE (→ Room.home), which is the advantage
+// a bo3 exists to cancel; the ban order is not swapped, and a host therefore
+// bans first three times. That is the cost of this reading, written down rather
+// than discovered.
+func newDraft(config Config, deps Deps) (*draft.Draft, error) {
+	return draft.New(draft.Config{
+		Format: config.Format,
+		Pool:   draft.NewPool(deps.Characters.All()),
+		First:  seats[0],
+	})
+}
+
+// redraft opens the next battle's ban and pick, and is what a drafting series
+// does instead of beginning a battle.
+//
+// ⚠️ **The pool RESETS, and it has to.** Three battles out of one pool would run
+// it down — 3v3 spends six picks and its bans a battle — and the last draft would
+// be a choice between whatever nobody wanted twice. A fresh pool is also what
+// makes the three battles three genuinely different squads rather than one squad
+// and two consolation prizes, which is the whole of what a draft a battle is for.
+//
+// ⚠️ **It sends NOTHING**, exactly as bothTaken sends nothing when it opens the
+// first draft. A wire.Drafted carries recorded decisions, none have been taken,
+// and a room must not send one carrying none — and a client needs no telling: it
+// knows the series length from wire.Welcome.Battles, it knows the room drafts
+// from wire.Welcome.Drafts, and it learns each battle's outcome from its own
+// Ended event, so "that battle ended, the series is not over, so a draft opens
+// now" is a reading it takes rather than a message it waits for. → the mirror's
+// own settled, which is the same three facts one layer out.
+//
+// ⚠️ **The squads are cleared.** They are last battle's, and the next begin()
+// reads them — so leaving them would field the previous side if anything ever
+// called begin() between drafts. Nothing does; an empty squad refusing loudly is
+// what keeps that true rather than hoping.
+func (r *Room) redraft() error {
+	drafting, err := newDraft(r.config, r.deps)
+	if err != nil {
+		return fmt.Errorf("a drafting series opens battle %d: %w", r.index+1, err)
+	}
+	r.drafting, r.draftCursor = drafting, 0
+	for index := range r.seated {
+		r.seated[index].squad = placement.Squad{}
+	}
+	return nil
 }

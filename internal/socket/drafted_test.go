@@ -750,3 +750,59 @@ func TestNoFieldOfADraftSightCanAliasTheDraft(t *testing.T) {
 	}
 	t.Logf("scanned %d source files; every one of %s's %d fields is a value", scanned, subject, fields)
 }
+
+// TestTwoRealClientsDraftOnceABattleOverALoopbackListener is the drafting series
+// end to end, and it is the one test that exercises the client's half of it.
+//
+// ⚠️ **A drafting bo3 opens a new ban and pick between battles and nobody is
+// told.** The room sends nothing — a wire.Drafted carries recorded decisions and
+// none have been taken — so each client opens its own from three facts it already
+// holds: the series length off wire.Welcome.Battles, that the room drafts off
+// wire.Welcome.Drafts, and the battle having ended off its own engine. A client
+// that did not would sit holding a finished draft while the room waited for a
+// ban, and the match would simply stop: this test hangs to its timeout rather
+// than failing an assertion, which is what a deadlock looks like and is why it is
+// worth having at this layer rather than only against the fake clients.
+func TestTwoRealClientsDraftOnceABattleOverALoopbackListener(t *testing.T) {
+	dependencies := deps(t)
+	configuration := draftingConfig(11, room.DefaultAllowance)
+	configuration.Battles = 3
+	held := listening(t, Timings{})
+	code := held.open(t, configuration, dependencies)
+
+	host := held.drafter(t, code, "Host", dependencies)
+	guest := held.drafter(t, code, "Guest", dependencies)
+	ctx := context.Background()
+	hostPlay := play(ctx, host.Client, rating(host.Client))
+	guestPlay := play(ctx, guest.Client, rating(guest.Client))
+
+	if err := hostPlay.wait(t, "the host"); err != nil {
+		t.Fatalf("the host's drafted series: %v", err)
+	}
+	if err := guestPlay.wait(t, "the guest"); err != nil {
+		t.Fatalf("the guest's drafted series: %v", err)
+	}
+	done := held.finished(t)
+	result, played := done.reading.Result, done.reading.Played
+	if !result.Verdict.Over() {
+		t.Fatalf("the transport reported a finished series with the verdict %q", result.Verdict)
+	}
+	// ⚠️ **Two or three, not three.** A bo3 ends when somebody takes two, so
+	// demanding three would be demanding a 2–1 — a test that passed only on the
+	// seeds where the series went the distance.
+	if len(played) < 2 || len(played) > configuration.Battles {
+		t.Fatalf("a bo3 played %d battles, want 2 or %d", len(played), configuration.Battles)
+	}
+	// Each client fought every battle the room played, which is what says its own
+	// engine kept up through a draft it opened itself.
+	for _, client := range []*drafter{host, guest} {
+		if got := len(client.Mirror().Fought()); got != len(played) {
+			t.Errorf("%s fought %d battles and the room played %d: a client that did not "+
+				"open its next draft stops at the first one", client.Seat(), got, len(played))
+		}
+		if !client.Mirror().Draft().Mirrored {
+			t.Errorf("%s ended the series holding no draft", client.Seat())
+		}
+	}
+	t.Logf("%d battles, %d–%d", len(played), result.Wins[0], result.Wins[1])
+}
