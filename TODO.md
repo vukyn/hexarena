@@ -2179,13 +2179,46 @@ is only so the shape is readable.
             player who simply never answers stranded their own client just as
             thoroughly, because the room's pass for that seat arrived at a socket
             nobody was reading.
-      - [ ] Re-take `playFit`'s budget. ⚠️ A 5v5 body already measures 28 rows
-            against the 24 the floor gives it, and PvP adds a waiting row on top.
-            ⚠️ **The clock row it also predicted was never spent**: the countdown
-            went on the heading row instead, precisely because there was no row to
-            give it — measured, a row of its own moves three lines of every live
-            render rather than one. A row for it is affordable the day this item
-            is done, and not before.
+      - [x] **Re-take `playFit`'s budget — DONE 2026-09-08, and the answer is no
+            row is affordable.** The old figure said "a 5v5 body measures 28 rows
+            against the 24 the floor gives it". **Both numbers were wrong**, and
+            in the same direction: 24 is the window height and the body's purse is
+            `height - 4` = **20**, and a 5v5 asks **37**. Re-taken by the screen
+            itself, in `internal/screen/playbudget_test.go`:
+
+            | board | purse | asks | short by |
+            |---|---:|---:|---:|
+            | 1 a side, local | 20 | 29 | 9 |
+            | 5 a side, local | 20 | 37 | 17 |
+            | 5 a side, live and waiting | 20 | 33 | 13 |
+            | `tui.Board` + a roster of every formation slot, alone | 20 | 20 | — |
+
+            ⚠️ **A ONE-a-side battle does not fit either**, which the old reading
+            missed by looking only at 5v5. The deficit is nine rows before a
+            second unit is on the board, so this is not a big-pairing problem that
+            a smaller format escapes: it is what the floor gives against what a
+            battle screen is.
+
+            ⚠️ **The last row of that table is the sharp one.** The board and a
+            full roster come to *exactly* the purse — not more, which would be
+            easier to read, but exactly — so those two sections consume every row
+            there is and the heading, the order line, the log and the option list
+            are all in deficit before anything is drawn. That is why the
+            assertion is "at least the purse" rather than "more than": a board
+            that fitted with rows to spare is what would re-open the priority
+            list, and this is the opposite of that.
+
+            ⚠️ **The waiting row IS spent, and the old note had it backwards.**
+            That note said the predicted clock row "was never spent" because the
+            countdown went onto the heading. True of the *clock*; the **tail** is
+            a different section and live mode does spend it — measured at 2 rows
+            where a local battle between turns draws nothing there and resolves in
+            microseconds, while this holds for a whole allowance.
+
+            So: the countdown stays on the heading row, the board stays droppable
+            whole, and the log stays last. Nothing here is affordable, and the
+            three decisions that were justified with "there is no row" are now
+            justified with a figure instead of a memory.
       - [x] The wordings, in both books, Vietnamese composed: room, lobby,
             waiting. **Done**: the menu's ninth entry, the join screen (heading,
             two field labels and their placeholders, the squad chooser, the hint,
