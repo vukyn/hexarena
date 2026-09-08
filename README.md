@@ -2321,8 +2321,9 @@ the ordinary battle screen driven by the mirror, and a result screen that finall
 *speaks* the refusals and the closures.
 
 What is left of this section as a record rather than as code: the **countdown**
-(both clocks drawn, so a player can see the other one thinking), **rejoin**, a
-player squad file, spectators and mDNS browsing. → `TODO.md`.
+(both clocks drawn, so a player can see the other one thinking), **rejoin**, and
+the client half of mDNS browsing — the host announces itself already, with
+`-browse`, and nothing lists what it hears yet. → `TODO.md`.
 
 ```
 $ hexarena-host -battles 3
@@ -3182,8 +3183,12 @@ restates the redaction itself now.
   filtered log fails by construction. The event log being the one contract is the
   most expensive invariant here; it is not being spent on this.
 - **Draft and ban.** Both squads are revealed when the first battle starts.
-- **Spectators**, which the cursor above makes nearly free, and **mDNS room
-  browsing**, which would let a client list rooms with no code at all.
+- **A client that browses.** The host half of mDNS room browsing ships:
+  `hexarena-host -browse` announces the room as `_hexarena._tcp` on the local
+  network, and `dns-sd -B _hexarena._tcp` or `avahi-browse` finds it. What is
+  left is the listing on the client, so a player picks a room instead of being
+  read a code. → `internal/discovery`, and `TODO.md` for the platform note that
+  makes the client half worth doing carefully.
 - **A chess clock** — a total budget per player rather than a budget per turn.
 - **TLS.** On a LAN it costs more than it is worth, and saying the password is not
   security is more honest than a self-signed certificate that implies it is.

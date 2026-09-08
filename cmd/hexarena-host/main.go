@@ -73,6 +73,7 @@ import (
 	"time"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/discovery"
 	"github.com/vukyn/hexarena/internal/room"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/socket"
@@ -170,6 +171,20 @@ type settings struct {
 	// refuses one by name (wire.CodeWatchingClosed) rather than letting them in
 	// quietly. → room.Config.Watchable.
 	watch bool
+	// browse says this room announces itself on the local network over mDNS, so
+	// a client can list it and never be read a code at all.
+	//
+	// ⚠️ **Off by default, for the reason -watch is.** A room is for the people
+	// the host told about it; announcing it puts the code in front of every
+	// machine on the segment, which is a different room from the one somebody
+	// opened by default. The flag is what says otherwise.
+	//
+	// ⚠️ The announcement carries the room CODE, and the code is the whole of
+	// what a client needs to join. A password still gates the join
+	// (wire.CodeBadPassword), so -browse and -password are not in tension — but a
+	// room with no password, announced, is a room anybody on the LAN may walk
+	// into. That is the point of a LAN game and it is worth typing on purpose.
+	browse bool
 	// logs is the directory each finished battle is written into as a
 	// `battle.Log`, and empty writes nothing.
 	//
@@ -194,8 +209,8 @@ type settings struct {
 // String is the settings as a line, with the password redacted through the type
 // that owns the redaction. → the note on the struct, for why this exists at all.
 func (s settings) String() string {
-	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, watch %t, logs %q, version %t",
-		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.watch, s.logs, s.version)
+	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, watch %t, browse %t, logs %q, version %t",
+		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.watch, s.browse, s.logs, s.version)
 }
 
 // GoString is the same for %#v, which does not go through String.
@@ -283,6 +298,7 @@ func flags(chosen *settings) *flag.FlagSet {
 	set.Uint64Var(&chosen.seed, "seed", 0, "the match's seed; 0 draws one and prints it")
 	set.BoolVar(&chosen.draft, "draft", false, "ban and pick from one shared pool instead of bringing squads; join with NO squad")
 	set.BoolVar(&chosen.watch, "watch", false, "let spectators watch; they paste the SAME code the players do")
+	set.BoolVar(&chosen.browse, "browse", false, "announce this room on the local network so a client can list it without a code")
 	set.StringVar(&chosen.logs, "logs", "", "write each finished battle here; replay one with `hexarena --replay FILE --verify`")
 	// The same sentence cmd/hexarena-tui's flag shows in English, and the same
 	// three numbers. That client takes its descriptions from internal/i18n
@@ -463,6 +479,25 @@ type hosted struct {
 	// logs is the directory finished battles are written into, and empty writes
 	// none. → the settings field of the same name.
 	logs string
+	// announced is this room's mDNS advertisement, and is nil when -browse was
+	// not given. Closing it is safe either way, which is why stop can do it
+	// unconditionally.
+	announced *discovery.Advertisement
+	// browseAsked is whether -browse was given, and it is a second field rather
+	// than a nil check because the two answer different questions: announced says
+	// whether this room IS on the network, and this says whether it was meant to
+	// be. A host who asked and did not get it needs the banner to say so — an
+	// empty list on the other machine looks exactly like nobody hosting.
+	browseAsked bool
+	// announceErr is why the announcement did not happen, and is nil when it did
+	// or when nobody asked.
+	//
+	// ⚠️ **`announced == nil` and `announceErr == nil` together mean nobody
+	// asked**, and that is what makes the three states tell each other apart. A
+	// host who typed -browse must end up with exactly one of the two set — a room
+	// that asked and got neither an advertisement nor a reason is a code path that
+	// silently did nothing, which is what a test can catch and a person cannot.
+	announceErr error
 }
 
 // open binds the listener, opens the room behind it and starts serving.
@@ -557,6 +592,8 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 		listener: listener,
 		finished: make(chan room.Reading, 1),
 		logs:     chosen.logs,
+
+		browseAsked: chosen.browse,
 	}
 	held.server = socket.NewServer(held.rooms, socket.Options{
 		Report: func(err error) { fmt.Fprintf(errs, "hexarena-host: %v\n", err) },
@@ -574,6 +611,36 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 	if err != nil {
 		_ = listener.Close()
 		return nil, err
+	}
+	if chosen.browse {
+		// ⚠️ **After the room is open and before the first player can arrive.**
+		// Announcing a code the registry has not issued yet would put a row on
+		// somebody's screen that refuses the join behind it, and there is no
+		// moment earlier than this at which the code exists.
+		//
+		// The advertised address is the one the code carries, so the SRV record
+		// and the code cannot disagree about where this room is. → the note on
+		// discovery.Advertise about registering as a proxy.
+		//
+		// A failure here does not stop the room. Browsing is a way to find a
+		// room the code already reaches, so a machine that cannot multicast — a
+		// container, a locked-down laptop — should host a perfectly good match
+		// and say that one convenience is missing, rather than refuse to open.
+		announced, err := discovery.Advertise(discovery.Room{
+			Code:     held.code,
+			Format:   configuration.Format,
+			Battles:  configuration.Battles,
+			Draft:    configuration.Drafts,
+			Watch:    configuration.Watchable,
+			Data:     dependencies.Version.Data.Short(),
+			Protocol: dependencies.Version.Protocol,
+		}, at)
+		if err != nil {
+			held.announceErr = err
+			fmt.Fprintf(errs, "%s: %v\n", programName, err)
+		} else {
+			held.announced = announced
+		}
 	}
 	held.web = &http.Server{Handler: held.server, ReadHeaderTimeout: shutdownGrace}
 	go func() {
@@ -658,6 +725,18 @@ func banner(held *hosted, how string, out io.Writer) {
 	if held.config.Watchable {
 		fmt.Fprintf(out, "  watch       yes — spectators paste the SAME %d characters the players do\n",
 			wire.RoomCodeLength)
+	}
+	// ⚠️ **Drawn on the ASKING rather than on the succeeding**, and the two are
+	// different lines on purpose. A host who typed -browse and is not announced
+	// has to see that, because the symptom on the other machine — an empty list —
+	// is indistinguishable from "nobody is hosting". The failure itself already
+	// went to stderr when open tried; this is the same fact where the host is
+	// looking. Drawn only when asked for, for the draft and watch lines' reason.
+	if held.announced != nil {
+		fmt.Fprintf(out, "  browse      yes — this room is announced on the local network\n")
+	} else if held.browseAsked {
+		fmt.Fprintf(out, "  browse      ASKED FOR AND FAILED: %v — the code still works\n",
+			held.announceErr)
 	}
 	fmt.Fprintf(out, "  allowance   %ds a turn, %d turns a battle at most\n", held.config.Allowance, held.config.TurnCap)
 	fmt.Fprintf(out, "  seed        %d\n", held.config.Seed)
@@ -746,6 +825,11 @@ func (held *hosted) serve(out, errs io.Writer) error {
 func (held *hosted) stop() error {
 	ctx, done := context.WithTimeout(context.Background(), shutdownGrace)
 	defer done()
+	// First, and before anything that can take time. The withdrawal is a
+	// goodbye packet, and a browser that never gets one keeps offering this room
+	// until the record's TTL runs out — a row that pastes a code at a listener
+	// which is already closing. → discovery.Advertisement.Close.
+	held.announced.Close()
 	err := held.server.Shutdown(ctx)
 	// The http server is shut down whatever the transport said, because the
 	// listener is this process's and holding it open helps nobody.

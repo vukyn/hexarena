@@ -3319,7 +3319,72 @@ is only so the shape is readable.
             deletes that refusal — and whichever of the three games it chooses,
             `draft.Config.First` is already the parameter that lets "the previous
             winner bans first" be expressed.
-      - [ ] mDNS room browsing, so a client can list rooms with no code at all.
+      - [ ] **mDNS room browsing — the HOST half is done; the client half is not.**
+            `internal/discovery` speaks real DNS-SD over
+            `github.com/libp2p/zeroconf/v2`, and `hexarena-host -browse`
+            announces the open room as `_hexarena._tcp`. Verified with the
+            machine's own tooling rather than with our own reader, which is the
+            whole reason a standard was chosen over a private beacon:
+            `dns-sd -L <code> _hexarena._tcp` resolves it and prints
+            `format=3 battles=1 draft=0 watch=1 data=6537b5d935f7 proto=1`.
+
+            ⚠️ **A private UDP multicast beacon was the alternative and was
+            refused.** It needs no dependency and is smaller, and it is invisible
+            to `dns-sd` and `avahi-browse` — so a host who cannot see their own
+            room would have no way to tell whether the game or the network was at
+            fault. Speaking the standard means the operating system is the second
+            opinion.
+
+            ⚠️ **The room CODE is the DNS-SD instance name**, which is unique on
+            the network by construction (it encodes address, port and room index)
+            and survives a browser losing the TXT record. Everything else — the
+            format, the series length, drafting, watching, the data digest and
+            the protocol number — is TXT, so a listing can say "this one will
+            refuse you" *before* the dial. Browsing therefore adds a way to FIND
+            a room and no way to ENTER one: a player picks a row and the join
+            that follows is the ordinary one, with the ordinary code.
+
+            ⚠️ **A record is read leniently and written strictly, which inverts
+            this repository's rule everywhere else.** `DisallowUnknownFields` is
+            right for a data file because *this* build authored it; a TXT record
+            comes from *another machine's* build, which may be a version ahead,
+            so an unknown key is a fact about the sender rather than a mistake.
+            The one thing that may fail a record is the code, because an entry a
+            player can see and cannot join is worse than one that never appeared.
+
+            ⚠️ **`zeroconf.Register` publishes every address on every
+            interface** — which is exactly the ambiguity `cmd/hexarena-host`'s
+            `pick` refuses to guess about, a container bridge being up, IPv4 and
+            unreachable. `RegisterProxy` with the address the room code already
+            carries is what ships, so the SRV record and the code cannot
+            disagree. ⚠️ It also needed a host **label**: `os.Hostname()` answers
+            `vukynMac.local` here, zeroconf appends the domain, and the SRV
+            target came out `vukynMac.local.local.` — measured with `dns-sd -L`.
+            Our own browse never reads that field, so every test passed and every
+            other DNS-SD tool on the network was handed a name it could not
+            follow.
+
+            **What is left: the client lists what it hears.** `discovery.Browse`
+            is written and is not called by anything.
+
+            ⚠️ **And it cannot be verified on this machine, which is the thing to
+            read before starting it.** Measured 2026-09-08 on macOS 25.6: a Go
+            process receives **no inbound mDNS at all**. A raw
+            `net.ListenMulticastUDP` on 224.0.0.251:5353 binds without error,
+            reports a local address and reads nothing for three seconds, while
+            Apple's `dns-sd -B` lists four services on two interfaces at the same
+            moment. `zeroconf.Browse` likewise returns a nil error and hears
+            nothing, on every interface and on both IP families. **Sending is
+            unaffected** — the advertisement above is visible immediately — so it
+            is the inbound half that macOS withholds, silently, on a per-app
+            local-network permission a `go test` binary has never been granted.
+            `TestARoomAnnouncedOnThisMachineIsHeardByABrowse` probes for exactly
+            that and skips naming it, rather than failing over an operating
+            system's privacy setting.
+            So the client half needs a machine that delivers multicast, and the
+            listing needs to say something useful when it hears nothing — because
+            "nobody is hosting" and "this machine is not allowed to hear them"
+            look identical, and on macOS the second is the likely one.
       - [ ] A chess clock — a budget per player rather than per turn.
       - [ ] Prove the mirror across architectures: the same seed and the same
             digest on amd64 and arm64. Friends are not all on one machine, and
