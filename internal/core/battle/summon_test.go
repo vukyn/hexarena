@@ -210,6 +210,72 @@ func TestAFixedStatLineIgnoresItsCallerEntirely(t *testing.T) {
 	}
 }
 
+// TestASideAtTheTeamCapSummonsNobody is the other end of the arm below, and it
+// is the one that says what the largest format means.
+//
+// A summon lives in the **gap** between how many a side is fielding and how many
+// the board admits — `summonPlaces` reads `hex.MaxTeamSize - perSide`. A side one
+// short of the cap gets one copy, which the test below holds; a side **at** the
+// cap gets none, and since the largest format fields exactly `MaxTeamSize` units
+// that is the whole of why five a side cannot summon at all.
+//
+// ⚠️ **The cast is forced rather than suggested here on purpose.** The rating
+// declining it is a different claim, and a test that only drove Suggest could not
+// tell "the rating would not" from "the board could not". This one asks the board.
+//
+// ⚠️ **Mutating `summonPlaces`'s `room` alone does not redden this, and that is
+// a fact about the engine rather than a hole in the test**: `enlist` refuses a
+// full side as well, so the arrival is stopped twice. The two readings are not
+// redundant — `summonPlaces` is the one `summonWorth` prices from, so dropping
+// its bound would leave the rating paying for copies the board never delivers,
+// which is the "the rating sees what the engine does not" shape this repository
+// keeps a list of. The price is held where prices are held.
+//
+// Written against the constant rather than against five, so it keeps saying
+// something true if the cap is ever raised: what would stop being true then is
+// the *coincidence* between the cap and the format, which is asserted where the
+// format is chosen.
+func TestASideAtTheTeamCapSummonsNobody(t *testing.T) {
+	roster := []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 200),
+			Skills: []string{"swarm", "jab"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 5),
+			Skills: []string{"jab"}},
+	}
+	// The caster plus enough bodies to reach the cap exactly. lob rather than
+	// jab, because New refuses a unit that can aim at nobody and the back rows
+	// are out of a jab's reach — the crowd is here to fill the side.
+	for _, slot := range []hex.Offset{
+		{Col: 2, Row: 0}, {Col: 2, Row: 2}, {Col: 1, Row: 0}, {Col: 1, Row: 1},
+		{Col: 1, Row: 2}, {Col: 0, Row: 0}, {Col: 0, Row: 1}, {Col: 0, Row: 2},
+	} {
+		if len(roster) >= hex.MaxTeamSize+1 {
+			break
+		}
+		roster = append(roster, battle.Roster{
+			ID: "crowd" + slot.String(), Side: hex.SideAlly, Slot: slot,
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 1),
+			Skills: []string{"lob"},
+		})
+	}
+	fight := mustBattle(t, books(t), 5, roster)
+	if perSide := livingOn(fight, hex.SideAlly); perSide != hex.MaxTeamSize {
+		t.Fatalf("the ally side holds %d units, and this measures a side at the cap of %d",
+			perSide, hex.MaxTeamSize)
+	}
+	if came := arrivals(casts(t, fight, "swarm")); len(came) != 0 {
+		t.Errorf("a swarm cast by a side already at the cap put down %d units, want none: "+
+			"a summon fills the gap between the side's strength and the cap, and there "+
+			"is no gap", len(came))
+	}
+	if perSide := livingOn(fight, hex.SideAlly); perSide != hex.MaxTeamSize {
+		t.Errorf("the ally side holds %d units after the cast, want the cap of %d",
+			perSide, hex.MaxTeamSize)
+	}
+}
+
 // TestASummonTakesTheFrontSlotsAndStopsWhenTheyRunOut is the board's own answer,
 // and the reason a count is a request rather than a promise.
 func TestASummonTakesTheFrontSlotsAndStopsWhenTheyRunOut(t *testing.T) {

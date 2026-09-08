@@ -552,24 +552,29 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 	// back is the ability to *open* such a room, which is the only place a
 	// format is chosen in this repository.
 	//
-	// ⚠️ **There were two reasons and there is now ONE**, and this comment said
-	// otherwise until 2026-09-07. The draft half — "ten picks and three bans a
-	// side want sixteen in the pool and there are eleven" — closed while the
-	// draft was being built: `pokemon.dratini` took the pool to one short, and
-	// `pokemon.gible` closed it, and the pool has grown since. `draft.Fits`
-	// allows a 5v5 today with room to spare, and the figure is derived rather
-	// than remembered (`jq '[.characters[]|select(.hidden|not)]|length'
-	// internal/seed/data/cast.json`), which is why it is not written here.
+	// ⚠️ **There were two reasons, then one, and the one that is left is a
+	// different thing from what this comment claimed.** The draft half closed
+	// while the draft was being built — `draft.Fits` seats a 5v5 today with room
+	// to spare, and the figure is derived rather than remembered
+	// (`jq '[.characters[]|select(.hidden|not)]|length'
+	// internal/seed/data/cast.json`). The balance half said "the shipped balance
+	// was read at five a side", and that was never true: every figure in this
+	// repository was read at three or fewer, `roster.json` included. The board
+	// nobody had read was five, and it has now been read.
 	//
-	// What is left is the balance. The shipped
-	// balance was read at five a side and the room's default has been three
-	// since the host binary landed, so five is the format whose numbers are the
-	// less wrong of the two but whose board nobody has re-measured; and the
-	// ban-and-pick draft cannot seat a 5v5 at all — ten picks and three bans a
-	// side want sixteen in the pool and there are eleven. → TODO.md, "read the
-	// balance again at 3v3" and "ban and pick".
+	// **What the reading found is not a number to re-tune.** The board resolves
+	// and stays fair at five — a mirrored squad comes to exactly 500‰ over two
+	// hundred battles with nothing endless, and screening is worth *more* there
+	// than at three (935‰ against 850‰ on the same bodies). What breaks is
+	// summoning: `hex.MaxTeamSize` is five, so a full side leaves no room for a
+	// copy, and `split` is cast 400 times over a hundred mirrored seeds at three
+	// and at four a side and **0** times at five. Three shipped skills and one
+	// shipped build are dead slots at this format, so opening it would ship a
+	// mechanic that silently does nothing. → `ENG-013`, and
+	// `docs/balance.md` § *Five a side, read at last*.
 	if wire.Format(chosen.format) == wire.Format5v5 {
-		return nil, fmt.Errorf("five a side is not offered yet: its balance has not been read on this board; open a 3v3")
+		return nil, fmt.Errorf("five a side is not offered yet: a full side leaves no room " +
+			"for a summon, so every summoning skill is a dead slot there; open a 3v3")
 	}
 	// The room's own refusals are surfaced word for word rather than reworded.
 	// "a series of 2 battles is even, and an even series has to invent a rule for
