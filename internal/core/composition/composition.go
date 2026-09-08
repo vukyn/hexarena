@@ -281,6 +281,15 @@ func (b *Book) Lookup(id string) (Bonus, error) {
 // *the system* and can never price one rung; taking one out leaves the board the
 // other bonuses actually make, which is the board the rung is played on.
 //
+// ⚠️ **No formation the game ships gives this instrument a board to work on.**
+// DAT-008 Run A took two bonuses out and every field came back identical on
+// every pairing forge.FightSquads fights, because the whole ten-bonus table
+// reaches nothing on any of the five squads or either roster half. A switch that
+// changes nothing prices nothing, so a figure taken through here today came off
+// a squad built to hold the bonus and has to be quoted with that squad named. →
+// docs/balance.md § "Every composition-bonus figure is a probe reading, and its
+// squad has to be named", and TODO.md DAT-010.
+//
 // An id nobody declares is not an error. A caller naming one is asking for a
 // book without it, and a book without it is what comes back.
 func (b *Book) Without(ids ...string) *Book {

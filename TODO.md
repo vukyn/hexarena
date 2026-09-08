@@ -107,7 +107,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-007` | open | The area axis is not priced below single-target burst — on every board a rate… |
 | `DAT-008` | open | `bedrock` and `phalanx` are the same effect on two axes, which decision 5 forbids — and NEITHER can be re-pointed today: the composition-bonus effect vocabulary has nine slots and the shipped table uses all nine. Premise rewritten, measured, and a distinctness guard shipped |
 | `DAT-009` | done | Ally-aimed area support is single-target on every shipped board — REFUSED, with the measurement: the item's own `arc_up` candidate is a no-op, and `pierce`, the one shape that catches two, moved one battle in twelve hundred |
-| `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` |
+| `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` — a reach guard and the probe-reading convention shipped; a board for a bonus to fire on did not |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
 | `SCR-001` | shipped | Reference screens |
@@ -486,9 +486,14 @@ is only so the shape is readable.
 
 - [ ] `DAT-010` ⚠️ **No composition bonus in the game can be priced on a board that
       exists: the whole ten-bonus table fires on ZERO shipped squads and on
-      `roster.json`.** Raised 2026-09-08 out of `DAT-008`'s measurement. **Filed
-      only — no work done, and it is deliberately not `DAT-008`'s to fix**, because
-      it is about the table rather than about the two ids that collide.
+      `roster.json`.** Raised 2026-09-08 out of `DAT-008`'s measurement, and it is
+      deliberately not `DAT-008`'s to fix, because it is about the table rather
+      than about the two ids that collide. **Candidates 3 and 4 shipped the same
+      day: the repository now says this out loud and quotes every composition-bonus
+      figure with the board it came off. It stays open, because 1 and 2 are the
+      only things that would give a bonus a board and neither is taken.** Nothing
+      in `internal/seed/data` changed, so no golden moved and the data digest is
+      untouched.
 
       Derived off `cast.json` × `squads.json` × `bonuses.json`, skipping
       `elements.json`'s `inert`:
@@ -532,26 +537,59 @@ is only so the shape is readable.
       the two have the same cause — the five shipped squads stand one unit per
       column and carry one unit per element.
 
-      **Candidates, none measured, and each has a cost worth naming before anybody
-      reaches for it:**
+      **Still open — the two that would change the state, with the costs that
+      stopped them. Neither is measured:**
       1. **Ship a sixth squad that fires something.** The cheapest, and `DAT-007`
          built and threw away an `s06` for the neighbouring reason: a new squad is a
          new board every existing squad rate is quoted against, and the stacked
          shape it has to take to fire `same_column` is a squad that is worse for
          reasons unrelated to the bonus. Read `DAT-007`'s `s06` autopsy first.
       2. **Re-slot or re-cast an existing squad so it reaches a rung.** Moves every
-         rate already quoted off that squad, which is most of the balance record.
-      3. **Accept it and say so where a number is read** — the `DAT-007` shape:
-         quote every composition-bonus figure as a probe reading with its squad
-         named, and never as a property of the game. Costs nothing and buys
-         honesty rather than coverage.
-      4. **A guard.** The reachability tests in
-         `internal/seed/elementbonus_test.go` ask whether the CAST could field a
-         rung; none asks whether anything that ships DOES. A test that reports, per
-         bonus, whether any shipped formation reaches it would have said this out
-         loud a month ago. ⚠️ It has to **log rather than assert** on today's data
-         for the reason `areaboard_test.go` gives twice: filing an open item as a
-         failing test is not filing it.
+         rate already quoted off that squad, which is most of the balance record —
+         and the stacked shape costs ~213‰ (`DAT-002`) to ~253‰ (`DAT-007`) before
+         the bonus pays anything, so the instrument perturbs what it measures.
+
+      **Shipped 2026-09-08 — measurement and honesty, not coverage. This buys the
+      repository the ability to SAY the state, not a board on which to price a
+      rung:**
+      3. **Accept it and say so where a number is read**, the `DAT-007` shape.
+         `docs/balance.md` § *Every composition-bonus figure is a probe reading,
+         and its squad has to be named* states the convention once, with the
+         seven-formation derivation table, Run A below as the no-op proof and Run
+         B as the one usable reading (`probe_ground` named, saturation caveat
+         kept). Pointers added where the figures already are: the composition
+         block in `docs/balance.md` — whose four `same_column` readings now name
+         the re-slotted squad they came off — `README.md` § *What a squad shares*,
+         and `composition.Book.Without`'s own doc comment, which is the pricing
+         instrument with nothing to point at. ⚠️ The convention covers **measured
+         readings only**: the ten-row grant table in `DAT-002` is a restatement of
+         `bonuses.json`, so it is authored data and needs no qualification. One
+         stale clause was corrected while the block was open — `docs/balance.md`
+         still said "`same_element` counts what a side IS" of a bonus retired the
+         same day.
+      4. **A guard.** `TestEveryBonusIsMeasuredAgainstEveryShippedFormation`
+         (`internal/seed/bonusboard_test.go`) walks `bonuses.All()` against the
+         five squads and the two `roster.json` halves through
+         `composition.Book.Awards` — never a re-implemented tally, because a
+         second declaration of the counting rule is the copy that goes stale — and
+         reports per bonus whether anything that ships reaches a rung. It **logs**
+         that answer and asserts only that it measured a bonus against a formation
+         at all, for the reason `areaboard_test.go` gives twice: filing an open
+         item as a failing test is not filing it. Today it reads **ten bonuses
+         reaching nothing, on seven formations**; a line reading otherwise is a
+         finding rather than a pass.
+         ⚠️ It covers the whole book, which nothing else does:
+         `TestEveryElementBonusRungIsReachable` skips every bonus that is not an
+         element one with a named value, so `same_column` had **no** reachability
+         test at all. And it takes no best-of-two-halves reduction and calls no
+         `hex.Place`, unlike its neighbour, because `composition.Member.Column` is
+         the authored slot and is side-blind on purpose.
+         `TestTheBonusReachWalkSeesAFormationThatReachesARung` exercises the reach
+         branch on hand-built members, because no shipped data can — the
+         fixture-hides-a-branch shape this repository has paid for five times —
+         with control arms one sharer short of the rung and with the stacked
+         column spread out, so a walk that reported everything and a walk that
+         reported nothing both fail.
 
       ⚠️ **What this is NOT.** It is not an argument that the table is wrong, and it
       is not a reason to re-price anything: `DAT-008`'s probe shows the bonuses do
@@ -560,6 +598,22 @@ is only so the shape is readable.
       *board* on which to check that work, which is a measurement problem rather
       than a balance one — and it is why `DAT-002`'s remaining rungs, and any
       eleventh bonus, would ship today with nothing able to price them.
+
+      **Two things 3 and 4 deliberately left alone, so the next reader does not
+      take them for oversights.**
+      ⚠️ **Two figures have no recoverable board and are now SAID to have none
+      rather than attributed.** `DAT-002`'s `same_element` readings — rung two
+      worth **+111‰** and rung three **+448‰** — cannot have come off `s01`–`s04`,
+      since each carries three different elements, and which squad they were taken
+      on is written down nowhere. That is this item's finding rather than a gap in
+      it; inventing a squad name would be worse than the missing one. Re-measuring
+      them against the table that replaced the blanket is a separate item.
+      ⚠️ **`README.md` § *What a squad shares* is stale beyond the two figures now
+      qualified**: it describes a single `kinship` bonus paying attack at two
+      thresholds, which is the retired blanket, rather than the shipped ten-bonus
+      table on two axes. Only the two unattributed figures and "four squads" →
+      "five" were touched here. The rewrite belongs to `DAT-002`, which owns the
+      table — **pointer left here on purpose.**
 
 - [ ] `DAT-008` ⚠️ **`bedrock` and `phalanx` are the same effect on two different
       axes, which decision 5 of `DAT-002` forbids — and NEITHER can be re-pointed
@@ -753,6 +807,10 @@ is only so the shape is readable.
       it at ~253‰ and `DAT-002` at ~213‰, by two different instruments. So
       `probe_ground` is already a couple of hundred parts down for standing that
       way, and 292‰ of defence is what it is being handed back.
+      → That qualification is now the written-down convention rather than a
+      paragraph in one item: `docs/balance.md` § *Every composition-bonus figure is
+      a probe reading, and its squad has to be named*, held from below by
+      `TestEveryBonusIsMeasuredAgainstEveryShippedFormation`. `DAT-010`.
 
       `forge.Census` is not the instrument here — it counts casts per slot and
       answers a kit question, and a permanent defence buff changes no slot's
@@ -4438,6 +4496,9 @@ is only so the shape is readable.
       degenerate formation correct. ⚠️ That figure moves one variable and keeps the
       characters, which were picked for a spread formation, so it is a statement
       about *that squad stacked* rather than about stacked squads in general.
+      → Every figure in this paragraph is a probe reading and none came off a
+      shipped board: `docs/balance.md` § *Every composition-bonus figure is a probe
+      reading, and its squad has to be named*, and `DAT-010`.
       ⚠️ **150‰ was measured and is NOT bigger.** The permanent-buff floor is 81
       and the house figure is 150, so the grant had two legal values. At 150 the
       bonus is worth **more** against s03 and s04 and **less** against s01 (+96‰
@@ -4482,6 +4543,11 @@ is only so the shape is readable.
       each, so the bonus was something a player built *towards* rather than
       something already in the starter sides. That is still true of the table that
       replaced it.
+      ⚠️ **Which board the +111‰ and +448‰ were read off is NOT recorded**, and it
+      cannot have been any of s01–s04 for the reason in the line above. Saying so
+      is `DAT-010`'s finding; do not attribute them to a squad. → `docs/balance.md`
+      § *Every composition-bonus figure is a probe reading, and its squad has to be
+      named*.
 
       **Still open, and it is four things rather than one** — the fourth arrived on
       2026-09-08 out of `DAT-008`'s measurement and is the largest of them:

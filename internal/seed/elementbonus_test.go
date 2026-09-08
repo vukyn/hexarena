@@ -35,6 +35,12 @@ import (
 // the one shipped collision named as an exception and pinned both ways. So: the
 // tests above ask whether every rung can FIRE, and that one asks whether what
 // they fire is worth telling apart.
+//
+// ⚠️ **"Can fire" here means the CAST could field the rung, and nothing in this
+// file asks whether anything that SHIPS reaches one.** That is
+// bonusboard_test.go, which walks the whole book against the five squads and the
+// two roster halves and reports the answer — DAT-010. Today it is "none of the
+// ten, on any of the seven", which no test in this file can see.
 
 // carriersByElement counts the shipped cast by the elements they carry, which is
 // the ceiling on every rung a per-element bonus can declare.

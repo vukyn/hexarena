@@ -170,12 +170,13 @@ Rules for anything added to that file:
   the pool is never spent, while `withdraw` simply restores 500 every four turns
   against blows worth 146 and nobody can die. → `TODO.md` § *A guarded mirror never
   resolves*.
-- **A squad is paid for what it shares, on two axes.** `same_element` counts what
-  a side IS and `same_column` counts where it STANDS, and the two are counted by
-  two functions rather than one with a flag, because the rules differ: an element
-  bonus skips the **inert** element — sharing the absence of a matchup is not a
-  tribe — and there is no inert column, since standing at the back is as much a
-  decision as standing at the front.
+- **A squad is paid for what it shares, on two axes.** The per-element table
+  counts what a side IS — the `same_element` blanket that used to say it was
+  retired on 2026-09-08 — and `same_column` counts where it STANDS, and the two
+  are counted by two functions rather than one with a flag, because the rules
+  differ: an element bonus skips the **inert** element — sharing the absence of a
+  matchup is not a tribe — and there is no inert column, since standing at the
+  back is as much a decision as standing at the front.
   ⚠️ **The column is the SLOT and not the archetype's preferred column.** The
   roadmap asked for the preset; `battle.Roster` carries no archetype on purpose,
   so counting it would have widened the roster, the wire and every log to say
@@ -187,12 +188,17 @@ Rules for anything added to that file:
   carelessly — and it reddened two unrelated balance tests. Spreading those
   fixtures was tried and was the *wrong* fix: it moved a unit between columns,
   which changes reach, and re-baselined two measurements for a reason unrelated to
-  the bonus. Measured worth of the rung that ships: **+126‰**, **+59‰** and
-  **+8‰** against the three shipped squads, mirror **500‰** exactly.
-  ⚠️ **It does not pay for the shape.** A squad re-slotted into one column reads
+  the bonus. Measured worth of the rung that ships, **on a squad re-slotted into
+  one column** — no formation the game ships reaches it, so there is no other
+  board it could have been read off: **+126‰**, **+59‰** and **+8‰** against s01,
+  s03 and s04, mirror **500‰** exactly.
+  ⚠️ **It does not pay for the shape.** That same re-slotted squad reads
   464‰ against s01 *with* the bonus where it reads 677‰ spread out — stacking
   costs about 213‰ and the bonus returns 126‰ — so it softens a real sacrifice
   without making the degenerate formation correct.
+  ⚠️ **All four figures above are probe readings and none came off a shipped
+  board** → § *Every composition-bonus figure is a probe reading, and its squad
+  has to be named*.
   ⚠️ **The grant is 100‰ because 150‰ was measured and is not bigger.** At 150 it
   is worth more against two squads and *less* against the third; more defence
   lengthens a battle and a longer battle can change who wins it. A win rate is
@@ -1715,3 +1721,75 @@ flattening that board (`memory/hexarena-roster-placement.md` warns it "reads as 
 tidy-up") would make `splash_power` unreachable in the entire game.
 `TestShippedPatternBook` is the other half and is blind to this one: its width
 check is about CELLS, not occupants.
+
+## Every composition-bonus figure is a probe reading, and its squad has to be named
+
+**A measured composition-bonus number is quoted with the squad that fired it
+named, and never as a property of the game.** That is not caution. There is no
+formation in this repository on which any of the ten bonuses fires, so a figure
+with no board beside it cannot have come from anywhere a rate is normally read
+off — and a reader has no way to recover which board it did come from.
+
+⚠️ **Measured readings only.** `DAT-002`'s ten-row table of grant sizes is a
+restatement of `bonuses.json` — authored numbers, not readings — and needs no
+qualification at all. What needs one is a ‰ figure that came out of
+`forge.FightSquads`.
+
+Derived 2026-09-08 off `cast.json` × `squads.json` × `roster.json` ×
+`bonuses.json`, skipping `elements.json`'s `inert`:
+
+| formation | non-inert elements | slot columns | bonuses reached |
+|---|---|---|---|
+| `s01` | ground 1, water 1, light 1 | {2:2, 0:1} | **none** |
+| `s02` | water 1, dark 1, electric 1, metal 1 | {2:1, 1:1, 0:1} | **none** |
+| `s03` | grass 1, electric 1, metal 1, fire 1 | {2:1, 1:1, 0:1} | **none** |
+| `s04` | ground 1, dark 1 | {2:1, 1:1, 0:1} | **none** |
+| `s05` | ground 1, dark 1, light 1 | {2:1, 1:1, 0:1} | **none** |
+| `roster.json` ally | grass 1, water 1, fire 1 | {0:1, 1:2} | **none** |
+| `roster.json` enemy | water 1, fire 1, grass 1 | {0:1, 1:2} | **none** |
+
+The cause is one sentence: every shipped squad carries three or four
+**different** elements and stands one unit per column, every element rung sits at
+2 or 3, and `same_column` declares only a rung at 3.
+`internal/seed/testdata/replay.golden` reads `bonus_held  0`, which is the roster
+half of the same statement made by the engine rather than derived off the files.
+
+**Measured, not only derived.** `DAT-008` Run A took `ground_root` **and**
+`same_column` out of the book with `forge.FightSquads`, 200 seeds a cell, and
+every field came back identical — rate, both half-tallies, median turns — on
+`s01` vs `s04` (92‰), `s01` vs `s05` (995‰), `s04` vs `s05` (1000‰), with all six
+mirrors at exactly 500‰. So `composition.Book.Without`, which `DAT-002` decision
+4 calls the *only* instrument that can price a bonus, is a **provable no-op on
+every board a rate in this repository is read off**.
+
+**The one usable reading, and what it is a reading of.** `DAT-008` Run B built
+`probe_ground` in a scratch directory — Dugtrio + Garchomp + Machamp at level 60
+on their `builds.json` kits, all three slots in one column — the only squad
+anywhere that fires both bonuses. Against `s04` it reads **422‰** baseline,
+**305‰** with either bonus off (117‰ each) and **130‰** with both off (292‰ for
+the pair). ⚠️ Its other two boards are saturated at 1000‰ and price nothing, so
+**the whole reading rests on `s04`**; and the stacked shape `probe_ground` has to
+take costs about 213‰ (`DAT-002`) to 253‰ (`DAT-007`) before the bonus pays
+anything, so the instrument perturbs what it measures. Figures copied from
+`TODO.md` `DAT-008`, not re-measured here.
+
+⚠️ **What this is NOT.** It is not an argument that the table is wrong and it is
+not a reason to re-price anything: the figures above are the bonuses doing real
+work when they fire. It is an argument that the repository has no *board* on
+which to check that work, which is a measurement problem rather than a balance
+one — and it is why `DAT-002`'s remaining rungs, and any eleventh bonus, would
+ship today with nothing able to price them.
+
+⚠️ **`TestEveryBonusIsMeasuredAgainstEveryShippedFormation`
+(`internal/seed/bonusboard_test.go`) is the floor under this, not a fix for it.**
+It walks the whole bonus book against the five squads and the two roster halves,
+derives both sets from the data rather than from a written-down list, and reports
+per bonus whether anything that ships reaches a rung. It **logs** that answer,
+because turning it red would be filing `DAT-010` as a failing test rather than as
+an item; what it asserts is that it measured a bonus against a formation at all.
+⚠️ **"No shipped formation reaches it" is not "no squad can".** `DAT-008` built a
+legal stacked 3v3 that fires `ground_root` rung 3 and `same_column` rung 3 at
+once, and `DAT-002` had already been wrong the same way about a drafted squad
+versus a saved one. What a player can build is a different question, and the
+cast-level half of it is `TestEveryElementBonusRungIsReachable`. → `TODO.md`
+`DAT-010`.

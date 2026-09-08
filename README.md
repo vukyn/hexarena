@@ -1096,13 +1096,17 @@ Four things about it decide how it plays:
   shared it. A permanent buff with nothing to account for it is a buff a reader
   has to take on trust, and the log is the only contract a renderer has.
 
-None of the four squads that ship fires it: each carries three different
+None of the five squads that ship fires it: each carries three different
 elements, so this is something to build towards rather than something already in
 the box. What it is worth was measured the only way a bonus can be — the same
 squad, the same opponent and the same seeds, once with the bonus and once with it
 switched off. Two of a kind is worth about eleven points in a hundred; three, on a
 pairing thin enough to show it, turned a squad that lost four fights in five into
-one that won five in eight.
+one that won five in eight. Both of those are readings taken on some board that
+held the bonus, and no shipped formation is one — which board it was is not
+written down anywhere, so they say what a bonus does where it fires rather than
+what it is worth in the game. → `docs/balance.md` § *Every composition-bonus
+figure is a probe reading, and its squad has to be named*.
 
 ## How a battle ends
 
