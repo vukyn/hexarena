@@ -182,6 +182,10 @@ type PlayScreen struct {
 	// a turn it can never answer, and a player that quietly went to watching would
 	// be told to press keys that are not there.
 	Watching bool
+	// Reconnecting is this client having lost its socket mid-match and being in
+	// the middle of taking its seat back. → PlayLive.Reconnecting, where the
+	// argument for drawing it at all is, and waiting, which is the row it takes.
+	Reconnecting bool
 	// Cursor is this screen's own read position in a battle it does not own.
 	//
 	// ⚠️ **Live mode may not call Drain.** Drain is Since(b.drained) over an
@@ -358,6 +362,7 @@ func (p PlayScreen) Attach(c Context, live PlayLive) PlayScreen {
 	// came off, and a screen that kept an earlier answer would be a screen whose
 	// mode outlived the match it was told about.
 	p.Watching = live.Watching
+	p.Reconnecting = live.Reconnecting
 	p.LiveRefusal = live.Refusal
 	// Taken on every reading like the refusal is, because it is a reading rather
 	// than a state: the client counts it down and this is called on every redraw.
@@ -438,6 +443,17 @@ type PlayLive struct {
 	// zero value is a turn nobody is being asked about. → PlayClock for why the
 	// arithmetic is not done here.
 	Clock PlayClock
+	// Reconnecting is this client having lost its socket mid-match and being in
+	// the middle of taking its seat back.
+	//
+	// ⚠️ **A board that simply stopped moving is indistinguishable from the other
+	// player thinking**, and the two want opposite things from a reader: one is
+	// nothing to do about, and the other is somebody staring at a frozen screen
+	// wondering whether to quit — which, inside the window the seat is held for,
+	// is the one thing that would actually lose the match. So it is drawn, on the
+	// row the waiting line already has rather than on one of its own, because
+	// this screen has no row to give. → PlayScreen.waiting.
+	Reconnecting bool
 }
 
 // playReading is a battle as a drawing needs it: one value, taken at one moment.
@@ -1548,6 +1564,12 @@ func (p PlayScreen) View(c Context) (string, string) {
 // A watcher is waiting on **both** of them, which is why this is a different
 // sentence rather than the live one with a word swapped.
 func (p PlayScreen) waiting() i18n.Key {
+	// ⚠️ **Before the watching branch**, because a watcher can lose its socket
+	// too and "watching — the two of them are deciding" would then be describing
+	// a match this client is no longer connected to.
+	if p.Reconnecting {
+		return i18n.PlayLiveReconnecting
+	}
 	if p.Watching {
 		return i18n.PlayWatchWaiting
 	}

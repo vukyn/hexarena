@@ -1431,8 +1431,9 @@ is only so the shape is readable.
             **and a malformed hello whose bytes hold the password** over real
             connections and greps the sink for the characters, and cannot see a
             print nothing happened to reach on the day it ran.
-      - [ ] **A seat token and a rejoin — the SERVER half is done; the client
-            does not come back on its own yet.** A room issues a seat token
+      - [x] **A seat token and a rejoin — DONE.** A dropped socket no longer costs
+            a match: the seat is held, the client dials again with its token on
+            its own, and the board it comes back to is the one it left. A room issues a seat token
             (`room.Deps.Tokens`, `wire.NewSeatToken`), the welcome carries it, and
             a hello showing it takes that seat back **before** the room is asked
             whether it is full — which is the whole shape, since a rejoining
@@ -1497,12 +1498,43 @@ is only so the shape is readable.
             the decisions. That note predates the watcher record; the record is
             what made it obsolete, and it is corrected in `registry.go`.
 
-            **What is left — step 3, the client dialling itself.**
-            `cmd/hexarena-tui` keeps the token (`socket.Client.Token`) and does
-            not yet dial again with it, so a player whose wifi drops has to rejoin
-            by hand inside the window. Everything under it is built: the seat is
-            held, the token is kept, and a second Dial carrying it is seated and
-            caught up.
+            ⚠️ **Step 3 shipped 2026-09-08: the client dials again by itself.**
+            `session.playing` is Play and then Play again on the seat it got back,
+            and the loop is there rather than in the model because of what
+            `matchEndedMsg` means — a match being over, which a socket closing in
+            the middle of one is not. A model told a match had ended and then told
+            it had started again would have to unpick the difference on a screen;
+            a client that carries on has nothing to unpick, because from the
+            room's side nothing happened.
+
+            ⚠️ **It decides by asking the MIRROR, never by reading the error.** A
+            dropped socket, a cancelled context and a match played to its end all
+            come back from `Play` as an error — so a reconnection that inspected
+            one would be this client deciding what a network failure looks like.
+            `standing` is the three readings taken off the client instead, which
+            also makes the decision testable with no live socket to drop.
+
+            ⚠️ **A refusal ends it and a network error does not.** A refusal is the
+            room's answer — the window ran out, or the match is over and the code
+            names nothing — and retrying against that is asking a question that has
+            been answered. `reconnectFor` (90s) is only the backstop for a host
+            whose process is gone, and it is longer than the server's window on
+            purpose so the server's answer is what ends this rather than a race
+            between two timers.
+
+            ⚠️ **The screen says so, and that is not decoration.** A board that
+            simply stopped moving is indistinguishable from the other player
+            thinking, and the two want opposite things from a reader: one is
+            nothing to do about, the other is somebody staring at a frozen screen
+            deciding whether to quit — which, inside the window, is the one thing
+            that actually loses the match. `PlayLiveReconnecting` takes the row the
+            waiting line already has, because this screen has no row to give.
+
+            ⚠️ **The reconnect clock went into `clock.go`** rather than onto the
+            module's clock allowlist as a seventh entry: that list says of itself
+            that it is only worth keeping while the answer to "where is the clock
+            in this package" stays short, and `TestEveryClockInTheModuleIsOnThe
+            Allowlist` is what caught the new file.
 
             The reasoning this item was raised on, kept because it is what the
             window is bounded by:

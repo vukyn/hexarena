@@ -479,7 +479,7 @@ func (m model) stepped() model {
 			}
 		}
 		if sight.Fight != nil {
-			m.battle = m.battle.Attach(m.ctx(), liveOf(sight, m.session.countdown(sight)))
+			m.battle = m.battle.Attach(m.ctx(), liveOf(sight, m.session.countdown(sight), m.session.Reconnecting()))
 			if m.screen == screenWaiting || m.screen == screenDraft ||
 				m.screen == screenArrange {
 				// The picker is taken down with the screen it was raised over: a
@@ -524,7 +524,7 @@ func (m model) ended() model {
 // is the same division: this turns a reading into a drawing, and what a clock
 // says is not on the reading. → clock.go, which is where every clock in this
 // package is.
-func liveOf(sight socket.Sight, clock draw.PlayClock) draw.PlayLive {
+func liveOf(sight socket.Sight, clock draw.PlayClock, reconnecting bool) draw.PlayLive {
 	live := draw.PlayLive{
 		Fight:  sight.Fight,
 		Asking: sight.Asking,
@@ -536,6 +536,11 @@ func liveOf(sight socket.Sight, clock draw.PlayClock) draw.PlayLive {
 		// socket.Mirror.Watching is the one derivation, off wire.Welcome.Watching.
 		Watching: sight.Watching,
 		Clock:    clock,
+		// ⚠️ **Off the session and not off the sight.** A mirror knows nothing
+		// about a socket that closed under it — it is a battle, and the battle did
+		// not change — so this is the one thing on a live drawing that comes from
+		// the client's own loop rather than from the room. → session.Reconnecting.
+		Reconnecting: reconnecting,
 	}
 	if len(sight.Refusals) > 0 {
 		live.Refusal = sight.Refusals[len(sight.Refusals)-1].String()

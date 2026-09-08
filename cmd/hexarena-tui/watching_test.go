@@ -368,7 +368,7 @@ func TestTheWatchRowIsDrawnInBothStates(t *testing.T) {
 // clock.
 func TestAWatchingReadingReachesTheBattleScreen(t *testing.T) {
 	for _, watching := range []bool{false, true} {
-		live := liveOf(socket.Sight{Watching: watching}, draw.PlayClock{})
+		live := liveOf(socket.Sight{Watching: watching}, draw.PlayClock{}, false)
 		if live.Watching != watching {
 			t.Errorf("a sight with Watching=%v produced a reading with Watching=%v",
 				watching, live.Watching)
