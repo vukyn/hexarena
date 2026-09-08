@@ -149,7 +149,7 @@ func TestNoShippedShareIsUnderOnePercent(t *testing.T) {
 			check(held.ID, "an amplified chance", raise.Chance)
 		}
 		if held.While != nil {
-			check(held.ID, "a gate", held.While.BelowHealth)
+			check(held.ID, "a gate", held.While.Threshold())
 		}
 	}
 	for _, kind := range statuses.Kinds() {

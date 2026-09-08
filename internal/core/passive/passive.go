@@ -154,6 +154,18 @@ type Passive struct {
 	// resistances and the applications all come and go together. A trait wanting
 	// one gated half and one ungated half is two traits, and saying so is what
 	// keeps a gate from being a per-field flag nobody can read off the data.
+	//
+	// ⚠️ **A per-GRANT While is deliberately not built yet, and it is the next
+	// step rather than a thing refused.** The two-tier shape an author wants —
+	// "+X always, +Z instead while above Y" — needs an ungated grant carrying X
+	// and a gated one carrying the difference, which is a condition on Grant and
+	// not on the trait. It is out of scope here because the trait-level term had
+	// to exist before a grant could carry one, and because it brings a schema
+	// question with it: the refusals a gate already owns (a health term, an
+	// absorbing pool) are rules about the *grant* rather than about the trait, so
+	// they move down with it. → TODO.md § ENG-006, step 2. Splitting the two
+	// tiers across two traits is **not** the answer — a character has trait slots
+	// and one idea may not cost two of them.
 	While *Condition
 	// Resists is the share of an incoming application's chance the holder
 	// refuses, per status.
@@ -403,23 +415,76 @@ type Amplification struct {
 // skill.Condition to carry a health share would give one type two unrelated
 // jobs, and the note that said to reuse it also said this term was the work.
 //
-// One term today, and it is a share rather than a number of points: a threshold
-// in points would mean a different fraction of the bar at every level, so a
-// trait authored for a level-eight unit would be permanently on at sixty.
+// Two terms, one of which a condition holds: the bottom of the health bar and
+// the top of it. Each is a share rather than a number of points, because a
+// threshold in points would mean a different fraction of the bar at every level,
+// so a trait authored for a level-eight unit would be permanently on at sixty.
+//
+// ⚠️ **Exactly one of the two, never both.** A condition holding both ends is a
+// *band*, and a band is two rules wearing one clause — every screen in the game
+// words a gate as a single sentence, so a trait in force between a fifth and a
+// half would either print two clauses that read as contradicting each other or
+// print one that is false. ParseBook refuses the pair, and refuses a clause
+// holding neither. The zero value of each field is therefore "not this end"
+// rather than a share of nought, which is the same spelling skill.Condition uses
+// for the same reason: a bound written as "below n" or "above n" has no
+// meaningful zero, so nought can mean unasked without a pointer or a flag.
+//
+// The two ends are not the same trait with a sign flipped, and that is the whole
+// point of having the second. A trait behind BelowHealth *arrives* as its holder
+// is worn down; one behind AboveHealth *leaves* then — so it costs a great deal
+// in a battle that goes long and nothing at all in one that is over while its
+// holder is still healthy. That is a duration rather than a stat, and no other
+// dial a trait offers can say it.
 type Condition struct {
 	// BelowHealth is the share of its maximum health the holder must be at or
 	// under, in parts per thousand. A third is 333.
 	BelowHealth int
+	// AboveHealth is the share of its maximum health the holder must be at or
+	// over, in parts per thousand. Nine tenths is 900.
+	AboveHealth int
+}
+
+// AtTop reports whether the gate is written at the top of the health bar.
+//
+// It exists so a caller that has to word or render the gate asks one question
+// instead of comparing two fields, and so the answer is derived in one place: a
+// second reading of "which end is this" is how a screen comes to say "under"
+// about a gate the engine reads as "over".
+func (c *Condition) AtTop() bool { return c != nil && c.AboveHealth > 0 }
+
+// Threshold is the share the gate is written against, whichever end it is at,
+// and nought when there is no condition at all.
+//
+// Every caller that renders a gate wants the figure and the end separately —
+// the figure to print as a percentage, the end to choose the wording — and a
+// caller reading BelowHealth directly prints a nought for every gate at the top
+// of the bar.
+func (c *Condition) Threshold() int {
+	switch {
+	case c == nil:
+		return 0
+	case c.AboveHealth > 0:
+		return c.AboveHealth
+	default:
+		return c.BelowHealth
+	}
 }
 
 // Holds reports whether the condition is met by a unit at the given health.
 //
-// At or under, not strictly under: a threshold of a third means a third counts.
-// Maximum health of nought answers no rather than dividing by it — a unit with
-// no maximum is not a unit that is hurt.
+// At or under and at or over, never strictly either: a threshold of a third
+// means a third counts at both ends. That is what makes a pair of traits either
+// side of one number cover the whole bar — see scale.AtOrAboveShare for the
+// overlap and why it is deliberate. Maximum health of nought answers no rather
+// than dividing by it, at either end — a unit with no maximum is neither hurt
+// nor fresh.
 func (c *Condition) Holds(health, maximum int64) bool {
 	if c == nil {
 		return true
+	}
+	if c.AboveHealth > 0 {
+		return scale.AtOrAboveShare(health, maximum, c.AboveHealth)
 	}
 	return scale.AtOrBelowShare(health, maximum, c.BelowHealth)
 }
@@ -494,8 +559,13 @@ type replyFile struct {
 	Applies []applicationFile `json:"applies,omitempty"`
 }
 
+// Both ends are omitempty, and both have to be: a gate at one end writes a
+// nought at the other, and a nought is refused on re-parse as a clause holding
+// no threshold. Written this way a book of gates at the bottom of the bar — which
+// is every gate shipped today — round-trips to the bytes it was authored as.
 type conditionFile struct {
-	BelowHealth int `json:"below_health"`
+	BelowHealth int `json:"below_health,omitempty"`
+	AboveHealth int `json:"above_health,omitempty"`
 }
 
 type resistanceFile struct {
@@ -632,11 +702,12 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		if carries {
 			// ⚠️ A gated trait may not grant one, and this is the rule that
 			// permanent-absorb was let through for. hold and release run the
-			// grant again every time the gate reopens, so a barrier behind
-			// `below_health` would come back full each time its holder crossed
-			// the line — a wall with no cost, refilled by being hit. An ungated
-			// grant runs once at enlistment, which is exactly "puts a barrier up
-			// when the battle starts".
+			// grant again every time the gate reopens, so a barrier behind a gate
+			// would come back full each time its holder crossed the line — a wall
+			// with no cost, refilled by being hit. It reads on either end of the
+			// bar: a gate at the top reopens every time its holder is healed. An
+			// ungated grant runs once at enlistment, which is exactly "puts a
+			// barrier up when the battle starts".
 			if declared.While != nil {
 				return fail("grants %q behind a gate: a pool is refilled every time a gate reopens, so a guard may only be granted by a trait that is always in force",
 					kind.ID)
@@ -795,11 +866,34 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 
 	var while *Condition
 	if declared.While != nil {
-		if declared.While.BelowHealth < 1 || declared.While.BelowHealth > scale.Base {
-			return fail("is in force below %d health, want a share in parts per thousand",
-				declared.While.BelowHealth)
+		below, above := declared.While.BelowHealth, declared.While.AboveHealth
+		switch {
+		// A band is two rules wearing one clause. Every screen words a gate as a
+		// single sentence, so accepting this would ship a trait no description
+		// could state — and picking one end by precedence would silently ignore
+		// the half an author had just written, which is the shape
+		// seed.ParseRoster refuses for the same reason.
+		case below != 0 && above != 0:
+			return fail("is gated below %d and above %d health at once: a band is two rules wearing one clause, and every screen words a gate as one",
+				below, above)
+		// ⚠️ This arm replaced the message a share of nought used to get. A gate
+		// has two ends now, so nought at one end no longer means "a share written
+		// wrong" — it means "this end is not the one asked about", and a clause
+		// with nought at both ends is asking about nothing rather than asking
+		// badly.
+		case below == 0 && above == 0:
+			return fail("is gated on a while with no threshold in it: say below_health or above_health")
+		case below != 0:
+			if below < 1 || below > scale.Base {
+				return fail("is in force below %d health, want a share in parts per thousand", below)
+			}
+			while = &Condition{BelowHealth: below}
+		default:
+			if above < 1 || above > scale.Base {
+				return fail("is in force above %d health, want a share in parts per thousand", above)
+			}
+			while = &Condition{AboveHealth: above}
 		}
-		while = &Condition{BelowHealth: declared.While.BelowHealth}
 	}
 
 	// The upper bound is the same one a skill's drain has, and for the same
@@ -997,9 +1091,14 @@ func (b *Book) Marshal() ([]byte, error) {
 				}
 			}
 		}
+		// Both ends, or a gate at the top of the bar is dropped by the write and
+		// the book reloads as one that is always in force.
 		var while *conditionFile
 		if current.While != nil {
-			while = &conditionFile{BelowHealth: current.While.BelowHealth}
+			while = &conditionFile{
+				BelowHealth: current.While.BelowHealth,
+				AboveHealth: current.While.AboveHealth,
+			}
 		}
 		var amplifies []amplificationFile
 		for _, raise := range current.Amplifies {

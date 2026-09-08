@@ -609,7 +609,15 @@ const (
 	BlurbTraitReplyBoth
 	BlurbTraitAmplifiesEffect
 	BlurbTraitAmplifiesChance
+	// The gate, one key per end of the health bar. Two wordings rather than one
+	// carrying a comparison, because the comparison is the whole of what a reader
+	// is deciding on — a sentence built by pasting "<=" or ">=" into a shared
+	// template is a sentence neither translator ever read, and Vietnamese does not
+	// put the two the same way round. BlurbTraitWhile is the bottom of the bar
+	// (the older key, kept rather than renamed so nothing that already reads it
+	// has to move); BlurbTraitWhileAbove is the top.
 	BlurbTraitWhile
+	BlurbTraitWhileAbove
 	BlurbTraitDrains
 	BlurbTraitNone
 	BlurbFooter

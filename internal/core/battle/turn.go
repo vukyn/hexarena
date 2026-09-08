@@ -1959,7 +1959,22 @@ func (b *Battle) outlastsAShield(application skill.Application) bool {
 // turns on when its holder is hurt has to turn on during the turn it was hurt,
 // not on the next one.
 func (b *Battle) inForce(unit *Unit, held passive.Passive) bool {
-	return held.While.Holds(unit.HP, b.MaxHP(unit))
+	return b.inForceAt(unit, held, unit.HP)
+}
+
+// inForceAt is the same question asked at a health the unit does not hold yet.
+//
+// It exists for the rating, which prices a reply against the health the blow it
+// is considering would leave — and has to, because a gate at the top of the bar
+// turns *off* as its holder is hurt, so a price read off the board as it stands
+// charges for an answer the blow itself switches off. The maximum is still the
+// unit's own: what a hypothetical moves is current health and nothing else.
+//
+// Only the health is a parameter. Handing in a whole hypothetical unit would let
+// a caller price a gate against a maximum no unit has, which is the shape the
+// rating is forbidden from anywhere else in this package.
+func (b *Battle) inForceAt(unit *Unit, held passive.Passive, health int64) bool {
+	return held.While.Holds(health, b.MaxHP(unit))
 }
 
 // resist takes whatever the target's traits refuse off an application's chance,

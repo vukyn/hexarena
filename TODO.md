@@ -81,7 +81,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-003` | done | A one-way mirror rate stopped being a measurement above one unit a side — FOU… |
 | `ENG-004` | done | The two-number surface is a different pair — CLOSED. The grid is REFUSED and… |
 | `ENG-005` | done | A field inside a `modifier` was dropped silently in all three books — DONE, a… |
-| `ENG-006` | open | A gate at the top of the health bar — `passive.Condition.AboveHealth` |
+| `ENG-006` | open | A gate at the top of the health bar — `passive.Condition.AboveHealth`: step 1 of 3 SHIPPED, steps 2 and 3 open |
 | `ENG-007` | open | Four ways of playing the board that the engine cannot express yet |
 | `ENG-008` | refused | Re-rolling the turn-order tie-break from the seed |
 | `ENG-009` | refused | A ceiling on `Skill.Power` |
@@ -5798,6 +5798,94 @@ is only so the shape is readable.
       because that trait is not the one that wants it, and kept here because the
       *mechanism* is sound and is the only cost shape this engine cannot currently
       express.
+
+      **Step 1 of three is SHIPPED (2026-09-08): the term exists, parses,
+      round-trips, is worded, and the pricing defect it exposed is fixed.** The
+      item stays open on steps 2 and 3, which are named below. Nothing shipped
+      carries the term yet — it arrived before the first subject for it,
+      deliberately — so every walk over the shipped books is blind to it and says
+      so in as many words where that matters.
+
+      What step 1 landed:
+      - `scale.AtOrAboveShare`, the twin of `AtOrBelowShare`. The overlap at the
+        threshold is stated in the doc comment and held by
+        `TestTheTwoSharesOverlapAtExactlyOnePoint`, which sweeps a whole bar and
+        counts its own iterations: **for every value at least one end answers yes**
+        (no hole), and **exactly one value — the threshold — is answered by both**
+        (no band). ⚠️ On integers the shared point only exists when the threshold
+        divides cleanly, which is why the sweep names its maximum.
+      - `passive.Condition.AboveHealth`, `conditionFile.above_health`, and two new
+        refusals in `ParseBook`: a **band** (both ends in one clause) and an
+        **empty clause** (neither). Both ends are `omitempty` in the file schema
+        and both have to be, or a gate at one end writes a nought at the other and
+        the write no longer re-parses.
+      - ⚠️ **One existing refusal message changed, deliberately.** `below_health: 0`
+        was `is in force below 0 health, want a share in parts per thousand` and is
+        now `is gated on a while with no threshold in it: say below_health or
+        above_health` — with two ends, nought at one of them means "not this end",
+        so a clause with nought at both is asking about nothing rather than asking
+        badly. `TestConditionRejections` carries the new expectation and a comment
+        saying it was changed rather than discovered.
+      - `Condition.AtTop()` and `Condition.Threshold()`, so the four places that
+        render or word a gate ask *which end* and *what figure* in one place.
+        **All four read `While.BelowHealth` directly before this** — two renderers
+        (`internal/i18n/describe.go`, `cmd/hexforge/list.go`) and two shipped-data
+        walks (`i18n.TestATraitsSharesAreRoundedAndNotTruncated`,
+        `seed`'s flavour walk) — so each would have printed or demanded a nought
+        for a gate at the top of the bar. The walks are latent breaks rather than
+        current ones and were moved anyway, since nothing ships the term.
+      - `Marshal` carries both ends, held by a parse → write → parse test that names
+        the surviving gate rather than leaving it to `DeepEqual` — two books that
+        both lost it compare equal.
+      - Wording: `BlurbTraitWhileAbove` beside `BlurbTraitWhile` in **both** books,
+        a branch in `internal/i18n/describe.go`, and the gate column in
+        `cmd/hexforge/list.go`, whose word was the literal `"under"`.
+      - **The pricing defect below is fixed**: `price.go`'s reply term reads the
+        gate through the new `Battle.inForceAt` against `holder.HP - dealt`, which
+        is where `answer` reads it, and the comment arguing the old imprecision was
+        safe is gone.
+
+      ⚠️ **What no test can hold yet, said plainly rather than implied.** No golden
+      records the new wording, because a golden over the shipped books cannot see a
+      term no shipped trait carries — `describe.golden` did not move and must not
+      until step 3 ships a subject. The same reason makes three of step 1's tests
+      **hand-built fixtures** rather than walks: the i18n wording test constructs
+      its two traits, `cmd/hexforge`'s writes them into a scratch data directory,
+      and `internal/core/battle`'s pricing case adds `fresh_spikes` /
+      `sturdy_spikes` to that package's own fixture book. Mutating
+      `Condition.Threshold` to answer the wrong end leaves `internal/seed` and every
+      shipped walk in `internal/i18n` **green**; only those constructed cases redden.
+
+      **Still open — step 2, the per-grant `while`.** `Grant` gaining its own
+      optional condition, so the two-tier shape ("+X always, +Z instead while above
+      Y") can be written as an ungated grant carrying X and a gated one carrying the
+      difference. The trait-level condition stays for the whole-trait case, and the
+      refusals a gate already owns — a health term, an absorbing pool — move down
+      with it, because both are rules about the *grant* rather than about the trait.
+      Splitting the two tiers across two traits is not the answer: a character has
+      trait slots and one idea may not cost two of them. → the note on
+      `passive.Passive.While`, which says the same thing where a reader will look.
+
+      **Still open — step 3, the first subject.** A guard that holds while its
+      holder is fresh, priced by measurement. ⚠️ Two things step 1 met that this has
+      to settle: `forge.Library.Held` skips a gated grant at **both** ends, so a
+      preview understates a trait gated at the top of the bar — deciding otherwise
+      is a measurement, and the reason for the current answer is in that function's
+      comment; and `internal/screen`, `internal/tui` and both TUI clients render a
+      gate only through `i18n.DescribePassive`, so they need nothing, but the
+      goldens under `testdata/` will move the moment a shipped trait carries the
+      term and **that** is the diff to read as the design record.
+
+      ⚠️ **`internal/core/skill`'s `Condition` was left alone, on purpose.** It
+      carries its own `BelowHealth` and the two types share arithmetic rather than
+      a type, so `AtOrAboveShare` is available to it the day it wants one. It should
+      not follow automatically: a skill's condition is a **composable amplifier**
+      (`Status`, `MinStacks`, `BelowHealth`, `BelowStacks`, all combinable, nought
+      meaning unasked) where a trait's gate is **one exclusive clause** — which is
+      the whole reason a band is refused here — and it comes in a pair,
+      `Requires` and `SelfRequires`, so "above health" there is two different
+      features (paying a skill off for hitting a healthy target, and for being
+      healthy) each with its own pricing question. Neither is this item.
 
       **Why it is worth having.** Every dial a trait offers today is a **stat**,
       and a stat cannot separate two matchups: both gates it moves are the same

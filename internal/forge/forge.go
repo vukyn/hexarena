@@ -303,6 +303,16 @@ func (l *Library) Held(base progression.Values, traits []string) (progression.Va
 		// A gated trait is off until the gate holds, and the gate reads a
 		// health that no character has outside a battle. Counting it here would
 		// price blaze as though a Charizard walked in already burning.
+		//
+		// ⚠️ Both ends of the bar are skipped, which understates a trait gated at
+		// the *top* of it: such a trait really is in force on a unit at full
+		// health, so a preview that leaves it out shows a stat line lower than
+		// the one the battle opens with. It is skipped anyway, because the figure
+		// this function answers is what a character carries for the whole fight
+		// and a gated grant is not that at either end — a preview showing a raise
+		// that lapses on the first blow would be worse than one showing none.
+		// Deciding otherwise is a measurement rather than an edit; nothing shipped
+		// is gated at the top of the bar yet. → TODO.md § ENG-006, step 3.
 		if held.While != nil {
 			continue
 		}

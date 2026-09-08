@@ -189,9 +189,16 @@ func TestAGatedTraitIsNotDescribedAsAlways(t *testing.T) {
 			continue
 		}
 		gated++
+		// The clause the gate's own end is worded with. Matching only the bottom
+		// of the bar would fail every trait gated at the top of it, for saying
+		// exactly the thing this test exists to require.
+		clause := i18n.BlurbTraitWhile
+		if held.While.AtTop() {
+			clause = i18n.BlurbTraitWhileAbove
+		}
 		for _, lang := range i18n.Langs() {
 			description := lang.DescribePassive(held, shippedStatuses(t))
-			if !strings.Contains(description, opening(lang.Text(i18n.BlurbTraitWhile))) {
+			if !strings.Contains(description, opening(lang.Text(clause))) {
 				t.Errorf("%s: %q is gated and its description never says when: %q",
 					lang, held.ID, description)
 			}
@@ -831,8 +838,12 @@ func TestATraitsSharesAreRoundedAndNotTruncated(t *testing.T) {
 				shares = append(shares, raise.Chance)
 			}
 		}
+		// Through Threshold, so this reads whichever end the gate is written at.
+		// Reading BelowHealth here would append a nought for a gate at the top of
+		// the bar and then demand the description say "0%", which is a walk that
+		// breaks on the first trait to use the other end.
 		if held.While != nil {
-			shares = append(shares, held.While.BelowHealth)
+			shares = append(shares, held.While.Threshold())
 		}
 		for _, lang := range i18n.Langs() {
 			description := lang.DescribePassive(held, shippedStatuses(t))

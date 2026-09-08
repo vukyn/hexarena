@@ -11,6 +11,8 @@ metadata:
 
 **How to apply:** undo a mutation by **editing the mutated lines back** (Edit tool), or copy the file first, or `git stash`. Never `git checkout`/`git restore` a path to revert a temporary edit. Applies the same to `git checkout .` and `git reset --hard`.
 
+⚠️ **Knowing the rule is not enough — 2026-09-08 I ran it anyway**, on `internal/core/scale/scale.go`, and lost the new function I had spent the previous ten minutes writing. What made it survivable was that the edit had been applied by a *saved script* rather than by hand, so re-running the script restored it exactly. **So: apply non-trivial edits through a script you keep, and mutations through a swap helper that takes the old and new text and can be run in reverse.** A mutation reverted by an inverse swap cannot reach HEAD at all, which removes the trap instead of remembering it.
+
 Recovery, if it happens anyway: the subagent that wrote the file still has it in context — resume it with SendMessage and have it re-apply, then diff against what it reported. Cheaper and more faithful than reconstructing from a diff in the transcript.
 
 See [[verify-committer-staged-files]], [[pin-comparison-base-to-worktree-head]].
