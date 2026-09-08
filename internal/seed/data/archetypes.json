@@ -1271,6 +1271,64 @@
           "at_level": 48
         }
       ]
+    },
+    {
+      "id": "maelstrom",
+      "role": "the one that answers a wall of water with an arm instead of another wall: every other carrier of the element spends its budget on armour and outlasts you, and this one spends it on the second heaviest blow in the cast behind a guard thin enough that the trade has to go its way",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1160,
+          "max": 3400
+        },
+        "attack": {
+          "base": 250,
+          "max": 740
+        },
+        "defense": {
+          "base": 100,
+          "max": 300
+        },
+        "speed": {
+          "base": 45,
+          "max": 130
+        },
+        "accuracy": {
+          "base": 58,
+          "max": 170
+        },
+        "dodge": {
+          "base": 17,
+          "max": 50
+        }
+      },
+      "skills": [
+        "soak",
+        "tide_break",
+        "brine",
+        "hydro_pump",
+        "gust",
+        "air_slash",
+        "twister",
+        "hurricane",
+        "bite",
+        "body_slam",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "contagion",
+          "at_level": 20
+        },
+        {
+          "id": "berserk",
+          "at_level": 32
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }

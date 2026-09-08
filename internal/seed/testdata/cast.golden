@@ -285,6 +285,24 @@ pokemon.machop — Machop
     level 60 hp 3300, atk 760, def 460, spd 85, acc 210, ddg 28
              absorbs 8375 of the 11500 budget, 3125 to spare
 
+pokemon.magikarp — Magikarp
+  from     Pokémon (anime)
+  preset   maelstrom
+  element  water
+  species  leviathan
+  art      assets/magikarp.svg
+  kit      soak body_slam tide_break@8 bite@12 brine@16 hydro_pump@20[Gyarados] gust@20[Gyarados] taunt@24 air_slash@32[Gyarados] twister@36[Gyarados] hurricane@44[Gyarados]
+  stage "Magikarp" owns levels 1 to 19, water, showing assets/magikarp.svg
+    level 1  hp 620, atk 70, def 55, spd 45, acc 38, ddg 14
+             absorbs 733 of the 11500 budget, 10767 to spare
+    level 19 hp 980, atk 109, def 87, spd 70, acc 58, ddg 21
+             absorbs 1264 of the 11500 budget, 10236 to spare
+  stage "Gyarados" owns levels 20 to 60, water/wind, showing assets/gyarados.svg
+    level 20 hp 1881, atk 407, def 164, spd 72, acc 94, ddg 27
+             absorbs 2911 of the 11500 budget, 8589 to spare
+    level 60 hp 3400, atk 740, def 300, spd 130, acc 170, ddg 50
+             absorbs 6800 of the 11500 budget, 4700 to spare
+
 pokemon.magnemite — Magnemite
   from     Pokémon (anime)
   preset   bombardier
@@ -490,4 +508,4 @@ pokemon.torchic — Torchic
     level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
              absorbs 6410 of the 11500 budget, 5090 to spare
 
-23 characters
+24 characters

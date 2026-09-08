@@ -84,6 +84,7 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena shipping chars #182/#187/#189](memory/hexarena-poliwag-bruiser.md) — ⚠️ spar KHÔNG đo được support (dùng squad); hạ GIÁP mới kết mirror
 - [hexarena shipping a character](memory/hexarena-shipping-a-character.md) — 5 json + cast_test.go design table (hardcoded!); effHP<=11500
 - [hai số gặp nhau ở MỘT tích](memory/hexarena-two-numbers-that-meet-in-one-product.md) — ENG-004: Swung là hạng-1 nên grid bị TỪ CHỐI; ship `self_bonus` thay vì mặt hai trục
+- [đổi một ghế là đo CẢ đội](memory/a-seat-swap-measures-the-shell-too.md) — 2 shell 2 kết luận ngược trên cùng data; ⚠️ dấu hiệu ở cột endless, ko ở rate; shell phải tự thắng được khi thiếu ghế
 - [kit toàn chiêu diện ko có đòn kết](memory/hexarena-an-area-kit-has-no-finisher.md) — ⚠️ `column` bắt ĐÚNG 1 ô có người trên cả 5 đội ship → splash_power ko bao giờ tới; chồng đội tốn ~250‰, đắt gấp đôi thứ nó mua
 - [chỉ `single` và `column` soi gương](memory/hexarena-only-column-and-single-mirror.md) — ⚠️ xoay 180° đổi up↔down/ur↔ll: mọi hình khác là chiêu KHÁC ở nửa địch; 5 đội ship đối xứng hàng nên che mất luật
 - [pricing a new element pool](memory/hexarena-pricing-a-new-element-pool.md) — đo, đừng đoán; dpt = pw×hits×acc÷(cd+1); ⚠️ cần control cùng wrapper

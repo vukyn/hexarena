@@ -277,4 +277,16 @@ monolith, formation column 0
            absorbs 11397 of the 11500 budget, 103 to spare
   kit      rock_throw dig seismic_toss stone_edge earthquake sand_tomb brace taunt withdraw wide_guard
 
-23 presets
+maelstrom, formation column 0
+  the one that answers a wall of water with an arm instead of another wall: every other carrier of the element spends its budget on armour and outlasts you, and this one spends it on the second heaviest blow in the cast behind a guard thin enough that the trade has to go its way
+  demands  a character built from it must carry water and wind
+  hp 1160->3400  attack 250->740  defense 100->300  speed 45->130  accuracy 58->170  dodge 17->50
+  level 1  hp 1160, atk 250, def 100, spd 45, acc 58, ddg 17
+           absorbs 1546 of the 11500 budget, 9954 to spare
+  level 30 hp 2261, atk 490, def 198, spd 86, acc 113, ddg 33
+           absorbs 3755 of the 11500 budget, 7745 to spare
+  level 60 hp 3400, atk 740, def 300, spd 130, acc 170, ddg 50
+           absorbs 6800 of the 11500 budget, 4700 to spare
+  kit      soak tide_break brine hydro_pump gust air_slash twister hurricane bite body_slam taunt
+
+24 presets

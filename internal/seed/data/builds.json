@@ -602,6 +602,38 @@
       "passives": [
         "ballast"
       ]
+    },
+    {
+      "id": "magikarp.surge",
+      "character": "pokemon.magikarp",
+      "name": "cuốn nước",
+      "intent": "Đánh trước và đánh nặng, đổi giáp mỏng lấy cú nặng nhất mà hệ nước có",
+      "stage": "Gyarados",
+      "skills": [
+        "hydro_pump",
+        "brine",
+        "tide_break",
+        "bite"
+      ],
+      "passives": [
+        "berserk"
+      ]
+    },
+    {
+      "id": "magikarp.gale",
+      "character": "pokemon.magikarp",
+      "name": "gọi bão",
+      "intent": "Lấy nửa hệ chỉ dạng trưởng thành mới có, và làm bên kia đánh nhẹ đi trước khi họ kịp đánh",
+      "stage": "Gyarados",
+      "skills": [
+        "hurricane",
+        "air_slash",
+        "gust",
+        "body_slam"
+      ],
+      "passives": [
+        "contagion"
+      ]
     }
   ]
 }
