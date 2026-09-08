@@ -289,21 +289,48 @@ func (l *Library) brokenPreset(edited *skill.Book, id string, refused error) err
 func (l *Library) brokenCharacter(edited *skill.Book, id string, refused error) error {
 	broken := &SkillEditBreaksError{Carrier: BrokenCharacter, Skill: id, Err: refused}
 	for _, character := range l.characters.All() {
-		kit, err := kitFrom(edited, cast.LearnedIDs(character.Skills))
-		if err != nil {
+		reason, asked := whyCharacterBreaks(edited, character)
+		if !asked {
 			continue
 		}
-		who := Carrier{
-			ID: character.ID, Archetype: character.Archetype,
-			Affinity: character.Element, HasAffinity: true,
-			Species: character.Species, Origin: character.Origin,
-		}
-		if reason := CheckKit(who, kit); reason != nil {
+		if reason != nil {
 			broken.ID, broken.Err = character.ID, reason
 			return broken
 		}
 	}
 	return broken
+}
+
+// whyCharacterBreaks asks the carry rule of every one of a character's forms and
+// hands back the first refusal, or nil when none of them minds.
+//
+// ⚠️ **Per form rather than per character, because a form may have an affinity
+// of its own.** A line that is one element as a root and two as a grown form has
+// no single answer to "may this character carry it", and the parser this mirrors
+// (cast.resolveCharacter) asks the same question the same way: every form the
+// entry's stage gate admits has to say yes. Asking only the character's would
+// let an edit through that the parser then refuses on the next load, which is
+// the whole failure this function exists to catch early.
+//
+// The second return says whether the question could be asked at all: a kit
+// naming a skill the edited book does not hold is a character this edit has
+// nothing to say about, exactly as before.
+func whyCharacterBreaks(edited *skill.Book, character cast.Character) (error, bool) {
+	for _, stage := range character.Stages {
+		kit, err := kitFrom(edited, cast.HeldIDs(character.Skills, stage.Name))
+		if err != nil {
+			return nil, false
+		}
+		who := Carrier{
+			ID: character.ID, Archetype: character.Archetype,
+			Affinity: character.ElementAt(stage), HasAffinity: true,
+			Species: character.Species, Origin: character.Origin,
+		}
+		if reason := CheckKit(who, kit); reason != nil {
+			return reason, true
+		}
+	}
+	return nil, true
 }
 
 // kitFrom resolves a kit against a particular book, which is what checking a

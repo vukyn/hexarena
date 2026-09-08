@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -295,6 +296,17 @@ func (b BrowseScreen) View(c Context) (string, string) {
 		// measured against both fixed columns at full width — 72 cells of the
 		// 79 there are, on metal/electric. The two fixed columns take no gloss
 		// for the same reason: an id past its column would push this one over.
+		//
+		// ⚠️ **The character's element, deliberately, and not the form's.** A
+		// stage may declare its own affinity, and a row has no level so it has
+		// no form to ask about — but the binding reason is the seven cells of
+		// slack measured above: `ground` resolving to `ground/metal` is 18
+		// cells against 12, which does not fit, and its neighbour
+		// TestNoGlossedLogRowOutgrowsTheWindow has **zero** margin, so this is
+		// not a thing to check by eye. What the column means is what the line
+		// STARTS as, which is honest under the rule that a stage naming no
+		// element is the character's and the character's is the root form's.
+		// The detail pane below has a level and resolves it there.
 		name := Pad(character.ID, browseIDWidth) + " " +
 			Pad(character.Origin, browseOriginWidth) + " " +
 			c.Lang.GlossedAffinity(character.Element)
@@ -340,8 +352,13 @@ func (b BrowseScreen) Detail(c Context, character cast.Character) string {
 	if name := c.Lang.Gloss(character.Archetype); name != "" {
 		out.WriteString(c.WrappedIn("", c.DetailLabelWidth(), c.Style.Dim, name))
 	}
-	out.WriteString(c.Label(c.Text(i18n.LabelElement), "%s", character.Element))
-	if names := c.Lang.AffinityNames(character.Element); names != "" {
+	// Resolved at this pane's level, unlike the list above it: a form may declare
+	// an affinity of its own, and this pane has a level and therefore a form to
+	// ask about. Walking the level with the arrow keys is what shows a line
+	// gaining an element on evolution, the same way it shows the picture change.
+	affinity := b.affinity(character)
+	out.WriteString(c.Label(c.Text(i18n.LabelElement), "%s", affinity))
+	if names := c.Lang.AffinityNames(affinity); names != "" {
 		out.WriteString(c.WrappedIn("", c.DetailLabelWidth(), c.Style.Dim, names))
 	}
 	// Wrapped, not clipped: nine ids are longer than any terminal, and half an
@@ -423,6 +440,20 @@ func (b BrowseScreen) Detail(c Context, character cast.Character) string {
 	// it cannot be a clause on the line itself.
 	out.WriteString(c.WrappedIn("", c.DetailLabelWidth(), c.Style.Dim, c.Lang.BudgetPierced(budget)))
 	return out.String()
+}
+
+// affinity is what the character fights as at this pane's level and chosen arm.
+//
+// A level that will not resolve answers with the character's own rather than
+// with a refusal: the refusal belongs to the stat row further down, which is
+// where a reader looks for it and which already words it, and a second one on
+// the element row would be the same error said twice on one screen.
+func (b BrowseScreen) affinity(character cast.Character) element.Affinity {
+	_, stage, err := character.Resolve(b.Level, ChosenForm(character, b.Level, b.Form))
+	if err != nil {
+		return character.Element
+	}
+	return character.ElementAt(stage)
 }
 
 // artLine is the picture the character shows at the resolved stage, and whether

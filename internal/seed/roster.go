@@ -182,7 +182,10 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	// gives: the stat line that fights is the form's, so naming the character
 	// would put a first form's name beside a last form's numbers.
 	entry.Name = form.Name
-	entry.Affinity = character.Element
+	// The form's affinity too, on the same argument: a stage may declare its
+	// own element and the character's is the fallback, which
+	// cast.Character.ElementAt is the one place that decides.
+	entry.Affinity = character.ElementAt(form)
 	entry.Stats = stats
 	// The loadout: chosen from what the character has learned by this level, and
 	// this is the only place a character and a level meet. A flat entry states

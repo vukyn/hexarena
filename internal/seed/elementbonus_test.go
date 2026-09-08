@@ -48,6 +48,13 @@ import (
 // The inert element is skipped for the reason Awards skips it: sharing the
 // element with no matchup is sharing the absence of one, and no bonus may name it
 // — parse refuses that outright.
+//
+// ⚠️ **A character counts for every element any of its FORMS can be fielded
+// carrying**, not for the character's own affinity alone: a rung is a count of
+// units on a side, a side is a placement, and a placement names a level and a
+// form. A line that gains an element on evolution really can fill a rung of that
+// element, so counting the character's alone would report a ceiling lower than
+// the one the game has and leave a reachable rung looking dead.
 func carriersByElement(t *testing.T) map[element.Element]int {
 	t.Helper()
 	book, err := seed.Cast()
@@ -60,7 +67,7 @@ func carriersByElement(t *testing.T) map[element.Element]int {
 	}
 	counted := make(map[element.Element]int)
 	for _, character := range book.All() {
-		for _, member := range character.Element.Elements() {
+		for _, member := range fieldableElements(character) {
 			if isInert(chart, member) {
 				continue
 			}

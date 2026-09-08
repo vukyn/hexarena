@@ -40,6 +40,7 @@
 - [A null needs TWO controls](feedback_a_null_needs_two_controls.md) — an exact-null arm (arc_up, battle-for-battle) AND a payload calibration arm (fury ×2, −27‰); without the second, "no effect" = "blind"
 - [A green-expected mutation proves nothing alone](feedback_a_green_expected_mutation_proves_nothing_by_itself.md) — M3 moved no test and no golden; probe the parsed field or "green" is indistinguishable from "never landed"
 - [A hand-built arm misses the REPORTING branch](feedback_a_hand_built_arm_can_miss_the_reporting_branch.md) — it exercises the helper it calls; all 10 log lines came from :264 until a data mutation reached :256
+- [One mutation cannot score a whole suite](feedback_one_mutation_cannot_score_a_whole_suite.md) — one PER decision; 8 of 13 red, the other 5 guarded the quantifier/validation; mutate the ONE shared home
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam

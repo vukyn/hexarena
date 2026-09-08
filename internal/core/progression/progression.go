@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/element"
 )
 
 // LevelCap is the highest level a unit can reach. It is a fixed design
@@ -342,6 +343,27 @@ type Stage struct {
 	// cast.ValidateImagePath's job, the same division a skill's pattern name
 	// follows.
 	Image string `json:"image,omitempty"`
+	// Element is this form's own affinity, and it is optional in exactly the way
+	// Image is: a stage that names none is the character's. The fallback is not
+	// applied here — see cast.Character.ElementAt, which is the one place that
+	// decides it, because this package has no character to fall back to.
+	//
+	// ⚠️ **A pointer, and that is load-bearing rather than a style.** The zero
+	// element.Affinity is a *valid* single neutral affinity, so a value field
+	// would read "this form is neutral" on every stage that declared nothing —
+	// a silent wrong answer rather than an absence. It is the same trap
+	// Values.UnmarshalJSON guards with *int64 above, and the reason
+	// cast's characterFile.Element is already a pointer.
+	//
+	// It sits beside Image for Image's own reason: what a form is called, what
+	// it looks like and what it is made of are all facts about the form, and a
+	// parallel list keyed by stage name would be a second thing to keep in step
+	// — one that goes stale exactly when a stage is renamed. What this package
+	// does not do is check it: an affinity is only legal or illegal against the
+	// element chart, which this package has no more of than it has a picture
+	// directory. cast.resolveCharacter validates it, per stage, at parse time
+	// and only for a stage that names one.
+	Element *element.Affinity `json:"element,omitempty"`
 	// After is the stage this one grows out of, by name, and it is what lets a
 	// line fork: two stages naming the same predecessor are alternatives, and a
 	// placement picks which arm it fielded.

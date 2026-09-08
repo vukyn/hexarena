@@ -149,6 +149,41 @@ func (c Character) StageArt(stage progression.Stage) string {
 	return c.Image
 }
 
+// ElementAt is the affinity one of the character's forms fights with: the
+// stage's own when it declares one, and the character's when it does not.
+//
+// This is the only place that fallback is decided, for StageArt's reason and
+// with a sharper edge: a caller reading progression.Stage.Element directly gets
+// a nil pointer for every ordinary stage, and a caller that dereferenced it
+// without checking would panic on the common case rather than on the rare one.
+// A second caller inventing the fallback again is how one character comes to
+// have two elements depending on which screen is asking.
+//
+// ⚠️ **It is a fielding-time answer and nothing downstream keeps it.** What a
+// battle receives is a resolved battle.Roster.Affinity, settled before the first
+// turn exactly as the stat line is, so no unit's element can change during a
+// fight and no replay reads a stage. The three producers that turn a character
+// into a roster entry — placement.Placement.resolve, seed.resolveReference and
+// forge.Library.duellist — are the whole of what has to call this.
+func (c Character) ElementAt(stage progression.Stage) element.Affinity {
+	return elementAt(c.Element, stage)
+}
+
+// elementAt is the fallback itself, taking the character's affinity rather than
+// the character.
+//
+// It exists because resolveCharacter has to ask the same question before there
+// is a Character to ask it of — the per-form carry check runs while the parse is
+// still holding a characterFile — and answering it a second time inline there is
+// the exact "second caller invents the fallback" the rule above forbids. One
+// unexported expression, one exported door.
+func elementAt(character element.Affinity, stage progression.Stage) element.Affinity {
+	if stage.Element != nil {
+		return *stage.Element
+	}
+	return character
+}
+
 // ArtEntry is one picture a character can show, and which form it belongs to.
 type ArtEntry struct {
 	// Stage is the form's name, empty for the character's own picture.
@@ -433,6 +468,21 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 			return fail("stage %q: %w", stage.Name, err)
 		}
 	}
+	// A stage's element is optional on exactly the same terms, and refused here
+	// for exactly the same reason: an affinity is only legal or illegal against
+	// the chart, and progression has no more of a chart than it has an art
+	// directory. Affinity.UnmarshalJSON has already refused a name that is no
+	// element, a list that is not one or two names, a repeat and a pairing with
+	// the inert element; what is left for the chart is a pair that already
+	// counters itself.
+	for _, stage := range declared.Stages {
+		if stage.Element == nil {
+			continue
+		}
+		if err := deps.Chart.ValidateAffinity(*stage.Element); err != nil {
+			return fail("stage %q: %w", stage.Name, err)
+		}
+	}
 	species, err := resolveCharacterSpecies(declared.ID, declared.Species, deps.Species)
 	if err != nil {
 		return Character{}, err
@@ -447,20 +497,38 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 	// in a battle — an author has no reason to know the engine has an opinion
 	// about this.
 	//
+	// ⚠️ **It is asked once per FORM, and every form has to answer yes.** A
+	// stage may declare its own affinity, so a line can be one element as a root
+	// and two as a grown form, and "the character's element" is then not a thing
+	// a single question can be about. The quantifier is "all" rather than "any"
+	// for a reason with a scar on it: battle.enlist re-applies CanCarry against
+	// the affinity the unit was FIELDED with, so a parser that accepted a book
+	// as long as some form could carry it would hand back a character the engine
+	// refuses at the moment somebody plays it — which is precisely the split
+	// between the authoring layer and the engine that this call site exists to
+	// close.
+	//
 	// The other four are enforced only here, because the engine has none of an
 	// archetype, a character identity, a species or an origin to check them
-	// against. Each refusal names the skill and what the restriction allows, so
-	// that somebody who did not write the restriction can act on it without
-	// opening skills.json.
-	for _, carried := range kit {
-		switch skill.WhyCannotCarry(*declared.Element, carried) {
-		case skill.CarryWrongElement:
-			return fail("is %s and cannot carry %q, which is %s",
-				*declared.Element, carried.ID, carried.Element)
-		case skill.CarryElementRestricted:
-			return fail("is %s and cannot carry %q, which only %s may carry",
-				*declared.Element, carried.ID,
-				strings.Join(carried.Restrict.ElementNames(), " or "))
+	// against. They are asked once rather than per form: an archetype, an id, a
+	// species and an origin belong to the character and no form has its own.
+	// Each refusal names the skill and what the restriction allows, so that
+	// somebody who did not write the restriction can act on it without opening
+	// skills.json.
+	for at, carried := range kit {
+		// resolveLearnset fills the two slices in step, so the entry beside a
+		// skill is the gate that skill was declared under.
+		for _, form := range carriedForms(learnset[at], declared.Stages) {
+			affinity := elementAt(*declared.Element, form)
+			switch skill.WhyCannotCarry(affinity, carried) {
+			case skill.CarryWrongElement:
+				return fail("as %s it is %s and cannot carry %q, which is %s",
+					form.Name, affinity, carried.ID, carried.Element)
+			case skill.CarryElementRestricted:
+				return fail("as %s it is %s and cannot carry %q, which only %s may carry",
+					form.Name, affinity, carried.ID,
+					strings.Join(carried.Restrict.ElementNames(), " or "))
+			}
 		}
 		if !carried.Restrict.AllowsArchetype(declared.Archetype) {
 			return fail("was tuned from %q and cannot carry %q, which only the %s archetype may carry",
@@ -666,6 +734,25 @@ func LearnedIDs(entries []Unlock) []string {
 	return out
 }
 
+// HeldIDs is LearnedIDs narrowed to one form: every id the named form may hold,
+// at any level, in declaration order.
+//
+// It is the question "what could this form ever carry", which is a third one
+// beside LearnedIDs' "what does this character ever know" and UnlockedIDs' "what
+// does it have now" — and it is the one a check about a *restriction* wants once
+// a form can have an affinity of its own, because a restriction is a property of
+// the skill and the affinity is a property of the form. Exported so that
+// internal/forge can ask it rather than spelling the stage gate a second time.
+func HeldIDs(entries []Unlock, stage string) []string {
+	out := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.Held(stage) {
+			out = append(out, entry.ID)
+		}
+	}
+	return out
+}
+
 // checkStages is the rule both lists obey about a stage allowlist, said once.
 //
 // A name the line does not answer to is a typo, and an unchecked one reads as
@@ -701,6 +788,43 @@ func checkStages(kind, owner, what string, stages []string, line progression.Lin
 			kind, owner, what)
 	}
 	return nil
+}
+
+// carriedForms is every form of a line that could be fielded holding one
+// learnset entry, which is the set a carry rule has to hold for all of.
+//
+// It is the entry's own stage allowlist and nothing else, and the two things it
+// deliberately does not narrow are worth writing down.
+//
+// ⚠️ **The level gate is not a filter here, and it is not an omission.** A form
+// is fieldable at every level from its own MinLevel to the cap — evolving is a
+// threshold that is passed rather than a door that closes behind the unit — and
+// Line.Validate refuses a stage starting past the cap, so every form of a legal
+// line is reachable at LevelCap, which is at or above any legal AtLevel. So
+// there is no form the gate admits that no level can put on the board.
+//
+// ⚠️ **Narrowing it to "the form this level BECOMES" would be a silent hole.**
+// An ungated metal skill learned at 40 on a line that evolves at 32 looks like
+// Steelix's alone under that reading, so the parser would accept it — and then
+// a placement fielding the root form at 40, which is legal and which
+// TestGivingUpAnEvolutionKeepsWhatTheGrownFormNeverGets is about, resolves a
+// kit holding it and battle.enlist refuses the unit. The narrower reading is
+// also fragile in the way that costs an author a whole afternoon: it turns on
+// where the evolution level happens to sit, so moving that number by one makes
+// a book that parsed yesterday illegal today with nothing in the diff saying
+// so. The explicit "stages" gate is how the data says which forms it meant.
+//
+// A line is never empty by the time this is called — Line.Validate has already
+// refused that — so the empty result a nil line would give is unreachable
+// rather than a case.
+func carriedForms(entry Unlock, line progression.Line) []progression.Stage {
+	out := make([]progression.Stage, 0, len(line))
+	for _, stage := range line {
+		if entry.Held(stage.Name) {
+			out = append(out, stage)
+		}
+	}
+	return out
 }
 
 func skillIDs(kit []skill.Skill) []string {
