@@ -445,6 +445,11 @@ q hoặc ctrl+c để thoát`,
 	BlurbStatDodge:             "né",
 	BlurbTraitGrants:           "Luôn mang %s.",
 	BlurbTraitGrantsGated:      "Mang %s.",
+	// A grant gated on its own says when in its own sentence: the trait around
+	// it is ungated, so there is no closing line to lean on. The status comes
+	// first and the share second, the same order English takes.
+	BlurbTraitGrantsWhile:      "Mang %s khi còn <=%s máu.",
+	BlurbTraitGrantsWhileAbove: "Mang %s khi còn >=%s máu.",
 	BlurbTraitRenews:           "Đầu mỗi lượt của mình lại nhận %s, %s khả năng.",
 	BlurbTraitApplies:          "Đòn đánh gây thêm %s, %s khả năng.",
 	BlurbTraitImmune:           "Miễn nhiễm %s.",

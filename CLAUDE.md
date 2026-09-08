@@ -539,10 +539,15 @@ of maximum health — points would be a different fraction of the bar at every
 level. Read **live** at each site (`riders`, `resist`) through `inForce`, so a
 trait stops applying the moment its holder is healed back; *at or under*; and a
 share is not a fraction, so `333` of 3000 is 999 and a third exactly does not
-pass. **A gated `grants` is refused at parse** — a grant is applied once and its
-status is permanent so nothing can dispel it, so gating one is a mechanism (an
-engine-only door into a permanent status, an event each way, a retune) rather than
-a term. Accepting it would ship a trait whose gate was silently ignored.
+pass. ⚠️ **A gated `grants` used to be refused at parse and is not any more** —
+that refusal was removed when the engine learned to hold and release a grant as
+its gate opens and closes (an event each way, a retune), so a gate over a grant
+is a term now rather than an engine-only door. What is still refused is a gated
+grant that **raises health** (a gate closing would take the room away, leaving a
+healed unit above its own maximum) or that **holds a pool** (hold and release run
+the grant again every time the gate reopens, so a barrier behind one comes back
+full each time it is crossed). Both read the **effective** gate — the trait's or
+the grant's own — because they are rules about the grant. → `passive.GateOver`.
 
 **A resistance belongs at `battle.inflict`, never at `status.Set.Apply`.**
 `Apply` is the choke point every status passes through, which makes it the obvious

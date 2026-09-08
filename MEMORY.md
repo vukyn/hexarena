@@ -153,6 +153,7 @@ that owns the subject wins and the note is the thing to fix.
 - [Cast count ≠ squad count](memory/a-cast-count-is-not-a-squad-count.md) — saved squad may double a character; 1 carrier still reaches rung 2
 - [Book walk misses departures](memory/a-shipped-book-walk-catches-arrivals-not-departures.md) — shipped⊆table says nothing about an orphan table entry
 - [Assert on the clause, not the page](memory/assert-on-the-clause-not-the-whole-page.md) — Contains(page,x) matched the header, not the verdict
+- [Opening-clause matching can measure nothing](memory/matching-a-wordings-opening-clause-can-measure-nothing.md) — ⚠️ both keys open on "Carries"; the wrong-key mutation stayed green in both languages
 - [bỏ một default đã ship](memory/turning-a-shipped-default-into-an-opt-in.md) — 17 test cũ phải ĐỎ, không phải im; ⚠️ ban đã nới một lần sẽ tả sai phần còn lại
 - [⚠️ test tự hoàn thành ko thấy đồng hồ tắt](memory/a-test-that-finishes-itself-cannot-see-a-stopped-clock.md) — allowance.set tắt clock ghế đang hỏi; treo, ship v0.1.0, suite xanh
 - [⚠️ dữ liệu thật có thể thoả sẵn](memory/real-data-can-satisfy-the-property.md) — cast.json vốn sắp theo id → test thứ tự pass cả khi hàm sort

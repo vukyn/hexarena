@@ -596,6 +596,15 @@ const (
 	BlurbStatDodge
 	BlurbTraitGrants
 	BlurbTraitGrantsGated
+	// A grant behind a gate of its **own**, one key per end of the bar. It needs
+	// its own sentence rather than the gated wording above because that one
+	// leans on the trailing BlurbTraitWhile line to say when — and there is no
+	// such line for a grant gated on its own, since the trait around it is not
+	// gated at all. So the clause travels with the grant it belongs to, which is
+	// also what lets one trait describe two grants gated differently from each
+	// other.
+	BlurbTraitGrantsWhile
+	BlurbTraitGrantsWhileAbove
 	// The renewal, worded apart from the grant because the two differ in the one
 	// thing a reader needs: a grant is simply carried, and this arrives again
 	// every turn and can be taken off in between.

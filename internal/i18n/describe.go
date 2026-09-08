@@ -1014,17 +1014,43 @@ func (l Lang) DescribePassive(held passive.Passive, kinds *status.Book) string {
 	if flavour := l.traitFlavour(held); flavour != "" {
 		lines = append(lines, flavour+".")
 	}
-	// "Always" only where it is true. A gated trait comes and goes with its
-	// holder's health, and the last line below says when — so opening with
-	// "always carries" and closing with "only while under a third" would be two
-	// sentences of the same paragraph contradicting each other, which is worse
-	// than either of them alone.
-	carries := BlurbTraitGrants
-	if held.While != nil {
-		carries = BlurbTraitGrantsGated
-	}
+	// Three shapes rather than two, and the third is where a per-grant gate is
+	// said.
+	//
+	// A grant behind the **trait's** gate reads "carries" and no more, because
+	// the last line of the description says when and qualifies everything above
+	// it — opening with "always carries" and closing with "only while under a
+	// third" would be two sentences of one paragraph contradicting each other.
+	//
+	// A grant behind its **own** gate has no such closing line to lean on: the
+	// trait around it is ungated, so nothing else in the description would ever
+	// say when. Its clause therefore travels in its own sentence, which is also
+	// the only arrangement that can describe two grants gated differently from
+	// each other — and it is what makes a two-tier trait read as what it is,
+	// "always carries X" above "carries Z at or above Y".
+	//
+	// The two cannot both apply to one grant (ParseBook refuses a gated grant on
+	// a gated trait), so this is a choice of one wording out of three rather
+	// than a clause bolted onto another.
 	for _, grant := range held.Grants {
-		lines = append(lines, l.Say(carries, l.stacked(grant.Status, grant.Stacks, kinds)))
+		named := l.stacked(grant.Status, grant.Stacks, kinds)
+		if grant.While != nil {
+			// The end the gate is written at decides the wording and Threshold
+			// gives the figure, for the reason the trait-level line below says:
+			// reading BelowHealth directly prints a nought for a gate at the top
+			// of the bar.
+			carried := BlurbTraitGrantsWhile
+			if grant.While.AtTop() {
+				carried = BlurbTraitGrantsWhileAbove
+			}
+			lines = append(lines, l.Say(carried, named, share(grant.While.Threshold())))
+			continue
+		}
+		carries := BlurbTraitGrants
+		if held.While != nil {
+			carries = BlurbTraitGrantsGated
+		}
+		lines = append(lines, l.Say(carries, named))
 	}
 	for _, resistance := range held.Resists {
 		if resistance.Amount >= scale.Base {

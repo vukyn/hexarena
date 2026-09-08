@@ -335,15 +335,31 @@ func (b *Battle) reconsider(unit *Unit, turn atb.Turn) {
 		if err != nil {
 			continue
 		}
-		// An ungated trait never moves, and asking is cheaper than the two loops
-		// below. A trait that grants nothing has nothing to hold either way: its
-		// gate is read live, at the site that reads it, which is what lets a
+		// A trait that gates nothing never moves, and asking is cheaper than the
+		// loop below. A trait that grants nothing has nothing to hold either way:
+		// its gate is read live, at the site that reads it, which is what lets a
 		// resistance stop protecting a healed unit without anything here.
-		if held.While == nil || len(held.Grants) == 0 {
+		//
+		// ⚠️ **It is Gated rather than `While == nil`, and that is the whole of
+		// what a per-grant gate changed here.** A trait with no gate of its own
+		// and one gated grant has to be re-read every time its holder's health
+		// moves; an early return on the trait's own field alone leaves such a
+		// gate stuck in whatever state enlistment put it in, which is a feature
+		// that parses, renders and never fires.
+		if !held.Gated() || len(held.Grants) == 0 {
 			continue
 		}
-		wanted := b.inForce(unit, held)
 		for _, grant := range held.Grants {
+			// Per grant rather than once for the trait. Two grants on one trait
+			// may now sit behind different gates — or one behind a gate and one
+			// behind none, which is the two-tier shape the field exists for — so
+			// a single `wanted` for the whole trait would move the ungated tier
+			// with the gated one.
+			gate := held.GateOver(grant)
+			if gate == nil {
+				continue
+			}
+			wanted := b.holds(unit, gate, unit.HP)
 			if wanted == unit.Statuses.Has(grant.Status) {
 				continue
 			}
@@ -1974,7 +1990,18 @@ func (b *Battle) inForce(unit *Unit, held passive.Passive) bool {
 // a caller price a gate against a maximum no unit has, which is the shape the
 // rating is forbidden from anywhere else in this package.
 func (b *Battle) inForceAt(unit *Unit, held passive.Passive, health int64) bool {
-	return held.While.Holds(health, b.MaxHP(unit))
+	return b.holds(unit, held.While, health)
+}
+
+// holds is the one reading of a gate against a unit, whatever the gate hangs off.
+//
+// A trait's own condition and a grant's are the same question asked about the
+// same holder, so they go through one expression: a second reading is how a
+// grant behind a gate comes to disagree with the trait around it about what a
+// share of the health bar is. A nil gate holds, which is Condition.Holds' own
+// answer and what makes "ungated" need no branch at any caller.
+func (b *Battle) holds(unit *Unit, gate *passive.Condition, health int64) bool {
+	return gate.Holds(health, b.MaxHP(unit))
 }
 
 // resist takes whatever the target's traits refuse off an application's chance,

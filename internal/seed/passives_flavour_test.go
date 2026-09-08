@@ -151,6 +151,16 @@ func TestNoShippedShareIsUnderOnePercent(t *testing.T) {
 		if held.While != nil {
 			check(held.ID, "a gate", held.While.Threshold())
 		}
+		// A gate on a grant is the same figure printed by the same renderer, so
+		// the same floor applies. ⚠️ Latent: no shipped trait carries one yet
+		// (ENG-006 step 2 shipped the shape and step 3 ships the first subject),
+		// so this arm walks nothing and is here to be walked the day one does —
+		// exactly as the trait-level arm above was before blaze.
+		for _, grant := range held.Grants {
+			if grant.While != nil {
+				check(held.ID, "a gate on a grant", grant.While.Threshold())
+			}
+		}
 	}
 	for _, kind := range statuses.Kinds() {
 		check(kind.ID, "a tick", kind.TickPower)

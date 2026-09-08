@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/forge"
@@ -246,11 +247,20 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 	for _, held := range passives {
 		grants := make([]string, 0, len(held.Grants))
 		for _, grant := range held.Grants {
+			cell := grant.Status
 			if grant.Stacks > 1 {
-				grants = append(grants, fmt.Sprintf("%s x%d", grant.Status, grant.Stacks))
-				continue
+				cell = fmt.Sprintf("%s x%d", grant.Status, grant.Stacks)
 			}
-			grants = append(grants, grant.Status)
+			// A grant behind a gate of its own says so beside itself, because the
+			// while column words the *trait's* gate and a trait carrying a gated
+			// grant has none. A reader with only that column would see a two-tier
+			// trait as two grants that are always both on — which is the listing
+			// reporting less than the parser accepts, the same gap the answers
+			// and drains columns were added to close.
+			if grant.While != nil {
+				cell += " (" + gateClause(grant.While) + ")"
+			}
+			grants = append(grants, cell)
 		}
 		// A full thousand reads as "immune" rather than as a number: it is the
 		// one value that is a fact about the holder rather than a share, and a
@@ -335,11 +345,7 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		// the opposite of the data the moment a gate could sit at the top of it.
 		gate := ""
 		if held.While != nil {
-			side := "under "
-			if held.While.AtTop() {
-				side = "over "
-			}
-			gate = side + forge.Percent(held.While.Threshold()) + " health"
+			gate = gateClause(held.While)
 		}
 		rendered.add(held.ID, held.Name, strings.Join(grants, ", "),
 			adds, answers, drains, strings.Join(resists, ", "),
@@ -354,6 +360,24 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		"an amplifier raises what its holder inflicts: the effect is the tick frozen on the stack, the chance is the roll.\n"+
 		"an answer is what attacking the holder costs, and it lands after every strike of the attack rather than the first.\n"+
 		"a drain is a share of the damage its holder deals, added to whatever the skill drains on its own.\n")
+}
+
+// gateClause words one gate, and it is one function because there are two places
+// a gate is now printed in this table: the while column for a trait's own, and
+// the grants cell for a grant carrying one.
+//
+// ⚠️ The word comes off the gate's own end rather than being a constant. It was
+// the literal "under" for every gate in the book, which was true while the only
+// term was a threshold at the bottom of the bar and became a cell stating the
+// opposite of the data the moment a gate could sit at the top of it — so a
+// second copy of that choice beside a grant is a second place for it to go
+// stale.
+func gateClause(gate *passive.Condition) string {
+	side := "under "
+	if gate.AtTop() {
+		side = "over "
+	}
+	return side + forge.Percent(gate.Threshold()) + " health"
 }
 
 func renderArchetypes(out io.Writer, lib *forge.Library) {

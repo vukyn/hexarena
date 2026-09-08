@@ -67,6 +67,35 @@ type Grant struct {
 	// refused where Power is required, because the zero value is health and a
 	// guard scaled off health is a different design question.
 	Scaling progression.Kind
+	// While gates this grant alone, or nil when the trait's own gate — or
+	// nothing at all — decides when it is carried.
+	//
+	// # Why a gate on the grant as well as on the trait
+	//
+	// Passive.While gates the *whole* trait, so the most it can say is one tier:
+	// "+Z while above Y, nothing below". The shape an author wants is two —
+	// "+X always, +Z instead while above Y" — which is an ungated grant carrying
+	// X and a gated one carrying the difference, on **one** trait. Splitting the
+	// two tiers across two traits is not the answer, because a character has
+	// trait slots and one idea may not cost two of them.
+	//
+	// ⚠️ **A grant is behind one gate or the other, never both.** ParseBook
+	// refuses a grant carrying this on a trait that is itself gated: two clauses
+	// over one grant is what a band already is, and every screen words a gate as
+	// one sentence. Passive.GateOver is the single reading of *which* gate
+	// applies, and every refusal, every renderer and the battle itself ask it
+	// rather than either field — a caller reading this field alone would let a
+	// grant under a trait-level gate through the two refusals below.
+	//
+	// The refusals a gate owns come down here with it: a health term and an
+	// absorbing pool are rules about the *grant*, so they are refused wherever
+	// the gate over that grant comes from.
+	//
+	// ⚠️ **This is the shape and not a subject.** Nothing shipped carries a gated
+	// grant, so every walk over the shipped books is blind to this field; the
+	// first trait to want it is priced by measurement. → TODO.md § ENG-006,
+	// step 3.
+	While *Condition
 }
 
 // Passive is one declared trait.
@@ -105,7 +134,8 @@ type Passive struct {
 	// before this existed.
 	Flavour string
 	// Grants are the statuses the holder carries while the trait is in force,
-	// which is the whole battle unless While says otherwise.
+	// which is the whole battle unless a gate says otherwise — the trait's own
+	// While, or one written on the grant itself.
 	//
 	// Every one of them must be a permanent status, which ParseBook enforces.
 	// That is not about how long the trait lasts — a gated one comes and goes —
@@ -150,22 +180,18 @@ type Passive struct {
 	Replies *Reply
 	// While gates the trait, or nil when it is always in force.
 	//
-	// It gates the *whole* trait rather than one field of it: the grants, the
-	// resistances and the applications all come and go together. A trait wanting
-	// one gated half and one ungated half is two traits, and saying so is what
-	// keeps a gate from being a per-field flag nobody can read off the data.
+	// It gates the *whole* trait: the grants, the resistances and the
+	// applications all come and go together. That is still the shape for a trait
+	// that is one idea with a condition on it, and it is the only shape anything
+	// shipped uses.
 	//
-	// ⚠️ **A per-GRANT While is deliberately not built yet, and it is the next
-	// step rather than a thing refused.** The two-tier shape an author wants —
-	// "+X always, +Z instead while above Y" — needs an ungated grant carrying X
-	// and a gated one carrying the difference, which is a condition on Grant and
-	// not on the trait. It is out of scope here because the trait-level term had
-	// to exist before a grant could carry one, and because it brings a schema
-	// question with it: the refusals a gate already owns (a health term, an
-	// absorbing pool) are rules about the *grant* rather than about the trait, so
-	// they move down with it. → TODO.md § ENG-006, step 2. Splitting the two
-	// tiers across two traits is **not** the answer — a character has trait slots
-	// and one idea may not cost two of them.
+	// ⚠️ **A grant may now carry a gate of its own, and the two do not
+	// combine.** Grant.While is what writes the two-tier shape — an ungated
+	// grant carrying X beside a gated one carrying the difference — and a grant
+	// carrying one on a trait that is *also* gated is refused at parse, because
+	// two clauses over one grant is what a band already is. So a trait is either
+	// gated as a whole or has gates on its grants, never both, and
+	// Passive.GateOver is the one place that says which.
 	While *Condition
 	// Resists is the share of an incoming application's chance the holder
 	// refuses, per status.
@@ -187,12 +213,12 @@ type Passive struct {
 	// which is the difference between a skill that heals and a build that
 	// sustains, and there was no way to write the second.
 	//
-	// It is a **share** rather than a granted status, and that is what makes it
-	// gateable. A grant is applied once at enlistment and cannot be taken back,
-	// so While is refused on one; a share is read fresh on every strike, so a
-	// gate on this works exactly as written. That is the whole of why "drains
-	// harder when badly hurt" is writable here and "hits harder when badly hurt"
-	// is not.
+	// It is a **share** rather than a granted status, and that is the cheaper of
+	// the two things to gate: a share is read fresh on every strike, so a gate on
+	// this needs nothing but the reading. A grant needed a door — Hold and
+	// Release, an event each way and a retune — because the status it puts on is
+	// permanent and nothing else in the game may take one off. Both work now;
+	// this one always did.
 	Drains int
 	// Converts is the share of every blow its holder throws that meets no defence
 	// at all, in parts per thousand.
@@ -489,6 +515,52 @@ func (c *Condition) Holds(health, maximum int64) bool {
 	return scale.AtOrBelowShare(health, maximum, c.BelowHealth)
 }
 
+// GateOver is the condition in force over one of the trait's grants: the
+// grant's own where it carries one, the trait's otherwise, and nil when the
+// grant is behind no gate at all.
+//
+// # Why every caller asks this instead of reading a field
+//
+// A grant is gated if the **trait** is gated or the **grant** is, and the two
+// refusals a gate owns — a health term, an absorbing pool — are about the grant
+// rather than about where the clause was written. A caller reading Grant.While
+// alone waves through every health-raising grant and every pool sitting under a
+// trait-level gate, which is exactly the pair of cases those refusals exist for;
+// a caller reading Passive.While alone never sees a per-grant gate at all and
+// leaves it stuck in whatever state enlistment put it in. One question, one
+// answer, one place.
+//
+// The two cannot both be set — ParseBook refuses a gated grant on a gated trait
+// — so which wins is a fact about a hand-built Passive only. The grant's own is
+// the answer there, because a clause written on the grant is the more specific
+// of the two.
+func (p Passive) GateOver(grant Grant) *Condition { return gateOver(p.While, grant.While) }
+
+// Gated reports whether anything the trait grants comes and goes with its
+// holder's health.
+//
+// It is the cheap question asked before walking the grants: a trait that gates
+// nothing never has to be re-read when health moves. ⚠️ It is not
+// `While != nil` — a trait with no gate of its own and one gated grant answers
+// yes, and the early return that reads only the trait's own field is what makes
+// a per-grant gate parse, render and never fire.
+func (p Passive) Gated() bool {
+	if p.While != nil {
+		return true
+	}
+	return slices.ContainsFunc(p.Grants, func(grant Grant) bool { return grant.While != nil })
+}
+
+// gateOver is GateOver over the two clauses rather than over a resolved Passive,
+// for the parser — which has to answer the same question about a grant it has
+// not finished building.
+func gateOver(trait, own *Condition) *Condition {
+	if own != nil {
+		return own
+	}
+	return trait
+}
+
 // StatusIDs is the statuses the passive grants, in declaration order. It is what
 // a listing and a refusal want, and it saves every caller writing the same loop.
 func (p Passive) StatusIDs() []string {
@@ -513,10 +585,16 @@ type Book struct {
 }
 
 type grantFile struct {
-	Status  string `json:"status"`
-	Stacks  int    `json:"stacks"`
-	Power   int    `json:"power,omitempty"`
-	Scaling string `json:"scaling,omitempty"`
+	Status string `json:"status"`
+	Stacks int    `json:"stacks"`
+	Power  int    `json:"power,omitempty"`
+	// Written only when the grant carries one, so a book of ungated grants —
+	// which is every grant shipped today — round-trips to the bytes it was
+	// authored as. The clause inside it is omitempty at both ends for the reason
+	// conditionFile says: a nought at the end a gate is not at re-parses as a
+	// clause with no threshold in it.
+	While   *conditionFile `json:"while,omitempty"`
+	Scaling string         `json:"scaling,omitempty"`
 }
 
 // passiveFile is the shape a passive is written in, and therefore the shape it
@@ -647,12 +725,45 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			flavour[index:index+1])
 	}
 
+	// The trait's own gate is read before the grants rather than after them,
+	// because a grant's refusals now depend on it: a grant is gated if the trait
+	// is or if it is, and the loop below cannot ask that question until this
+	// answer exists.
+	while, err := readCondition(declared.While)
+	if err != nil {
+		return fail("%w", err)
+	}
+
 	grants := make([]Grant, 0, len(declared.Grants))
 	for _, grant := range declared.Grants {
 		kind, err := deps.Statuses.Lookup(grant.Status)
 		if err != nil {
 			return fail("%w", err)
 		}
+		// The grant's own gate, through the same reading the trait's went
+		// through: the rules — exactly one end, a share in parts per thousand,
+		// never an empty clause — are rules about a *gate* and not about where
+		// the clause was written, and a second expression for one rule is how
+		// the two come to disagree about what a band is.
+		own, err := readCondition(grant.While)
+		if err != nil {
+			return fail("grants %q, which %w", kind.ID, err)
+		}
+		// One gate over a grant, never two. A trait-level gate and a grant-level
+		// one would be a conjunction — in force below a third *and* above a
+		// tenth — which is a band wearing two clauses instead of one, and every
+		// screen words a gate as a single sentence. It is also not the shape the
+		// field exists for: the two-tier trait is ungated as a whole, with the
+		// second tier gated on its own grant.
+		if own != nil && while != nil {
+			return fail("grants %q behind a gate of its own on a trait that is already gated: a grant is behind one gate or the other, and every screen words a gate as one clause",
+				kind.ID)
+		}
+		// The gate in force over this grant, whichever end of the declaration it
+		// was written at. Both refusals below read this rather than either field:
+		// they are rules about a gated grant, and a grant under a trait-level
+		// gate is a gated grant.
+		gate := gateOver(while, own)
 		if !kind.Permanent {
 			return fail("grants %q, which is timed: it would wear off on the holder's own turns and a passive is granted only once",
 				kind.ID)
@@ -672,7 +783,14 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		// Only the gate is refused, not the term. An ungated trait granting more
 		// health is a trait that raises the maximum once, at enlistment, and never
 		// moves it again — which is exactly what a composition bonus does.
-		if declared.While != nil && carriesHealth(kind) {
+		//
+		// ⚠️ It reads the **effective** gate rather than the trait's own field.
+		// A gate on the grant closes and reopens through exactly the same door,
+		// so the rule is unchanged by where the clause sits — and a version of
+		// this reading only the grant's field would go quiet for every
+		// health-raising grant under a trait-level gate, which is the arm it was
+		// written for.
+		if gate != nil && carriesHealth(kind) {
 			return fail("is gated and grants %q, which raises health: a gate that closed would take the raise back off, and a holder healed into the room it opened would be left standing above its own maximum",
 				kind.ID)
 		}
@@ -708,7 +826,12 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			// bar: a gate at the top reopens every time its holder is healed. An
 			// ungated grant runs once at enlistment, which is exactly "puts a
 			// barrier up when the battle starts".
-			if declared.While != nil {
+			//
+			// ⚠️ The effective gate, for the reason the health refusal above
+			// reads it: a pool behind a gate is refilled whether the clause was
+			// written on the trait or on the grant, and reading only the grant's
+			// field would let every pool under a trait-level gate through.
+			if gate != nil {
 				return fail("grants %q behind a gate: a pool is refilled every time a gate reopens, so a guard may only be granted by a trait that is always in force",
 					kind.ID)
 			}
@@ -727,8 +850,13 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			}
 			scaling = parsed.Stat
 		}
+		// The grant's **own** clause is what is stored, not the effective gate: a
+		// trait-level gate copied down onto every grant would be written back out
+		// on each of them by Marshal, and would make a whole-trait gate
+		// indistinguishable from per-grant ones to every renderer.
 		grants = append(grants, Grant{
 			Status: kind.ID, Stacks: stacks, Power: grant.Power, Scaling: scaling,
+			While: own,
 		})
 	}
 
@@ -864,38 +992,6 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		}
 	}
 
-	var while *Condition
-	if declared.While != nil {
-		below, above := declared.While.BelowHealth, declared.While.AboveHealth
-		switch {
-		// A band is two rules wearing one clause. Every screen words a gate as a
-		// single sentence, so accepting this would ship a trait no description
-		// could state — and picking one end by precedence would silently ignore
-		// the half an author had just written, which is the shape
-		// seed.ParseRoster refuses for the same reason.
-		case below != 0 && above != 0:
-			return fail("is gated below %d and above %d health at once: a band is two rules wearing one clause, and every screen words a gate as one",
-				below, above)
-		// ⚠️ This arm replaced the message a share of nought used to get. A gate
-		// has two ends now, so nought at one end no longer means "a share written
-		// wrong" — it means "this end is not the one asked about", and a clause
-		// with nought at both ends is asking about nothing rather than asking
-		// badly.
-		case below == 0 && above == 0:
-			return fail("is gated on a while with no threshold in it: say below_health or above_health")
-		case below != 0:
-			if below < 1 || below > scale.Base {
-				return fail("is in force below %d health, want a share in parts per thousand", below)
-			}
-			while = &Condition{BelowHealth: below}
-		default:
-			if above < 1 || above > scale.Base {
-				return fail("is in force above %d health, want a share in parts per thousand", above)
-			}
-			while = &Condition{AboveHealth: above}
-		}
-	}
-
 	// The upper bound is the same one a skill's drain has, and for the same
 	// reason: a share over the base takes back more health than the strike dealt
 	// damage, which is not a strong trait but an incoherent one.
@@ -925,6 +1021,52 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		While: while, Resists: resists, Drains: declared.Drains,
 		Converts: declared.Converts, Spares: declared.Spares, Amplifies: amplifies,
 	}, nil
+}
+
+// readCondition turns a declared clause into a gate, or says why it is not one.
+//
+// One reading for the two places a gate may be written — the trait, and one of
+// its grants — because every rule here is a rule about a *gate*: exactly one
+// end, a share in parts per thousand, and never a clause with nothing in it. A
+// second expression for one rule is how the two come to disagree about what a
+// band is, and a grant's gate accepting a band that a trait's refuses would be
+// the same refusal declared twice and wrong once.
+//
+// The refusals are phrased as **clauses** rather than sentences, so the caller
+// says whose gate it is: a trait's reads "passive %q: is gated …" and a grant's
+// "passive %q: grants %q, which is gated …". That is why the wording of a
+// trait-level refusal is unchanged by this function existing.
+func readCondition(declared *conditionFile) (*Condition, error) {
+	if declared == nil {
+		return nil, nil
+	}
+	below, above := declared.BelowHealth, declared.AboveHealth
+	switch {
+	// A band is two rules wearing one clause. Every screen words a gate as a
+	// single sentence, so accepting this would ship a trait no description could
+	// state — and picking one end by precedence would silently ignore the half an
+	// author had just written, which is the shape seed.ParseRoster refuses for
+	// the same reason.
+	case below != 0 && above != 0:
+		return nil, fmt.Errorf("is gated below %d and above %d health at once: a band is two rules wearing one clause, and every screen words a gate as one",
+			below, above)
+	// ⚠️ This arm replaced the message a share of nought used to get. A gate has
+	// two ends, so nought at one of them no longer means "a share written wrong"
+	// — it means "this end is not the one asked about", and a clause with nought
+	// at both ends is asking about nothing rather than asking badly.
+	case below == 0 && above == 0:
+		return nil, fmt.Errorf("is gated on a while with no threshold in it: say below_health or above_health")
+	case below != 0:
+		if below < 1 || below > scale.Base {
+			return nil, fmt.Errorf("is in force below %d health, want a share in parts per thousand", below)
+		}
+		return &Condition{BelowHealth: below}, nil
+	default:
+		if above < 1 || above > scale.Base {
+			return nil, fmt.Errorf("is in force above %d health, want a share in parts per thousand", above)
+		}
+		return &Condition{AboveHealth: above}, nil
+	}
 }
 
 // readApplications is the rules a status a trait puts on somebody *else* has to
@@ -1009,6 +1151,16 @@ func (b *Book) All() []Passive {
 	copy(out, b.passives)
 	for i := range out {
 		out[i].Grants = slices.Clone(out[i].Grants)
+		// A grant's gate is a pointer, and cloning the slice copies the pointer
+		// rather than what it points at — so a caller handed a grant could edit
+		// the book's own condition through it, which is the trap the trait's own
+		// condition is copied for below.
+		for j := range out[i].Grants {
+			if out[i].Grants[j].While != nil {
+				gate := *out[i].Grants[j].While
+				out[i].Grants[j].While = &gate
+			}
+		}
 		out[i].Applies = slices.Clone(out[i].Applies)
 		out[i].Resists = slices.Clone(out[i].Resists)
 		// The reply is a pointer holding a slice, so both have to be copied:
@@ -1052,6 +1204,17 @@ func (b *Book) Marshal() ([]byte, error) {
 			written := grantFile{Status: grant.Status, Stacks: grant.Stacks, Power: grant.Power}
 			if grant.Power > 0 {
 				written.Scaling = grant.Scaling.String()
+			}
+			// The grant's own gate, or a two-tier trait is written back out as
+			// two grants that are always both on — silently, because dropping a
+			// field is not a parse error. Both ends are carried for the reason
+			// the trait's are: writing a nought at the end the gate is not at
+			// makes the file refuse to re-parse.
+			if grant.While != nil {
+				written.While = &conditionFile{
+					BelowHealth: grant.While.BelowHealth,
+					AboveHealth: grant.While.AboveHealth,
+				}
 			}
 			grants = append(grants, written)
 		}

@@ -27,7 +27,11 @@ func statuses(t *testing.T) *status.Book {
 	    {"id": "toughened", "category": "buff", "max_stacks": 3, "duration": 0, "permanent": true,
 	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]},
 	    {"id": "swollen", "category": "buff", "max_stacks": 3, "duration": 0, "permanent": true,
-	     "modifiers": [{"target": "hp", "mode": "percent", "amount": 200}]}
+	     "modifiers": [{"target": "hp", "mode": "percent", "amount": 200}]},
+	    {"id": "fortified", "category": "buff", "max_stacks": 1, "duration": 0, "permanent": true,
+	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 300}]},
+	    {"id": "bastion", "category": "absorb", "max_stacks": 1, "duration": 0,
+	     "permanent": true, "pool_power": 900}
 	  ]
 	}`))
 	if err != nil {
