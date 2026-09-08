@@ -65,6 +65,12 @@ func TestTheShippedBuildsAreTheOnesTheTestsMeasure(t *testing.T) {
 		{"mewtwo.origin", originBuild, "elusive"},
 		{"gastly.unbind", unbindBuild, "elusive"},
 		{"gastly.miasma", miasmaBuild, "contagion"},
+		// The two walls of one line, and the second of them is the first entry
+		// in the catalogue that a FORM rather than a character can hold: every
+		// skill in forgeBuild is metal and gated on the grown stage, so the root
+		// form could not carry one of them. See onix_test.go.
+		{"onix.wall", wallBuild, "thorns"},
+		{"onix.forge", forgeBuild, "ballast"},
 	} {
 		build, known := book.Get(want.id)
 		if !known {

@@ -41,6 +41,8 @@
 - [A green-expected mutation proves nothing alone](feedback_a_green_expected_mutation_proves_nothing_by_itself.md) — M3 moved no test and no golden; probe the parsed field or "green" is indistinguishable from "never landed"
 - [A hand-built arm misses the REPORTING branch](feedback_a_hand_built_arm_can_miss_the_reporting_branch.md) — it exercises the helper it calls; all 10 log lines came from :264 until a data mutation reached :256
 - [One mutation cannot score a whole suite](feedback_one_mutation_cannot_score_a_whole_suite.md) — one PER decision; 8 of 13 red, the other 5 guarded the quantifier/validation; mutate the ONE shared home
+- [The fixture reserves the id](feedback_the_fixture_reserves_the_id.md) — testfixture APPENDS 5 archetypes; ⚠️ their gloss already existing reads as "step done"
+- [Measure in the slot it competes for](feedback_measure_in_the_slot_it_competes_for.md) — flex slot priced the composition (381‰) not the unit (491‰); a rate pinned at 0 both arms measures nothing
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam

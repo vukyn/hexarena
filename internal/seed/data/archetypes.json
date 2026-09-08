@@ -1214,6 +1214,63 @@
           "at_level": 44
         }
       ]
+    },
+    {
+      "id": "monolith",
+      "role": "the one that is still standing when everything else has been spent: it takes the armour to the ceiling and pays for it with the slowest turn and the thinnest dodge in the cast, so what it does to a fight is decide how long the fight lasts",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1030,
+          "max": 3100
+        },
+        "attack": {
+          "base": 200,
+          "max": 600
+        },
+        "defense": {
+          "base": 265,
+          "max": 800
+        },
+        "speed": {
+          "base": 20,
+          "max": 60
+        },
+        "accuracy": {
+          "base": 44,
+          "max": 130
+        },
+        "dodge": {
+          "base": 7,
+          "max": 20
+        }
+      },
+      "skills": [
+        "rock_throw",
+        "dig",
+        "seismic_toss",
+        "stone_edge",
+        "earthquake",
+        "sand_tomb",
+        "brace",
+        "taunt",
+        "withdraw",
+        "wide_guard"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "thorns",
+          "at_level": 32
+        },
+        {
+          "id": "unyielding",
+          "at_level": 48
+        }
+      ]
     }
   ]
 }

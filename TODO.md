@@ -110,7 +110,8 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-009` | done | Ally-aimed area support is single-target on every shipped board — REFUSED, with the measurement: the item's own `arc_up` candidate is a no-op, and `pierce`, the one shape that catches two, moved one battle in twelve hundred |
 | `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` — a reach guard and the probe-reading convention shipped; a board for a bonus to fire on did not |
 | `CAST-001` | open | Grow the cast |
-| `CAST-002` | open | Ten traced Pokemon are waiting for a character — four complete lines |
+| `CAST-002` | open | Traced Pokemon are waiting for a character — run the `comm` in the entry, never read a count off it |
+| `CAST-003` | shipped | A stage may declare its own element — the mechanism, and the onix line that fields it |
 | `SCR-001` | shipped | Reference screens |
 | `SCR-002` | shipped | Vietnamese |
 | `SCR-003` | shipped | Squads |
@@ -4591,7 +4592,31 @@ is only so the shape is readable.
       by hand.
       ⚠️ **No element is left to claim, so "one per element" is finished as a
       guide.** What a new character is bought for now is a **way of playing**, and
-      § *Ten traced Pokemon* below is the art waiting for one.
+      `CAST-002` below is the art waiting for one.
+      ⚠️ **`pokemon.onix` (2026-09-08, `CAST-003`) is the first character an
+      element is not a fact about.** It is `ground` as Onix and `ground/metal` as
+      Steelix, the first line in the cast to **change affinity on evolution** and
+      the first user of `progression.Stage.Element`. Three things follow that are
+      worth knowing before the next one is authored. **A carrier count is now a
+      count over FORMS**, so it contributes to ground *and* to metal and
+      `carriersByElement` walks `Character.ElementAt(stage)` rather than
+      `Character.Element` — reading the character's would under-count exactly the
+      lines the field exists for. **A composition tally now depends on the form a
+      unit was fielded as**: fielding this character grown earns the metal tribe
+      and fielding it as its root does not, which is the first time
+      `Placement.Stage` has ever meant anything to a bonus. And **the four metal
+      skills in its learnset are gated `"stages": ["Steelix"]`** — reachability
+      alone would have accepted them ungated, and the gate is what keeps that true
+      after somebody moves the evolution level.
+      ⚠️ **Its preset is `monolith`, not `bulwark`, and the reason is a hard
+      collision rather than taste.** `internal/testfixture` APPENDS its five
+      presets to the shipped `archetypes.json` in every scratch data directory,
+      and `bulwark` is one of the five — so the shipped book and the fixture book
+      may not share an id, and a shipped preset taking one breaks about forty
+      tests across three packages with *"archetype "bulwark" is declared twice"*.
+      The five reserved names are `bulwark`, `vanguard`, `sentinel`, `duelist`
+      and `skirmisher`. ⚠️ All five are **already in `archetypeGloss`**, which
+      makes "the gloss is there" a false signal that the gloss step is done.
       ⚠️ **On the archetype, which is the closest thing to a way of playing this
       data has a field for.** **Twenty** characters against **twenty** archetypes,
       one each — but that is where the counting has landed, **not a rule, and
@@ -4695,9 +4720,10 @@ is only so the shape is readable.
       one, and the pair reads the worse half. Whether a dual should lose a
       favourable matchup whole is a decision for whoever authors next — it is
       written down rather than tuned away.
-- [ ] `CAST-002` **Ten traced Pokemon are waiting for a character — four complete
-      lines.** The art lands first because `cast.ParseBook` refuses a character
-      that declares no image, so the order is forced: trace, then author.
+- [ ] `CAST-002` **Traced Pokemon are waiting for a character — run the command
+      below rather than reading a figure off this line.** The art lands first
+      because `cast.ParseBook` refuses a character that declares no image, so the
+      order is forced: trace, then author.
       ⚠️ **This entry said "thirty-one" and was stale in BOTH directions**, which
       is why the number is now measured rather than carried: seven of the lines it
       listed have **shipped** since (Cleffa, Happiny, Gastly, Magnemite, Riolu,
@@ -4712,8 +4738,18 @@ is only so the shape is readable.
 
       **No orphan form** — every line below is complete, and nothing `cast.json`
       names is missing from `assets/`. By line, as they would be authored:
-      **mareep → flaaffy → ampharos** · **magikarp → gyarados** ·
-      **onix → steelix**.
+      **mareep → flaaffy → ampharos** · **magikarp → gyarados**.
+      ⚠️ **The onix line came off this list on 2026-09-08** (`CAST-003`), the same
+      day the igglybuff line did, and the command above went from **seven files
+      and three lines to five and two** in one day. Both of its pictures had been
+      pre-measured and both passed `TestTheShippedArtIsCutOutRatherThanFramed`
+      unchanged: `assets/onix.svg` and `assets/steelix.svg` paint **nought** of
+      the four corners of their own inked rectangle, against the one `pichu.svg`
+      paints at alpha 16.
+      ⚠️ **`magikarp → gyarados` is the next one and it is now the SECOND user of
+      a shipped mechanism rather than an ordinary line**: canon is water →
+      water/flying, which this chart spells water → water/**wind**, so it is a
+      stage element (`CAST-003`) and the queue should be read in that order.
       ⚠️ **The igglybuff line came off this list on 2026-09-08** (`DAT-007`), so
       run the command rather than reading a count here — this paragraph carried
       "ten files, four lines" for exactly one day. Its three pictures were first

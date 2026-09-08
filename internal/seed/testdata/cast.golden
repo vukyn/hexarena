@@ -357,6 +357,24 @@ pokemon.oddish — Oddish
     level 60 hp 3400, atk 560, def 420, spd 105, acc 165, ddg 45
              absorbs 8173 of the 11500 budget, 3327 to spare
 
+pokemon.onix — Onix
+  from     Pokémon (anime)
+  preset   monolith
+  element  ground
+  species  mineral
+  art      assets/onix.svg
+  kit      rock_throw dig seismic_toss@8 stone_edge@16 taunt@20 earthquake@28 metal_claw@32[Steelix] sand_tomb@32 flash_cannon@36[Steelix] wide_guard@40 steel_beam@44[Steelix] metal_sound@48[Steelix]
+  stage "Onix" owns levels 1 to 31, ground, showing assets/onix.svg
+    level 1  hp 820, atk 140, def 215, spd 18, acc 45, ddg 7
+             absorbs 1408 of the 11500 budget, 10092 to spare
+    level 31 hp 1623, atk 272, def 420, spd 31, acc 78, ddg 12
+             absorbs 3901 of the 11500 budget, 7599 to spare
+  stage "Steelix" owns levels 32 to 60, ground/metal, showing assets/steelix.svg
+    level 32 hp 2117, atk 410, def 546, spd 41, acc 89, ddg 13
+             absorbs 5980 of the 11500 budget, 5520 to spare
+    level 60 hp 3100, atk 600, def 800, spd 60, acc 130, ddg 20
+             absorbs 11397 of the 11500 budget, 103 to spare
+
 pokemon.pichu — Pichu
   from     Pokémon (anime)
   preset   livewire
@@ -472,4 +490,4 @@ pokemon.torchic — Torchic
     level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
              absorbs 6410 of the 11500 budget, 5090 to spare
 
-22 characters
+23 characters

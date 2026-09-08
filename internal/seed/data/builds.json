@@ -572,6 +572,36 @@
       "passives": [
         "elusive"
       ]
+    },
+    {
+      "id": "onix.wall",
+      "character": "pokemon.onix",
+      "name": "chắn đường",
+      "intent": "Kéo cả trận về phía mình, đỡ hộ đứa đứng cạnh, rồi để lớp giáp trả lời thay cho tay",
+      "skills": [
+        "taunt",
+        "wide_guard",
+        "stone_edge",
+        "dig"
+      ],
+      "passives": [
+        "thorns"
+      ]
+    },
+    {
+      "id": "onix.forge",
+      "character": "pokemon.onix",
+      "name": "lột giáp",
+      "intent": "Bóc lớp che của bên kia ra bằng thứ kim loại chỉ hình hài lớn mới có, rồi bắn xuyên qua chỗ vừa hở",
+      "skills": [
+        "steel_beam",
+        "flash_cannon",
+        "metal_sound",
+        "metal_claw"
+      ],
+      "passives": [
+        "ballast"
+      ]
     }
   ]
 }
