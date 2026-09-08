@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -266,4 +267,51 @@ func patienceFor(allowance int) time.Duration {
 		return 0
 	}
 	return length + chooserGrace
+}
+
+// reconnectFor is how long this client keeps trying to take its seat back.
+//
+// ⚠️ **It is a backstop and not the rule.** What decides how long a seat is held
+// is the SERVER's window (socket.DefaultRejoinWindow, 60s), and the room ends the
+// attempt on its own terms: once it runs out the match is abandoned, the room
+// retires, and the next dial is refused — so an ordinary give-up is a refusal
+// arriving rather than this deadline passing. What this covers is the case the
+// server cannot answer at all, because the host's process is gone: without it a
+// client would retry into a dead address for ever.
+//
+// Longer than the server's window on purpose, so that whenever the server *can*
+// answer, its answer is what ends this rather than a race between two timers.
+const reconnectFor = 90 * time.Second
+
+// reconnectEvery is how long to wait between attempts.
+//
+// A fixed pause rather than a backoff, and the reason is what is being waited
+// for: a wifi roam or a switch reconvergence resolves at a moment nobody can
+// predict, and a backoff spends its longest waits exactly when the network has
+// just come back. The whole budget is ninety seconds against one machine on a
+// LAN, so the cost of asking often is a few dozen refused handshakes.
+const reconnectEvery = time.Second
+
+// retries paces a reconnection, and it is in this file rather than beside the
+// reconnection for the reason the allowlist gives: the clock in this package is
+// one file, and the list of clocks in this module is only worth keeping while
+// the answer to "where is the clock here" stays short.
+type retries struct{ until time.Time }
+
+// newRetries starts the budget.
+func newRetries() retries { return retries{until: time.Now().Add(reconnectFor)} }
+
+// spent reports whether the budget has run out.
+func (r retries) spent() bool { return time.Now().After(r.until) }
+
+// pause waits before the next attempt, and reports false when the match was
+// cancelled while it waited — a player who quit during a reconnection is a player
+// who is not coming back to the room.
+func (r retries) pause(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return false
+	case <-time.After(reconnectEvery):
+		return true
+	}
 }

@@ -309,7 +309,7 @@ func aLiveBattleRefusedWith(t *testing.T, m model, code wire.Code) model {
 	mirror.Read(func(sight socket.Sight) {
 		// No countdown: this fixture is about the refusal, and a mirror that
 		// was never sent a welcome has no allowance to count.
-		carried := liveOf(sight, draw.PlayClock{})
+		carried := liveOf(sight, draw.PlayClock{}, false)
 		carried.Fight, carried.Asking = engine, prompt
 		attached = draw.NewPlayScreen().Attach(live.ctx(), carried)
 	})
