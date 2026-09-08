@@ -461,6 +461,12 @@ q or ctrl+c to quit`,
 	BlurbStatDodge:             "dodge",
 	BlurbTraitGrants:           "Always carries %s.",
 	BlurbTraitGrantsGated:      "Carries %s.",
+	// A grant gated on its own says when in its own sentence: the trait around
+	// it is ungated, so there is no closing line to lean on. Worded "at or
+	// below" / "at or above" like the trait-level gate, because the threshold
+	// counts at both ends and a reader authoring against it needs to know that.
+	BlurbTraitGrantsWhile:      "Carries %s at or below %s health.",
+	BlurbTraitGrantsWhileAbove: "Carries %s at or above %s health.",
 	BlurbTraitRenews:           "Takes %s again at the start of each of its own turns, %s of the time.",
 	BlurbTraitApplies:          "Its attacks also inflict %s, %s of the time.",
 	BlurbTraitImmune:           "Refuses %s outright.",

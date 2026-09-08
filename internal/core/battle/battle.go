@@ -522,17 +522,19 @@ func (b *Battle) grant(unit *Unit, ids []string) error {
 		// the order the roster happens to list them in, so the bug would be an
 		// authoring order deciding whether a trait starts on.
 		//
-		// A gate is read here rather than assumed open, and at enlistment a unit
-		// is at full health — so a trait gated on being *hurt* starts off and
-		// turns on the first time it is, while one gated on being *fresh* starts
-		// on and lapses the first time its holder is hurt. Checking the gate
-		// rather than special-casing enlistment is what keeps one rule and is why
-		// the second end of the bar needed no change here: a trait is on when its
-		// condition holds, from the first moment to the last.
+		// The gate is read in hold, one grant at a time, rather than once for the
+		// whole trait here — a trait may now carry a gate on a grant instead of
+		// on itself, so "is this trait in force" is no longer a question with one
+		// answer. A second reading here would be a guard a mutation deletes for
+		// free, since hold refuses the same grants on its own.
+		//
+		// At enlistment a unit is at full health, so a grant gated on being
+		// *hurt* starts off and comes on the first time it is, while one gated on
+		// being *fresh* starts on and lapses the first time its holder is hurt.
+		// Reading the gate rather than special-casing enlistment is what keeps
+		// one rule, and is why neither the second end of the bar nor the second
+		// place a gate may hang needed a case of its own.
 		unit.HP = b.MaxHP(unit)
-		if !b.inForce(unit, held) {
-			continue
-		}
 		if err := b.hold(unit, held); err != nil {
 			return err
 		}
@@ -540,14 +542,24 @@ func (b *Battle) grant(unit *Unit, ids []string) error {
 	return nil
 }
 
-// hold puts one trait's grants on its holder.
+// hold puts one trait's grants on its holder, skipping any whose gate does not
+// hold at the health the unit is standing at.
 //
 // Hold rather than Apply, and the difference is the gate: a permanent status is
 // refused by Remove so that nothing in the game can dispel a trait, which leaves
-// the trait's own gate as the only thing that may take it back. Hold and Release
-// are that door, and they work on nothing else.
+// the gate over the grant as the only thing that may take it back. Hold and
+// Release are that door, and they work on nothing else.
+//
+// The gate is read **per grant** — its own where it carries one, the trait's
+// otherwise — because a trait may hold an ungated grant beside a gated one,
+// which is the two-tier shape passive.Grant.While exists for. It is the same
+// reading reconsider takes, so what enlistment puts on and what a crossing puts
+// on cannot disagree.
 func (b *Battle) hold(unit *Unit, held passive.Passive) error {
 	for _, grant := range held.Grants {
+		if !b.holds(unit, held.GateOver(grant), unit.HP) {
+			continue
+		}
 		kind, err := b.books.Statuses.Lookup(grant.Status)
 		if err != nil {
 			return fmt.Errorf("unit %q: passive %q: %w", unit.ID, held.ID, err)
@@ -595,15 +607,19 @@ func (b *Battle) Begin() {
 			if err != nil {
 				continue
 			}
-			// Only what is actually on the unit. A gated trait may be off at full
-			// health — one gated at the bottom of the bar is, one gated at the top
-			// of it is not — and announcing a grant the opening board does not
-			// show would be the log describing a different unit from the one being
-			// drawn beside it.
-			if !b.inForce(unit, held) {
-				continue
-			}
 			for _, grant := range held.Grants {
+				// Only what is actually on the unit, and asked one grant at a
+				// time. A gated grant may be off at full health — one gated at
+				// the bottom of the bar is, one gated at the top of it is not —
+				// and announcing a grant the opening board does not show would be
+				// the log describing a different unit from the one drawn beside
+				// it. Per grant rather than per trait because a two-tier trait
+				// opens with one of its grants on and one off, so a whole-trait
+				// answer would either hide the ungated tier or announce the
+				// gated one.
+				if !b.holds(unit, held.GateOver(grant), unit.HP) {
+					continue
+				}
 				b.emit(Event{
 					Kind: PassiveHeld, Actor: unit.ID, Passive: held.ID,
 					Status: grant.Status, Stacks: grant.Stacks,

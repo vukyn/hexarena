@@ -81,7 +81,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-003` | done | A one-way mirror rate stopped being a measurement above one unit a side — FOU… |
 | `ENG-004` | done | The two-number surface is a different pair — CLOSED. The grid is REFUSED and… |
 | `ENG-005` | done | A field inside a `modifier` was dropped silently in all three books — DONE, a… |
-| `ENG-006` | open | A gate at the top of the health bar — `passive.Condition.AboveHealth`: step 1 of 3 SHIPPED, steps 2 and 3 open |
+| `ENG-006` | open | A gate at the top of the health bar — `passive.Condition.AboveHealth`: steps 1 and 2 of 3 SHIPPED, step 3 (the first subject) open |
 | `ENG-007` | open | Four ways of playing the board that the engine cannot express yet |
 | `ENG-008` | refused | Re-rolling the turn-order tie-break from the seed |
 | `ENG-009` | refused | A ceiling on `Skill.Power` |
@@ -6005,12 +6005,13 @@ is only so the shape is readable.
       *mechanism* is sound and is the only cost shape this engine cannot currently
       express.
 
-      **Step 1 of three is SHIPPED (2026-09-08): the term exists, parses,
-      round-trips, is worded, and the pricing defect it exposed is fixed.** The
-      item stays open on steps 2 and 3, which are named below. Nothing shipped
-      carries the term yet — it arrived before the first subject for it,
-      deliberately — so every walk over the shipped books is blind to it and says
-      so in as many words where that matters.
+      **Steps 1 and 2 of three are SHIPPED (2026-09-08): the term exists, parses,
+      round-trips, is worded, the pricing defect it exposed is fixed, and a grant
+      may now carry a gate of its own.** The item stays open on **step 3, the
+      first subject**, which is named below. Nothing shipped carries either the
+      term or a gated grant yet — the mechanism arrived before the first subject
+      for it, deliberately — so every walk over the shipped books is blind to both
+      and says so in as many words where that matters.
 
       What step 1 landed:
       - `scale.AtOrAboveShare`, the twin of `AtOrBelowShare`. The overlap at the
@@ -6062,15 +6063,75 @@ is only so the shape is readable.
       `Condition.Threshold` to answer the wrong end leaves `internal/seed` and every
       shipped walk in `internal/i18n` **green**; only those constructed cases redden.
 
-      **Still open — step 2, the per-grant `while`.** `Grant` gaining its own
-      optional condition, so the two-tier shape ("+X always, +Z instead while above
-      Y") can be written as an ungated grant carrying X and a gated one carrying the
-      difference. The trait-level condition stays for the whole-trait case, and the
-      refusals a gate already owns — a health term, an absorbing pool — move down
-      with it, because both are rules about the *grant* rather than about the trait.
-      Splitting the two tiers across two traits is not the answer: a character has
-      trait slots and one idea may not cost two of them. → the note on
-      `passive.Passive.While`, which says the same thing where a reader will look.
+      **Step 2 is SHIPPED (2026-09-08): `Grant.While`, the per-grant gate.** The
+      two-tier shape is writable — an ungated grant carrying X beside a gated one
+      carrying the difference, on **one** trait — and the whole-trait gate is
+      unchanged for the case it was always for.
+
+      What step 2 landed:
+      - `passive.Grant.While`, `grantFile.while`, and one **effective-gate**
+        expression, `Passive.GateOver(grant)`: the grant's own clause where it
+        carries one and the trait's otherwise. ⚠️ **That is the whole correctness
+        story.** A grant is gated if the trait is gated **or** the grant is, and
+        the two refusals a gate owns are rules about the *grant* rather than about
+        where the clause was written — so a version reading `Grant.While` alone
+        waves through every health-raising grant and every absorbing pool sitting
+        under a **trait-level** gate, silently, with both refusals gone quiet.
+        Every refusal, every renderer, the parser and the battle ask `GateOver`;
+        `gateOver(trait, own)` is the same expression for the parser, which has to
+        answer it about a grant it has not finished building.
+      - **One gate over a grant, never two.** A grant carrying a clause on a trait
+        that is itself gated is refused at parse: that is a conjunction, which is a
+        band wearing two clauses instead of one, and every screen words a gate as a
+        single sentence. So a trait is gated *as a whole* or *on its grants*, never
+        both, which is what makes `GateOver` a single answer.
+      - **The band and empty-clause rules are read once**, in a new
+        `readCondition`, called for the trait's clause and for each grant's. The
+        refusals are phrased as clauses ("is gated …") so the caller says whose
+        gate it is — a trait's reads `passive %q: is gated …` and a grant's
+        `passive %q: grants %q, which is gated …`. **No trait-level message
+        changed.**
+      - `Battle.reconsider` re-reads a trait whose gate is only on a grant.
+        ⚠️ **Two halves, and either alone ships the feature dead**: the early
+        return became `!held.Gated()` (trait-level `while == nil` leaves a
+        per-grant gate stuck at whatever enlistment put it at), and the single
+        `wanted` for the whole trait became one gate per grant (a single answer
+        moves the ungated tier with the gated one). `Battle.hold` and
+        `Battle.Begin` are per grant for the same reason, and `Battle.grant`'s own
+        gate check went away rather than being duplicated beside `hold`'s.
+        `Battle.holds` is the one reading of a gate against a unit; `inForce` and
+        `inForceAt` delegate to it.
+      - `Marshal` carries a grant's gate, both ends `omitempty`, held by a
+        parse → write → parse test that names the surviving gate. `Book.All`
+        deep-copies it: cloning the grant slice copies the pointer, not the clause.
+      - **Wording**: `BlurbTraitGrantsWhile` / `BlurbTraitGrantsWhileAbove` in both
+        books and a third branch in `i18n.DescribePassive`. A grant behind its own
+        gate says when **in its own sentence**, because the trailing
+        `BlurbTraitWhile` line words a *trait's* gate and a trait carrying a gated
+        grant has none — so a two-tier trait reads "Always carries X." above
+        "Carries Z at or above 70% health.". A trait gated as a whole keeps exactly
+        the arrangement it had. `cmd/hexforge`'s grants cell carries the same
+        clause through a shared `gateClause`, since the while column words the
+        trait's gate and would leave a two-tier trait looking always-on.
+      - `forge.Library.Held` skips **per grant** rather than per trait, which is
+        what its comment always meant: a whole-trait skip threw away the tier that
+        never lapses as well. The behaviour for a trait gated as a whole is
+        unchanged, and the understatement at the top of the bar is still a step-3
+        measurement.
+
+      ⚠️ **What no test can hold yet, again.** No golden moved and none could:
+      `describe.golden` cannot see a term no shipped trait carries. Every test for
+      step 2 is therefore a hand-built fixture — `internal/core/passive`'s own
+      book, `internal/core/battle`'s golden-free fixture book (a `fortified`
+      status and four traits), `internal/i18n`'s constructed traits, and scratch
+      data directories in `internal/forge` and `cmd/hexforge`. The seed share-floor
+      walk gained a grant-gate arm that **walks nothing today**, deliberately, the
+      way the trait-level arm did before `blaze`.
+
+      ⚠️ **Two refusals had no test before this.** Mutating the absorb refusal to
+      read the grant's own field reddened **nothing** in the repository until the
+      new table arrived — "a pool is refilled every time a gate reopens" was
+      written and never measured.
 
       **Still open — step 3, the first subject.** A guard that holds while its
       holder is fresh, priced by measurement. ⚠️ Two things step 1 met that this has
@@ -6136,16 +6197,16 @@ is only so the shape is readable.
       is also the natural counterpart to `blaze`, which grows as its holder falls,
       so the two would read as a pair rather than as one idea twice.
 
-      ⚠️ **The whole-trait gate cannot express it, and this is the schema question
-      to settle first.** `While` gates the *trait*, so what is expressible today is
-      one tier — "+Z% while above Y, nothing below" — and the two-tier shape needs
-      a **per-grant** `while`: an ungated grant carrying X and a gated one carrying
-      the difference. Splitting it across two traits is not the answer, because a
-      character has trait slots and one idea may not cost two of them. So the work
-      is `Grant` gaining its own optional condition, with the trait-level one kept
-      for the whole-trait case — and the existing refusal carried down with it, since
-      an Absorb grant behind a gate is refilled every time the gate reopens and that
-      rule is about the *grant* rather than about the trait.
+      ⚠️ **The whole-trait gate could not express it, and that is what step 2
+      settled.** `While` gates the *trait*, so what was expressible was one tier —
+      "+Z% while above Y, nothing below" — and the two-tier shape needed a
+      **per-grant** `while`: an ungated grant carrying X and a gated one carrying
+      the difference. Splitting it across two traits was never the answer, because
+      a character has trait slots and one idea may not cost two of them.
+      `Grant.While` is that field and it ships; the trait-level clause is kept for
+      the whole-trait case, the two may not be combined over one grant, and both
+      refusals came down with the gate. **Nothing about the schema is left to
+      settle here — what is left is the pricing.**
 
       ⚠️ **Two tiers do not add up to the sum of their faces.** `modifier.Set.Stat`
       saturates a change towards a floor rather than applying it — a −400‰ term on a
