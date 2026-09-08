@@ -118,7 +118,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-008` | done | The cast listing draws every row, so the detail pane shrinks as the cast grow… |
 | `SCR-009` | refused | Wording the ids on `cmd/hexarena`'s menu line |
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
-| `SCR-011` | open | `cmd/hexforge-tui` takes ~1300s and blows `go test`'s own timeout, because e… |
+| `SCR-011` | open | Every scratch data directory copied 17 MB of art — FIXED; the ~1300s was Win… |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -295,44 +295,66 @@ is only so the shape is readable.
 
 ## Not done
 
-- [ ] `SCR-011` ⚠️ **`cmd/hexforge-tui` takes ~1300s, which is past `go test`'s own
-      600s default — so `make check` (`go test ./... -count=1`) is red at that
-      package for a reason that is not a test failing.**
+- [ ] `SCR-011` ⚠️ **Every scratch data directory copied the whole 17 MB data
+      directory — FIXED, the art is shared now. But the ~1300s in this item's
+      first draft was a WINDOWS reading, `make check` is green on macOS, and the
+      copying was never this machine's cost.**
 
-      Measured 2026-09-08: **719s** and **1295s** on two runs of the package alone,
-      and a run inside the eight-package golden set timed out at 600s *and* at
-      900s, each time dumping goroutines from inside `copyTree`. It is not
-      starvation — the 900s run was the only `go` process on the machine — and it
-      is not a deadlock: the stack's top frame is an active file copy.
+      **What shipped.** `testfixture.CopyData` copies the books and *shares* the
+      art: a hard link first, a symbolic link where a hard link is refused
+      (another filesystem), a byte copy where neither is available (Windows
+      without developer mode, across two volumes). All three keep the file's size
+      and modification time, which is what the art preview's cache is keyed on —
+      `TestThePreviewRasterisesOncePerFileAndSize` is green, and the copy
+      fallback restamps deliberately so it is not a second behaviour under test.
+      ⚠️ **Sharing means writing to art in a scratch directory writes to the
+      committed file**, so `testfixture.PrivateArt` is how the one test that
+      rewrites its art says so, and `CopyData` refuses on the next call if a
+      shared picture has moved rather than letting a corrupted SVG go unnoticed.
 
-      **The cause is arithmetic, not concurrency.** `tui_test.go`'s `scratchData`
-      calls `copyTree` over the whole data directory, and every `start(t, …)`
-      calls it. Counted: **155 `start(t`/`scratchData(` call sites across 25 test
-      files** (many inside table loops, so the real number is higher), against a
-      data directory of **17.3 MB of which 17.0 MB is `assets/` — 66 SVGs**. One
-      measured `start()` costs about 4–10s on Windows, essentially all of it
-      copying pictures no assertion reads. `cmd/hexarena-tui` does not have this
-      shape and runs in ~200–430s.
+      **FIVE packages had this, not one.** `cmd/hexforge-tui`, `cmd/hexarena-tui`,
+      `cmd/hexforge`, `internal/forge` and `internal/screen` each declared a
+      byte-identical `copyTree`. All five now call one function, which is what
+      stops the sixth copy of the slow shape being written.
 
-      ⚠️ **It is a pre-existing cost and a data-size trap, not a regression.** The
-      `crooner` change (`DAT-007`) added ~7 KB of JSON — 0.04% — and touched no
-      file in the package; the three SVGs it made a character *name* were already
-      sitting in the directory being copied. But the direction is one way: every
-      traced line that lands in `assets/` makes every one of those 155 copies
-      slower, whether or not a character names it.
+      **Measured 2026-09-08, macOS on APFS, `go test -count=1 -v` one package at a
+      time.** The counts are `=== RUN` lines, so the same tests still run — each
+      package is one or two higher only because this added its own guard:
 
-      **The shape of a fix, and why the obvious one is wrong.** A single shared
-      copy is not available: `hexforge-tui` **writes** — the save key, `skills
-      add`, `skills edit` — so those tests need a directory of their own. What
-      they do not need is their own pictures. Copy the JSON per test and share
-      `assets/` read-only (a link, or a second root the library is told about),
-      and the per-test cost stops scaling with the art. ⚠️ The art preview's cache
-      is keyed on a file's **size and modification time**, so whatever sharing
-      mechanism is used has to preserve both, and
-      `TestThePreviewRasterisesOncePerFileAndSize` is what will say whether it did.
+      | package | before | after | tests |
+      |---|---|---|---|
+      | `cmd/hexforge-tui` | 111.8s | 106.5s | 194 → 196 |
+      | `internal/screen` | 41.9s | 42.4s | 257 → 258 |
+      | `internal/forge` | 106.1s | 105.1s | 168 → 170 |
+      | `cmd/hexarena-tui` | 20.5s | 23.9s | 88 → 89 |
+      | `cmd/hexforge` | 7.9s | 8.3s | 48 → 49 |
 
-      Until then, the package needs an explicit `-timeout` above 600s wherever it
-      is run, and `make check` is the place that does not pass one.
+      One copy of the data directory writes **17,269,474 bytes before and 241,573
+      after**, and a full run of the five packages makes **784 of them** — 13.5 GB
+      of writes down to 189 MB. The *call sites* were counted at 155 in
+      `cmd/hexforge-tui`; the copies it really makes are **301**, so a site count
+      is about half the figure.
+
+      ⚠️ **"Essentially all of it copying pictures" is FALSE on this filesystem,
+      and that is the correction worth keeping.** Timed either way, one copy of
+      the data directory takes **23 ms sharing and 22 ms copying** — seventeen
+      megabytes of page-cached SVG costs nothing measurable on APFS. A whole
+      `scratchData` runs **206–235 ms** copying against **215 ms** sharing: the
+      copy is under a tenth of it, and `testfixture.Inject` — which re-parses and
+      re-saves the books through `forge` for every scratch directory — is about
+      **180 ms** of the rest. So the win here is 5.3s of 112s, and **the lever
+      that would move this machine is staging the injected books once per process,
+      not the art.** That is the open half of this item.
+
+      ⚠️ **The gate is not red here and this item used to say it was.** `make
+      check` was green at `d022cdf` before any of this, and `cmd/hexforge-tui`
+      runs 106–112s alone (148s inside `make check`, where packages compete).
+      719s, 1295s and the 600s timeouts were **Windows** readings — "one measured
+      `start()` costs about 4–10s" was always qualified that way, and a scratch
+      copy there is a filesystem and a virus scanner rather than a memcpy. So **no
+      `-timeout` is owed on macOS**, the 16 MB term the Windows figure was blamed
+      on is gone, and whether what is left still needs one there is unmeasured —
+      it needs somebody on that platform, not another reading here.
 
 - [ ] `DAT-008` ⚠️ **`bedrock` and `phalanx` are the same effect on two different
       axes, and decision 5 of `DAT-002` forbids exactly that.** Raised 2026-09-08

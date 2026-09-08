@@ -58,28 +58,83 @@ func scratchData(t *testing.T) string {
 	return target
 }
 
-func copyTree(t *testing.T, from, to string) {
+// copyTree puts the data at from into to: the books byte for byte, the art
+// shared rather than copied.
+//
+// It is a shim over testfixture.CopyData, which is where the mechanism and the
+// reason for it live. It used to be a byte-for-byte walk of the whole tree, in
+// five packages at once, and the shipped assets folder is 16 MB against 350 KB
+// of books — so every scratch directory any of those suites built paid for
+// sixty-six pictures no assertion reads.
+func copyTree(t *testing.T, from, to string) testfixture.DataCopy {
 	t.Helper()
-	entries, err := os.ReadDir(from)
+	done, err := testfixture.CopyData(from, to)
 	if err != nil {
-		t.Fatalf("read %s: %v", from, err)
+		t.Fatalf("copy the data at %s: %v", from, err)
 	}
-	for _, entry := range entries {
-		source, destination := filepath.Join(from, entry.Name()), filepath.Join(to, entry.Name())
-		if entry.IsDir() {
-			if err := os.MkdirAll(destination, 0o755); err != nil {
-				t.Fatalf("create %s: %v", destination, err)
-			}
-			copyTree(t, source, destination)
-			continue
-		}
-		raw, err := os.ReadFile(source)
-		if err != nil {
-			t.Fatalf("read %s: %v", source, err)
-		}
-		if err := os.WriteFile(destination, raw, 0o644); err != nil {
-			t.Fatalf("write %s: %v", destination, err)
-		}
+	return done
+}
+
+// TestAScratchDataDirectorySharesTheShippedArt is the guard on the arithmetic
+// that lets this suite finish: a scratch data directory must not hold its own
+// copy of the shipped pictures.
+//
+// It asserts the mechanism and not a stopwatch. A timing assertion would be a
+// flake, and would pass anyway on a machine fast enough to make the copy look
+// cheap. testfixture.CopyData falls back to writing the bytes out where neither
+// kind of link can be made — correct, and exactly as slow as what this
+// replaced — so a fallback that had quietly become the normal path would leave
+// every test in this package green and the package back at its old cost. That is
+// the failure this names, and it is the only one a green suite cannot show.
+func TestAScratchDataDirectorySharesTheShippedArt(t *testing.T) {
+	copied, walked, err := testfixture.CopiedArt(shippedDataDir, scratchData(t))
+	if err != nil {
+		t.Fatalf("compare the art: %v", err)
+	}
+	if walked == 0 {
+		t.Fatal("no pictures were compared, so nothing here is measured")
+	}
+	if len(copied) != 0 {
+		t.Errorf("%d of %d shipped pictures were copied rather than shared, starting with %v",
+			len(copied), walked, copied[:min(3, len(copied))])
+	}
+}
+
+// TestOneScratchDirectorysWritesAreInvisibleToAnother is the half of the
+// arrangement that sharing the art could have taken away.
+//
+// The pictures are shared and the books are not, and the split is what makes
+// this suite safe: the tests here WRITE — the save key, `skills add`, `skills
+// edit` — so two of them over one file would be a suite whose answers depended
+// on the order it ran in. The shipped directory is read either side as well,
+// because a scratch copy that shared its books would not be writing to a scratch
+// copy at all, it would be editing the repository.
+func TestOneScratchDirectorysWritesAreInvisibleToAnother(t *testing.T) {
+	first, second := scratchData(t), scratchData(t)
+	shipped := filepath.Join(shippedDataDir, "skills.json")
+	before, err := os.ReadFile(shipped)
+	if err != nil {
+		t.Fatalf("read the shipped book: %v", err)
+	}
+
+	const emptied = `{"skills": []}`
+	if err := os.WriteFile(filepath.Join(first, "skills.json"), []byte(emptied), 0o644); err != nil {
+		t.Fatalf("write the first scratch book: %v", err)
+	}
+
+	other, err := os.ReadFile(filepath.Join(second, "skills.json"))
+	if err != nil {
+		t.Fatalf("read the second scratch book: %v", err)
+	}
+	if string(other) == emptied {
+		t.Error("one scratch directory's write reached another's book")
+	}
+	after, err := os.ReadFile(shipped)
+	if err != nil {
+		t.Fatalf("read the shipped book again: %v", err)
+	}
+	if string(after) != string(before) {
+		t.Errorf("writing a scratch book edited %s, which is committed data", shipped)
 	}
 }
 
@@ -917,6 +972,17 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 	m = m.hand(m.browse.Subject())
 	character := m.browse.Rows()[clamp(m.browse.Cursor, 0, len(m.browse.Rows())-1)]
 	art := filepath.Join(dir, character.Image)
+	// This is the one test in the repository that rewrites art it was handed
+	// rather than art it made, and a scratch directory SHARES the shipped
+	// pictures rather than copying them — so chmod and the rewrite below would
+	// otherwise reach the committed file. Which row the browser opens on decides
+	// whether that file is a shipped one or the fixture's own, which is a fact
+	// about an ordering rather than a promise, so the private copy is taken
+	// unconditionally. testfixture.CopyData's own guard catches the day somebody
+	// forgets, but by then the file has already been written.
+	if err := testfixture.PrivateArt(dir, character.Image); err != nil {
+		t.Fatalf("take a private copy of the art: %v", err)
+	}
 
 	first, _ := m.preview.View(m.ctx())
 	if !strings.Contains(first, character.Image) {

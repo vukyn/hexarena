@@ -1,6 +1,6 @@
 ---
 name: hexarena-countdown-clock-allowlist
-description: "hexarena PR#267 đếm ngược + nhánh select thứ 3; ⚠️ danh sách import ≠ danh sách đồng hồ; 3 clock ban đều mù package thứ 4"
+description: "hexarena PR#267 đếm ngược + nhánh select thứ 3; ⚠️ import ≠ đồng hồ CẢ HAI CHIỀU; 3 clock ban đều mù package thứ 4"
 metadata: 
   node_type: memory
   type: project
@@ -14,6 +14,8 @@ hexarena PR #267 (`4695849`, 2026-09-03): đồng hồ đếm ngược cả hai 
 **How to apply:**
 
 ⚠️ **DANH SÁCH IMPORT ≠ DANH SÁCH ĐỒNG HỒ.** Tôi đưa coder 5 file dựng từ `import "time"`. `internal/socket/connection.go` lấy write deadline + close handshake qua **`context.WithTimeout`** trên `Timings` dựng chỗ khác — **không import `time` một chữ**. Walk phải soi cả **lời gọi**: `context.WithTimeout/WithDeadline`, `tea.Tick/Every`, helper riêng. Danh sách thật là 6, không phải 5.
+
+⚠️ **Chiều ngược lại cũng cắn: import `time` mà KHÔNG đọc đồng hồ vẫn bị chặn.** `internal/testfixture/data.go` (2026-09-08) chỉ **chép** stamp của file — giữ `time.Time` trong struct, gọi `os.Chtimes(dst, time.Time{}, info.ModTime())` — không có `time.Now()` nào, và allowlist vẫn đỏ, vì luật soi **import** chứ không chỉ lời gọi. Cách đúng là **bỏ import**, không phải thêm một dòng vào allowlist (allowlist giữ cho transport): giữ stamp bằng `info.ModTime().String()` và đưa `info.ModTime()` cho cả hai tham số của `Chtimes`. ⚠️ Walk **bỏ qua `_test.go`**, nên file test cạnh nó import `time` thoải mái.
 
 ⚠️ **3 lệnh cấm đồng hồ đều đọc `os.ReadDir(".")` — thư mục CỦA CHÍNH NÓ.** `internal/room/clock_test.go:157`, `internal/wire/clock_test.go:130`, `internal/socket/clock_test.go:119`. Đồng hồ mọc ở package thứ tư thì **cả ba đều mù**. Đóng bằng `internal/socket/allowlist_test.go` — walk toàn module, giữ tập file đọc đồng hồ **bằng** một allowlist có lý do từng dòng (6 mục / 132 file), + guard `walked N files` để không pass rỗng. Đặt ở socket vì đó là package **sở hữu** đồng hồ.
 
