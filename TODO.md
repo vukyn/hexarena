@@ -2943,10 +2943,12 @@ is only so the shape is readable.
             the one place the design does *not* follow "a timeout announces and
             passes"; it is a draft, and a side that never picked has no squad to
             fight with.
-            **(d) A ban lasts the match, and the first cut is bo1 only.** Ban and
-            pick for a bo3 is its own item below, because "per match" in a series
-            is a different game: three drafts, or one draft and two rematches on
-            it, is a design decision and not a parameter.
+            **(d) A ban lasts the match, and the first cut is bo1 only.**
+            ⚠️ **The second half of that is spent: a series drafts once a battle,
+            settled 2026-09-08.** "Per match" in a series was three different
+            games and the item below picked one — a fresh pool and a fresh ban and
+            pick before each battle, so a bo3 can be three different squads. A ban
+            still lasts *its own battle*, which is what the first half now means.
             **(e) The pool is every character that is not held back** —
             `cast.Character.Hidden`, which already exists and which
             `internal/screen/squads.go` already honours *for exactly this
@@ -3498,13 +3500,14 @@ is only so the shape is readable.
             5v5 has **3** — a pool too small cannot be built from the shipped data
             at all, which is why that test's fixture is a cast book with nobody in
             it rather than a subset.
-            ⚠️ **A drafting series is REFUSED, and this was not in the brief.**
-            `Config.Validate` now turns away `Drafts` with `Battles != 1`, by name,
-            the way it turns away a bo2 — because settled decision **(d)** is *"a
-            ban lasts the match, and the first cut is bo1 only"* and what a draft
-            means across a series is the three different games the item below
-            lists. A room that accepted the configuration would be picking the
-            second of them silently. `TestADraftingRoomIsABo1`.
+            ⚠️ **A drafting series was REFUSED here and no longer is.**
+            `Config.Validate` turned away `Drafts` with `Battles != 1`, by name,
+            the way it turns away a bo2 — because what a draft means across a
+            series was three different games and a room that accepted the
+            configuration would have picked one of them silently. It is picked
+            deliberately now: a draft a battle, out of a fresh pool.
+            `TestADraftingRoomIsABo1` became `TestADraftingSeriesIsAccepted`,
+            which holds the same pair from the other side. → the item below.
             ⚠️ **In a drafting room a squad is UNWANTED, not illegal**, so
             `squadIsFieldable` is **not consulted** on that path at all — the squad
             may be perfectly legal and the fix is to bring **none**, where
@@ -4183,17 +4186,52 @@ is only so the shape is readable.
             `room.Config.Validate` refuses `Drafts` beside anything but a bo1, so
             the flag has to refuse `-battles 3` in words rather than letting
             `Open` do it.
-      - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
-            "a ban lasts the match" is ambiguous in a series and the ambiguity is
-            a design decision rather than a parameter: three drafts, one draft
-            carried across all three battles, or a draft per battle with the
-            previous winner banning first. Each is a different game. ⚠️ And the
-            arithmetic above gets worse per repetition if the pool does not
-            reset. ⚠️ **`room.Config.Validate` refuses a drafting series today**,
-            by name and with that ambiguity as the reason, so this item is what
-            deletes that refusal — and whichever of the three games it chooses,
-            `draft.Config.First` is already the parameter that lets "the previous
-            winner bans first" be expressed.
+      - [x] **Ban and pick for a bo3 — DONE 2026-09-08. A draft a battle.** Three
+            battles are three ban-and-picks out of three **fresh pools**, so a bo3
+            can be three different squads. `room.Config.Validate`'s refusal of a
+            drafting series is gone and `hexarena-host`'s own flag refusal with
+            it; the banner says what a series draft is where a host reads it.
+
+            ⚠️ **The pool resets, and it has to.** Three battles out of one pool
+            would run it down — 3v3 spends six picks and its bans a battle — and
+            the last draft would be a choice between whatever nobody wanted twice.
+            A fresh pool is also what makes three battles three genuinely
+            different squads rather than one squad and two consolation prizes.
+
+            ⚠️ **The host bans first in every battle**, which is a decision rather
+            than the absence of one. "The previous winner bans first" was the
+            other reading the record named and it is still expressible —
+            `draft.Config.First` stays a parameter — and it was not taken: it
+            needs a stated answer for a drawn battle, and it hands the ban order
+            to whoever is already ahead. What a series swaps between battles is
+            the **side** (`Room.home`), which is the advantage a bo3 exists to
+            cancel; the ban order is not swapped, so a host bans first three
+            times. That is the cost of this reading, written down rather than
+            discovered.
+
+            ⚠️ **Nothing is sent when the next draft opens**, exactly as nothing
+            is sent when the first one does: a `wire.Drafted` carries recorded
+            decisions and none have been taken. Both ends **compute** it from
+            three facts they already hold — the series length off
+            `wire.Welcome.Battles`, that the room drafts off `wire.Welcome.Drafts`,
+            and the battle having ended off their own engine. A message saying so
+            would be a fourth statement of a fact three existing ones already fix.
+
+            **Two things the tests got wrong before they got it right**, both
+            worth the lines:
+            ⚠️ The first version asserted the three rosters are **not all
+            identical**. They ARE all identical on every run — the fake client
+            picks the first candidate the pool still offers, and a reset pool
+            offers the same first candidate every time. That is the fixture being
+            deterministic, not the draft failing to re-run, and a reader who found
+            it red would have gone looking in the wrong place. What is countable
+            is the decisions: one draft's worth a battle.
+            ⚠️ And the count was **computed** first — twice the bans plus twice
+            the picks plus two arrangements — which comes to twelve where a draft
+            records eighteen. It is measured now, by running a bo1 in the same
+            fixture: a test that computes its own unit is asserting its own
+            arithmetic.
+
       - [ ] **mDNS room browsing — the HOST half is DONE and shipped; the CLIENT
             half is PENDING, deliberately.** A player still joins by pasting the
             room code, and nothing in the game lists a room. → the platform note

@@ -717,14 +717,30 @@ func (m *Mirror) apply(turn wire.Turn) error {
 		}
 	}
 	if m.fight.Finished() || m.capped {
-		m.settled()
+		return m.settled()
 	}
 	return nil
 }
 
 // settled records the battle this client's own engine has just finished, which
-// is where a client learns an outcome.
-func (m *Mirror) settled() {
+// is where a client learns an outcome — and, in a drafting series, where it opens
+// the next ban and pick.
+//
+// ⚠️ **The next draft is COMPUTED here rather than announced**, and it is the
+// same three facts the room uses one layer out: the series length off
+// wire.Welcome.Battles, that the room drafts off wire.Welcome.Drafts, and this
+// battle's outcome off its own Ended event. So "that battle ended, the series is
+// not over, so a draft opens now" is a reading both ends take from what they
+// already hold. A message saying so would be a fourth statement of a fact three
+// existing ones already fix — and the room sends none, because a wire.Drafted
+// carries recorded decisions and none have been taken. → room.Room.redraft.
+//
+// ⚠️ **After the append, not before.** over() counts the battles in m.fought, so
+// a draft opened before this one was recorded would be opened on the strength of
+// a series one battle shorter than it is — and on the last battle of a bo3 that
+// is the difference between a match ending and a client sitting on a draft
+// nobody will ever send a decision for.
+func (m *Mirror) settled() error {
 	one := Fought{
 		Battle: m.index, Side: m.side, Seed: m.seed,
 		Outcome: m.fight.Outcome(), Turns: m.turns, Capped: m.capped,
@@ -732,6 +748,10 @@ func (m *Mirror) settled() {
 	one.Winner, one.Decided = m.fight.Winner()
 	m.fought = append(m.fought, one)
 	m.prompt = nil
+	if !m.welcome.Drafts || m.over() {
+		return nil
+	}
+	return m.openDraft(m.welcome)
 }
 
 // count adds a run of events' turns to this client's own tally and stops it at

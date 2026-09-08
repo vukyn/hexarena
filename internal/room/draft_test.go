@@ -912,31 +912,40 @@ func TestARoomThatCouldNotFinishItsDraftIsRefusedWhenItOpens(t *testing.T) {
 		draft.Slack(pool.Len(), wire.Format3v3), draft.Slack(pool.Len(), wire.Format5v5))
 }
 
-// TestADraftingRoomIsABo1 is Config.Validate's own refusal, and it is a design
-// decision rather than a bounds check — the same kind as its refusal of a bo2.
+// TestADraftingSeriesIsAccepted is the refusal that was lifted, held from the
+// other side.
 //
-// "A ban lasts the match, and the first cut is bo1 only" is what was settled. What
-// a draft means across a *series* is three different games — three drafts, one
-// draft carried across all three battles, or a draft a battle with the previous
-// winner banning first — so a room that accepted the configuration would be
-// choosing the second of them silently, which is exactly the decision that is
-// deliberately a later item.
-func TestADraftingRoomIsABo1(t *testing.T) {
+// ⚠️ **Config.Validate used to turn a drafting bo3 away by name**, because "what
+// a draft means across a series" was three different games — three drafts, one
+// draft carried across all three battles, or a draft a battle — and a room that
+// accepted the configuration would have chosen one of them silently. The choice
+// is taken: **a draft a battle**, out of a fresh pool each time, so three battles
+// can be three different squads. → Room.redraft.
+//
+// This asserts the acceptance rather than deleting the test, because a
+// configuration that was refused for a reason and is now accepted for a decision
+// is exactly the pair a reader wants to find together.
+func TestADraftingSeriesIsAccepted(t *testing.T) {
 	dependencies := deps(t)
 	drafting := draftingConfig(11)
 	drafting.Battles = 3
-	if err := drafting.Validate(); err == nil {
-		t.Error("a drafting bo3 was accepted, which picks one of the three games a draft " +
-			"across a series could be without anybody deciding")
+	if err := drafting.Validate(); err != nil {
+		t.Errorf("a drafting bo3 is refused: %v", err)
 	}
-	if _, err := room.New(drafting, dependencies); err == nil {
-		t.Error("a drafting bo3 opened a room")
+	opened, err := room.New(drafting, dependencies)
+	if err != nil {
+		t.Fatalf("a drafting bo3 would not open a room: %v", err)
 	}
-	// The bo3 itself is untouched: what is refused is drafting one.
-	plain := drafting
-	plain.Drafts = false
-	if err := plain.Validate(); err != nil {
-		t.Errorf("an ordinary bo3 is refused: %v", err)
+	if opened == nil {
+		t.Fatal("a drafting bo3 opened nothing")
+	}
+	// The bo2 refusal is untouched: what was lifted is the draft's, not the
+	// series shape's.
+	even := drafting
+	even.Battles = 2
+	if err := even.Validate(); err == nil {
+		t.Error("a drafting bo2 was accepted, and an even series still has to invent a rule " +
+			"for a 1–1")
 	}
 }
 

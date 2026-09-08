@@ -5,9 +5,6 @@ import (
 	"net/netip"
 	"strings"
 	"testing"
-
-	"github.com/vukyn/hexarena/internal/room"
-	"github.com/vukyn/hexarena/internal/wire"
 )
 
 // TestADraftingRoomIsOpenedAndSaysSo holds both halves, and the second one is
@@ -58,21 +55,21 @@ func TestADraftingRoomIsOpenedAndSaysSo(t *testing.T) {
 	}
 }
 
-// TestADraftingSeriesIsRefusedByTheFlagsRatherThanByTheRoom is the refusal this
-// binary owes over the one the room already has.
+// TestADraftingSeriesOpensAndSaysWhatItIs is the refusal that was lifted, held
+// from the other side.
 //
-// ⚠️ **room.Config.Validate refuses this too, and its sentence is the authority
-// on WHY** — decision (d), a ban lasts the match, so drafting a series is a
-// different game. What it cannot be is the sentence a person reads here: it names
-// `Drafts` and `Battles`, which are fields of a struct nobody at a terminal
-// typed. Two flags were typed, so the refusal names two flags and says which
-// pairs are legal.
+// ⚠️ **This binary used to refuse `-draft -battles 3` in words of its own**,
+// naming two flags where the room's sentence named two struct fields nobody at a
+// terminal typed. It stood while "what a draft means across a series" was
+// undecided; the decision is a draft a battle, out of a fresh pool each time, so
+// there is nothing left to refuse.
 //
-// That is the one place this binary is allowed to reword a room refusal, and the
-// bound is written into the check: everything else is surfaced word for word,
-// because a second wording of "a series of 2 battles is even" would be a second
-// place to keep it true.
-func TestADraftingSeriesIsRefusedByTheFlagsRatherThanByTheRoom(t *testing.T) {
+// What replaces it is the banner. A host who typed both flags is opening three
+// ban-and-picks rather than one, and a player who drafted a side they liked will
+// otherwise expect it back in battle two — so the line is drawn only in a series,
+// for the draft line's own reason: a line every ordinary drafting host reads past
+// is how the one that matters stops being read.
+func TestADraftingSeriesOpensAndSaysWhatItIs(t *testing.T) {
 	chosen := aRoom()
 	chosen.draft, chosen.battles = true, 3
 
@@ -82,41 +79,32 @@ func TestADraftingSeriesIsRefusedByTheFlagsRatherThanByTheRoom(t *testing.T) {
 	}
 	var out, errs bytes.Buffer
 	held, err := open(chosen, netip.MustParseAddr("10.0.0.7"), dependencies, &out, &errs)
-	if err == nil {
-		t.Cleanup(func() { _ = held.stop() })
-		t.Fatal("-draft with -battles 3 opened a room, and a ban cannot last a series")
+	if err != nil {
+		t.Fatalf("-draft with -battles 3 was refused: %v", err)
 	}
-	said := err.Error()
-	for _, want := range []string{"-draft", "-battles"} {
-		if !strings.Contains(said, want) {
-			t.Errorf("the refusal does not name %s, so it names a struct field rather than "+
-				"what somebody typed: %q", want, said)
-		}
+	t.Cleanup(func() { _ = held.stop() })
+
+	var banners bytes.Buffer
+	banner(held, "was told by -advertise", &banners)
+	said := banners.String()
+	if !strings.Contains(said, "once per battle") {
+		t.Errorf("a drafting series' banner does not say the draft is re-run, so a host "+
+			"reads it as the bo1 rule:\n%s", said)
 	}
-	// ⚠️ The vacuity guard, and the first version of it was itself vacuous.
-	//
-	// It asserted the refusal does not contain "Drafts" or "Battles", on the
-	// premise that the room's sentence names its own fields. It does not — it
-	// reads "a drafting room of 3 battles has no rule to run under", which is
-	// good prose and mentions neither identifier, so that check could never fire
-	// and the two flag-name assertions above were carrying the whole test.
-	//
-	// What actually discriminates is the sentence itself: the room's refusal is a
-	// real refusal of the same thing, so the claim worth holding is that this is
-	// **not that sentence**. If the flags stop refusing first, Open surfaces the
-	// room's words word for word and this fails by equality rather than by a
-	// substring nobody guaranteed.
-	configuration := room.Config{
-		Drafts: true, Battles: 3, Format: wire.Format(chosen.format),
-		Allowance: chosen.allowance, TurnCap: chosen.turns,
+	if !strings.Contains(said, "fresh pool") {
+		t.Errorf("the banner does not say the pool resets, and a player who liked their "+
+			"drafted side will expect it back:\n%s", said)
 	}
-	refusedByTheRoom := configuration.Validate()
-	if refusedByTheRoom == nil {
-		t.Fatal("the room accepts a drafting bo3, so this test measures nothing about the flags " +
-			"coming first — the room's own refusal is what makes the ordering a claim")
-	}
-	if said == refusedByTheRoom.Error() {
-		t.Errorf("the refusal is the room's own sentence surfaced from Open rather than the "+
-			"flags' refusal firing first: %q", said)
+
+	// The line is drawn only in a series: a bo1 draft is the ordinary case and
+	// says nothing extra.
+	one := aRoom()
+	one.draft, one.battles = true, 1
+	var quiet bytes.Buffer
+	single := hosting(t, one, documented, &quiet, &quiet)
+	var singleBanner bytes.Buffer
+	banner(single, "was told by -advertise", &singleBanner)
+	if strings.Contains(singleBanner.String(), "once per battle") {
+		t.Errorf("a bo1 draft's banner explains a series rule:\n%s", singleBanner.String())
 	}
 }
