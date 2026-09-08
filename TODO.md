@@ -122,7 +122,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
-| `FRG-003` | open | The cast census has no command, so an author cannot run the rule their bui… |
+| `FRG-003` | done | The cast census has no command — DONE. `hexforge census` walks the authored… |
 | `NET-001` | open | PvP over a LAN — 3v3 or 5v5, one server and n clients |
 
 ## Done
@@ -4631,22 +4631,53 @@ is only so the shape is readable.
       `diglett.whole` plays it 7 times over the census boards and reads 317 of 440
       against the cast — so the shipped catalogue is not carrying the defect.
 
-- [ ] `FRG-003` **The cast census has no command, so an author cannot run the rule
-      their build has to pass.** `forge.Library.Census` counts how often a build
-      casts each of its own skills and `TestEveryShippedBuildPlaysItsOwnKit` holds
-      the catalogue to it — but the only way to see a count today is to read a test
-      failure. `hexforge spar` and `hexforge weigh` are the shape it wants: a
-      subcommand naming a build, optionally a squad to stand in, printing the kit
-      in its own order with a count beside each slot and the silent ones marked.
+- [x] `FRG-003` **The cast census has no command — DONE.** `hexforge census <build>
+      [--against SQUAD] [--seeds N]` prints the kit in its own order with a count
+      beside each slot and the silent ones marked, and it is on the dispatch table
+      and in the usage.
 
-      ⚠️ **What it must print beside the numbers is the board.** A count without
-      the squad it was taken against is a figure nobody can re-take, which is why
-      `CastCensus.Against` exists on the report rather than only in the call — the
-      same rule `SquadReport.Without` follows.
+      ⚠️ **The command runs the WALK by default, not one board, and that is the
+      whole design decision.** The rule a build has to pass is not "this slot fired
+      against this squad" — a slot silent against one squad is a fact about that
+      matchup, and `split` is uncast against eight of the twenty-one characters and
+      cast four hundred times across the rest. So with no `--against` it walks the
+      authored squads and stops at the first board that leaves nothing silent, and
+      `--against` is the opt-in to one named board with a note saying, in the
+      output, that it is **not** the catalogue rule. A reader handed a single board
+      would take a silent row as a failed rule, and it is not one.
 
-      Small, and deliberately not folded into the work that built the instrument:
-      the rule is held by a test either way, and a command is a screen with its own
-      wording and its own two languages.
+      ⚠️ **The walk moved out of the test and into the package**, as
+      `forge.CensusWalk` plus `Library.CensusWalk` and the exported `CensusSeeds`.
+      It was a helper in `census_test.go`; the moment a command asked the same
+      question, leaving it there would have meant the rule worded twice — the
+      mistake `CLAUDE.md` § *Mistakes already made here* records. The test helper is
+      now the call and a `t.Fatalf`, and the reasoning (why the walk, why six
+      seeds) lives with the code that does it.
+
+      `Library.Build(id)` is new and its doc answers `Library.Builds`', which rules
+      a by-id lookup out **for a screen**: a screen has the row it drew, and a
+      command line has a string a person typed and nothing else.
+
+      **What it prints beside the numbers is the board** — `CastCensus.Against` on
+      every table — because a count without the squad it was taken against is a
+      figure nobody can re-take. The seeds and the battle count come off a census
+      that was actually taken rather than off the flag, for the same reason, and a
+      mutation printing the default instead is red.
+
+      ⚠️ **A verdict read off the last board is the one thing this front-end could
+      get wrong on its own**, because the walk stops early: the last table drawn is
+      always the board that played everything, so a verdict taken from it reads
+      "plays every slot" in identical words for a build that needed one board and
+      one that needed four. `TestACensusVerdictIsAboutTheWalkAndNotTheLastBoard`
+      holds it. ⚠️ Its first version asserted `Contains(page, "3 board")` and
+      **passed with the verdict collapsed** — the head line says "3 board(s)
+      walked" — so it now slices the verdict off the page and asserts there. Found
+      by mutation, not by reading.
+
+      Six mutations, all red: the verdict collapsed to the one-board wording, a
+      silent slot unmarked, the board unnamed, the walk never stopping early, the
+      seeds printed from the flag default, and the subcommand off the dispatch
+      table.
 
 - [ ] `ENG-006` **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
       Built and measured on 2026-09-07 while closing the `reckless` item, reverted

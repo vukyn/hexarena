@@ -65,6 +65,7 @@ var commands = map[string]func([]string) error{
 	"show":       runShow,
 	"check":      runCheck,
 	"spar":       runSpar,
+	"census":     runCensus,
 	"weigh":      runWeigh,
 }
 
@@ -114,6 +115,16 @@ hexforge authors the cast the battles are fought with.
                                       in the book, both ways round, and report
                                       the win rates. A check says a character is
                                       legal; this says whether it belongs
+  hexforge census <build> [--against SQUAD] [--seeds N]
+                                      count how often a build casts each of its
+                                      own four slots, and mark the ones it never
+                                      casts. It is the rule the build catalogue
+                                      has to pass: a build may not name a skill it
+                                      does not play. With no --against it walks
+                                      the authored squads and stops at the first
+                                      board that leaves nothing silent, because a
+                                      slot silent against ONE squad is a fact
+                                      about that matchup and not about the build
   hexforge weigh <id> <skill> --field F --values a,b,c [--level N] [--seeds N]
                                       price ONE field on ONE skill. The carrier
                                       fights a copy of itself whose only

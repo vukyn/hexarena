@@ -7,44 +7,20 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 )
 
-// censusSeeds is how many battles a census fights each arrangement over.
-//
-// Small, because of what is being asserted: "was this slot ever used" needs one
-// cast to answer yes, not a confident rate.
-//
-// ⚠️ **It is not as small as it can be, and the floor was measured rather than
-// guessed.** At two seeds `machop.charge` reads `wrecking_swing` silent on all
-// four boards — that skill is gated on five stacks of `heft` and `brace` grants
-// them a battle at a time, so its gate is only crossed in a battle that runs long
-// enough. A gated slot needs board TIME rather than more boards, which is exactly
-// what a seed buys and what another opponent does not.
-const censusSeeds = 6
-
 // played is every skill a build cast at least once against any authored squad,
 // stopping at the first board that leaves nothing silent.
 //
-// ⚠️ **The walk is the rule and the census is one board.** A slot silent
-// against one squad is a fact about that matchup — `split` is uncast against
-// eight of the twenty-one characters and cast four hundred times across the rest
-// — so the question a catalogue has to answer is whether a slot fires
-// *anywhere*. Stopping early is what keeps that affordable: most builds are done
-// after the first board, and only the ones with something to explain pay for the
-// rest.
+// ⚠️ **The walk moved into the package**, because `hexforge census` asks the same
+// question and a rule worded twice is the mistake this repository keeps a list
+// of. The reasoning for the walk, and for the seed count it is taken at, is on
+// Library.CensusWalk and CensusSeeds; what is left here is the t.Fatalf.
 func played(t *testing.T, lib *Library, build cast.Build) ([]string, []CastCensus) {
 	t.Helper()
-	taken := []CastCensus{}
-	silent := []string{}
-	for _, against := range lib.Squads() {
-		census, err := lib.Census(build, against.ID, censusSeeds)
-		if err != nil {
-			t.Fatalf("census %s against %s: %v", build.ID, against.ID, err)
-		}
-		taken = append(taken, census)
-		if silent = census.Silent(); len(silent) == 0 {
-			return nil, taken
-		}
+	walk, err := lib.CensusWalk(build, CensusSeeds)
+	if err != nil {
+		t.Fatalf("census %s: %v", build.ID, err)
 	}
-	return silent, taken
+	return walk.Silent, walk.Taken
 }
 
 // TestEveryShippedBuildPlaysItsOwnKit is the authoring rule for the build
@@ -122,5 +98,74 @@ func TestACensusSeesASlotThatCannotFire(t *testing.T) {
 	if silent, taken := played(t, lib, fuelled); slices.Contains(silent, "wrecking_swing") {
 		t.Errorf("the fuelled kit never cast wrecking_swing either, so the starved reading "+
 			"is not about the fuel (%v)", taken[len(taken)-1].Casts)
+	}
+}
+
+// TestACensusWalkStopsAtTheFirstBoardThatPlaysEverySlot is the affordability
+// half, and it is asserted because nothing else would notice it going.
+//
+// A walk that kept measuring after the answer was in would still report the same
+// verdict — Silent is empty either way — while costing every remaining board.
+// Most builds are done after the first one, so that is most of the cost of the
+// catalogue test.
+func TestACensusWalkStopsAtTheFirstBoardThatPlaysEverySlot(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped library: %v", err)
+	}
+	squads := lib.Squads()
+	if len(squads) < 2 {
+		t.Skip("one authored squad, so there is no early stop to observe")
+	}
+	build, known := lib.builds.Get("machop.charge")
+	if !known {
+		t.Fatal("machop.charge is not in the shipped catalogue")
+	}
+	walk, err := lib.CensusWalk(build, CensusSeeds)
+	if err != nil {
+		t.Fatalf("census walk: %v", err)
+	}
+	if !walk.Plays() {
+		t.Fatalf("%s left %v silent, so this test is not measuring the stop", build.ID, walk.Silent)
+	}
+	if walk.Boards() == len(squads) {
+		t.Errorf("the walk took all %d boards on a build that plays its kit; it should have "+
+			"stopped at the first board that left nothing silent", len(squads))
+	}
+	// The board it stopped on is the last one taken, and it is the one that
+	// settled the question. Said out loud because a reader of the report takes
+	// the verdict off the set and the last table off this.
+	last := walk.Taken[len(walk.Taken)-1]
+	if len(last.Silent()) != 0 {
+		t.Errorf("the walk stopped on %s, which left %v silent", last.Against, last.Silent())
+	}
+}
+
+// TestACensusWalkOverAKitThatCannotFireTriesEveryBoard is the other arm: a slot
+// that can never fire is a slot no board redeems, so the walk pays for all of
+// them and says which slot it was.
+func TestACensusWalkOverAKitThatCannotFireTriesEveryBoard(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped library: %v", err)
+	}
+	starved := cast.Build{
+		ID: "machop.starved", Character: "pokemon.machop", Name: "no fuel",
+		Skills:   []string{"wrecking_swing", "cross_chop", "rock_throw", "seismic_toss"},
+		Passives: []string{"berserk"},
+	}
+	walk, err := lib.CensusWalk(starved, CensusSeeds)
+	if err != nil {
+		t.Fatalf("census walk: %v", err)
+	}
+	if walk.Plays() {
+		t.Fatal("a kit that cannot fuel wrecking_swing was reported as playing every slot")
+	}
+	if !slices.Contains(walk.Silent, "wrecking_swing") {
+		t.Errorf("the walk found %v silent, want the gated slot among them", walk.Silent)
+	}
+	if walk.Boards() != len(lib.Squads()) {
+		t.Errorf("the walk took %d of %d boards on a build that never plays its kit: nothing "+
+			"redeemed it, so there was no board to stop on", walk.Boards(), len(lib.Squads()))
 	}
 }
