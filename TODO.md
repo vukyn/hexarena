@@ -5486,9 +5486,138 @@ is only so the shape is readable.
       **Still open, and it is four things rather than one** — the fourth arrived on
       2026-09-08 out of `DAT-008`'s measurement and is the largest of them:
 
-      1. **The rungs at 4 and 5** (decision 6, they wait for 5v5) on the **element**
-         axis — the column axis can never reach them, because a column holds
-         `hex.FormationRows`.
+      1. **The rungs at 4 and 5 on the element axis — HALF-ANSWERED on 2026-09-09,
+         and the premise is rewritten rather than ticked.** They no longer "wait
+         for 5v5": `ENG-013` opened it, and what is left is two different
+         questions that used to look like one.
+         - **A rung at 5 is unauthorable for every element, and that half is
+           CLOSED by a finding rather than by work.** The cast tops out at **four**
+           carriers of anything (ground and water), so a rung at five would load,
+           draw and never fire, which decision 6 refuses outright. It needs a
+           fifth carrier of some element before it is a question again — a cast
+           item, not a data one.
+         - **A rung at 4 is reachable for exactly two elements, and both are
+           held.** `ground`'s is held for a reason that has nothing to do with
+           its size: a rung at 4 needs the granted status's `max_stacks` raised
+           from 2 to 3 (all ten bonus statuses are capped at 2), `MaxStacks` is
+           in `fingerprint`'s `%#v` of the whole `status.Kind`
+           (`internal/seed/elementbonus_test.go:284`), so raising `bedrock`'s cap
+           would make `bedrock` and `phalanx` stop fingerprinting alike, dissolve
+           the collision **by a side door** and redden
+           `TestNoTwoBonusesGrantTheSameEffect`'s accepted-exception arm with
+           *"DAT-008 is closed, so delete this exception"*. That is closing a held
+           item by accident — the "tidy-up wearing a fix" `DAT-008` refuses.
+           → `DAT-008`. `water`'s is held on its **measurement**, below.
+         ⚠️ **The two are not one item and must not be re-merged.** One is blocked
+         on the cast, one on a collision, one on a number.
+
+         **The measurement, and it came in under its own floor.** `water_tide`
+         rung 4 — `tidewell ×3`, i.e. `tidewell.max_stacks` 2 → 3 — was built in
+         two scratch data directories and measured on 2026-09-09 at **400 seeds a
+         cell, 800 battles a cell**, both arrangements, matching the `same_column`
+         rung-3 protocol. The floor was written down **before the run**: reading C
+         had to move at least one non-saturated pairing by **≥ +50‰**, derived as
+         just under 3σ (binomial σ at p = 0.5 over 800 is √(0.25/800) ≈ 17.7‰).
+         **It moved +48‰, and the rung was therefore not authored.**
+
+         | reading | what it prices | figure |
+         |---|---|---|
+         | **A** mirrors, both books | the control | **500‰ exactly**, all six |
+         | **D** `probe_three_water` vs `probe_spread` | the null control | **370‰ under BOTH books, identical in every field**, endless 0/800 |
+         | **B** `probe_water` vs `probe_spread`, candidate book | the whole bonus at rung 4 | 390‰ with against 150‰ `--without water_tide` = **+240‰**, endless 0/800 both |
+         | **C** `probe_water` vs `probe_spread`, book moved | **the rung itself** | 390‰ candidate against 342‰ shipped = **+48‰**, endless 0/800 both |
+
+         Mirror endless counts, quoted because every rate here is: `probe_water`
+         404/800 candidate and 422/800 shipped, `probe_three_water` 458/800 under
+         both, `probe_spread` 0/800 under both. A mirror is the same roster in
+         both arrangements, so an Endless battle is Endless in both halves and
+         drops out symmetrically — it cannot bias a control whose expected value
+         is exactly 500‰. Every **matchup** cell above ran **0 endless of 800**.
+         ⚠️ **Mutation-checked, and this is what says the figure is real.** A rung
+         at 4 declaring `"stacks": 2` — legal, parses, loads, fires — reads
+         **342‰, identical in every field to the shipped book**. So the +48‰ is
+         the **third stack** and not the extra row, and the null is an honest
+         reading rather than an instrument that measured nothing.
+
+         **The probe squads, recorded member by member — `ENG-013` was burned by a
+         harness whose fixture was written down nowhere.** All at
+         `progression.LevelCap`, leaf forms, slots as this side's own
+         `{col,row}`. ⚠️ **None of them is in `internal/seed/data/squads.json` and
+         none may be**: shipping one would change the "no shipped formation
+         reaches any rung" claim and silently answer `DAT-010`. They are written
+         into a scratch directory per run by
+         `internal/forge/dat002probe_test.go`, which is behind the
+         `dat002probe` build tag so `make check` never pays for it.
+
+         `probe_water` — water 4, ice 1, wind 1, neutral inert, so `water_tide` is
+         the only bonus that fires; at most two units to a column, so
+         `same_column` cannot:
+
+         | slot | character | form | kit | trait |
+         |---|---|---|---|---|
+         | `{0,0}` | `pokemon.squirtle` | Blastoise | `withdraw` `aqua_ring` `skull_bash` `bite` | `thorns` |
+         | `{0,1}` | `pokemon.poliwag` | **Poliwrath** (the line forks at 32; this arm was picked) | `pummel` `body_slam` `submission` `water_gun` (`builds.json` `poliwag.flurry`) | `blood_thirst` |
+         | `{1,0}` | `pokemon.lapras` | Lapras | `withdraw` `ice_beam` `blizzard` `body_slam` | `endurance` |
+         | `{1,1}` | `pokemon.magikarp` | Gyarados | `hurricane` `air_slash` `gust` `body_slam` (`builds.json` `magikarp.gale`) | `contagion` |
+         | `{2,1}` | `pokemon.mew` | Mew | `cross_chop` `submission` `vital_throw` `body_slam` (`builds.json` `mew.borrowed`) | `endurance` |
+
+         `probe_three_water` is that squad with the Gyarados seat taken by
+         Charizard (`builds.json` `charmander.scorch`: `flamethrower` `inferno`
+         `ember` `fire_spin`, `blaze`) at `{1,1}` — water 3, so rung 3 and no
+         rung 4 to reach. `probe_spread` is the opponent and fires nothing: five
+         elements one each — Charizard `charmander.scorch` `{0,0}`, Venusaur
+         `bulbasaur.poison` `{0,1}`, Raichu `pichu.burn` `{1,0}`, Lucario
+         (hand-built: `aura_sphere` `close_combat` `flash_cannon` `metal_claw`,
+         `berserk`) `{1,1}`, Alakazam `abra.shade` `{2,1}`.
+
+         ⚠️ **Two kits are hand-built and the deviation is a measurement fact
+         rather than a taste.** `pokemon.lapras` and `pokemon.riolu` have **no
+         entry in `builds.json` at all**. And the obvious Blastoise kit,
+         `builds.json` `squirtle.fortress` (`taunt` `withdraw` `wide_guard`
+         `aqua_ring`), was tried first and **carries no damaging skill**: two of
+         them taunt and heal past spar's 4000-turn limit, so the `probe_water`
+         mirror came back **10 of 10 Endless** and `Tally.Rate()` drops Endless
+         from the denominator — the control read **0‰** and could not be read at
+         all rather than failing. The whole squad was then re-kitted **off water
+         damage** for the same reason at the level of the matchup: a mono-element
+         mirror is every attack into a resisting affinity, and water-into-water
+         still stalled. The bonus counts **affinity**, not the kit's element, so
+         all four remain water carriers and all four still receive `tidewell`.
+         → `docs/balance.md` § *Every composition-bonus figure is a probe reading,
+         and its squad has to be named*, and `DAT-010`.
+
+         ⚠️ **What this reading is NOT.** It is a statement about *that squad*:
+         a 5v5 side that has spent four of its five slots on water carriers, of
+         which two heal themselves and a third drains, against that named
+         opponent, over those seeds. It is **not** a claim about what the rung is
+         worth in the game — there is no board in this repository a rate is
+         normally read off on which any bonus fires. That is `DAT-010`.
+         ⚠️ **The null is one board, so it is "not shown" rather than "worth
+         nothing".** +240‰ for the whole bonus against +48‰ for its top rung says
+         the tribe is worth a great deal at rung 3 and the third `tidewell` stack
+         adds little **on a side with two-and-a-half healing sources**. A squad
+         built harder around receiving healing might well clear the floor; the
+         honest next step is a second board, not a second look at the same one.
+         Re-running is `go test ./internal/forge -tags dat002probe -run
+         TestDAT002ReadingC -v -count=1`.
+
+         **The screen price of a third rung, measured while it was in hand —
+         the promise at the foot of this entry, cashed.** The reference screen
+         reserves the description at the widest bonus in the book, counted off
+         its **grants** (`bonusesRoom`, `internal/screen/bonuses.go:74`:
+         `room = Height − 11 − grants`, floored at 3), so the listing above it
+         shrinks as rungs are added. Measured at **120x24**, which is the floor:
+         the shipped book's widest bonus carries **2** grants and the listing gets
+         **11 rows** for **10 bonuses** — one spare. Growing `water_tide` to three
+         rungs takes it to **10 rows for 10 bonuses**: nothing falls off, and
+         **the slack goes to nought**. ⚠️ Growing a *second* bonus to three rungs
+         costs nothing more (the room reads the **maximum** across the book, not
+         the sum), so what pushes a bonus off the 120x24 listing is either the
+         **eleventh bonus** or a single bonus reaching **four** grants. So the
+         answer to *"the first version of this screen draws two rungs and has to
+         not look broken drawing four"* is: at three it is exactly full, and at
+         four it scrolls. Whoever authors a rung at 4 should read that as a
+         screen finding to state in the PR rather than as a blocker.
       2. **`ice` has no bonus of its own**, because it has one carrier. → the
          doubled-up loophole below, which is why "one carrier" is not the same as
          "unreachable".
@@ -5537,19 +5666,42 @@ is only so the shape is readable.
       PR as light's second carrier (#363), which is the shape this pin exists for.
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
-      four obvious axes outright.** Multiplicity across the **twenty-two** shipped
+      four obvious axes outright.** Multiplicity across the **twenty-four** shipped
       characters (⚠️ derived, never remembered — this table said "nineteen" on
-      2026-09-07 and three characters have shipped since, so re-run
+      2026-09-07 and "twenty-two" on 2026-09-08, and it was re-derived again on
+      2026-09-09 for `DAT-002` sub-item 1, so re-run
       `jq '.characters|length' internal/seed/data/cast.json` and the element count
       beside it rather than reading the numbers here as current):
 
       | axis | most units that can share one value | rungs reachable |
       |---|---:|---|
-      | element | 3 (dark, ground and water) | 2, 3 |
-      | origin | **21** (`pokemon`) | 2, 3, 4, 5 — but see below |
+      | element | **4** (ground and water) | 2, 3, **4** |
+      | origin | **23** (`pokemon`) | 2, 3, 4, 5 — but see below |
       | species | **3** (`dragon`: Charmander, Dratini, Gible) | 2, 3 |
-      | archetype | 1 (twenty-two characters, twenty-two presets) | **none** |
+      | archetype | 1 (twenty-four characters, twenty-four presets) | **none** |
       | archetype `column` | 2, 3, 4, 5 on all three | not the axis that shipped |
+
+      ⚠️ **The element row is now a CAST bound rather than a format one, and that
+      is the whole of what `ENG-013` changed for this item.** Before 5v5 a rung
+      above three was unreachable because a side was three units; a side is five
+      now and the cast is what stops it. Counted the way `carriersByElement`
+      counts — a character counts for every element any of its **forms** can be
+      fielded carrying, the `CAST-003` correction, so a naive `jq` over
+      `.characters[].element` is wrong — on 2026-09-09 the full table is: **ground
+      4** (diglett, gible, machop, onix) · **water 4** (lapras, magikarp, poliwag,
+      squirtle) · dark 3 · metal 3 · wind 3 · electric 2 · fire 2 · grass 2 ·
+      light 2 · **ice 1** · neutral inert and excluded (happiny, mew). So a rung
+      at **4 is reachable for exactly two elements** and a rung at **5 for none**,
+      and the way to move that is to ship a carrier, not to widen a format.
+      ⚠️ **The count survives the leaf-stage and level-cap restriction, which it
+      did not have to.** All four water carriers carry water at *every* stage
+      (magikarp's Gyarados is water/wind) and all four ground carriers carry
+      ground at every stage (onix's Steelix is ground/metal), so the rung is
+      reachable by a squad satisfying `squadIsFieldable`'s rules rather than only
+      by an early-form one. ⚠️ Caveat, recorded rather than fixed:
+      `carriersByElement` takes the **union across stages**, so had an element
+      existed only on a non-leaf form this table would over-count for a PvP-legal
+      squad. It does not today; do not widen the test on that hypothesis.
 
       ⚠️ **The shipped column axis is the SLOT, not the archetype's column** — see
       the top of this entry. The archetype row is kept because it is the
@@ -5580,6 +5732,19 @@ is only so the shape is readable.
       for 5v5, or a bonus's rungs are chosen per format, or the tables are
       declared with the top rungs and a test asserts they are **currently
       unreachable on purpose** rather than silently dead.
+      ⚠️ **STALE as of 2026-09-09, in two places, and corrected here rather than
+      deleted because the reasoning above is still the reasoning.** (1) The 5v5
+      **draft pool now fits, comfortably**: the cast is 24, `naruto.naruto` is
+      `hidden` so `internal/draft.NewPool` keeps it out, and
+      `Slack(23, Format5v5)` is `23 − 2×PicksPerSide(5) − 2×BansPerSide(3)` =
+      **7** (`internal/draft/pool.go:138,153,164`). It does not need two more
+      characters and has not since the cast passed 23. (2) A rung at 4 is
+      **reachable** now, for ground and water — see the reachability table above
+      — so the "top half unreachable" objection applies to a rung at **5** only.
+      ⚠️ But a rung at 4 is a **saved-squad build and a draft gamble**, and that
+      distinction is worth keeping: `BansPerSide(5v5)` is three out of a shared
+      exclusive pool, so three bans can cut a four-carrier element down to one.
+      A design property rather than a defect.
 
       ⚠️ **The duplicate loophole, and it is already decided in the other
       direction.** `Squad.Validate` refuses a repeated unit **id** and a repeated
@@ -5594,6 +5759,12 @@ is only so the shape is readable.
       draft is the opposite case: a shared exclusive pool forbids doubling by
       construction, so the same bonus means two different things in the two modes,
       and `squadIsFieldable` is where that scope has to be legible.
+      ⚠️ **That last ask is ALREADY SATISFIED and must not be re-added** — checked
+      2026-09-09. `internal/room/gate.go:362-370` says in as many words that the
+      doubling rule is a **saved**-squad rule and that a drafted squad cannot
+      double by construction because every ban and pick takes a character out of
+      one shared exclusive pool, and `:397-407` says the same thing again from the
+      allowing end. `internal/draft`'s `Squads` is the other half of it.
       ⚠️ **This stopped being theoretical when the blanket was retired** — see
       *"One carrier" is a statement about a DRAFTED squad* above: it is the reason
       `ice` is uncovered rather than unreachable.
@@ -5769,6 +5940,23 @@ is only so the shape is readable.
          no row for a test to pass vacuously over, and the day 5v5 opens the new
          rungs arrive **with** their measurements rather than inheriting a claim
          nobody checked.
+
+         ⚠️ **This clause was cashed on 2026-09-09 and it paid out a NULL, which
+         is the clause working rather than the clause failing.** A rung at 4 was
+         built for `water_tide`, measured against a floor written down before the
+         run, came in **under it by 2‰**, and was therefore **not authored**. So
+         nothing moved in `bonuses.json` or `statuses.json`, no golden moved, and
+         `DataDigest` did not move either. → the measurement paragraph under
+         *Still open* below for every figure and both probe squads.
+         ⚠️ **Rung 5 is now refused for a different reason than rung 4 is
+         held**, and keeping the two apart is the point: **rung 5 is unauthorable
+         for every element because no element has five carriers** — a fact about
+         the cast, recorded rather than authored, and it closes that half of the
+         question until a carrier ships. Rung 4 *is* authorable for ground and
+         water and was measured; it is held on the number rather than on
+         reachability. **The ceiling on this axis is the cast now, not the
+         format**, which is a sentence that could not be written before
+         `ENG-013`.
       7. **Its own file.** A bonus is a rule about squads rather than an axis of
          how one unit fights, so it does not belong beside the presets in
          `archetypes.json`. ⚠️ **A new data file is a sixteenth name in three
