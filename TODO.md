@@ -112,7 +112,8 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-011` | done | Happiny's cleanser slot is 20 per mille under its design floor — SWEPT, every lever closed, and the floor turned out not to be a line any shipped build clears; two catalogued builds shipped |
 | `DAT-010` | open | No composition bonus in the game can be priced on a board that exists: the whole ten-bonus table fires on ZERO shipped squads and on `roster.json` — a reach guard and the probe-reading convention shipped; a board for a bonus to fire on did not |
 | `DAT-012` | done | A seat-swap rate is a reading about the SHELL as much as the seat — two shells answered opposite for one character, and the Gyarados line shipped on the honest one |
-| `DAT-013` | open | Neither of the mender's catalogued builds clears the floor its own test asserts, and `cleffa.hex` loses four battles in five |
+| `DAT-013` | done | `cleffa.hex` lost four in five because of the KIT, not the pricing — the census shows no silent slot on any board, so a repricing is refused by measurement; the build was rekitted and the mender fixture now fields it |
+| `DAT-014` | open | The support fixture's shell is a `withdraw` mirror, so every reading in `internal/seed` is taken on a board `RAT-003` measured at 100% endless in isolation — `cleffa.mend` is unquotable against two of three opponents |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Traced Pokemon are waiting for a character — run the `comm` in the entry, never read a count off it |
 | `CAST-003` | shipped | A stage may declare its own element — the mechanism, and the onix line that fields it |
@@ -305,47 +306,247 @@ is only so the shape is readable.
 
 ## Not done
 
-- [ ] `DAT-013` ⚠️ **Neither of the mender's catalogued builds clears the floor the
-      mender test asserts, and one of them loses four battles in five.** Raised
-      2026-09-09 out of `DAT-011`'s sweep, and deliberately not `DAT-011`'s to fix:
-      that item is about a cleanser and this is a balance change to a different
-      character's builds. Nothing in `internal/seed/data` changed for it yet, so no
-      golden moved and the data digest is untouched.
+- [x] `DAT-013` **`cleffa.hex` lost four battles in five because of the KIT, not
+      because the rating underprices control — MEASURED, and the build was
+      rekitted rather than the rating repriced. The mender's fixture now fields a
+      catalogued build that clears its floor. Half the item closes; the other half
+      is a fixture defect and is handed on as `DAT-014`.** Raised 2026-09-09 out
+      of `DAT-011`'s sweep and closed the same day.
 
-      `TestAMenderEarnsItsSlotWhereASparCannotSeeIt` fights with
-      `moonblast, charm, moonlight, solar_beam` — a **hybrid** taking two skills
-      from each of the mender's two builds, which `builds.json` does not carry. Over
-      300 seeds a side, same fixture, same three opponents:
+      **What shipped.** `cleffa.hex` gives up `smokescreen` for `moonblast` —
+      `charm, sing, moonblast, solar_beam` + `elusive` — and its `intent` is
+      rewritten as a **lean** rather than a purity, which is what
+      `bulbasaur.parasite` and `squirtle.fortress` already are. Cleffa's learnset
+      holds exactly two damaging skills, so every possible repair costs one of
+      `charm`/`sing`/`smokescreen`; that was an authoring decision and it was
+      taken. `TestAMenderEarnsItsSlotWhereASparCannotSeeIt` now fields
+      `cleffa.hex` through `aThirdMemberFrom` — the fixture's hand-written hybrid
+      is gone — and gained the mirror control `onix_test.go` already carried.
 
-      | kit | slugger | blighter | bruiser |
+      **The question the item said had to be settled first: the build, or the
+      pricing? THE KIT, and the census is the evidence.** Every control skill in
+      the kit has a live, non-zero pricing term reading a real modifier: `charm`
+      → `weaken` → `standingLost` over a 3-turn horizon, `sing` → `stun` →
+      `p.strike(target) × turnsOf(1,3)`, `smokescreen` → `blind` → `standingLost`
+      over 2, and `blind`'s accuracy term is genuinely priced because
+      `bestStrike` → `expected` → `against` weights by `Rules.Chance(hit)`. None
+      falls through the *worth nothing means not rated* arm where `taunt` and
+      `heal_cut` sit. ⚠️ **And the census was re-taken on the FIXTURE board**, not
+      on the shipped-squad board `forge.Census` walks, because RAT-006's *the
+      board is the finding inside the finding* applies here. Over 600 battles a
+      column, `cleffa.hex` in the mender fixture's third seat:
+
+      | opponent | rate | endless | `charm` | `sing` | `smokescreen` | `solar_beam` | control share |
+      | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+      | a slugger | 356‰ | 0/600 | 6857 | 5493 | 4759 | 5411 | **76.0%** |
+      | a bruiser | 226‰ | 0/600 | 7640 | 6446 | 5889 | 6624 | **75.1%** |
+      | a blighter | 281‰ | 0/600 | 3713 | 2893 | 2398 | 2915 | **75.5%** |
+
+      **Not one silent slot on any board, and `charm` is the most-cast skill on
+      all three.** An under-price shows up as SILENCE; this is the opposite of
+      silence. Under the item's own stated rule — *if it casts them and still
+      loses four in five, the answer is the kit* — the verdict is the kit, and a
+      repricing is **refused by measurement rather than deferred**. That matters
+      because the blast radii are not comparable: a rekit moves one catalogue
+      entry, while `price.go`'s `inflictedOn` Control/StatDebuff arms are on the
+      path of every status in the book and would move every balance band in
+      `internal/seed`, `replay.golden`, `scenarios.golden`, `RAT-002`'s 81.3%
+      figure, and `TestABothWaysMirrorIsExactlyEven` — the fairness invariant
+      that has already refused two changes of this shape.
+
+      ⚠️ **The item mis-cited `RAT-002` and the premise did not survive reading
+      its own citation.** `RAT-002` is about `forge.Bout` fighting two ratings
+      head to head and `Suggest` beating `FirstUsable` 81.3%; it records
+      **nothing** about control being under-priced. The nearest true statement is
+      the general one at `price.go:12-34` — every non-damage horizon is capped
+      rather than honest, erring deliberately under — which binds buffs, guards
+      and heals equally and is not a control finding. Corrected here and in
+      `mender_test.go`. (It had propagated to **one** place, not the three that
+      were suspected: `cleanser_test.go` carried the stale figure *table*, not
+      the citation, and its table is corrected too.)
+
+      **The sweep.** Mender fixture shell, `aSquadOf`/`fightSquadsOver`, 300 seeds
+      a side both ways round = 600 battles a cell, `books.Bonuses = nil` on every
+      row (the fixture's own comment measures 413‰ live against 698‰ without,
+      which straddles the floor — pricing a bonus is `DAT-010`'s owed
+      measurement). **Every row below read 0 endless of 600**; nothing was
+      saturated at 0‰ or 1000‰, so nothing was dropped. One slot given up for
+      `moonblast`, the only other damaging skill in the learnset:
+
+      | kit | slugger | bruiser | blighter |
       | --- | ---: | ---: | ---: |
-      | the fixture's hybrid (catalogued by nobody) | 601‰ | 508‰ | 518‰ |
-      | `cleffa.mend` | **340‰** | 615‰ | 864‰ |
-      | `cleffa.hex` | **205‰** | **197‰** | **180‰** |
+      | `charm sing smokescreen solar_beam` (was shipped) | 356‰ | 226‰ | 281‰ |
+      | `moonblast sing smokescreen solar_beam` | 616‰ | 610‰ | 373‰ |
+      | `charm moonblast smokescreen solar_beam` | 696‰ | 563‰ | 400‰ |
+      | **`charm sing moonblast solar_beam`** | **826‰** | **725‰** | **546‰** |
+      | `charm sing smokescreen moonblast` | 251‰ | 171‰ | 260‰ |
 
-      ⚠️ **`cleffa.hex` is the finding, and it is an order of magnitude bigger than
-      the twenty per mille `DAT-011` was opened for.** 168–212 per mille across every
-      opponent at two depths — a shipped direction that loses four in five. `charm`,
-      `sing`, `smokescreen`, `solar_beam` + `elusive` is four slots of control and
-      one attack, and the control half is what `RAT-002` already says the rating
-      underprices; whether the build is weak or the *pricing* of it is weak has to be
-      settled before either is touched, because a repricing moves every control
-      skill in the book and a rekit moves one entry.
+      Giving up `solar_beam` is the one row that makes the build *worse* — it is
+      the only thing in the kit that reaches a back line through two held ranks,
+      and `moonblast` at range 2 does not replace it. Then the non-damaging
+      alternatives in the slot that read worst, `smokescreen`'s:
 
-      ⚠️ **`cleffa.mend` reads 340 against a slugger and 864 against a bruiser** — a
-      524-per-mille spread, the widest of anything `DAT-011` measured — and it puts
-      **77 of 600** battles past the turn cap against the slugger, which is twelve
-      times the ten per mille a reading here may carry. So the mend build cannot be
-      quoted at all against that opponent until the stall is understood; it is the
-      guarded-mirror shape `RAT-004` fixed once and is worth checking against.
+      | in smokescreen's slot | slugger | bruiser | blighter |
+      | --- | ---: | ---: | ---: |
+      | `taunt` | 606‰ | 395‰ | 606‰ (1 endless) |
+      | `wide_guard` | 730‰ | 616‰ | 278‰ |
+      | `light_screen` | 666‰ | 780‰ | 386‰ |
+      | `rapid_spin` | 341‰ | 220‰ | 300‰ |
 
-      **Why the test was not changed to read a build.** It would go red immediately
-      and the game would not have moved — a green test on a kit nobody ships is
-      wrong, but a red test is not a fix. The fixture keeps the hybrid, its doc
-      carries the table above, and the *cleanser* beside it now fields a catalogued
-      build (`aThirdMemberFrom`) so the two are at least honest about which is which.
-      ⚠️ **The figures in the mender test's own doc — 525 and 543 — are stale as
-      well**, from before `ENG-012`; it reads 601 and 518 today.
+      **Not one of them clears 400 against all three**, so `moonblast` is the
+      optimum rather than merely a candidate. ⚠️ `rapid_spin` is the one genuinely
+      near-silent slot found anywhere in this item — **93 casts of 17591** against
+      a slugger, 0.5% — which is what an under-priced slot actually looks like,
+      and is the contrast that makes the control census above legible.
+      ⚠️ `moonlight`, `wish` and `withdraw` were excluded from every candidate:
+      all three give health back, and `TestTheTwoCleffaBuildsAreDifferentUnits`
+      asserts `hexed.healed == 0` as the design record of what the direction is.
+
+      **The trait, swept on the winning kit over Cleffa's five-trait cap
+      learnset** (the fixture hardcodes `endurance` for hand-written members, so a
+      fixture that fixes the slot cannot report it). All rows 0 endless:
+
+      | trait | slugger | bruiser | blighter |
+      | --- | ---: | ---: | ---: |
+      | `endurance` | 733‰ | 638‰ | 440‰ |
+      | `swiftness` | 865‰ | 808‰ | 590‰ |
+      | `last_gasp` | 860‰ | 725‰ | 641‰ |
+      | `composure` | 825‰ | 725‰ | 540‰ |
+      | `elusive` (shipped, kept) | 826‰ | 725‰ | 546‰ |
+
+      The trait is worth up to **201‰** here (`endurance` → `last_gasp` against a
+      blighter), so it is a real lever and `endurance` is clearly the worst of the
+      five. But `elusive` is **kept**: the two rows above it are +39/+83/+44 and
+      +34/+0/+95, and `fightSquadsOver`'s own doc says a rate off 600 battles
+      *moves tens of parts per thousand between instruments* — so `swiftness` and
+      `last_gasp` are not separable from the shipped trait at this depth, and
+      neither is separable from the other. Moving the trait and the kit together
+      on an unseparable margin would make the reading un-attributable to either.
+      A deeper reading is what would settle it; nothing here needs it settled.
+
+      **The second shell (`DAT-012`), required before a rekit is committed.**
+      Re-taken with `aSquadBesides` and the partner varied from the fixture's
+      `withdraw`-carrying Squirtle to a Machop — which removes the heal mirror
+      entirely. Its own mirror control read exactly 500‰ with 0 endless, and all
+      six rows read 0 endless of 600:
+
+      | kit | slugger | bruiser | blighter |
+      | --- | ---: | ---: | ---: |
+      | was shipped | 296‰ | 468‰ | 150‰ |
+      | shipped now | 406‰ | 620‰ | 246‰ |
+      | **the swap is worth** | **+110** | **+152** | **+96** |
+
+      **Same sign on all three**, so there is no disagreement to stop on. The
+      magnitudes are much smaller and the absolute levels quite different, which
+      is `DAT-012`'s whole point restated: a seat-swap rate is a reading about the
+      shell as much as about the seat. ⚠️ **So the 826/725/546 are IN-SAMPLE** —
+      this shell is the one the sweep chose on — and the out-of-sample figure for
+      the change is the +110/+152/+96. Both are in `mender_test.go`'s doc.
+
+      **The gate, written down before the sweep ran and not moved afterwards.**
+      Floor `450` unchanged; collapse line `400`; ship bar = clears 400‰ against
+      all three opponents AND beats the shipped build by ≥100‰ on each;
+      `stallShare` 10‰ unchanged; every rate quoted with its endless count
+      including the zeros; any row at 0‰ or 1000‰ or endless >10‰ dropped as
+      saturated and said so; and every run carrying the shell against a copy of
+      itself, which had to read exactly 500‰ with 0 endless or the run stopped.
+      **Cleared: 826/725/546 against 400, and +470/+499/+265 against 100.** Both
+      mirror controls read 300-300, 0 endless.
+
+      ⚠️ **A third Cleffa build was considered and REFUSED, by the catalogue's own
+      standard.** The obvious candidate was the fixture's own hybrid —
+      `moonblast, charm, moonlight, solar_beam` — but it is **dominated by the
+      rekit on every opponent**: 601/518/508 with `endurance` (the trait the
+      fixture actually fielded, so this is the 601/518 the old test read) and
+      726/578/545 with its best trait, against the rekit's 826/725/546. It is
+      neither the sweep optimum nor near it, its own slots were never swept, and
+      it sits between two existing directions while beating neither.
+      `TestABuildIsACatalogueOfChoicesRatherThanOfKits`'s doc names this exact
+      failure mode — *inventing one to fill the row would be the lie this test is
+      against* — and `happiny.tend` was catalogued because it **was** the optimum
+      its sweep found. Same standard, opposite answer.
+
+      **What the goldens say: nothing.** The rekit moved **no golden line at
+      all** — the builds screen draws a build's id and name, and this change moved
+      its skills and its intent — so `hexBuild` in `newbuilds_test.go` is the only
+      design record guarding it, which is what that record is for. ⚠️ **The 24
+      golden lines this commit does carry are `DAT-011`'s debt, not this
+      item's**: `internal/screen` and `cmd/hexforge-tui` were **already red at
+      `0c7ef64`** because #395 added `happiny.tend`/`happiny.decoy` to
+      `builds.json` without re-accepting the two `screens.golden`. Verified by
+      running the golden test against a clean `git archive` of HEAD. The whole
+      diff is `pokemon.happiny` gaining two rows and `pokemon.mew` losing two off
+      the bottom of a scrolling viewport.
+
+      **What does NOT close, and why it is not this item's.**
+      `cleffa.mend` still cannot be read on this shell at all, and the cause is
+      the shell rather than the build — see `DAT-014`. Re-taken here at 300 seeds
+      a side: **85 of 600** battles past the turn cap against a slugger (141‰,
+      fourteen times the allowance) and **19 of 600** against a bruiser (32‰,
+      three times it), so **both rows are dropped as unresolved rather than
+      quoted**; only the blighter row resolves cleanly enough to read (4 of 600,
+      548‰). ⚠️ **The item's original `cleffa.mend` row — 340/615/864 — may not be
+      quoted by anything**, and neither may the 380/905 re-take above it: they are
+      rates over a board an eighth of which never finishes. The figure has been
+      withdrawn from `cleanser_test.go` rather than corrected.
+
+- [ ] `DAT-014` ⚠️ **The support fixture's shell is a `withdraw` mirror, so every
+      reading in `internal/seed` is taken on a board `RAT-003` measured at 100%
+      endless in isolation.** Raised 2026-09-09 out of `DAT-013`, which could not
+      fix it: the change re-takes seven fixtures at once and one of them is
+      `DAT-011`'s just-shipped 429/430.
+
+      `aSquadOf` (`internal/seed/mender_test.go`) puts the **same**
+      `pokemon.squirtle` carrying `withdraw` in *both* squads it builds — home and
+      away. So every reading this package takes is a `withdraw` mirror with two
+      extra seats, and `RAT-003` already measured a `withdraw` mirror at **100%
+      endless, 1v1 and 2v2**: *the rating does not refuse here — `withdraw`
+      restores 500 every four turns, the heal outruns the damage and nobody can
+      die. That is the data, on a mirror, and it is not a bug.* It resolves here
+      only because the other two seats carry enough throughput to break the
+      arithmetic — and it stops resolving the moment the third seat adds sustain.
+
+      **The opening evidence.** `cleffa.mend` — `moonlight` (restores 400, cd3) +
+      `wish` (`regrowth`, 3 stacks × tick_power 400, dur 3, cd4) — in the home
+      seat is two more healing sources on one side of a board that is already a
+      heal mirror. Measured at 300 seeds a side:
+
+      | opponent | endless of 600 | per mille | quotable? |
+      | --- | ---: | ---: | --- |
+      | a slugger (Machop, zero DoT) | **85** | 141‰ | **no** — 14× the allowance |
+      | a bruiser (Poliwrath) | 19 | 32‰ | **no** — 3× the allowance |
+      | a blighter (Bulbasaur, DoT) | 4 | 7‰ | yes, 548‰ |
+
+      **The stall concentrates exactly where the prediction says it should**:
+      against the opponent with **no damage over time**, because a tick is the one
+      thing `RAT-003`/`frozen()` says keeps such a board moving. The slugger's kit
+      — `rock_throw, body_slam, cross_chop, vital_throw` — is all single-target
+      burst and carries none; the blighter's `poison_powder`/`venoshock` does, and
+      that column is the one that resolves.
+
+      ⚠️ **Definitively NOT `RAT-004`'s guarded-mirror shape**, on two independent
+      counts, so do not re-open that: `guardCredit` credits
+      `target.Statuses.PermanentPoolIn(absorbCategory)` where `absorbCategory =
+      status.Absorb`, and the fixture's wall guard is `withdraw` → `block`,
+      category **`shield`**, duration 2 — neither `Absorb` nor permanent, so
+      `guardCredit` cannot reach it at all. `RAT-004` says so outright: *it does
+      not touch the `withdraw` mirror at any share, because that stall is
+      arithmetic and not a refusal.*
+
+      **The method is already written down** — `RAT-003`'s answer to
+      `docs/balance.md`'s request for a wall board that finishes: **only ONE side
+      may carry the guard.** Measured there at 0% endless both ways round.
+
+      ⚠️ **Why it is a sweep and not a step.** `aSquadOf` and its sibling
+      `aSquadWalledBy` are read by **seven** test files — `mender_test.go`,
+      `cleanser_test.go`, `bombardier_test.go`, `charge_test.go`,
+      `renewal_test.go`, `sapper_test.go`, `onix_test.go` — so changing the wall
+      re-takes `DAT-011`'s 429/430, the bombardier's +42 margin, the charge
+      pairing and the monolith's 500‰ control all at once, and every floor and
+      collapse line in the package has to be re-derived against the new board
+      rather than carried over. Until it lands, **no rate may be quoted for a
+      third seat that adds healing**, and `cleffa.mend` has no readable figure
+      against a slugger or a bruiser at all.
 
 - [x] `DAT-011` **Happiny's cleanser slot is twenty per mille under its design
       floor — EVERY LEVER IS NOW MEASURED AND CLOSED, and the floor turned out not to
@@ -474,6 +675,12 @@ is only so the shape is readable.
       the builds it does carry read 340‰ and 205‰ against the same slugger — both
       under the floor, one of them far under the cleanser. So the cleanser was
       being measured on its only kit against a number no shipped build produces.
+      ⚠️ **`DAT-013` closed that on 2026-09-09 and two of the figures in this
+      paragraph did not survive it**: `cleffa.hex` was rekitted and reads 826‰
+      against the same slugger, and the 340‰ was withdrawn rather than corrected —
+      that board puts 85 of 600 battles past the turn cap, so no rate may be
+      quoted for `cleffa.mend` on this shell at all (→ `DAT-014`). The 205‰ and
+      340‰ above are kept as the reading that was taken, not as figures to cite.
 
       **The conclusion, stated plainly: the 20 per mille stands and is not a
       defect in the character.** On catalogued kits Happiny is the **steadiest**

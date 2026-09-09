@@ -2815,7 +2815,9 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.gible
     gible.rush          lao vào
     gible.dragon        vuốt rồng
-  pokemon.happiny       chưa viết bản dựng nào cho nhân vật này
+  pokemon.happiny
+    happiny.tend        ấp ủ
+    happiny.decoy       quay lưng
   pokemon.igglybuff
     igglybuff.vang      hát vang
     igglybuff.doc       dốc sức
@@ -2830,8 +2832,6 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.magnemite
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
-    magnemite.hoard     gom một mẻ
-  pokemon.mew
 
   abra.unbilled <quỵt giá>
   ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
@@ -4526,7 +4526,9 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.gible
     gible.rush          lao vào
     gible.dragon        vuốt rồng
-  pokemon.happiny       chưa viết bản dựng nào cho nhân vật này
+  pokemon.happiny
+    happiny.tend        ấp ủ
+    happiny.decoy       quay lưng
   pokemon.igglybuff
     igglybuff.vang      hát vang
     igglybuff.doc       dốc sức
@@ -4541,8 +4543,6 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.magnemite
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
-    magnemite.hoard     gom một mẻ
-  pokemon.mew
 
   abra.unbilled <quỵt giá>
   ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
@@ -7489,7 +7489,9 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.gible
     gible.rush
     gible.dragon
-  pokemon.happiny       no build written for this one yet
+  pokemon.happiny
+    happiny.tend
+    happiny.decoy
   pokemon.igglybuff
     igglybuff.vang
     igglybuff.doc
@@ -7504,8 +7506,6 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.magnemite
     magnemite.trickle
     magnemite.surge
-    magnemite.hoard
-  pokemon.mew
 
   abra.unbilled
   intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
@@ -9200,7 +9200,9 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.gible
     gible.rush
     gible.dragon
-  pokemon.happiny       no build written for this one yet
+  pokemon.happiny
+    happiny.tend
+    happiny.decoy
   pokemon.igglybuff
     igglybuff.vang
     igglybuff.doc
@@ -9215,8 +9217,6 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.magnemite
     magnemite.trickle
     magnemite.surge
-    magnemite.hoard
-  pokemon.mew
 
   abra.unbilled
   intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt

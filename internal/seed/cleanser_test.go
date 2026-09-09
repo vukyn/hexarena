@@ -82,13 +82,16 @@ import (
 // +84 against a squad with nothing to cleanse, −123 against one that has — which
 // is the character's own archetype being the thing that costs it the floor.
 //
-// ⚠️ **And the comparison was never level.** The mender's fixture kit is a
-// hybrid of its two catalogued builds and reads 601/508/518; the builds
-// themselves read **340**/615/864 (`cleffa.mend`) and **205**/197/180
-// (`cleffa.hex`). The cleanser was being measured on its only kit against a
-// figure no shipped build produces. It is now fought from a catalogued build
-// like anything else — `happiny.tend`, which is the optimum the sweep found —
-// and `TODO.md` `DAT-013` holds the mender's own builds.
+// ⚠️ **And the comparison was never level — DAT-013 has since levelled it.** The
+// mender's fixture kit was a hybrid of its two catalogued builds, reading
+// 601/508/518 against a `cleffa.hex` that read 356/281/226 on the same shell.
+// The cleanser was being measured on its only kit against a figure no shipped
+// build produced. Both fixtures now fight from a catalogued build — this one
+// from `happiny.tend`, the optimum its own sweep found, and the mender's from a
+// rekitted `cleffa.hex` that reads 826/725. ⚠️ The old figures quoted for
+// `cleffa.mend` here (340/615/864) were withdrawn rather than corrected: that
+// build puts 85 of 600 battles past the turn cap against a slugger, so no rate
+// taken on this shell may be quoted for it at all. → `TODO.md` `DAT-014`.
 func TestACleanserEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	books, err := seed.Books()
 	if err != nil {

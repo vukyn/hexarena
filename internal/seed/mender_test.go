@@ -15,7 +15,7 @@ import (
 //
 // Three hundred is enough to separate the figures this holds from the floor it
 // holds them against and cheap enough to sit in the ordinary suite; the readings
-// it was written against are 525 and 543 per mille against a floor of 450.
+// it holds today are 826 and 725 per mille against a floor of 450.
 const (
 	menderSeeds     = 300
 	menderTurnLimit = 4000
@@ -72,13 +72,15 @@ func aThirdMemberAs(character, stage string, kit ...string) placement.Placement 
 // and its trait, both read off `builds.json` rather than written out here.
 //
 // ⚠️ **It exists because a hand-written kit is not a reading of the character,
-// and DAT-011 is what proved that.** The mender's fixture kit takes moonblast
-// and moonlight from `cleffa.mend` and charm and solar_beam from `cleffa.hex`;
-// it reads 601 per mille against a slugger while the two builds the catalogue
-// actually carries read **340** and **205** against the same opponent. So a
-// floor cleared by the hybrid says nothing about a floor a shipped build
-// clears, and a support measured on its own only kit is being held to a line
-// the comparison never had to meet.
+// and DAT-011 is what proved that.** The mender's fixture used to field a kit
+// taking moonblast and moonlight from `cleffa.mend` and charm and solar_beam
+// from `cleffa.hex`: it read 601 per mille against a slugger while the two
+// builds the catalogue actually carries read 356 (`cleffa.hex`, before DAT-013
+// rekitted it) and an unquotable figure (`cleffa.mend`, 85 of 600 past the turn
+// cap) against the same opponent. So a floor cleared by the hybrid said nothing
+// about a floor a shipped build clears, and a support measured on its own only
+// kit was being held to a line the comparison never had to meet. Both fixtures
+// in this package now go through here.
 func aThirdMemberFrom(t *testing.T, id string) placement.Placement {
 	t.Helper()
 	catalogue, err := seed.Builds()
@@ -115,28 +117,55 @@ func aThirdMemberFrom(t *testing.T, id string) placement.Placement {
 // round over the same seeds. A mender that cannot hold that slot against a
 // striker is a mender not worth authoring.
 //
-// ⚠️ **THE KIT BELOW IS NOT A BUILD ANYBODY CAN PICK OUT OF THE CATALOGUE**, and
-// that was found by DAT-011 rather than here. It takes moonblast and moonlight
-// from `cleffa.mend` and charm and solar_beam from `cleffa.hex` — a hybrid of
-// the two, which the squad builder will let a player assemble (OpenSkills offers
-// the whole learnset) but which `builds.json` does not carry. Over 300 seeds
-// against the three opponents these fixtures use:
+// ⚠️ **It used to fight a hybrid no player could pick, and DAT-013 is what
+// replaced it.** The kit here was `moonblast, charm, moonlight, solar_beam` —
+// two skills from each of Cleffa's two builds, which `builds.json` does not
+// carry — so the test was green on a kit that cleared the floor while neither
+// shipped build did. It now fields `cleffa.hex` through aThirdMemberFrom, like
+// the cleanser beside it, and the build was rekitted to earn the slot.
 //
-//	kit                       slugger   blighter   bruiser
-//	this hybrid                   601        508       518
-//	cleffa.mend  (catalogued)     340        615       864
-//	cleffa.hex   (catalogued)     205        197       180
+// **Why the rekit, and why it is not a repricing.** `cleffa.hex` read 356 / 226
+// / 281 per mille here against a slugger, a bruiser and a blighter — a shipped
+// direction losing three battles in four. The question DAT-013 said had to be
+// settled first is whether the BUILD was weak or the RATING underprices control,
+// and the census on this board settles it: over 600 battles a column, every one
+// of the four slots fires in the thousands and control is 76.0%, 75.1% and 75.5%
+// of all casts, with `charm` the most-cast skill on all three boards. An
+// under-price shows up as SILENCE; this is the opposite of silence, so it is the
+// kit. (⚠️ The item cited `RAT-002` for "the rating underprices control" and
+// `RAT-002` does not say that — it is about `forge.Bout` fighting two ratings
+// head to head. The nearest true statement is the general one at `price.go:12-34`,
+// which binds buffs, guards and heals equally and is not a control finding.)
 //
-// So this test is green on a kit that clears the floor while **neither shipped
-// build does**, and the figures it was written against — 525 and 543 — are a
-// third reading, stale since ENG-012. Fixing that is a balance change to the
-// mender's own builds and is filed as `TODO.md` `DAT-013`; changing the kit here
-// first would only turn a green test red without moving the game. The cleanser
-// beside it already fields a catalogued build — see aThirdMemberFrom.
+// **The sweep, 300 seeds a side, one slot given up for `moonblast` — the only
+// other damaging skill in the learnset. Every row read 0 endless of 600:**
 //
-// ⚠️ **`cleffa.hex` at 168 to 212 per mille across every opponent is the larger
-// finding of the two**, and much larger than the twenty per mille DAT-011 was
-// opened for: it is a shipped direction that loses four battles in five.
+//	kit                                slugger   bruiser   blighter
+//	charm sing smokescreen solar_beam      356       226        281   (was shipped)
+//	moonblast sing smokescreen solar        616       610        373
+//	charm moonblast smokescreen solar       696       563        400
+//	charm sing MOONBLAST solar_beam         826       725        546   <- shipped now
+//	charm sing smokescreen moonblast        251       171        260
+//
+// and no non-damaging alternative in that same slot clears 400 against all
+// three: `taunt` 606/395/606, `wide_guard` 730/616/278, `light_screen`
+// 666/780/386, `rapid_spin` 341/220/300. So the direction stops being pure
+// control on purpose — a LEAN rather than a purity, which is what
+// `bulbasaur.parasite` and `squirtle.fortress` already are.
+//
+// ⚠️ **The 826 and 725 are IN-SAMPLE**, since this shell is the one the sweep
+// chose on. Out of sample, in a second shell whose partner is a Machop rather
+// than the Squirtle wall, the same swap reads +110, +152 and +96 — smaller, same
+// sign on all three, which is the confirmation `DAT-012` asks for.
+//
+// ⚠️ **`cleffa.mend` still cannot be read on this shell at all**, and that is
+// not a fact about the build: `aSquadOf` puts the same `withdraw`-carrying
+// Squirtle in BOTH squads, so every reading here is a heal mirror, which
+// `RAT-003` measured at 100% endless in isolation. Put a second healer in the
+// home seat and it shows — re-taken, `cleffa.mend` puts **85 of 600** battles
+// past the turn cap against a slugger and 19 of 600 against a bruiser, fourteen
+// and three times the ten per mille a reading here may carry, so both rows are
+// dropped rather than quoted. → `TODO.md` `DAT-014`.
 func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	books, err := seed.Books()
 	if err != nil {
@@ -146,8 +175,18 @@ func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load the cast: %v", err)
 	}
-	mender := aSquadOf("with-mender", aThirdMember("pokemon.cleffa",
-		"moonblast", "charm", "moonlight", "solar_beam"))
+	third := aThirdMemberFrom(t, "cleffa.hex")
+	mender := aSquadOf("with-mender", third)
+
+	// The control first: a shell that is not even cannot price anything put in
+	// it, and this is the one arrangement whose answer is known in advance.
+	wins, losses, endless := fightSquads(t, books, characters,
+		aSquadOf("mirror", third), mender)
+	refuseTooManyStalls(t, "the mirror", endless, menderSeeds*2)
+	if decided := wins + losses; decided == 0 || wins*1000/decided != 500 {
+		t.Fatalf("the mender's squad against a copy of itself reads %d-%d: a shell that is not "+
+			"even reports its own bias as whatever is put in it", wins, losses)
+	}
 
 	// The floor is a long way under the readings on purpose. What is held is the
 	// claim — a mend and a debuff are worth a slot a striker wants — and not the
