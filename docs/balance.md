@@ -1762,7 +1762,11 @@ mirrors at exactly 500‰. So `composition.Book.Without`, which `DAT-002` decisi
 4 calls the *only* instrument that can price a bonus, is a **provable no-op on
 every board a rate in this repository is read off**.
 
-**The one usable reading, and what it is a reading of.** `DAT-008` Run B built
+**The first usable reading, and what it is a reading of.** (⚠️ This said *"the
+one usable reading"* until 2026-09-09, when `DAT-002` sub-item 1 took a second on
+a different probe — see below. Both are probe readings and neither is a game
+reading; that is what the section is about, and a second one does not soften
+it.) `DAT-008` Run B built
 `probe_ground` in a scratch directory — Dugtrio + Garchomp + Machamp at level 60
 on their `builds.json` kits, all three slots in one column — the only squad
 anywhere that fires both bonuses. Against `s04` it reads **422‰** baseline,
@@ -1772,6 +1776,45 @@ the pair). ⚠️ Its other two boards are saturated at 1000‰ and price nothin
 take costs about 213‰ (`DAT-002`) to 253‰ (`DAT-007`) before the bonus pays
 anything, so the instrument perturbs what it measures. Figures copied from
 `TODO.md` `DAT-008`, not re-measured here.
+
+**The second usable reading, and it is a NULL that was measured rather than
+assumed.** `DAT-002` sub-item 1 built `probe_water` in a scratch directory on
+2026-09-09 to price a **rung at 4**, which `ENG-013` made reachable by opening
+5v5: Blastoise, Poliwrath, Lapras and Gyarados — four distinct water carriers,
+so `water_tide` fires at four — plus Mew, whose neutral affinity is inert and
+forms no tribe, at level 60 on leaf forms and at most two units to a column so
+that `same_column` cannot fire. Against `probe_spread` (one carrier each of
+fire, grass, electric, metal and dark, firing nothing) over 400 seeds a cell,
+800 battles a cell, both arrangements:
+
+| what moved | reading | endless |
+|---|---|---|
+| the whole `water_tide` bonus at rung 4 | 390‰ against 150‰ `--without water_tide` — **+240‰** | 0/800 both |
+| **the rung at 4 alone** (the book moved, everything else held) | 390‰ against the shipped book's 342‰ — **+48‰** | 0/800 both |
+| the null control, a side reaching only rung 3 | **370‰ under both books, identical in every field** | 0/800 both |
+
+All six mirrors read **exactly 500‰**. The rung was **not authored**: the floor
+was written down before the run at **≥ +50‰** — just under 3σ, since the
+binomial σ at p = 0.5 over 800 battles is ≈ 17.7‰ — and +48‰ is under it.
+⚠️ **The figure is the third `tidewell` stack and not the extra row**, which is
+mutation-checked: a rung at 4 declaring the two stacks rung 3 already grants
+reads 342‰, identical in every field to the shipped book. So the null is an
+honest reading rather than an instrument that measured nothing.
+⚠️ **It is a statement about that squad.** Two of its five seats heal themselves
+(`withdraw`, `aqua_ring`) and a third drains (`blood_thirst`); a side built
+harder around *receiving* healing might well clear the floor. What it cannot say
+is what the rung is worth in the game, for the reason this whole section exists.
+⚠️ **The instrument perturbs this one too, in a way worth recording.** The
+obvious Blastoise kit — `builds.json` `squirtle.fortress` — carries no damaging
+skill, so a mirror of it never resolves: 10 of 10 Endless, and since `Rate()`
+drops Endless from the denominator the control read **0‰** and could not be read
+at all. The squad had to be re-kitted **off water damage** as well, because a
+mono-element mirror is every attack into a resisting affinity. A composition
+bonus counts **affinity** and not the kit's element, so all four seats remain
+water carriers; but the kits a probe can wear are constrained by its own mirror
+control, which is a cost of the instrument rather than a fact about the rung.
+The harness and every kit are in `internal/forge/dat002probe_test.go`, behind the
+`dat002probe` build tag. → `TODO.md` `DAT-002` for the full record.
 
 ⚠️ **What this is NOT.** It is not an argument that the table is wrong and it is
 not a reason to re-price anything: the figures above are the bonuses doing real

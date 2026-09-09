@@ -44,6 +44,17 @@ const (
 	// axis happens to be first.
 	AxisNone Axis = iota
 	// AxisElement counts the elements the fielded units carry.
+	//
+	// ⚠️ **Its ceiling is the CAST's carrier count now, not the format.** Until
+	// ENG-013 opened 5v5 a rung above three was unreachable because a side was
+	// three units; it is the cast that stops one now, and the two are different
+	// bounds with different remedies. Counted the way the reachability tests
+	// count it — a character counts for every element any of its forms can be
+	// fielded carrying — the deepest tribes on 2026-09-09 are ground and water at
+	// four each, and nothing reaches five. So a rung at four is authorable for
+	// exactly two elements and a rung at five for none, and the way to move that
+	// is to ship a carrier rather than to widen a format. Contrast AxisColumn
+	// below, whose ceiling is the board and can never move at all.
 	AxisElement
 	// AxisColumn counts the formation column the fielded units stand in.
 	//
@@ -589,6 +600,29 @@ func parseBonus(entry bonusFile, deps Deps) (Bonus, error) {
 			if grant.Stacks < 1 {
 				return Bonus{}, fmt.Errorf("bonus %q at %d grants %q %d times",
 					entry.ID, rung.At, grant.Status, grant.Stacks)
+			}
+			// ⚠️ The stacks a rung declares are bounded by the STATUS, and the
+			// hole this closes is silent rather than loud. A grant is handed out
+			// through Set.Hold, which applies one stack at a time, and Apply
+			// refuses one past the kind's cap — so a rung asking for more than
+			// the status holds parses, loads, draws, FIRES, emits its bonus_held,
+			// and hands out exactly what the rung below it already did. That is
+			// decision 6's vacuous row one layer down: not a row nobody reaches,
+			// but a row everybody reaches for nothing, which is worse, because
+			// the reachability walk over the book can see the first and not the
+			// second.
+			//
+			// The bound is the kind's own MaxStacks and not the book's ceiling.
+			// Making a higher rung worth more by granting another stack is the
+			// shape Grant's doc names, and the way to buy room for it is to raise
+			// the status in statuses.json — a decision about the effect, taken
+			// where the effect is declared, rather than a number this file could
+			// quietly exceed.
+			if grant.Stacks > kind.MaxStacks {
+				return Bonus{}, fmt.Errorf(
+					"bonus %q at %d grants %q %d times and %d is all that status holds: "+
+						"the rest is clamped away, so the rung fires and changes nothing",
+					entry.ID, rung.At, grant.Status, grant.Stacks, kind.MaxStacks)
 			}
 			for _, already := range held.Grants {
 				if already.Status == grant.Status {
