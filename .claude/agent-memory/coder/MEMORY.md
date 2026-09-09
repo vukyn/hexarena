@@ -63,3 +63,5 @@ here now, and new ones belong here.
 - [hexarena refusal wordings](project_hexarena_refusal_wordings.md) — Block wordings + OptionRefusal + gated opening; ⚠️ distinctness-only sweep measured nothing
 - [Stage the bytes, not the directory](feedback_stage_the_bytes_not_the_directory.md) — a per-process fixture in memory has no cleanup owner and no cross-run staleness; ⚠️ a share chain kills a TempDir-skipping guard
 - [Two test binaries beat stashing](feedback_two_test_binaries_beat_stashing.md) — `go test -c` both sides, interleave, `=== RUN` counts free; ⚠️ run from the package dir
+- [A silent slot is what an under-price looks like](feedback_a_silent_slot_is_what_an_underprice_looks_like.md) — count CASTS to refuse a repricing; 76% control vs rapid_spin's 0.5%; ⚠️ actor id is side-prefixed
+- [A golden can be red before you touch it](feedback_a_golden_can_be_red_before_you_touch_it.md) — 24 lines were the PREVIOUS commit's debt; prove it with `git archive HEAD`, never a shared stash

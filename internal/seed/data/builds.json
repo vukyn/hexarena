@@ -202,11 +202,11 @@
       "id": "cleffa.hex",
       "character": "pokemon.cleffa",
       "name": "ru ngủ",
-      "intent": "Không đánh gục ai, chỉ làm cho bên kia không đánh được nữa",
+      "intent": "Ru cho bên kia lơ đãng và mất nhịp, rồi mới ra tay vào lúc họ đứng yên",
       "skills": [
         "charm",
         "sing",
-        "smokescreen",
+        "moonblast",
         "solar_beam"
       ],
       "passives": [

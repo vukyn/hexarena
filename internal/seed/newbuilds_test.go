@@ -26,7 +26,15 @@ var (
 	sureBuild   = []string{"vital_throw", "body_slam", "rock_throw", "seismic_toss"}
 
 	mendBuild = []string{"moonlight", "wish", "rally", "moonblast"}
-	hexBuild  = []string{"charm", "sing", "smokescreen", "solar_beam"}
+	// The hexing direction is a LEAN rather than a purity, and that is a
+	// measurement rather than a taste: swept on the mender fixture's shell over
+	// 300 seeds a side, giving up `smokescreen` for `moonblast` — the only other
+	// damaging skill in the learnset — is worth 356 -> 826 against a slugger,
+	// 226 -> 725 against a bruiser and 281 -> 546 against a blighter, and no
+	// non-damaging alternative in that slot clears 400 against all three.
+	// Cleffa's learnset holds two damaging skills, so every repair costs one of
+	// charm/sing/smokescreen; smokescreen is the one it costs. → `TODO.md` `DAT-013`.
+	hexBuild = []string{"charm", "sing", "moonblast", "solar_beam"}
 
 	// The cleanser's steady direction, and the one build in this record that was
 	// chosen by SWEEPING the alternatives rather than by authoring a pair: over
