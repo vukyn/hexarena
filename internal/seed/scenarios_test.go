@@ -251,13 +251,13 @@ func shapeCoverage(shape pattern.Pattern) (average, full int64) {
 	// Each of the 512 subsets of nine slots, restricted to those holding a full
 	// team of five.
 	for mask := 0; mask < 1<<len(cells); mask++ {
-		occupied := make(map[hex.Offset]bool, hex.MaxTeamSize)
+		occupied := make(map[hex.Offset]bool, hex.MaxSquadSize)
 		for i, cell := range cells {
 			if mask&(1<<i) != 0 {
 				occupied[cell] = true
 			}
 		}
-		if len(occupied) != hex.MaxTeamSize {
+		if len(occupied) != hex.MaxSquadSize {
 			continue
 		}
 		for _, primary := range cells {

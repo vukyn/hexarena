@@ -42,7 +42,7 @@ func TestABattleAtTheFloorAsksForMoreRowsThanItHas(t *testing.T) {
 	c = inAWindow(c, theFloorHeight)
 	purse := PlayBodyRoom(c.Height)
 
-	for _, side := range []int{1, hex.MaxTeamSize} {
+	for _, side := range []int{1, hex.MaxSquadSize} {
 		p := atABattleOf(t, c, side)
 		sizes := p.drawings(c).sizes()
 		// The heading is a row the body always writes, and every section below it
@@ -53,7 +53,7 @@ func TestABattleAtTheFloorAsksForMoreRowsThanItHas(t *testing.T) {
 			"roster %d+1, order 1, log wants %d)",
 			side, c.Width, c.Height, purse, asked, blockRows(sizes.tail),
 			sizes.board, sizes.units, PlayLogWanted)
-		if side < hex.MaxTeamSize {
+		if side < hex.MaxSquadSize {
 			continue
 		}
 		if asked <= purse {
@@ -78,7 +78,7 @@ func TestTheBoardAndTheRosterAloneOutgrowTheFloor(t *testing.T) {
 	c = inAWindow(c, theFloorHeight)
 	purse := PlayBodyRoom(c.Height)
 
-	p := atABattleOf(t, c, hex.MaxTeamSize)
+	p := atABattleOf(t, c, hex.MaxSquadSize)
 	sizes := p.drawings(c).sizes()
 	// The roster's header goes with the first unit, so a board of N units is N+1
 	// rows. The units on the board today are the squads; the slots are what a
@@ -114,7 +114,7 @@ func TestALiveBattleCostsTheWaitingRowItWasPredictedTo(t *testing.T) {
 	c, _ := start(t, i18n.Vi)
 	c = inAWindow(c, theFloorHeight)
 
-	local := atABattleOf(t, c, hex.MaxTeamSize)
+	local := atABattleOf(t, c, hex.MaxSquadSize)
 	waiting := NewPlayScreen().Attach(c, PlayLive{
 		Fight: local.Fight, Side: local.Side, Seed: local.Seed,
 	})
@@ -128,7 +128,7 @@ func TestALiveBattleCostsTheWaitingRowItWasPredictedTo(t *testing.T) {
 	}
 	asked := 1 + blockRows(sizes.tail) + sizes.board + sizes.units + 1 + 1 + PlayLogWanted
 	t.Logf("live and waiting, %d a side: purse %d, asks %d (tail %d)",
-		hex.MaxTeamSize, purseAtTheFloor(c), asked, blockRows(sizes.tail))
+		hex.MaxSquadSize, purseAtTheFloor(c), asked, blockRows(sizes.tail))
 	if blockRows(sizes.tail) == 0 {
 		t.Error("a live battle waiting on the other player spends no row saying so, and the " +
 			"record says it spends one")

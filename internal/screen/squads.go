@@ -600,7 +600,7 @@ func (s SquadsScreen) focus() SquadsScreen {
 // empty one does.
 func (s SquadsScreen) addUnit() SquadsScreen {
 	offered := offeredCharacters(s.Characters, "")
-	if len(s.Editing.Units) >= hex.MaxTeamSize || len(offered) == 0 {
+	if len(s.Editing.Units) >= hex.MaxSquadSize || len(offered) == 0 {
 		return s
 	}
 	character := offered[0]
@@ -1121,7 +1121,7 @@ func (s SquadsScreen) View(c Context) (string, string) {
 func (s SquadsScreen) viewList(c Context) string {
 	var out strings.Builder
 	out.WriteString(c.Style.Heading.Render(c.Text(i18n.SquadsHeading)) + "  " +
-		c.Style.Dim.Render(c.Text(i18n.SquadsSubtitle, len(s.Saved), hex.MaxTeamSize)) + "\n\n")
+		c.Style.Dim.Render(c.Text(i18n.SquadsSubtitle, len(s.Saved), hex.MaxSquadSize)) + "\n\n")
 	if len(s.Saved) == 0 {
 		out.WriteString(c.Style.Dim.Render(c.Text(i18n.SquadsEmpty)) + "\n")
 		return strings.TrimRight(out.String(), "\n")
@@ -1196,8 +1196,8 @@ func (s SquadsScreen) viewEdit(c Context) string {
 		out.WriteString(marker + Clip(line, c.UsableWidth()-2) + "\n")
 	}
 	add := c.Text(i18n.SquadAddMember)
-	if len(s.Editing.Units) >= hex.MaxTeamSize {
-		add = c.Text(i18n.SquadFull, hex.MaxTeamSize)
+	if len(s.Editing.Units) >= hex.MaxSquadSize {
+		add = c.Text(i18n.SquadFull, hex.MaxSquadSize)
 	}
 	if s.Units >= len(s.Editing.Units) {
 		out.WriteString("> " + c.Style.Selected.Render(add) + "\n")
@@ -1341,7 +1341,7 @@ func (s SquadsScreen) listValue(c Context, chosen []string, slots int) string {
 }
 
 // The grid's own measurements. A cell is three characters wide because that is
-// what "[n]" is, and n is a member number of a squad that fields hex.MaxTeamSize
+// what "[n]" is, and n is a member number of a squad that fields hex.MaxSquadSize
 // — one digit — so nothing widens it. The marker under the front column is built
 // from the same figure rather than written out, so the two cannot part company.
 const (

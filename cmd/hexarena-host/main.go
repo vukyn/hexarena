@@ -545,37 +545,34 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 	// pool each time, so `-draft -battles 3` is three ban-and-picks and up to
 	// three different squads. → room.Room.redraft, and the banner below, which
 	// says so where a host reads it.
-	// ⚠️ **Five a side is held back at this flag and nowhere else.**
-	// wire.Format5v5 stays valid on the wire on purpose: taking it out of
-	// Format.Valid would be a protocol change, and a peer one version either way
-	// has to keep agreeing about what the format field can hold. What is held
-	// back is the ability to *open* such a room, which is the only place a
-	// format is chosen in this repository.
+	// ⚠️ **Five a side used to be held back at this flag and nowhere else, and it
+	// is open now.** The whole of the history is worth keeping, because the guard
+	// was removed on a measurement rather than on a hunch and the next reader
+	// deserves to know which reasons died of what.
 	//
-	// ⚠️ **There were two reasons, then one, and the one that is left is a
-	// different thing from what this comment claimed.** The draft half closed
-	// while the draft was being built — `draft.Fits` seats a 5v5 today with room
-	// to spare, and the figure is derived rather than remembered
-	// (`jq '[.characters[]|select(.hidden|not)]|length'
-	// internal/seed/data/cast.json`). The balance half said "the shipped balance
-	// was read at five a side", and that was never true: every figure in this
-	// repository was read at three or fewer, `roster.json` included. The board
-	// nobody had read was five, and it has now been read.
-	//
-	// **What the reading found is not a number to re-tune.** The board resolves
-	// and stays fair at five — a mirrored squad comes to exactly 500‰ over two
+	// There were two. The draft half closed while the draft was being built —
+	// `draft.Fits` seats a 5v5 with room to spare. The balance half said "the
+	// shipped balance was read at five a side", and that was never true: every
+	// figure in this repository was read at three or fewer, `roster.json`
+	// included. So the board nobody had read was five, and reading it found that
+	// it resolves and stays fair — a mirrored squad comes to exactly 500‰ over two
 	// hundred battles with nothing endless, and screening is worth *more* there
-	// than at three (935‰ against 850‰ on the same bodies). What breaks is
-	// summoning: `hex.MaxTeamSize` is five, so a full side leaves no room for a
-	// copy, and `split` is cast 400 times over a hundred mirrored seeds at three
-	// and at four a side and **0** times at five. Three shipped skills and one
-	// shipped build are dead slots at this format, so opening it would ship a
-	// mechanic that silently does nothing. → `ENG-013`, and
+	// than at three.
+	//
+	// What it also found was the one real blocker, and it was a **design
+	// collision rather than a number**: a summon lives in the gap between what a
+	// side FIELDS and what the board ADMITS, and one constant was doing both jobs at
+	// five, so a full side computed `room = 0`, `summonWorth` priced every
+	// summoning skill at nought and the rating never cast one. Three shipped
+	// skills and the `diglett.three` build were dead slots here.
+	//
+	// `ENG-013` split the constant — `hex.BoardSlots` (every formation slot)
+	// against `hex.MaxSquadSize` (what a side is fielded with) — so the gap is
+	// four slots wide at this format. Re-measured on the same mirrored instrument:
+	// a 5v5 goes from **0** casts and 0 arrivals to hundreds of each, the mirror
+	// stays exactly 500‰ with nothing endless over two hundred battles, battles
+	// run about 2% longer, and **3v3 does not move at all** — the readings are in
 	// `docs/balance.md` § *Five a side, read at last*.
-	if wire.Format(chosen.format) == wire.Format5v5 {
-		return nil, fmt.Errorf("five a side is not offered yet: a full side leaves no room " +
-			"for a summon, so every summoning skill is a dead slot there; open a 3v3")
-	}
 	// The room's own refusals are surfaced word for word rather than reworded.
 	// "a series of 2 battles is even, and an even series has to invent a rule for
 	// a 1–1" is a design decision explaining itself, and a second wording of it

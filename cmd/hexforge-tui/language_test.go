@@ -389,7 +389,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// what grows with it; aiming as well, because the cells are reserved with the
 	// options and are what push the roster into being clipped a row at a time,
 	// which is a different clause of the same line.
-	squeezed := atABattleOf(t, m, hex.MaxTeamSize)
+	squeezed := atABattleOf(t, m, hex.MaxSquadSize)
 	squeezed.width, squeezed.height = minWidth, minHeight
 	squeezedAim := squeezed
 	squeezedAim.play.Aiming = true

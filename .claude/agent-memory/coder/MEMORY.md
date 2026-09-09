@@ -65,3 +65,5 @@ here now, and new ones belong here.
 - [Two test binaries beat stashing](feedback_two_test_binaries_beat_stashing.md) — `go test -c` both sides, interleave, `=== RUN` counts free; ⚠️ run from the package dir
 - [A silent slot is what an under-price looks like](feedback_a_silent_slot_is_what_an_underprice_looks_like.md) — count CASTS to refuse a repricing; 76% control vs rapid_spin's 0.5%; ⚠️ actor id is side-prefixed
 - [A golden can be red before you touch it](feedback_a_golden_can_be_red_before_you_touch_it.md) — 24 lines were the PREVIOUS commit's debt; prove it with `git archive HEAD`, never a shared stash
+- [An uncommitted harness leaves only a shape](feedback_an_uncommitted_harness_leaves_only_a_shape.md) — 400/400/0 never reproduced; 3 fixtures gave 462/464/410 and the same cliff. Run the CONTROL
+- [A spar golden is fought from the cast](feedback_a_spar_golden_is_fought_from_the_cast.md) — "no golden moves" reasoned over roster.json; naruto's duel moved 58→60. Prove causation by pinning the line back

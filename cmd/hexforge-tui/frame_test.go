@@ -241,7 +241,7 @@ func TestAMarkedLineIsAsWideAsAnUnmarkedCutWouldHaveBeen(t *testing.T) {
 func TestNoDrawingIsEverWideEnoughToBeMarked(t *testing.T) {
 	base, _, _ := start(t, i18n.Vi)
 	base.width, base.height = minWidth, 60
-	fought := atABattleOf(t, base, hex.MaxTeamSize)
+	fought := atABattleOf(t, base, hex.MaxSquadSize)
 	if fought.play.Fight == nil {
 		t.Fatal("the fixture reached the battle screen without a battle, so no board is drawn")
 	}

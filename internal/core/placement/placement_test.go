@@ -47,7 +47,7 @@ func TestASquadIsRefusedForItsShape(t *testing.T) {
 			return s
 		}, "already is"},
 		{"more than a side can field", func(s placement.Squad) placement.Squad {
-			for i := 0; i < hex.MaxTeamSize; i++ {
+			for i := 0; i < hex.MaxSquadSize; i++ {
 				extra := s.Units[0].Clone()
 				extra.ID = string(rune('a' + i))
 				extra.Slot = hex.Offset{Col: i % hex.FormationCols, Row: i % hex.FormationRows}

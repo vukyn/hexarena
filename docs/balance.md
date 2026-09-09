@@ -1968,15 +1968,88 @@ arrange phase gets *more* decisive as the board fills, not less. ⚠️ The 4v4 
 595‰ is the fixture and not the board: the fourth body it adds is not the third, so
 the three columns are not three settings of one measurement.
 
-⚠️ **What blocks five a side is a design collision, not a number: a summon lives
-in the gap between the format and the team cap, and at five a side there is no
-gap.** `hex.MaxTeamSize` is five, so `battle.summonPlaces` computes
-`room = 5 - 5 = 0`, `summonWorth` prices every summoning skill at nought, and the
-rating never casts one. The cliff sits exactly at the cap — four a side is
-untouched — and a probe that raises the constant to seven puts the counts back to
-400 casts and 400 arrivals on the same board, which is what says the **cap** is the
-knob rather than the format. `split`, `shadow_clone` and `summon_toad` are dead
-slots at five, and so is the `diglett.three` build that names one; → `ENG-013`.
+⚠️ **What blocked five a side was a design collision, not a number: a summon
+lives in the gap between the format and the team cap, and at five a side there
+was no gap.** One constant, `hex.MaxTeamSize`, was five, so `battle.summonPlaces`
+computed `room = 5 - 5 = 0`, `summonWorth` priced every summoning skill at nought
+and the rating never cast one. The cliff sat exactly at the cap — four a side was
+untouched — and a probe raising the constant to seven put the counts back to 400
+casts and 400 arrivals on the same board, which is what said the **cap** was the
+knob rather than the format. `split`, `shadow_clone` and `summon_toad` were dead
+slots at five, and so was the `diglett.three` build that names one.
+
+**`ENG-013` split the constant and the format is open.** `hex.BoardSlots` is
+`FormationCols * FormationRows` — nine, what the board admits — and
+`hex.MaxSquadSize` is five, what a side is fielded with; the gap between them is
+the room a summon stands in, and at five a side it is four cells wide.
+
+### The re-measurement, 2026-09-09
+
+⚠️ **The harness was not in the repository and the ORIGINAL FIXTURE is not
+recorded anywhere**, so the run above could not be reproduced body for body. What
+was rebuilt is the protocol — same bodies at every size, mirrored, 100 seeds each
+way, the 4- and 5-unit squads being the 3-unit one with a body *added* — over
+**three** independent fixtures rather than one, precisely because the magnitude is
+a property of the squad and only the shape is a property of the engine. Each
+fixture stands one `split` carrier (the `diglett.three` kit) in a three-body
+squad and adds two electric bodies. Every cast count below is the total across
+both sides of 200 mirrored battles.
+
+All three reproduce the recorded **shape** exactly — a cliff to nought at five and
+nowhere else — and none reproduces the recorded 400. Read that as: the finding is
+the engine's, the number was the fixture's.
+
+| fixture | reading | 3v3 | 4v4 | 5v5 |
+|---|---|---|---|---|
+| A | `split` cast at cap 5 → cap 9 | 462 → **462** | 704 → **704** | **0 → 752** |
+| B | `split` cast at cap 5 → cap 9 | 464 → **464** | 756 → **766** | **0 → 738** |
+| C | `split` cast at cap 5 → cap 9 | 410 → **410** | 614 → **614** | **0 → 778** |
+
+Copies that arrived equal the casts in every cell, at every cap, on every
+fixture: a cast that is priced is a cast that lands.
+
+**Every rate with its endless count beside it — all of them, including the
+zeros.** The mirror is **500‰ exactly** and `Endless` is **0 of 200** in all
+eighteen readings: three fixtures × three sizes × two caps. Nothing in this change
+made a board fail to resolve.
+
+**Turns a battle, mirrored — the length is what a wider board buys:**
+
+| fixture | 3v3 (5 → 9) | 4v4 (5 → 9) | 5v5 (5 → 9) |
+|---|---|---|---|
+| A | 101 → 101 | 105 → 105 | 122 → **124** |
+| B | 81 → 81 | 95 → 97 | 110 → **113** |
+| C | 361 → 361 | 363 → 363 | 120 → **122** |
+
+⚠️ **The 3v3 column does not move at all, and that was not the expectation.** The
+prediction was that a repeated summon could now reach further on the format that
+already ships — a 3-unit side could previously grow to five and then stop, and can
+now grow to nine. It does not, and the reason is that a *different* bound was
+already binding: `split` gates itself on `sundered` below two stacks, so a carrier
+casts it twice a battle whatever the board allows, and at three a side there was
+already room for two. **The shipped format is bit-identical: same casts, same
+arrivals, same turns, same 500‰, same nought endless.** The regression this change
+could have caused did not happen, and it was measured rather than argued.
+
+⚠️ **One golden moved, and the blast-radius estimate that said none would had
+missed the screen it moved on.** `cmd/hexforge-tui/testdata/screens.golden`, the
+`spar` screen: `naruto.naruto`'s median duel length reads **60 turns where it read
+58**. Nothing else on the row moves — 0.0%, 0-200-0, +0.0% initiative — so it is a
+duel that ran two turns longer and not a balance answer. A spar is fought from the
+**cast**, not from `roster.json`, and `naruto.naruto` is the one shipped character
+whose kit holds `shadow_clone` and `summon_toad`; on a duel board its side can now
+hold clones and a toad at once where the old cap allowed one of the two. Causation
+was proven rather than assumed, by pinning `summonPlaces`'s `room` back to the
+squad cap and watching the golden go green again.
+
+⚠️ **A consequence worth knowing before either bound is "simplified":
+`summonPlaces`'s two board bounds now agree by construction.** `hex.BoardSlots` is
+`FormationCols*FormationRows` and `census` gives every counted unit a distinct
+cell, so `len(free)` is always `hex.BoardSlots - perSide` and **no fixture can
+tell them apart any more**. That is why
+`TestASummonTheBoardHasNoRoomForIsNotPricedAtAll` no longer leaves a cell empty:
+the arrangement that used to separate the room from the reach does not exist on
+this board. The roster's own bound is still enforced, once, in `battle.enlist`.
 
 ⚠️ **A smaller reading worth keeping: `same_column` stops being a choice at five
 a side.** Its rung is three, and five units with the front column empty have two

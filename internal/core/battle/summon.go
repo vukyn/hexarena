@@ -152,11 +152,26 @@ func (b *Battle) summonAffinity(caster *Unit, declared *skill.Summon) (element.A
 // readings of "how many fit" would let the rating pay for a copy the board has
 // no room for, on exactly the boards where the answer matters.
 //
-// Three things bound it, and the last is the one a caller would forget: the
-// skill's own count, the slots nobody is standing in, and the side's strength.
-// A side has nine formation slots and may fill five of them, so free slots are
-// not the same question as room — and the count is read against perSide as it
-// grows, because each copy enlisted is one more unit on that side.
+// Three things bound it: the skill's own count, the slots nobody is standing in,
+// and the side's strength against what the board admits — read against perSide
+// as it grows, because each copy enlisted is one more unit on that side.
+//
+// ⚠️ **Room is counted against the BOARD and not against what a side is fielded
+// with.** Those were one constant until ENG-013, so a full side of the largest
+// format computed room = 0, summonWorth priced every summoning skill at nought
+// and Suggest never cast one. The gap between hex.MaxSquadSize and
+// hex.BoardSlots IS the room a summon stands in, and one constant left no gap at
+// exactly the board it mattered on.
+//
+// ⚠️ **The last two bounds now agree by construction, and that is worth knowing
+// before either is "simplified".** hex.BoardSlots is FormationCols*FormationRows
+// and census gives every counted unit a distinct cell, so len(free) is always
+// hex.BoardSlots - perSide and no board can tell the two apart. Room is kept
+// because it is the sentence — a copy stands in the gap between a side's
+// strength and the board — and because summonWorth prices off this function, so
+// the rating and the engine read one expression. What that costs is that no
+// fixture can redden a mutation to one bound alone; the roster's own bound is
+// still enforced, once, in enlist.
 func (b *Battle) summonPlaces(
 	caster *Unit, declared *skill.Summon,
 	perSide map[hex.Side]int, occupied map[hex.Offset]string,
@@ -166,7 +181,7 @@ func (b *Battle) summonPlaces(
 	// a cast is not refused and the shortfall is simply fewer units. The log says
 	// how many arrived; nothing has to say how many did not, because the board
 	// already does.
-	room := hex.MaxTeamSize - perSide[caster.Side]
+	room := hex.BoardSlots - perSide[caster.Side]
 	out := make([]hex.Offset, 0, declared.Count)
 	for i := range declared.Count {
 		if i >= len(free) || i >= room {
@@ -232,8 +247,8 @@ func splitHealth(maximum int64, share int) int64 {
 // The formation is what a roster wrote down. A side that was authored with three
 // units in three named slots is that arrangement for the whole battle, and a
 // fourth appearing in a dead comrade's cell would be a placement nobody chose —
-// so a corpse keeps its slot and its side has not shrunk as far as
-// hex.MaxTeamSize is concerned, which is what the roster means by that number.
+// so a corpse keeps its slot and its side has not shrunk as far as the board is
+// concerned.
 //
 // A summon was never in that arrangement. It borrowed a slot the formation left
 // empty, and when it is gone the slot is empty again, so a skill that calls one
@@ -275,7 +290,7 @@ func (b *Battle) census() (map[hex.Side]int, map[hex.Offset]string) {
 // summon at the far edge, where most kits cannot aim at all, and the mechanism
 // would look broken for a reason that is nowhere near it.
 func (b *Battle) freeSlots(side hex.Side, occupied map[hex.Offset]string) []hex.Offset {
-	free := make([]hex.Offset, 0, hex.MaxTeamSize)
+	free := make([]hex.Offset, 0, hex.BoardSlots)
 	for col := hex.FormationCols - 1; col >= 0; col-- {
 		for row := range hex.Rows {
 			slot := hex.Offset{Col: col, Row: row}

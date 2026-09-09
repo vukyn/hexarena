@@ -105,8 +105,8 @@ func TestEveryElementBonusRungIsReachable(t *testing.T) {
 			t.Fatalf("%s counts %q, which is no element: %v", held.ID, held.Value, err)
 		}
 		fieldable := carriers[member]
-		if fieldable > hex.MaxTeamSize {
-			fieldable = hex.MaxTeamSize
+		if fieldable > hex.MaxSquadSize {
+			fieldable = hex.MaxSquadSize
 		}
 		checked++
 		for _, rung := range held.Rungs {

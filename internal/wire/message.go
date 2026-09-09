@@ -24,8 +24,7 @@ type Format int
 const (
 	// Format3v3 is three units a side.
 	Format3v3 Format = 3
-	// Format5v5 is five units a side, and it is valid here while the host refuses
-	// to open one.
+	// Format5v5 is five units a side, and a host will open one.
 	//
 	// ⚠️ **This comment said the shipped balance was read at five a side, and that
 	// was never true.** Every figure in the repository was read at three or fewer:
@@ -34,12 +33,12 @@ const (
 	// three units each. The board nobody had read was this one, and it has now been
 	// read — → `docs/balance.md` § *Five a side, read at last*.
 	//
-	// ⚠️ **What it found is a design collision rather than a number: a summon lives
-	// in the gap between the format and the team cap, and at this format there is no
-	// gap.** `hex.MaxTeamSize` is five, so a full side leaves `summonPlaces` no
-	// room, `summonWorth` prices every such skill at nought and the rating never
-	// casts one. Measured over a hundred mirrored seeds, `split` is cast 400 times
-	// at three and at four a side and **0** times at five. → `ENG-013`.
+	// It was held back for one measured reason, and that reason is gone: a summon
+	// lives in the gap between what a side FIELDS and what the board ADMITS, and
+	// one constant was doing both jobs, so at this format there was no gap and
+	// every summoning skill was a dead slot. The constant is now two —
+	// `hex.MaxSquadSize` against `hex.BoardSlots` — and the readings at the wider
+	// board are in `docs/balance.md` § *Five a side, read at last*. → `ENG-013`.
 	Format5v5 Format = 5
 )
 

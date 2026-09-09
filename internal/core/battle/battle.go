@@ -342,8 +342,22 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 		return nil, fmt.Errorf("unit %q sits at %s, which is not a formation slot", entry.ID, entry.Slot)
 	}
 	perSide[entry.Side]++
-	if perSide[entry.Side] > hex.MaxTeamSize {
-		return nil, fmt.Errorf("the %s side has more than %d units", entry.Side, hex.MaxTeamSize)
+	// The BOARD's bound, on purpose, and it must stay that.
+	//
+	// A summon reaches the board through this function (summon.go's doc says why:
+	// one answer to what may stand here, not two), so pointing this at
+	// hex.MaxSquadSize would refuse every copy a full side calls up and rebuild
+	// ENG-013 one layer down.
+	//
+	// ⚠️ The price is accepted out loud: battle.New will admit a NINE-unit
+	// roster. This layer has no notion of a format and must not gain one — a
+	// roster is a list of facts. What a side may be FIELDED with is enforced
+	// above, by placement.Squad.Validate, the squad builder, the room gate and
+	// the draft, all of which count to hex.MaxSquadSize.
+	// TestANineUnitRosterIsLegalHereAndRefusedByEveryAuthoringPath pins both
+	// halves, so do not "tighten" this.
+	if perSide[entry.Side] > hex.BoardSlots {
+		return nil, fmt.Errorf("the %s side has more than %d units", entry.Side, hex.BoardSlots)
 	}
 	cell := hex.Place(entry.Side, entry.Slot)
 	if holder, taken := occupied[cell]; taken {

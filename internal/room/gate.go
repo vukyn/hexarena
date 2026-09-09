@@ -379,7 +379,7 @@ func (r *Room) freeSeat() (int, bool) {
 //     deliberately lenient about a half-finished unit, because a squad being
 //     built has to be savable, so it is the floor rather than the gate.
 //  2. **The format's size.** A 3v3 room takes squads of three. Validate only
-//     knows hex.MaxTeamSize, which is five, so a three-unit room would take a
+//     knows hex.MaxSquadSize, which is five, so a three-unit room would take a
 //     five-unit squad without this.
 //  3. **Level 60.** PvP is fought at the cap; every balance figure in the
 //     repository was read there, and a squad brought under-levelled is a player

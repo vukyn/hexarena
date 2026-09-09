@@ -111,9 +111,9 @@ func watchable(cfg room.Config) room.Config {
 var theThreeSlots = []hex.Offset{{Col: 0, Row: 1}, {Col: 1, Row: 1}, {Col: 2, Row: 1}}
 
 // theFiveSlots are enough cells for the largest squad a room offers, which the
-// one test that needs a 5v5 uses. hex.MaxTeamSize is five against nine
-// formation slots, so any five distinct cells will do and these are the middle
-// two ranks.
+// one test that needs a 5v5 uses. hex.MaxSquadSize is five against
+// hex.BoardSlots formation slots, so any five distinct cells will do and these
+// are the middle two ranks.
 var theFiveSlots = []hex.Offset{
 	{Col: 0, Row: 0}, {Col: 0, Row: 1}, {Col: 1, Row: 0}, {Col: 1, Row: 1}, {Col: 2, Row: 1},
 }

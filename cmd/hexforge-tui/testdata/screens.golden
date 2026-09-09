@@ -1070,7 +1070,7 @@ thử trận  fixture-anime.adept — Example Adept
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
-  naruto.naruto                   0.0%    0-200-0         58     +0.0%
+  naruto.naruto                   0.0%    0-200-0         60     +0.0%
   pokemon.abra                    21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
   pokemon.charmander              4.0%    8-192-0         25     +0.0%
@@ -4037,7 +4037,7 @@ thử trận  fixture-anime.adept — Example Adept
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
-  naruto.naruto                   0.0%    0-200-0         58     +0.0%
+  naruto.naruto                   0.0%    0-200-0         60     +0.0%
   pokemon.abra                    21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
   pokemon.charmander              4.0%    8-192-0         25     +0.0%
@@ -5744,7 +5744,7 @@ spar  fixture-anime.adept — Example Adept
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
-  naruto.naruto                 0.0%    0-200-0         58     +0.0%
+  naruto.naruto                 0.0%    0-200-0         60     +0.0%
   pokemon.abra                  21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
   pokemon.charmander            4.0%    8-192-0         25     +0.0%
@@ -8711,7 +8711,7 @@ spar  fixture-anime.adept — Example Adept
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
-  naruto.naruto                 0.0%    0-200-0         58     +0.0%
+  naruto.naruto                 0.0%    0-200-0         60     +0.0%
   pokemon.abra                  21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
   pokemon.charmander            4.0%    8-192-0         25     +0.0%
