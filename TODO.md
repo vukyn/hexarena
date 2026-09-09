@@ -115,9 +115,11 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `DAT-012` | done | A seat-swap rate is a reading about the SHELL as much as the seat — two shells answered opposite for one character, and the Gyarados line shipped on the honest one |
 | `DAT-013` | done | `cleffa.hex` lost four in five because of the KIT, not the pricing — the census shows no silent slot on any board, so a repricing is refused by measurement; the build was rekitted and the mender fixture now fields it |
 | `DAT-014` | open | The support fixture's shell is a `withdraw` mirror, so every reading in `internal/seed` is taken on a board `RAT-003` measured at 100% endless in isolation — `cleffa.mend` is unquotable against two of three opponents |
+| `DAT-015` | open | 5v5 is open and has ONE board: `s06` ships as content, unmeasured by decision, and the format still cannot field a legal pairing — ⚠️ `forge.FightSquads` will silently fight the 3-vs-5 no room would ever open |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Traced Pokemon are waiting for a character — run the `comm` in the entry, never read a count off it |
 | `CAST-003` | shipped | A stage may declare its own element — the mechanism, and the onix line that fields it |
+| `CAST-004` | open | `pokemon.lapras` has no catalogue entry at all, and it needs two — one per half of its dual, because `TestABuildIsACatalogueOfChoicesRatherThanOfKits` makes it two or none; the water build is the one that opts out of `CAST-001`'s ice-half matchup loss |
 | `SCR-001` | shipped | Reference screens |
 | `SCR-002` | shipped | Vietnamese |
 | `SCR-003` | shipped | Squads |
@@ -609,6 +611,113 @@ is only so the shape is readable.
       rather than carried over. Until it lands, **no rate may be quoted for a
       third seat that adds healing**, and `cleffa.mend` has no readable figure
       against a slugger or a bruiser at all.
+
+- [ ] `DAT-015` ⚠️ **5v5 is open and has ONE board.** `ENG-013` split
+      `hex.MaxTeamSize` into `hex.BoardSlots` (9, what the board holds) and
+      `hex.MaxSquadSize` (5, what a side is fielded with), so a host will open a
+      `Format5v5` room today — but `Room.squadIsFieldable` refuses a squad whose
+      unit count is not `Format.Units()` (`internal/room/gate.go`), and all five
+      shipped squads were three units. **The format could be opened and no shipped
+      squad could enter it.** `s06` — `chôn chân`, five units, 2/2/1 across columns
+      2/1/0 at rows `{0,2}`/`{0,2}`/`{1}` — ships as content on 2026-09-09 and
+      closes that. It does not close the format: **one board is not a format**, and
+      a second 5v5 squad is what this item is open for.
+
+      **What one squad can and cannot do.** It cannot be fought against anything
+      shipped in a way a room would accept, because every other squad is three
+      units. Its own mirror is a **fairness control** — 500‰ by construction — and
+      not a balance figure. **No rate has been taken on it at all**: this PR
+      measured nothing, by decision, and the author fields it by hand.
+
+      ⚠️ **The trap for whoever measures next: `forge.FightSquads` does NOT refuse
+      a 3-vs-5 pairing — it silently fights it.** There is no unit-count comparison
+      anywhere in it; it resolves each squad through `Squad.Take` independently and
+      appends the two rosters (`internal/forge/squadfight.go`), and `battle.New`'s
+      only bound is `hex.BoardSlots`, nine a side
+      (`internal/core/battle/battle.go`). So the harness will happily fight — and
+      report a rate for — **a board no room would ever open**, since the gate
+      refuses exactly that mismatch. Any `s06` pairing against `s01`…`s05` is a
+      reading about a board the game cannot produce. Say which sizes were fought
+      beside any figure taken here. `forge.Census` is safe by shape rather than by
+      check — it substitutes into `squad.Units[0]` and fights the squad against
+      itself, so it is always equal-sized — but a census against `s06` is a **5v5
+      census** and costs proportionally more wall-clock.
+
+      ⚠️ **The composition prohibition, and it is the reason this squad is not what
+      `DAT-010` refused.** `s06` is the first board in the game on which any
+      composition bonus fires at all: it carries three ground units — Garchomp,
+      Dugtrio and Steelix, whose `ground` comes from the `CAST-003` stage element —
+      so `ground_root` reaches **rung 3**, `bedrock` ×2 to the three sharers.
+      Recorded in the repository's own voice by
+      `TestEveryBonusIsMeasuredAgainstEveryShippedFormation`, which moved from
+
+      ```
+      ground_root  element ground  rungs 2/3  reached by NO shipped formation, of the 7 walked
+      ```
+
+      to
+
+      ```
+      ground_root  element ground  rungs 2/3  reached by s06 (ground ×3)
+      ```
+
+      **A rate quoted off `s06` is NOT a price for that bonus.** Pricing a rung
+      needs the same squad, the same members and the same seeds with the rung gone
+      — `forge.FightSquads(home, away, seeds, "ground_root")`, which is
+      `composition.Book.Without` and `DAT-002` decision 4. Until such a run exists,
+      `docs/balance.md` § *Every composition-bonus figure is a probe reading, and
+      its squad has to be named* applies to anything read off this board.
+      **`DAT-010` stays open**: it asked for a board a bonus can be *priced* on,
+      and this is a board a bonus *fires* on — content, not an instrument. Its
+      candidate 1 was a probe squad used as an instrument, and its two stated costs
+      do not bind here (this PR quotes no rate, and no existing rate moves, because
+      `FightSquads` fights exactly the two squad ids it is handed).
+
+      **The derived constraint, worth writing down once.** `hex.FormationCols` is
+      3, so five units into three columns forces at least two to share one, by
+      pigeonhole: **"one unit per column" — the property `DAT-007` and `DAT-010`
+      both name as the shared cause of their findings — is arithmetically
+      unreachable at 5v5.** The question is not *whether* to stack but *how*.
+      `s06` is 2/2/1 across **all three** columns, so it keeps the three occupied
+      ranks `s02`…`s05` have; `DAT-007`'s ~253‰ came from a probe standing its
+      three units in **two** columns, and that item's own autopsy blames two units
+      in the first occupied rank plus the ace moving from depth 3 to depth 2.
+      ⚠️ **That figure was taken at 3v3 and is NOT re-taken here — quote the
+      mechanism (occupied-rank depth), never the number.**
+
+      **Rows `{0,2}` rather than `{0,1}` in both stacked columns is deliberate, and
+      it is what keeps `DAT-007`'s premise still standing.** `column`'s splash is
+      one step up and one step down, so two units at rows 0 and 2 are never both
+      caught by one column cast — the trick `s01` already uses. Confirmed by
+      `TestAShippedFormationIsCatchableByTheShapesItFields`, whose verdict clause
+      did not move: `column` still reads *"catches 2 on roster/ally, and 1 on every
+      board a rate is read off"*, with `s06/garchomp`, `s06/dugtrio` and
+      `s06/blissey` added to its fielded-by list. `splash_power` therefore stays
+      unreachable on every fought board. Rows `{0,1}` would make it reachable for
+      the first time, which is `DAT-007`'s open subject and wants **measuring**, not
+      shipping silently inside an unmeasured content change.
+
+      **What a second 5v5 squad unblocks:** the first legal 5v5 pairing; a control
+      that is not only a mirror; whether `DAT-002`'s rungs 4 and 5 — unblocked by
+      `ENG-013` and deliberately unauthored — can be reached at all; and whether
+      `DAT-007`'s area axis becomes live at five, which this squad's row choice
+      deliberately declined to decide.
+
+      **One sentence on the screen budget.** `ENG-013` flagged that no board fits
+      the declared row floor and that a side holding more units makes the roster
+      block longer. `s06` is the first shipped squad that can produce a five-a-side
+      board, so that stops being hypothetical — a pre-existing floor-versus-screen
+      problem rather than a blocker, and no golden sees it (`squads.json` reaches
+      none; the three golden-bearing packages delete it from their scratch data
+      directory), but it is the first thing the author will notice playing the
+      squad.
+
+      **Blast radius of the squad itself, for the record.** No golden moved. The
+      **data digest** did — `squads.json` is in both the `go:embed` line and
+      `dataFiles` — so a client on the previous build cannot join a room hosted on
+      this one. That is the peer-equality gate working, not a regression.
+
+      → `ENG-013`, `DAT-002`, `DAT-007`, `DAT-010`, `DAT-014`.
 
 - [x] `DAT-011` **Happiny's cleanser slot is twenty per mille under its design
       floor — EVERY LEVER IS NOW MEASURED AND CLOSED, and the floor turned out not to
@@ -5439,6 +5548,71 @@ is only so the shape is readable.
       may be reused, and § *Grow the cast* above says why that is not a problem.
       Authoring one is the *Grow the cast* item above, not a separate task — this
       entry is the queue, not the work.
+- [ ] `CAST-004` **`pokemon.lapras` has no catalogue entry at all, and it needs two
+      — one per half of its dual.** Filed 2026-09-09 beside `DAT-015`; no work has
+      been done on it.
+
+      **The subject.** Two builds in `builds.json`, one per half. The **ice**
+      direction draws its four slots from `ice_shard`, `ice_beam`, `blizzard`,
+      `ice_wall` and `hail`; the **water** direction from `water_gun`,
+      `bubble_beam`, `water_pulse`, `brine` and `hydro_pump`. Both at level 60.
+      Lapras has a **single stage**, so there is no stage choice and no fork to
+      author — the only axes are the four skill slots and the one trait.
+
+      **Why it is two builds or none.**
+      `TestABuildIsACatalogueOfChoicesRatherThanOfKits` requires a character listed
+      in the catalogue to have at least two directions — a single entry is a kit
+      rather than a catalogue — so this is two or nothing. Lapras is one of the
+      characters with **no** catalogue entry at all; measured against
+      `builds.json` today the uncovered set is `pokemon.lapras`, `pokemon.oddish`
+      and `pokemon.riolu`, plus the hidden `naruto.naruto`.
+      ⚠️ **`pokemon.torchic` is NOT on that list** — it already ships
+      `torchic.rush` and `torchic.scald` — so do not carry a four-name version of
+      this sentence forward; run the join rather than reading a count off it, the
+      `CAST-002` rule.
+
+      ⚠️ **`blizzard` and `hail` are squad picks nothing plays.** `forge.seedKit`
+      takes the first four learnset entries (`internal/forge/spar.go`) and Lapras's
+      shipped duel kit is therefore `ice_shard ice_beam water_gun withdraw`, so
+      neither area skill is ever fielded by a spar. `hail` in particular is
+      `target: all` — `CAST-001` measured it **saturating in both directions**
+      (power 800 → 0.0%, 450 → ~100%) and deliberately left it alone. **A build
+      naming either is the only thing that would field it**, which is half of why
+      this entry is worth the work.
+
+      ⚠️ **`CAST-001`'s open finding, carried across whole, because it is what makes
+      the two-build split the honest shape for this character.** The ice half costs
+      Lapras the water matchup outright: `pokemon.squirtle` takes **62.0%** off
+      `pokemon.charmander` and Lapras takes **0.0% of 400**, because fire answers
+      ice on the cross chain while water answers fire on the organic one, and the
+      pair reads the worse half. That is an authoring judgement rather than a bug —
+      and a **water build is a build that opts out of that loss**, which is a
+      direction rather than a preference.
+
+      **The bar is `DAT-013`'s standard: each build must be its direction's sweep
+      optimum, measured, or it is padding.** Concretely — sweep each of the four
+      slots against the alternatives the learnset offers *within that direction*,
+      and sweep the trait (`endurance` at 16, `composure` at 32 — only two, so the
+      trait sweep is small), on a **named shell**, both ways round, with `Endless`
+      beside every rate and nothing quoted off a saturated row. The two shapes a
+      direction may legitimately take are already on record: `DAT-011`'s
+      `tendBuild`, a full sweep (244, 6 and −84 per mille per slot), and
+      `DAT-013`'s `hexBuild`, a **lean** rather than a purity. Each build must fill
+      four skill slots and one trait slot and carry an `intent`
+      (`TestEveryShippedBuildFillsItsSlotsAndSaysWhyItExists`), needs a hardcoded
+      row in `TestTheShippedBuildsAreTheOnesTheTestsMeasure`'s design table, and
+      needs a `var` beside `tendBuild` in `internal/seed/newbuilds_test.go`
+      carrying its sweep as a comment.
+
+      ⚠️ **Blast radius, and it is the opposite of `DAT-015`'s.** `squads.json`
+      reaches no golden; **`builds.json` does** — both
+      `cmd/hexforge-tui/testdata/screens.golden` and
+      `internal/screen/testdata/screens.golden` draw the builds screen with entries
+      and Vietnamese names visible. So `CAST-004` will move **two** goldens where
+      `s06` moved none. Accept them with `make golden`, never
+      `go test ./... -update`, and read the diff.
+
+      → `CAST-001`, `DAT-011`, `DAT-013`.
 - [ ] `DAT-002` **Squad composition bonuses: the mechanism, both axes, the reference
       screen and the WHOLE per-element table are BUILT. What is left is the top
       rungs, one uncovered element, and one collision.**

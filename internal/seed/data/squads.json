@@ -314,6 +314,107 @@
           ]
         }
       ]
+    },
+    {
+      "id": "s06",
+      "name": "chôn chân",
+      "units": [
+        {
+          "id": "garchomp",
+          "character": "pokemon.gible",
+          "level": 60,
+          "stage": "Garchomp",
+          "slot": {
+            "col": 2,
+            "row": 0
+          },
+          "skills": [
+            "dig",
+            "stone_edge",
+            "earthquake",
+            "sand_tomb"
+          ],
+          "passives": [
+            "swiftness"
+          ]
+        },
+        {
+          "id": "dugtrio",
+          "character": "pokemon.diglett",
+          "level": 60,
+          "stage": "Dugtrio",
+          "slot": {
+            "col": 2,
+            "row": 2
+          },
+          "skills": [
+            "earthquake",
+            "stone_edge",
+            "dig",
+            "burrow"
+          ],
+          "passives": [
+            "elusive"
+          ]
+        },
+        {
+          "id": "steelix",
+          "character": "pokemon.onix",
+          "level": 60,
+          "stage": "Steelix",
+          "slot": {
+            "col": 1,
+            "row": 0
+          },
+          "skills": [
+            "taunt",
+            "wide_guard",
+            "stone_edge",
+            "dig"
+          ],
+          "passives": [
+            "thorns"
+          ]
+        },
+        {
+          "id": "raichu",
+          "character": "pokemon.pichu",
+          "level": 60,
+          "stage": "Raichu",
+          "slot": {
+            "col": 1,
+            "row": 2
+          },
+          "skills": [
+            "volt_tackle",
+            "thunderbolt",
+            "nuzzle",
+            "thunder_shock"
+          ],
+          "passives": [
+            "static"
+          ]
+        },
+        {
+          "id": "blissey",
+          "character": "pokemon.happiny",
+          "level": 60,
+          "stage": "Blissey",
+          "slot": {
+            "col": 0,
+            "row": 1
+          },
+          "skills": [
+            "egg_bomb",
+            "safeguard",
+            "heal_bell",
+            "soft_boiled"
+          ],
+          "passives": [
+            "endurance"
+          ]
+        }
+      ]
     }
   ]
 }

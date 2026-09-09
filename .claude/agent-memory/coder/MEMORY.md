@@ -69,3 +69,4 @@ here now, and new ones belong here.
 - [A golden can be red before you touch it](feedback_a_golden_can_be_red_before_you_touch_it.md) — 24 lines were the PREVIOUS commit's debt; prove it with `git archive HEAD`, never a shared stash
 - [An uncommitted harness leaves only a shape](feedback_an_uncommitted_harness_leaves_only_a_shape.md) — 400/400/0 never reproduced; 3 fixtures gave 462/464/410 and the same cliff. Run the CONTROL
 - [A spar golden is fought from the cast](feedback_a_spar_golden_is_fought_from_the_cast.md) — "no golden moves" reasoned over roster.json; naruto's duel moved 58→60. Prove causation by pinning the line back
+- [Diff the verdict clause, not the log line](feedback_diff_the_verdict_clause_not_the_log_line.md) — the fielded-by list grows on ANY addition; the branch move reads as :264→:256; a data-only change scores risk 0.00
