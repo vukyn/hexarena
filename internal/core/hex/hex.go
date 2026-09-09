@@ -49,8 +49,29 @@ const (
 	FormationCols = 3
 	// FormationRows mirrors Rows and exists for symmetry at call sites.
 	FormationRows = Rows
-	// MaxTeamSize is how many of the nine formation slots a team may fill.
-	MaxTeamSize = 5
+	// BoardSlots is how many units one side may have standing at once: every
+	// formation slot, which is what the board itself admits.
+	//
+	// Derived from the grid rather than written out, because it is a claim
+	// ABOUT the grid — a literal here could drift from the formation it says it
+	// is the whole of, and nothing would notice.
+	//
+	// It is deliberately NOT MaxSquadSize. This is the board's bound; that one
+	// is the roster's, and the difference between the two is the room a summon
+	// stands in (→ ENG-013).
+	BoardSlots = FormationCols * FormationRows
+	// MaxSquadSize is the most units a side is ever fielded with: the largest
+	// squad a builder may save, a draft may pick, and a roster may bring.
+	//
+	// It is deliberately NOT BoardSlots. That one is the BOARD's bound — every
+	// formation slot — and the difference between the two is the room a summon
+	// stands in. A single constant doing both jobs is what made every summoning
+	// skill a dead slot at the largest board (→ ENG-013).
+	//
+	// This package does not know what a format is and must not learn: the
+	// formats are declared in internal/wire, which imports this package, and
+	// TestTheLargestFormatIsTheSquadCap holds the two in step from that side.
+	MaxSquadSize = 5
 )
 
 // Side identifies which half of the battlefield a coordinate belongs to.

@@ -107,11 +107,13 @@ func TestShippedRosterIsUsable(t *testing.T) {
 	}
 	for _, side := range []hex.Side{hex.SideAlly, hex.SideEnemy} {
 		// A bound, not a count: the shipped roster is the cast, and it grows as
-		// characters are authored. A full team is what the board allows, not
-		// what the game currently holds.
-		if perSide[side] < 1 || perSide[side] > hex.MaxTeamSize {
+		// characters are authored. A full team is what a side may be FIELDED
+		// with, not what the game currently holds — the board admits more
+		// (hex.BoardSlots), and the gap between the two is where a summon
+		// stands, which is not something a roster may author into.
+		if perSide[side] < 1 || perSide[side] > hex.MaxSquadSize {
 			t.Errorf("the %s side has %d units, want between 1 and %d",
-				side, perSide[side], hex.MaxTeamSize)
+				side, perSide[side], hex.MaxSquadSize)
 		}
 	}
 	// Reaching every corner of the chart is a property of the bench, which

@@ -483,51 +483,52 @@ func TestTheConfigurationIsRefusedInTheRoomsOwnWords(t *testing.T) {
 	}
 }
 
-// TestFiveASideIsHeldBackHereAndNowhereElse holds both halves of a decision that
-// is easy to half-do: the format is refused at the flag, and it is still a
-// format the protocol knows.
+// TestFiveASideIsOpenAndTheGapIsWhyItCanBe is what the held-back test became.
 //
-// ⚠️ Taking Format5v5 out of wire.Format.Valid would be the tempting "finish the
-// job", and it is a **protocol change** — two peers have to keep agreeing about
-// what the format field can hold whichever of them is a version ahead. So the
-// refusal lives at the only place in this repository where a format is chosen,
-// and the wire is left alone. Both clauses are asserted, because a test for the
-// refusal alone would go green on the day somebody deleted the constant.
-func TestFiveASideIsHeldBackHereAndNowhereElse(t *testing.T) {
+// ⚠️ **The guard it replaces was removed on a measurement, and this test carries
+// the reason so the removal cannot quietly stop being justified.** Five a side
+// was refused because a summon lives in the gap between what a side FIELDS and
+// what the board ADMITS, and one constant was both, so at the largest format
+// there was no gap and every summoning skill was a dead slot (→ ENG-013). The
+// constant is now two, and the gap is `hex.BoardSlots - hex.MaxSquadSize`.
+//
+// Three clauses, and each fails for its own reason:
+//
+//   - the flag no longer refuses a 5v5 — asserted through an UNRELATED refusal,
+//     because run() would otherwise listen and serve a whole match. The same
+//     shape the three-a-side clause has always used.
+//   - wire.Format5v5 is still valid on the wire. It always was, deliberately:
+//     taking it out of Format.Valid would be a protocol change, and two peers a
+//     version apart have to keep agreeing what the format field can hold.
+//   - **there is a gap, and it is what a summon stands in.** This is the old
+//     third clause inverted. It asserted that the largest format was at least
+//     the one old cap, and it went red the moment that cap was split, which is
+//     exactly what it was written to do; what replaces it goes red if the two
+//     constants are ever collapsed back into one.
+func TestFiveASideIsOpenAndTheGapIsWhyItCanBe(t *testing.T) {
 	out, errs := newPaper(), newPaper()
-	err := run([]string{"-format", "5", "-advertise", documented}, out.on, errs.on)
-	if err == nil {
-		t.Fatal("a 5v5 room was opened, and five a side is meant to be held back")
+	if err := run([]string{"-format", "5", "-battles", "9", "-advertise", documented}, out.on, errs.on); err == nil ||
+		strings.Contains(err.Error(), "five a side") {
+		t.Errorf("a 5v5 is still held back at the flag: %v", err)
 	}
-	if !strings.Contains(err.Error(), "five a side is not offered yet") {
-		t.Errorf("the refusal does not say what was refused: %v", err)
-	}
-	// ⚠️ The other half. The wire still knows the format, and a refusal that
-	// worked because the constant had been deleted would be a different change
-	// wearing this one's test.
 	if !wire.Format5v5.Valid() {
-		t.Error("wire.Format5v5 is no longer valid on the wire, which is a protocol change this refusal was chosen to avoid")
+		t.Error("wire.Format5v5 is no longer valid on the wire, which is a protocol change nothing here asked for")
 	}
-	// And three a side is still opened, so the guard is a guard and not an off
-	// switch for the flag.
+	// And three a side is still opened, so nothing above is a guard that has
+	// become an off switch for the flag.
 	if err := run([]string{"-format", "3", "-battles", "9", "-advertise", documented}, out.on, errs.on); err == nil ||
 		strings.Contains(err.Error(), "five a side") {
-		t.Errorf("a 3v3 was refused by the five-a-side guard: %v", err)
+		t.Errorf("a 3v3 was refused by a five-a-side guard: %v", err)
 	}
-
-	// ⚠️ **The third clause is the REASON, and it is the one that has to go red
-	// when the reason stops holding.** Five a side was measured on 2026-09-08:
-	// the board resolves, the mirror is exactly even, and screening is worth more
-	// there than at three — the one thing that breaks is summoning, because a
-	// summon fills the gap between a side's strength and hex.MaxTeamSize and the
-	// largest format leaves no gap. So the refusal above is justified exactly
-	// while the format is at least the cap. Raise the cap (→ ENG-013) and this
-	// line reddens, which is the moment to re-decide rather than to notice later
-	// that a guard has outlived its argument.
-	if wire.Format5v5.Units() < hex.MaxTeamSize {
-		t.Errorf("the largest format fields %d units against a team cap of %d, so a full "+
-			"side now has room for a summon: the refusal above is held by a reason that "+
-			"no longer applies", wire.Format5v5.Units(), hex.MaxTeamSize)
+	if hex.MaxSquadSize >= hex.BoardSlots {
+		t.Errorf("a side is fielded with %d of the board's %d slots, so a full side has no "+
+			"room for a summon and the reason five a side was held back is back",
+			hex.MaxSquadSize, hex.BoardSlots)
+	}
+	if wire.Format5v5.Units() != hex.MaxSquadSize {
+		t.Errorf("the largest format fields %d units against a squad cap of %d: the format "+
+			"a host may open and the cap the core layers count to have parted company",
+			wire.Format5v5.Units(), hex.MaxSquadSize)
 	}
 }
 

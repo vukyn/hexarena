@@ -451,12 +451,27 @@ func TestNewRejects(t *testing.T) {
 				Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100), Skills: []string{"strike"}})
 			return r
 		}, "both sit at"},
-		{"more than a full team", func() []battle.Roster {
+		{"more than the board admits", func() []battle.Roster {
 			r := clone()
-			for i := 0; i < hex.MaxTeamSize; i++ {
+			// hex.BoardSlots bodies on top of the ally already standing is one
+			// too many for the board. The free slots come first and the taken
+			// one last on purpose: enlist counts the side BEFORE it looks at the
+			// cell, so the overflowing body is refused for being one too many
+			// rather than for the cell it chose, which is what this case is
+			// about — a list that collided earlier would assert the other guard.
+			taken := r[0].Slot
+			slots := make([]hex.Offset, 0, hex.BoardSlots)
+			for col := range hex.FormationCols {
+				for row := range hex.Rows {
+					if slot := (hex.Offset{Col: col, Row: row}); slot != taken {
+						slots = append(slots, slot)
+					}
+				}
+			}
+			slots = append(slots, taken)
+			for i, slot := range slots {
 				r = append(r, battle.Roster{
-					ID: string(rune('m' + i)), Side: hex.SideAlly,
-					Slot:     hex.Offset{Col: i % hex.FormationCols, Row: i / hex.FormationCols},
+					ID: string(rune('m' + i)), Side: hex.SideAlly, Slot: slot,
 					Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100), Skills: []string{"strike"},
 				})
 			}

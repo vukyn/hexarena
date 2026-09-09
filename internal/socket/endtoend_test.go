@@ -228,7 +228,7 @@ func TestTwoRealClientsFightAWholeBo3OverALoopbackListener(t *testing.T) {
 // coder/websocket's own 32 KiB default; it comes to under three thousand bytes,
 // and the constant moved from a megabyte to 64 KiB on that reading.
 //
-// ⚠️ It measures a **5v5**, which is hex.MaxTeamSize a side and the largest a
+// ⚠️ It measures a **5v5**, which is hex.MaxSquadSize a side and the largest a
 // legal room can produce, and it needs no room and no socket: the bytes are a
 // property of the message.
 //

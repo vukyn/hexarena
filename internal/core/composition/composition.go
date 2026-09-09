@@ -553,9 +553,15 @@ func parseBonus(entry bonusFile, deps Deps) (Bonus, error) {
 				"bonus %q has a rung at %d: a threshold starts at %d, because one unit shares nothing with anybody",
 				entry.ID, rung.At, MinimumRung)
 		}
-		if rung.At > hex.MaxTeamSize {
+		// The ceiling is the ROSTER's, not the board's. An award is resolved in
+		// battle.New while the roster is still a slice of facts and nothing
+		// recounts, so a summon never earns one — the count a rung is measured
+		// against can never exceed what a side was fielded with. Read against
+		// hex.BoardSlots this would declare rungs legal that no count reaches,
+		// which is the vacuous row DAT-002's decision 6 refuses.
+		if rung.At > hex.MaxSquadSize {
 			return Bonus{}, fmt.Errorf("bonus %q has a rung at %d, which no side of %d can reach",
-				entry.ID, rung.At, hex.MaxTeamSize)
+				entry.ID, rung.At, hex.MaxSquadSize)
 		}
 		if len(parsed.Rungs) > 0 && rung.At <= parsed.Rungs[len(parsed.Rungs)-1].At {
 			return Bonus{}, fmt.Errorf("bonus %q lists its rungs out of order at %d; a ladder is written from the bottom",

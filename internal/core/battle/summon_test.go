@@ -213,11 +213,17 @@ func TestAFixedStatLineIgnoresItsCallerEntirely(t *testing.T) {
 // TestASideAtTheTeamCapSummonsNobody is the other end of the arm below, and it
 // is the one that says what the largest format means.
 //
-// A summon lives in the **gap** between how many a side is fielding and how many
-// the board admits — `summonPlaces` reads `hex.MaxTeamSize - perSide`. A side one
-// short of the cap gets one copy, which the test below holds; a side **at** the
-// cap gets none, and since the largest format fields exactly `MaxTeamSize` units
-// that is the whole of why five a side cannot summon at all.
+// A summon lives in the **gap** between how many a side is standing and how many
+// the board admits — `summonPlaces` reads `hex.BoardSlots - perSide`. A side one
+// short of the board gets one copy, which the test below holds; a side **at** the
+// board gets none, because there is no gap left.
+//
+// ⚠️ **This is a BOARD claim and it was a format claim by accident.** Until
+// ENG-013 one constant was both, so a side at the largest format was also a side
+// at the board and this test read as "five a side cannot summon at all". It does
+// not say that any more, and must not: hex.MaxSquadSize is what a side is fielded
+// with and hex.BoardSlots is what the board admits, and the whole point of the
+// split is that the first is smaller than the second.
 //
 // ⚠️ **The cast is forced rather than suggested here on purpose.** The rating
 // declining it is a different claim, and a test that only drove Suggest could not
@@ -251,7 +257,7 @@ func TestASideAtTheTeamCapSummonsNobody(t *testing.T) {
 		{Col: 2, Row: 0}, {Col: 2, Row: 2}, {Col: 1, Row: 0}, {Col: 1, Row: 1},
 		{Col: 1, Row: 2}, {Col: 0, Row: 0}, {Col: 0, Row: 1}, {Col: 0, Row: 2},
 	} {
-		if len(roster) >= hex.MaxTeamSize+1 {
+		if len(roster) >= hex.BoardSlots+1 {
 			break
 		}
 		roster = append(roster, battle.Roster{
@@ -261,45 +267,61 @@ func TestASideAtTheTeamCapSummonsNobody(t *testing.T) {
 		})
 	}
 	fight := mustBattle(t, books(t), 5, roster)
-	if perSide := livingOn(fight, hex.SideAlly); perSide != hex.MaxTeamSize {
-		t.Fatalf("the ally side holds %d units, and this measures a side at the cap of %d",
-			perSide, hex.MaxTeamSize)
+	if perSide := livingOn(fight, hex.SideAlly); perSide != hex.BoardSlots {
+		t.Fatalf("the ally side holds %d units, and this measures a side filling all %d "+
+			"formation slots", perSide, hex.BoardSlots)
 	}
 	if came := arrivals(casts(t, fight, "swarm")); len(came) != 0 {
-		t.Errorf("a swarm cast by a side already at the cap put down %d units, want none: "+
-			"a summon fills the gap between the side's strength and the cap, and there "+
-			"is no gap", len(came))
+		t.Errorf("a swarm cast by a side already filling the board put down %d units, "+
+			"want none: a summon fills the gap between the side's strength and the "+
+			"board, and there is no gap", len(came))
 	}
-	if perSide := livingOn(fight, hex.SideAlly); perSide != hex.MaxTeamSize {
-		t.Errorf("the ally side holds %d units after the cast, want the cap of %d",
-			perSide, hex.MaxTeamSize)
+	if perSide := livingOn(fight, hex.SideAlly); perSide != hex.BoardSlots {
+		t.Errorf("the ally side holds %d units after the cast, want the board's %d",
+			perSide, hex.BoardSlots)
 	}
 }
 
 // TestASummonTakesTheFrontSlotsAndStopsWhenTheyRunOut is the board's own answer,
 // and the reason a count is a request rather than a promise.
 func TestASummonTakesTheFrontSlotsAndStopsWhenTheyRunOut(t *testing.T) {
-	// Four allies already standing, so the fifth slot is the last one and a
-	// swarm of three can only put down one.
-	fight := mustBattle(t, books(t), 5, []battle.Roster{
-		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+	// Every ally slot but one is already standing, so there is exactly one place
+	// left and a swarm of three can only put down one. Built off hex.BoardSlots
+	// rather than counted out, because what makes this the board's answer is
+	// that the board is full but for a single cell — a count written as four
+	// said that only while the fielding cap and the board's happened to be the
+	// same number.
+	caster := hex.Offset{Col: 2, Row: 1}
+	spare := hex.Offset{Col: 0, Row: 2}
+	roster := []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: caster,
 			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 200),
 			Skills: []string{"swarm", "jab"}},
-		{ID: "a2", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
-			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 10), Skills: []string{"lob"}},
-		{ID: "a3", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 2},
-			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 10), Skills: []string{"lob"}},
-		{ID: "a4", Side: hex.SideAlly, Slot: hex.Offset{Col: 1, Row: 1},
-			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 10), Skills: []string{"lob"}},
 		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 5), Skills: []string{"jab"}},
-	})
+	}
+	for col := range hex.FormationCols {
+		for row := range hex.Rows {
+			slot := hex.Offset{Col: col, Row: row}
+			if slot == caster || slot == spare {
+				continue
+			}
+			roster = append(roster, battle.Roster{
+				ID: "crowd" + slot.String(), Side: hex.SideAlly, Slot: slot,
+				Affinity: single("neutral"), Stats: stats(3000, 800, 400, 10),
+				// lob rather than jab: the back rows are out of a jab's reach and
+				// the crowd is here to fill the side, not to fight.
+				Skills: []string{"lob"},
+			})
+		}
+	}
+	fight := mustBattle(t, books(t), 5, roster)
 	came := arrivals(casts(t, fight, "swarm"))
 	if len(came) != 1 {
 		t.Fatalf("a swarm of three on a side with one slot left put down %d, want one", len(came))
 	}
-	if perSide := livingOn(fight, hex.SideAlly); perSide != 5 {
-		t.Errorf("the ally side holds %d units, want the maximum of 5", perSide)
+	if perSide := livingOn(fight, hex.SideAlly); perSide != hex.BoardSlots {
+		t.Errorf("the ally side holds %d units, want the board's %d", perSide, hex.BoardSlots)
 	}
 }
 
@@ -656,8 +678,19 @@ func TestASummonTheBoardHasNoRoomForIsNotPricedAtAll(t *testing.T) {
 	if got := suggested(t, []string{"swarm", "jab"}); got != "swarm" {
 		t.Fatalf("the control picked %q, so this measures nothing", got)
 	}
-	// Five on a side is hex.MaxTeamSize, so nothing else may stand there however
-	// many formation slots are empty.
+	// A side standing in every one of hex.BoardSlots formation slots has nowhere
+	// left to put a copy.
+	//
+	// ⚠️ **This fixture used to separate the two bounds and cannot any more, and
+	// that is a fact about the constants rather than a weakening of the test.**
+	// summonPlaces is bounded by the free slots AND by hex.BoardSlots - perSide;
+	// while the second was the fielding cap of five, a side of five with a free
+	// slot told them apart, which is why the crowd below used to leave 2,2 empty.
+	// hex.BoardSlots is FormationCols*FormationRows and census gives every
+	// counted unit a distinct cell, so len(free) and the room are now equal by
+	// construction and no board can disagree with them. What is still worth
+	// holding is the behaviour: a side with nowhere to put a copy is not charged
+	// for one. → ENG-013 for the follow-up.
 	roster := []battle.Roster{
 		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 120),
@@ -666,22 +699,20 @@ func TestASummonTheBoardHasNoRoomForIsNotPricedAtAll(t *testing.T) {
 			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100),
 			Skills: []string{"jab"}},
 	}
-	// ⚠️ The crowd leaves 2,2 empty on purpose, and that is what makes this
-	// measure the room rather than the reach. Only two cells on this side are
-	// within a jab of the duel slot — the caster's own and 2,2 — so a board whose
-	// every free slot were out of range would price a copy at nothing whatever
-	// the strength bound said, and a mutation dropping that bound would pass.
-	for _, slot := range []hex.Offset{
-		{Col: 2, Row: 0}, {Col: 1, Row: 0}, {Col: 1, Row: 1}, {Col: 1, Row: 2},
-	} {
-		roster = append(roster, battle.Roster{
-			ID: "crowd" + slot.String(), Side: hex.SideAlly, Slot: slot,
-			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 1),
-			// lob rather than jab: New refuses a roster unit that cannot aim at
-			// anybody, and the back rows are two cells from the duel slot. The
-			// crowd is here to fill the side, not to fight.
-			Skills: []string{"lob"},
-		})
+	for col := range hex.FormationCols {
+		for row := range hex.Rows {
+			slot := hex.Offset{Col: col, Row: row}
+			if slot == (hex.Offset{Col: 2, Row: 1}) {
+				continue
+			}
+			roster = append(roster, battle.Roster{
+				ID: "crowd" + slot.String(), Side: hex.SideAlly, Slot: slot,
+				Affinity: single("neutral"), Stats: stats(3000, 800, 400, 1),
+				// lob rather than jab: the back rows are two cells from the duel
+				// slot. The crowd is here to fill the side, not to fight.
+				Skills: []string{"lob"},
+			})
+		}
 	}
 	fight := mustBattle(t, books(t), 7, roster)
 	prompt, err := fight.Advance()

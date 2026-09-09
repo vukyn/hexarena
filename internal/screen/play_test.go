@@ -152,8 +152,8 @@ func TestTheBattleFixtureIgnoresTheCastFileOrder(t *testing.T) {
 // count of rows and not a roster anybody would field.
 func aSquadOfSide(t *testing.T, c Context, side int) placement.Squad {
 	t.Helper()
-	if side < 1 || side > hex.MaxTeamSize {
-		t.Fatalf("a side of %d is outside the %d a squad may field", side, hex.MaxTeamSize)
+	if side < 1 || side > hex.MaxSquadSize {
+		t.Fatalf("a side of %d is outside the %d a squad may field", side, hex.MaxSquadSize)
 	}
 	characters := c.Lib.Characters().All()
 	if len(characters) == 0 {
@@ -830,7 +830,7 @@ const (
 // tui.Order is one, the log asks for PlayLogWanted and the option list is one plus
 // a row an option — so a 1v1 wants twenty of those rows before a single blank or
 // log line, a 3v3 twenty-four and a 5v5 **twenty-eight**. A legal squad is up to
-// hex.MaxTeamSize a side, so twenty-eight is the floor for one, and a summon puts
+// hex.MaxSquadSize a side, so twenty-eight is the floor for one, and a summon puts
 // units on the board past the five a squad brought.
 //
 // What was fixable is **where the cut lands**. A client's frame cuts from the
@@ -846,7 +846,7 @@ const (
 // and five a side, the last being the largest a squad may field.
 var (
 	playHeights = heightsFrom(MinHeight, 48)
-	playSides   = []int{1, 3, hex.MaxTeamSize}
+	playSides   = []int{1, 3, hex.MaxSquadSize}
 )
 
 func heightsFrom(low, high int) []int {
@@ -1186,7 +1186,7 @@ func TestTheBattleScreenDropsInTheOrderItStates(t *testing.T) {
 func TestTheRosterIsClippedARowAtATime(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		c, _ := start(t, lang)
-		base := atABattleOf(t, c, hex.MaxTeamSize)
+		base := atABattleOf(t, c, hex.MaxSquadSize)
 		base.Aiming = true
 		units := len(base.Fight.Units())
 		clipped := 0

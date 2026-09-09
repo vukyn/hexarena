@@ -1120,7 +1120,7 @@ func PlayBodyRoom(height int) int { return height - 4 }
 // Measured at the declared 120x24 floor, where the body's purse is twenty rows:
 // the heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a
 // unit, tui.Order is one, the log asks for PlayLogWanted, and the option list is
-// one plus a row an option. A legal squad is up to hex.MaxTeamSize a side, so
+// one plus a row an option. A legal squad is up to hex.MaxSquadSize a side, so
 // **28 rows is the floor for a 5-a-side pairing** before a single blank or log
 // line — and a summon puts units on the board past the five the squad brought,
 // up to the nine formation slots a side, which is board + roster = 29 on its

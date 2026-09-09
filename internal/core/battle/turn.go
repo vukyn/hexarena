@@ -735,7 +735,7 @@ func (b *Battle) reachableRanks(unit *Unit, known skill.Skill) map[hex.Offset]bo
 // Several taunters are not an ambiguity, only a smaller list: every one of them
 // is a legal aim and nobody else is.
 func (b *Battle) taunters(unit *Unit) []hex.Offset {
-	out := make([]hex.Offset, 0, hex.MaxTeamSize)
+	out := make([]hex.Offset, 0, hex.BoardSlots)
 	for _, cell := range hex.Cells() {
 		if !skill.Enemy.Reaches(unit.Side, cell.Side()) {
 			continue

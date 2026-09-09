@@ -88,7 +88,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-010` | refused | The queue as a third tie-break key |
 | `ENG-011` | done | `main` did not build, and no conflict was raised |
 | `ENG-012` | done | A pattern's splash is walked in absolute board directions — FIXED, the walk is the caster's frame now and the control arm closes |
-| `ENG-013` | open | A summon lives in the gap between the format and the team cap, and at five a side there is no gap |
+| `ENG-013` | done | A summon lives in the gap between the format and the team cap, and at five a side there is no gap — SPLIT, `hex.BoardSlots` against `hex.MaxSquadSize`, and five a side is open |
 | `RAT-001` | shipped | The opponent |
 | `RAT-002` | shipped | Measuring the opponent |
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
@@ -5088,9 +5088,16 @@ is only so the shape is readable.
             one is the **fixture**: the fourth and fifth bodies are the electric
             ones, so the count arrives with them rather than with the board size.
 
-            **The hold-back therefore stays, for the measured reason rather than
-            the invented one**, and what it now waits on is `ENG-013`.
-            → `docs/balance.md` § *Five a side, read at last*.
+            **The hold-back stayed for the measured reason rather than the
+            invented one, and `ENG-013` has now closed it.** The cap was one
+            constant doing two jobs; it is two now — `hex.BoardSlots` (nine, what
+            the board admits) against `hex.MaxSquadSize` (five, what a side is
+            fielded with) — so a full 5v5 side has four cells a summon can stand
+            in, and `cmd/hexarena-host` no longer refuses `-format 5`. Re-measured
+            on the same mirrored protocol: 5v5 goes from **0** casts and 0
+            arrivals to hundreds of each, the mirror stays 500‰ exactly with
+            nought endless over 200 battles at every size, and **3v3 does not move
+            at all**. → `docs/balance.md` § *Five a side, read at last*.
 
 - [ ] `CLI-001` **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long
@@ -5748,7 +5755,16 @@ is only so the shape is readable.
       6. **Rungs 2 and 3 only, for now.** 3v3 is the format that exists, so a
          bonus ships with the rungs its format can reach and nothing else — rungs
          **4 and 5 are authored later**, as part of opening 5v5, and are tested
-         then. ⚠️ Read the difference: this is *not* option (A) with the top rungs
+         then. ⚠️ **5v5 opened on 2026-09-09 (→ `ENG-013`), so rungs 4 and 5 are
+         now REACHABLE and still UNAUTHORED — deliberately.** That item split the
+         team cap and pointed this ceiling at `hex.MaxSquadSize`, which is
+         numerically unchanged at five, so `bonuses.json` parses exactly as before
+         and nothing moved; what changed is that a side can now be five and a rung
+         at four or five can fire. This clause is what says they may not be
+         written without their own measurements, and
+         `TestARungAboveTheLargestSquadIsRefused` is what stops the ceiling being
+         quietly widened to the board's nine, which would let rungs 6 to 9 be
+         declared and never fire. ⚠️ Read the difference: this is *not* option (A) with the top rungs
          left quiet. A rung that cannot fire is not declared at all, so there is
          no row for a test to pass vacuously over, and the day 5v5 opens the new
          rungs arrive **with** their measurements rather than inheriting a claim
@@ -6880,42 +6896,96 @@ is only so the shape is readable.
       `thorns`, `ballast` and `static` reply), so nothing changes on today's data —
       but the *rule* would allow one, and this is the site that would be wrong.
 
-- [ ] `ENG-013` **A summon lives in the gap between the format and the team cap, and
+- [x] `ENG-013` **A summon lives in the gap between the format and the team cap, and
       at five a side there is no gap.** Raised 2026-09-08 by reading the balance at
       five a side, which is the one thing `NET-001`'s last sub-item was waiting on.
+      **Closed 2026-09-09 by splitting the constant, and five a side is open.**
 
-      `hex.MaxTeamSize` is **five**, and it is doing two jobs: it is the widest
-      team the board admits *and* it is the size of the largest format. So a full
-      5v5 side computes `room = MaxTeamSize - 5 = 0` in `battle.summonPlaces`,
-      `summonWorth` prices every summoning skill at nought, and `Suggest` never
-      casts one. Measured, mirrored, 100 seeds: `split` cast **400** times at three
+      `hex.MaxTeamSize` was **five**, and it was doing two jobs: it was the widest
+      team the board admits *and* it was the size of the largest format. So a full
+      5v5 side computed `room = MaxTeamSize - 5 = 0` in `battle.summonPlaces`,
+      `summonWorth` priced every summoning skill at nought, and `Suggest` never
+      cast one. Measured, mirrored, 100 seeds: `split` cast **400** times at three
       a side, **400** at four, **0** at five, with copies arriving on the same
-      counts. The cliff is exactly at the cap.
+      counts. The cliff was exactly at the cap, and a probe at seven put the counts
+      back, which is what said it was the cap and not the format.
 
-      ⚠️ **It is the cap and not the format**, and a probe says so rather than an
-      argument: with the constant raised to seven, the same 5v5 board reads 400
-      casts and 400 arrivals again, still resolves, and the mirror is still exactly
-      500‰. Nothing else about five a side is broken — → `NET-001` for the table.
+      **The shape shipped is a fourth one, and it is the one none of the three
+      considered was.** The three were: raise the cap (makes a seven- or nine-unit
+      *roster* legal, and moves `composition`'s rung ceiling); make the cap a
+      function of the format (a rule crossing the layer line, since
+      `internal/core/battle` has no notion of a format on purpose); or declare
+      summoning dead at 5v5 (a skill that works at one format and not another,
+      which no screen has anywhere to say). The fourth is that **the constant was
+      two constants all along**:
 
-      **What it costs to fix is a decision, not a line.** Raising the cap means
-      deciding what the board is for: `battle.New` refuses a side over it,
-      `composition.ParseBook` refuses a rung above it, the squad builder and the
-      draft both count to it, `placement.Squad.Validate` reads it, and the battle
-      screen draws a formation sized by it. Three shapes were considered and none is
-      obviously right:
-      - **Raise it to seven or nine.** Cheapest to write and it makes a summon work
-        at every format. It also makes a *seven-unit roster* legal, which is a board
-        nobody has designed, and it moves `composition`'s rung ceiling.
-      - **Make the cap a function of the format.** Honest, and `internal/core/battle`
-        has no notion of a format on purpose: a roster is a list of facts, so the cap
-        would have to arrive as a parameter, which is a rule crossing the layer line.
-      - **Ship five a side with summoning declared dead there** and have the draft
-        refuse a summoning pick at that format. Smallest code, worst reading: a
-        skill that works at one format and not another is a rule no screen currently
-        has anywhere to say.
+      - `hex.BoardSlots = FormationCols * FormationRows` — nine, what the board
+        admits, derived from the grid rather than written out so it cannot drift
+        from the formation it claims to be the whole of. Read by
+        `battle.summonPlaces`, `battle.enlist` and two capacity hints.
+      - `hex.MaxSquadSize = 5` — what a side is *fielded* with. Read by
+        `placement.Squad.Validate`, the squad builder, the room gate, the draft
+        and `composition`'s rung ceiling.
 
-      Until it is settled `cmd/hexarena-host` refuses `-format 5` and says why, in
-      those words.
+      `internal/core/battle` gains no notion of a format, so the layer line is not
+      crossed; `hex` is the leaf all five readers already import, and
+      `internal/wire`'s `TestTheLargestFormatIsTheSquadCap` holds the cap in step
+      with the formats **from the layer that knows what a format is**.
+
+      ⚠️ **The price, accepted out loud and pinned rather than commented:
+      `battle.New` now admits a NINE-unit roster.** That is the "a board nobody has
+      designed" cost, and what bounds it is that every path which *authors* or
+      *accepts* a squad counts to `MaxSquadSize` instead — held by
+      `TestANineUnitRosterIsLegalHereAndRefusedByEveryAuthoringPath`
+      (`internal/core/battle`, the engine half and `Squad.Validate`),
+      `TestANineUnitSquadReachesNoRoomAndNoDraft` (`internal/room`, the gate and
+      the draft) and `TestTheBuilderStopsAtTheSquadCapAndNotAtTheBoard`
+      (`internal/screen`). **Do not "tighten" `enlist`'s bound to the squad cap**:
+      a summon reaches the board through the same `enlist` a roster does, so that
+      would refuse every copy a full side calls up and rebuild this item one layer
+      down.
+
+      **What the re-measurement found** (→ `docs/balance.md` § *Five a side, read at
+      last* for the tables): the original harness was never committed and its
+      fixture is recorded nowhere, so the protocol was rebuilt over **three**
+      independent fixtures instead of one. All three reproduce the *shape* — a
+      cliff to nought at five and nowhere else — and none reproduces the recorded
+      400, which says the finding was the engine's and the number was the squad's.
+      At the split, 5v5 goes from **0** casts to 752 / 738 / 778, arrivals equal
+      casts everywhere, the mirror is **500‰ exactly** and `Endless` is **0 of
+      200** in all eighteen readings, and battles run about 2% longer.
+      ⚠️ **3v3 does not move at all** — the predicted regression did not happen,
+      because `split` gates itself on `sundered` below two stacks and that bound
+      was already binding at three a side.
+
+      ⚠️ **One golden moved and the estimate that said none would was wrong about
+      which screens can see a summon.** `cmd/hexforge-tui/testdata/screens.golden`,
+      the `spar` screen: `naruto.naruto`'s median duel is **60 turns where it was
+      58**, and nothing else on the row moves. A spar is fought from the **cast**
+      rather than from `roster.json`, and that character is the one shipped kit
+      holding `shadow_clone` and `summon_toad`. Causation was proven by pinning
+      `room` back to the squad cap and watching the golden go green.
+
+      ⚠️ **Two follow-ups this leaves, neither of them done here:**
+
+      - **`summonPlaces`'s two board bounds now agree by construction.**
+        `BoardSlots` is `FormationCols*FormationRows` and `census` gives every
+        counted unit a distinct cell, so `len(free)` is always
+        `BoardSlots - perSide` and **no fixture can tell the two bounds apart any
+        more**. `room` is kept because it is the sentence the rating prices off,
+        but a mutation to either bound alone is now free. Whether to collapse them
+        is a decision, not a cleanup.
+      - **The battle screen's row budget gets worse.** `SCR`'s re-take found no
+        board fits the floor already; a side that can now hold nine makes the
+        roster block longer still. It is a floor-versus-screen problem the format
+        does not create, and it is not a blocker here.
+
+      **`DAT-002`'s rungs 4 and 5 are unblocked and deliberately NOT authored.**
+      The rung ceiling is `MaxSquadSize`, numerically unchanged at five, so
+      `bonuses.json` parses identically and no seed golden moved; rungs at four and
+      five become reachable the moment a 5v5 is played. Decision 6 requires that
+      they arrive **with their own measurements**, so authoring them is a separate
+      item — unblocking them was this one's deliverable.
 
 - [ ] `ENG-007` **Four ways of playing the board that the engine cannot express yet.**
       Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four

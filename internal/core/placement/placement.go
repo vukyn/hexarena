@@ -171,9 +171,12 @@ func (s Squad) Validate() error {
 	if len(s.Units) == 0 {
 		return fmt.Errorf("a squad with nobody in it has nothing to field")
 	}
-	if len(s.Units) > hex.MaxTeamSize {
+	// The FIELDING cap, not the board's. A squad is what somebody authored to
+	// bring, so it is bounded by what a side may field; the board's own bound is
+	// larger, and the gap between them is where a summon stands.
+	if len(s.Units) > hex.MaxSquadSize {
 		return fmt.Errorf("a squad of %d is more than the %d a side can field",
-			len(s.Units), hex.MaxTeamSize)
+			len(s.Units), hex.MaxSquadSize)
 	}
 	ids := make(map[string]bool, len(s.Units))
 	slots := make(map[hex.Offset]string, len(s.Units))

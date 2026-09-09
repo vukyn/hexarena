@@ -1,14 +1,17 @@
 ---
 name: hexarena-a-summon-needs-a-gap-between-format-and-cap
-description: hexarena — hex.MaxTeamSize is both the widest team and the largest format, so a full 5v5 side leaves summonPlaces no room and every summoning skill is a dead slot; measured 400 casts at 3 and 4 a side, 0 at 5, and a probe at cap 7 restores it
+description: hexarena — one constant was both the widest team and the largest format, so a full 5v5 side left summonPlaces no room and every summoning skill was a dead slot; CLOSED by splitting it into hex.BoardSlots (9) and hex.MaxSquadSize (5), and 5v5 is open
 metadata:
   type: feedback
 ---
 
-`hex.MaxTeamSize` is **5** and it does two jobs: the widest team the board admits,
+⚠️ **CLOSED 2026-09-09 — the finding stands, the constant does not.**
+`hex.MaxTeamSize` was **5** and did two jobs: the widest team the board admits,
 and the size of the largest format. So at five a side `battle.summonPlaces`
-computes `room = MaxTeamSize - 5 = 0`, `summonWorth` prices every summoning skill
-at nought, and `Suggest` never casts one.
+computed `room = MaxTeamSize - 5 = 0`, `summonWorth` priced every summoning skill
+at nought, and `Suggest` never cast one. It is now **two** constants —
+`hex.BoardSlots = FormationCols*FormationRows` (9) and `hex.MaxSquadSize` (5) —
+and `cmd/hexarena-host` opens `-format 5`.
 
 **Measured, mirrored, 100 seeds** — `split` cast / copies arrived:
 
@@ -18,7 +21,15 @@ at nought, and `Suggest` never casts one.
 
 The cliff is exactly at the cap, and the probe is what says the **cap** is the knob
 rather than the format. `split`, `shadow_clone`, `summon_toad` and the
-`diglett.three` build are dead slots at five a side. → `ENG-013`.
+`diglett.three` build were dead slots at five a side. → `ENG-013`.
+
+⚠️ **The 400 was the FIXTURE, not the engine — and the harness was never
+committed, so it could not be reproduced.** Re-run in 2026-09 over three
+independent fixtures on the same protocol, the *shape* reproduced every time (a
+cliff to nought at five and nowhere else) and the *magnitude* never did: 462 /
+464 / 410 at three a side. Quote a cast count with the squad it came off, and
+**commit the harness or expect to rebuild it**. The split then took 5v5 from 0 to
+752 / 738 / 778 with the mirror at 500‰ and 0 endless in all eighteen readings.
 
 ⚠️ **Everything else about five a side is fine, which is the part that was
 assumed backwards.** The mirror is exactly 500‰ with 0 endless over 200 battles,
@@ -30,7 +41,21 @@ the arrange phase gets more decisive as the board fills.
 
 - ⚠️ **A constant that is both a board bound and a format size will collide with
   any mechanic that uses the spare room.** Ask what the *gap* is for before
-  raising or reusing such a number.
+  raising or reusing such a number. The fix is to split it, not to raise it: two
+  names, each read by the layer that means it, and the correspondence checked one
+  layer up. ⚠️ Both halves are `int`, so **the compiler cannot tell a missed
+  conversion from a correct one** — retire the old name entirely and let the build
+  enumerate all 61 sites, rather than find-and-replacing.
+- ⚠️ **A predicted regression can fail to appear because a different bound was
+  already binding.** 3v3 was expected to move (a repeated summon could now reach
+  further) and came back bit-identical: `split` gates itself on `sundered` below
+  two stacks, so it casts twice a battle whatever the board allows. Measure the
+  gate you did not think about.
+- ⚠️ **"No golden moves" was wrong, and the miss was about which fixture a screen
+  fights.** The estimate reasoned over `roster.json`, which fields no summoner.
+  `cmd/hexforge-tui`'s spar screen fights the whole **cast**, and `naruto.naruto`
+  carries two summons — its median duel moved 58 → 60. Ask which *book* a golden
+  is drawn from, not only which data file changed.
 - **`roster.json` was never five a side.** Three places claimed "the shipped
   balance was read at five a side" — `TODO.md`, `wire.Format5v5`'s doc comment,
   `cmd/hexarena-host`'s refusal — and all three were wrong from the day they were

@@ -523,7 +523,8 @@ func (a ArrangeScreen) board(c Context) string {
 // pickMark is what one placed pick is drawn as on the board: its position in pick
 // order, which is the number the row under the board carries.
 //
-// A digit is safe by construction — hex.MaxTeamSize is five — and it is a number
+// A digit is safe by construction — a side picks hex.MaxSquadSize, which is five
+// — and it is a number
 // rather than a letter of the id because two cells cannot hold a name and the ids
 // in a drafted squad share no prefix worth cutting to.
 func pickMark(at int) string { return string(rune('1' + at)) }
