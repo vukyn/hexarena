@@ -361,10 +361,13 @@ is only so the shape is readable.
       neither settled: `make check` is **expensive** — the package times of one
       full green run sum to **1229s, 20.5 minutes**, on 8 cores, with
       `internal/seed` at 346s and `internal/forge` at 257s between them carrying
-      half of it. ⚠️ That sum is **not** the wall-clock, because `go test` runs
-      packages in parallel, and the wall-clock was NOT measured — the log carries
-      no timestamps. Measure it before sizing a runner; a per-PR run may want
-      splitting into a fast gate plus a full one. And `internal/room`'s loopback
+      half of it. ⚠️ That sum is **not** the wall-clock — `go test` runs packages
+      in parallel. **The wall-clock is 390s, 6.5 minutes**, measured on the
+      `v0.2.0` release run at `e442ec3` by stamping `date +%s` either side of
+      `make check`; the sum overstates it by 3.2×, which is the number to ignore
+      when sizing a runner. Six and a half minutes is affordable per PR, so the
+      fast-gate split is **not** needed for cost — decide it on feedback latency
+      if at all. And `internal/room`'s loopback
       test has hit its 60s bound three times under parallel load while measuring
       ~0.4s in isolation — a **160×** margin — so a shared CI runner is exactly the machine that will make it
       flake. A gate that flakes is a gate people learn to re-run, which is a gate
