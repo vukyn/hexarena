@@ -89,6 +89,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-011` | done | `main` did not build, and no conflict was raised |
 | `ENG-012` | done | A pattern's splash is walked in absolute board directions — FIXED, the walk is the caster's frame now and the control arm closes |
 | `ENG-013` | done | A summon lives in the gap between the format and the team cap, and at five a side there is no gap — SPLIT, `hex.BoardSlots` against `hex.MaxSquadSize`, and five a side is open |
+| `ENG-014` | open | Nothing runs the test suite on a pull request — `make check` caught a stale golden correctly and main still merged red, because the only check on a PR is a secret scanner. The mtime guard this was first raised as is REFUSED by its own measurement |
 | `RAT-001` | shipped | The opponent |
 | `RAT-002` | shipped | Measuring the opponent |
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
@@ -305,6 +306,67 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [ ] `ENG-014` ⚠️ **Nothing runs the test suite on a pull request.** A
+      stale golden merged to `main` and sat there red for one commit, and the
+      reason is not that the break was undetectable — `make check` names it
+      exactly, in the words the golden test was written to say. Nobody ran it.
+      Raised 2026-09-09 out of `SCR-013`'s merge, and the first shape it was
+      raised in is refused below by its own measurement.
+
+      **What was measured.** `#395` (`0c7ef64`, `DAT-011`) added
+      `happiny.tend` and `happiny.decoy` to `builds.json` without re-accepting
+      `internal/screen/testdata/screens.golden` or
+      `cmd/hexforge-tui/testdata/screens.golden`, and both golden tests go red on
+      a pristine `git archive` of it:
+
+      ```
+      line 2829, under ===== vi | 160x60 | builds =====:
+        golden "  pokemon.happiny       chưa viết bản dựng nào cho nhân vật này"
+        drawn  "  pokemon.happiny"
+      ```
+
+      It went green again at `15b9653` (`#396`), which re-accepted the goldens as
+      a side effect of its own screen change — the break was **repaired by
+      accident**, not found. There is no `.github/workflows/` in the repository,
+      and `gh pr view --json statusCheckRollup` returns **one** check on a PR:
+      `GitGuardian Security Checks`. A secret scanner is the whole gate.
+
+      ⚠️ **This was first raised as "a fourth occurrence of one pattern", and
+      that claim is FALSE — the count is one.** It came from conflating *main was
+      red* with *a golden went stale*, across four events that only share the
+      first half. Measured, one at a time: `#307` changed `squads.json` and its
+      goldens are **green** at `49e3581` (its redness was a digest); `#319`
+      changed **three** golden files and no data at all; `#326` changed one golden
+      file and no data. Only `#395` is the shape. Across the whole history, 88 of
+      129 commits touching `internal/seed/data` re-accepted no golden — and that
+      number is **not** evidence of 88 breaks, because the goldens cover only some
+      screens and most data never reaches them. It is the number that looks like
+      evidence and is not.
+
+      ⚠️ **The obvious fix is refused, and the reason is that it is vacuous.**
+      The first shape proposed here was a guard asserting that a golden derived
+      from `internal/seed/data` is younger than the last change to that data. It
+      would fire only where `go test` runs — and where `go test` runs, the golden
+      test **already** fires, with a better message that names the differing line.
+      A second red line in the one place that is already red detects nothing new.
+      Everything about this item is on the other side of the test run, so the work
+      is to make the run happen, not to add an assertion to it.
+
+      **What the work is.** A workflow on `pull_request` that runs the same
+      `make check` the contract already rests on, and a branch rule that requires
+      it. Two things to weigh before writing it, both measured this session and
+      neither settled: `make check` is **expensive** — the package times of one
+      full green run sum to **1229s, 20.5 minutes**, on 8 cores, with
+      `internal/seed` at 346s and `internal/forge` at 257s between them carrying
+      half of it. ⚠️ That sum is **not** the wall-clock, because `go test` runs
+      packages in parallel, and the wall-clock was NOT measured — the log carries
+      no timestamps. Measure it before sizing a runner; a per-PR run may want
+      splitting into a fast gate plus a full one. And `internal/room`'s loopback
+      test has hit its 60s bound three times under parallel load while measuring
+      ~0.4s in isolation — a **160×** margin — so a shared CI runner is exactly the machine that will make it
+      flake. A gate that flakes is a gate people learn to re-run, which is a gate
+      that is off.
 
 - [x] `DAT-013` **`cleffa.hex` lost four battles in five because of the KIT, not
       because the rating underprices control — MEASURED, and the build was
