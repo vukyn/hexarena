@@ -129,7 +129,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-010` | done | Two client tests measured the machine rather than the code |
 | `SCR-011` | done | Every scratch data directory copied 17 MB of art and re-ran the injection — BOTH FIXED; the ~1300s was Win… |
 | `SCR-012` | done | A draft's last pick can have one candidate, and the screen presented it as a choice — DONE. The mechanism was already shipped; the GAME CLIENT's record of it was… |
-| `SCR-013` | open | `SCR-011`'s own guard cannot pass in the environment `SCR-011` was measured in: five packages assert that art was SHARED, and Windows across two volumes refuses both kinds of link |
+| `SCR-013` | done | `SCR-011`'s own guard cannot pass in the environment `SCR-011` was measured in: five packages assert that art was SHARED, and Windows across two volumes refuses both kinds of link — DONE. The guard PROBES the filesystem instead of reading what the copy did, in one home… |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -1465,7 +1465,7 @@ is only so the shape is readable.
       literals rather than effect assertions. The three-place data-file rule does
       not bite — no new file.
 
-- [ ] `SCR-013` ⚠️ **`SCR-011`'s guard cannot pass in the environment `SCR-011` was
+- [x] `SCR-013` ⚠️ **`SCR-011`'s guard cannot pass in the environment `SCR-011` was
       measured in.** Five packages now assert that a scratch data directory
       **shared** the shipped art, and on Windows with the repository on one volume
       and `TMP` on another, both kinds of link are refused — so the byte-copy
@@ -1509,6 +1509,41 @@ is only so the shape is readable.
       ⚠️ Same family as `goldens-cannot-be-green-on-two-platforms`: a test that
       pins the machine of whoever ran it. That one pins the path separator, this
       one pins the filesystem's link support, and neither says so when it fails.
+
+      **DONE — the first way out, and it is a PROBE rather than a reading.** The
+      guard now attempts the two links itself, from a real shipped picture to a
+      real name inside the very scratch directory the shares would have landed in,
+      through the same `linkFile` / `symlinkFile` seams the sharing uses. Refused
+      both ways it skips, quoting the two refusals; accepted, it asserts. ⚠️ **The
+      distinction is the whole fix**: a skip keyed on *"was the art copied?"* —
+      which is what the obvious reading of the report suggests — is true both on a
+      box that cannot link and on a mechanism that stopped linking, so it would
+      delete the guard on every machine forever.
+      `TestTheArtGuardFailsWhereLinkingWorksAndTheArtWasCopiedAnyway` is what
+      refuses that shape, and it goes red under it.
+
+      ⚠️ **The second way out does not close this on its own**, which is worth
+      recording because it reads as though it should: a byte cap is a better
+      invariant than an inode comparison, but a copied picture is seventeen
+      megabytes however the reading is taken, so `…StillSharesRatherThanCopies`
+      is red on the Windows box for exactly the reason the inode one is. Measured
+      under a simulated cross-volume box: `17300838 bytes were written for one
+      scratch directory, want under 1048576`. It therefore skips through the same
+      decision rather than growing one of its own. The third way out was refused:
+      putting the scratch tree on the repository's volume buys a hard link by
+      giving up `t.TempDir()`'s cleanup, would leave `git status` dirty, and would
+      still pin the guard to a *property of the machine* — it makes today's
+      Windows box link and says nothing about the next filesystem that will not.
+
+      **The decision lives once**, in `internal/testfixture` beside `CopiedArt`,
+      as `RequireSharedArt` and `SkipWithoutArtSharing` — the same reason
+      `SCR-011` step 1 made one `CopyData` out of five `copyTree`s. Five copies of
+      a skip rule drift, and a drifted skip is a guard that is off in the one
+      package nobody looked at.
+
+      ⚠️ **This entry undercounted the sites: it is SIX, in five packages.**
+      `cmd/hexforge` has the same guard and is not named above — `callers_of`
+      reports five callers of `CopiedArt`, plus `…StillSharesRatherThanCopies`.
 
 - [x] `DAT-012` ⚠️ **A seat-swap rate is a reading about the SHELL as much as about
       the seat. Two shells answered the opposite question for one character, with

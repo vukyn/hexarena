@@ -80,25 +80,12 @@ func copyTree(t *testing.T, from, to string) testfixture.DataCopy {
 // that lets this suite finish: a scratch data directory must not hold its own
 // copy of the shipped pictures.
 //
-// It asserts the mechanism and not a stopwatch. A timing assertion would be a
-// flake, and would pass anyway on a machine fast enough to make the copy look
-// cheap. testfixture.CopyData falls back to writing the bytes out where neither
-// kind of link can be made — correct, and exactly as slow as what this
-// replaced — so a fallback that had quietly become the normal path would leave
-// every test in this package green and the package back at its old cost. That is
-// the failure this names, and it is the only one a green suite cannot show.
+// The assertion, the probe that decides whether this machine could have shared
+// at all, and the wording of both live in testfixture.RequireSharedArt — five
+// packages make this same claim, and a rule written out five times drifts into a
+// guard that is off in the one package nobody looked at.
 func TestAScratchDataDirectorySharesTheShippedArt(t *testing.T) {
-	copied, walked, err := testfixture.CopiedArt(shippedDataDir, scratchData(t))
-	if err != nil {
-		t.Fatalf("compare the art: %v", err)
-	}
-	if walked == 0 {
-		t.Fatal("no pictures were compared, so nothing here is measured")
-	}
-	if len(copied) != 0 {
-		t.Errorf("%d of %d shipped pictures were copied rather than shared, starting with %v",
-			len(copied), walked, copied[:min(3, len(copied))])
-	}
+	testfixture.RequireSharedArt(t, shippedDataDir, scratchData(t))
 }
 
 // TestOneScratchDirectorysWritesAreInvisibleToAnother is the half of the
