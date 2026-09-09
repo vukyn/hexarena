@@ -154,6 +154,7 @@ that owns the subject wins and the note is the thing to fix.
 - [kill test ports after smoke](memory/kill-test-ports-after-smoke.md) — go-run child outlives parent → `lsof -ti :PORT|xargs kill -9`
 - [gopls stale diagnostics multirepo](memory/gopls-stale-diagnostics-multirepo.md) — false BrokenImport; trust `go build`/`go vet`
 - [Fixture hides a branch](memory/fixture-hidden-branch.md) — 5× in hexarena; test must fail when its own branch unexercised
+- [Guard on wrong side of the gate](memory/a-guard-on-the-wrong-side-of-the-gate.md) — ENG-014; assertion fires only where the failing test already fires = vacuous; gap was NO CI. Also: "4 occurrences" was 1
 - [Skip on a PROBE, never on the result](memory/a-skip-keyed-on-the-result-deletes-the-guard.md) — SCR-013; "the art was copied" fits both the box that can't link and the bug; 6 copies of a skip rule
 - [Gate fixture must be crossable](memory/a-gate-fixture-must-be-crossable-by-the-thing-under-test.md) — gate 500 vs raise 200‰ never fires; passed with the code deleted
 - [Blanket refusal hides its legs](memory/a-blanket-refusal-hides-where-its-legs-live.md) — narrowing one guard; the gated-trait leg lived in another book
