@@ -109,11 +109,21 @@ func TestAScratchDataDirectoryHoldsTheInjectedBooks(t *testing.T) {
 // back on every scratch directory — the same failure CopiedArt names, said here
 // as a number, because CopiedArt compares inodes and cannot see how much was
 // written.
+//
+// ⚠️ **It skips through the same decision the inode reading does, and not
+// through one of its own.** A different reading of one claim is not a different
+// claim: a copied picture is seventeen megabytes whether the copy is counted in
+// inodes or in bytes, so this fails on a machine that cannot link for exactly
+// the reason that one does — see testfixture.SkipWithoutArtSharing. The
+// directory is built first so the probe runs in the very place the shares would
+// have landed.
 func TestAScratchDataDirectoryStillSharesRatherThanCopies(t *testing.T) {
-	done, err := testfixture.Data(t.TempDir(), shippedDataDir, load)
+	target := t.TempDir()
+	done, err := testfixture.Data(target, shippedDataDir, load)
 	if err != nil {
 		t.Fatalf("build a scratch data directory: %v", err)
 	}
+	testfixture.SkipWithoutArtSharing(t, shippedDataDir, target)
 	if done.Shared() == 0 {
 		t.Error("no picture was shared, so every one of them was written out")
 	}
