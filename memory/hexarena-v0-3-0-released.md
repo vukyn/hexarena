@@ -1,6 +1,6 @@
 ---
 name: hexarena-v0-3-0-released
-description: hexarena v0.3.0 tag pushed (63a5e93, digest 9c086a9cf68b) — the first release a player can use without a checkout; verified by installing from the proxy and running in an empty directory
+description: hexarena v0.3.0 and v0.3.1 — the releases that made the installed binaries usable without a checkout; v0.3.1 (941f5af) finishes the job for hexforge's reading subcommands. Verify a release by RUNNING in an empty directory, not by watching the install finish
 metadata:
   type: project
 ---
@@ -43,3 +43,27 @@ The release procedure is unchanged and lives in [[hexarena-v0-2-0-released]]:
 the version is the git tag and nothing else, and the tree must be proved green
 **before** the push because a tag on proxy.golang.org is immutable. Done here on
 a full `make check` at `EXIT=0`, 37 packages, 319s wall-clock at `63a5e93`.
+
+## `v0.3.1` — `941f5af`, 2026-09-10
+
+⚠️ **`v0.3.0` fixed the game client and left `hexforge` broken in the same way.**
+`FRG-004` finished it: of `hexforge`'s **11** code paths that reach a data
+directory, **6 only read** and now take the embedded books, while the **5** that
+write refuse and name the way out (`--data <dir>`, or the module root) instead of
+printing a bare relative path. Same digest, `9c086a9cf68b` — no data moved.
+
+Verified the same way, all four paths from one empty directory at `v0.3.1`:
+`hexarena-host --version` answers the tag, `hexarena-tui` reaches its menu under
+a pty, `hexforge cast` lists the cast, `hexforge origins add` refuses with the
+long sentence.
+
+⚠️ **`cmd/hexforge-tui` is still not usable without a directory, deliberately** —
+every screen is one keystroke from a write, so the honest shape is a third state
+beside `screen.Context.Authoring` rather than a fallback, and it moves goldens in
+both clients. Written up under `FRG-004` as not done.
+
+⚠️ **`#409` bumped the `go` directive to 1.27.1 between this branch's `make check`
+and its merge.** The merge was CLEAN, which is not the same as tested — the check
+was re-run on `main` at `941f5af` before the tag, `EXIT=0`, 37 packages, 318s. A
+clean merge over a toolchain change is exactly the case where reusing an earlier
+green result is wrong.
