@@ -19,6 +19,9 @@
 - [A scripted revert can restore the wrong line](feedback_scripted_revert_wrong_occurrence.md) — green tests do not prove an undo; read git diff on the file
 - [A fixture-cast edit costs goldens](feedback_fixture_cast_edit_costs_goldens.md) — one skill into a fixture kit moved 656 golden lines; build the carrier in the test (twinOf/forkedTwin)
 - [A refusal can be right for the wrong reason](feedback_a_refusal_can_be_right_for_the_wrong_reason.md) — separate the verdict from its evidence; re-run a TODO's own example first, it may not reproduce
+- [A reproducer for new code needs the OLD vocabulary](feedback_a_reproducer_for_new_code_needs_the_old_vocabulary.md) — `undefined: loadLibrary` on the base is not a red test; re-spell it, or run the base binary under a pty
+- [A refinement beyond the spec owes its own test](feedback_a_refinement_beyond_the_spec_owes_its_own_test.md) — the spec's list covers the spec's rule; a ⚠️ comment no test names is an unguarded claim (ENOTDIR ≠ ErrNotExist)
+- [forge parse errors name the BOOK](feedback_forge_parse_errors_name_the_book_not_the_file.md) — a read wraps the path, a parse does not: "decode skill book" names no file. Probe before asserting
 - [An empty path field is a relative path](feedback_an_empty_path_field_is_a_relative_path.md) — Join("",name)==name reads the CWD; change the field's TYPE, and let an AST bijection own the case list
 - [Rebasing onto a moved origin/main](feedback_rebase_onto_a_moved_main.md) — patch-not-stash, leave the golden out; main moves MID-task too, so pin HEAD either side of a golden reading
 - [Measure the term before optimising it](feedback_measure_the_term_before_optimising_it.md) — SCR-011 blamed a 17 MB copy; 23ms vs 22ms on APFS, and 301 copies not 155 call sites
@@ -51,6 +54,7 @@
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
 - [The ban/pick draft machine](project_draft_state_machine.md) — 2a…5b done (5c + host flag left); ⚠️ NOTHING tells the host the room is full; internal/screen declares its OWN DraftLive
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
+- [The client runs without a checkout](project_client_runs_without_a_checkout.md) — steps 1+2 done (probe-keyed --data fallback); step 3 = art, and the preview already degrades to MISSING
 
 ## Moved in from the platform-level store (2026-09-05)
 

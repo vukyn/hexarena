@@ -41,6 +41,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"runtime/debug"
 
@@ -58,6 +59,16 @@ const programName = "hexarena-tui"
 // the ask is for a screen at all.
 type options struct {
 	dir string
+	// dataGiven is whether --data was really typed, as against left at
+	// forge.DefaultDataDir.
+	//
+	// ⚠️ **The string cannot answer that question and this is the only field
+	// that can.** A player who types the default path by hand and a player who
+	// types nothing hand `dir` the same value, and the two mean opposite things
+	// to loadLibrary: one named a directory and is owed a refusal when it is not
+	// there, the other named nothing and is owed the copy in the binary. It is
+	// filled from flag.FlagSet.Visit, which is the only thing that knows.
+	dataGiven bool
 	// squads is the player's **own** squad file — a different file from the
 	// game's own squads.json, which lives in dir and which a player has no
 	// business in. Empty means there is none to read, which is both what a
@@ -121,7 +132,36 @@ func parseOptions(arguments []string, environment, playerSquads string, out io.W
 	if operands := set.Args(); len(operands) > 0 {
 		return options{}, errors.New(lang.Say(i18n.NoArguments, operands))
 	}
-	return options{dir: *dir, squads: *squads, lang: lang, version: *version}, nil
+	return options{
+		dir:       *dir,
+		dataGiven: wasSet(set, "data"),
+		squads:    *squads,
+		lang:      lang,
+		version:   *version,
+	}, nil
+}
+
+// wasSet reports whether a flag was given on the command line, as against left
+// at its default.
+//
+// flag has no other way to ask: a --data of `internal/seed/data` typed by hand
+// and a --data nobody typed are the same string. It is cmd/hexforge/weigh.go's
+// own function, name and all, and a copy rather than a shared helper for the
+// reason the wording walker in this package is one — a command's flags are its
+// own, and four lines of flag plumbing is not a dependency between two binaries.
+// cmd/hexforge/skills.go reads the same Visit for the same reason at greater
+// length.
+//
+// The walk is over the flags that were given, so nothing about the order it
+// visits in reaches the answer.
+func wasSet(set *flag.FlagSet, name string) bool {
+	given := false
+	set.Visit(func(flagged *flag.Flag) {
+		if flagged.Name == name {
+			given = true
+		}
+	})
+	return given
 }
 
 // playerSquadsPath is the default a player's own squad file is looked for at,
@@ -158,13 +198,18 @@ func run(chosen options, out io.Writer) error {
 	// takes over nothing, so it is not what that check is about. A version a
 	// script cannot read because the answer was "stdout is not a terminal" would
 	// be a machine-readable version with the machines left out, which is half of
-	// what it is for. It is also ahead of forge.Load, so a --data directory that
+	// what it is for. It is also ahead of the books, so a --data directory that
 	// does not exist is not a reason a binary cannot say what it is.
 	//
 	// It is not in parseOptions, where flag.ErrHelp is answered, for two
 	// reasons: that function writes to **stderr** and a version is output rather
 	// than a diagnostic, and it is the one part of this file with no side
 	// effects at all — printing from it would be the first.
+	//
+	// ⚠️ It is ahead of loadLibrary as well, which is why every -version case in
+	// version_flag_test.go names a directory that is not there **and** says the
+	// flag was given: without dataGiven those cases would take the embedded copy
+	// and stop measuring the placement they are about.
 	if chosen.version {
 		version, err := wire.Local(buildString())
 		if err != nil {
@@ -176,7 +221,7 @@ func run(chosen options, out io.Writer) error {
 	if !stdoutIsTerminal() {
 		return errors.New(chosen.lang.Text(i18n.GameNotATerminal))
 	}
-	lib, err := forge.Load(chosen.dir)
+	lib, err := loadLibrary(chosen)
 	if err != nil {
 		return err
 	}
@@ -216,6 +261,71 @@ func run(chosen options, out io.Writer) error {
 	defer sess.leave()
 	_, err = program.Run()
 	return err
+}
+
+// loadLibrary is where this client's books come from, and it is the one thing
+// about this binary a player installing it from the module proxy notices.
+//
+// The rule is three lines, and the middle one is why the other two are not one:
+//
+//	--data given                the directory, always
+//	--data not given, it exists the directory, exactly as before
+//	--data not given, it is not the copy the binary embeds
+//
+// An installed binary is the third line. `forge.DefaultDataDir` is a **relative**
+// path — it is where the data sits inside a checkout — so away from one it names
+// a directory in whatever the player happened to be standing in, and this client
+// died on it with `read internal/seed/data/combat.json: no such file or
+// directory`. Nothing about a battle needed that directory: model.go builds its
+// mirror from seed.Books() whatever --data says, because the digest at a room's
+// gate is over the embedded files.
+//
+// ⚠️ **The fallback keys on the directory being ABSENT and never on the load
+// failing.** "Load, and take the embedded copy if that returned an error" reads
+// the same from here and is a different program: an author who leaves a trailing
+// comma in skills.json would be handed the baked-in books and told nothing, and
+// would spend the evening wondering why an edit they can see in the file does
+// not reach the screen. A directory that exists and will not parse must refuse
+// exactly as it did before this function existed. It is the distinction
+// testfixture.RequireSharedArt is built on — a guard keyed on the *result* of
+// the thing it guards deletes itself, so key on the *probe*.
+//
+// ⚠️ **Absent means absent**, rather than "the stat did not succeed". A stat
+// that fails for any other reason is not a missing data directory, and
+// answering that with the embedded copy would swallow the one error naming the
+// real problem. Only fs.ErrNotExist takes the third line — and that is measured
+// rather than asserted here, by
+// TestADataDirectoryPathBlockedByAFileIsRefusedRatherThanQuietlyReplaced, which
+// puts a plain file where a path component should be a directory: every stat
+// below it then fails with ENOTDIR, which is neither present nor absent.
+// Widening this to `err != nil` compiles and passes every other test in the
+// package.
+//
+// ⚠️ **A named directory is never second-guessed**, which is the first line.
+// A player who typed `--data /nope` gets a refusal naming it; handing them
+// different data is not an answer to what they asked.
+//
+// Why the second line is not "always embed": `make play-tui` passes no --data
+// and is run from the module root by an author who wants the cast browser to
+// show the file they just edited. Embedding regardless would take that away
+// without saying so, and the join screen's warning that those edits will not
+// reach a battle is drawn off forge.MatchesEmbeddedData, which needs a
+// directory to compare.
+func loadLibrary(chosen options) (*forge.Library, error) {
+	if chosen.dataGiven || !dataDirectoryIsAbsent(chosen.dir) {
+		return forge.Load(chosen.dir)
+	}
+	return forge.LoadEmbedded()
+}
+
+// dataDirectoryIsAbsent reports whether there is nothing at all at dir.
+//
+// Anything that is there — a directory, or a file sitting where one should be —
+// is not absent, and is left to forge.Load to read and to refuse in its own
+// words. This function's whole job is to be narrower than "the load failed".
+func dataDirectoryIsAbsent(dir string) bool {
+	_, err := os.Stat(dir)
+	return errors.Is(err, fs.ErrNotExist)
 }
 
 // build is the version string this binary announces, stamped by a release:

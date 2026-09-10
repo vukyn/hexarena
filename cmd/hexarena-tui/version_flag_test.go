@@ -51,13 +51,19 @@ func TestVersionIsAnsweredBeforeTheTerminalCheck(t *testing.T) {
 	// ⚠️ A directory that does not exist, on purpose. forge.Load would fail on
 	// it, so this is also the measurement that -version is ahead of the library:
 	// a binary that cannot find a data directory can still say what it is.
+	//
+	// ⚠️ **Every options below says dataGiven, and without it this test would
+	// stop measuring that.** A missing directory nobody named is answered by the
+	// embedded copy now (→ loadLibrary), so the load these cases have to get
+	// ahead of would succeed and their `missing` would be inert. Named, it
+	// refuses, which is what makes reaching the report evidence of anything.
 	missing := filepath.Join(t.TempDir(), "no-such-directory")
 
 	if stdoutIsTerminal() {
 		t.Log("stdout is a terminal for this test binary, so the refusal below is not " +
 			"measured; the positive half still is")
 	} else {
-		if err := run(options{dir: missing, lang: i18n.Vi}, io.Discard); err == nil {
+		if err := run(options{dir: missing, dataGiven: true, lang: i18n.Vi}, io.Discard); err == nil {
 			t.Fatal("this client started with stdout on a pipe, so the check -version has " +
 				"to get ahead of is not in force and the rest of this test measures nothing")
 		}
@@ -65,7 +71,7 @@ func TestVersionIsAnsweredBeforeTheTerminalCheck(t *testing.T) {
 
 	for _, lang := range i18n.Langs() {
 		var said bytes.Buffer
-		if err := run(options{dir: missing, lang: lang, version: true}, &said); err != nil {
+		if err := run(options{dir: missing, dataGiven: true, lang: lang, version: true}, &said); err != nil {
 			t.Errorf("-version in %s failed with %v", lang, err)
 			continue
 		}
@@ -105,10 +111,10 @@ func TestVersionIsAnsweredBeforeTheTerminalCheck(t *testing.T) {
 	// And the two languages printed the same bytes, stated as its own assertion
 	// rather than inferred from two identical expectations above.
 	var vietnamese, english bytes.Buffer
-	if err := run(options{dir: missing, lang: i18n.Vi, version: true}, &vietnamese); err != nil {
+	if err := run(options{dir: missing, dataGiven: true, lang: i18n.Vi, version: true}, &vietnamese); err != nil {
 		t.Fatalf("-version in Vietnamese: %v", err)
 	}
-	if err := run(options{dir: missing, lang: i18n.En, version: true}, &english); err != nil {
+	if err := run(options{dir: missing, dataGiven: true, lang: i18n.En, version: true}, &english); err != nil {
 		t.Fatalf("-version in English: %v", err)
 	}
 	if vietnamese.String() != english.String() {
