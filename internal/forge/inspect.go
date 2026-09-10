@@ -201,11 +201,30 @@ func Inspect(dir string) (Report, error) {
 	return lib.Inspect(), nil
 }
 
+// artToCheck is a character's pictures when there is a directory to look for
+// them in, and nothing at all when there is not.
+//
+// ⚠️ **Whether a picture is on disk is a question a library with no directory
+// does not ask, rather than one it answers "no" to.** The art is not embedded —
+// sixty-six files and 16 MB — so an embedded library would report a missing-art
+// problem for every character in the cast, each naming an empty path: a report
+// telling somebody to go and find files that are exactly where they belong.
+//
+// Nothing reports on a data directory from a library that has none today, since
+// both front-ends that call Inspect load one. This is what makes that stay true
+// rather than becoming sixty-six false problems the day something does.
+func (l *Library) artToCheck(character cast.Character) []cast.ArtEntry {
+	if !l.home.known() {
+		return nil
+	}
+	return character.Art()
+}
+
 // Inspect is Inspect over an already-loaded library, which is what a
 // long-running front-end has.
 func (l *Library) Inspect() Report {
 	report := Report{
-		Dir:        l.dir,
+		Dir:        l.home.directory(),
 		Origins:    len(l.origins.All()),
 		Archetypes: len(l.archetypes.All()),
 	}
@@ -215,7 +234,7 @@ func (l *Library) Inspect() Report {
 	// read.
 	for _, character := range l.characters.All() {
 		row := CharacterReport{ID: character.ID}
-		for _, art := range character.Art() {
+		for _, art := range l.artToCheck(character) {
 			exists := l.ImageExists(art.Image)
 			row.Art = append(row.Art, ArtReport{
 				Stage: art.Stage, Image: art.Image, Exists: exists,

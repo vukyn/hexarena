@@ -19,6 +19,7 @@
 - [A scripted revert can restore the wrong line](feedback_scripted_revert_wrong_occurrence.md) — green tests do not prove an undo; read git diff on the file
 - [A fixture-cast edit costs goldens](feedback_fixture_cast_edit_costs_goldens.md) — one skill into a fixture kit moved 656 golden lines; build the carrier in the test (twinOf/forkedTwin)
 - [A refusal can be right for the wrong reason](feedback_a_refusal_can_be_right_for_the_wrong_reason.md) — separate the verdict from its evidence; re-run a TODO's own example first, it may not reproduce
+- [An empty path field is a relative path](feedback_an_empty_path_field_is_a_relative_path.md) — Join("",name)==name reads the CWD; change the field's TYPE, and let an AST bijection own the case list
 - [Rebasing onto a moved origin/main](feedback_rebase_onto_a_moved_main.md) — patch-not-stash, leave the golden out; main moves MID-task too, so pin HEAD either side of a golden reading
 - [Measure the term before optimising it](feedback_measure_the_term_before_optimising_it.md) — SCR-011 blamed a 17 MB copy; 23ms vs 22ms on APFS, and 301 copies not 155 call sites
 - [Measure the thing a bound bounds](feedback_measure_the_thing_a_bound_bounds.md) — my 1 MiB read limit bounded 2.9 KB; hold both ends. -race's first catch is a TEST's teardown assumption

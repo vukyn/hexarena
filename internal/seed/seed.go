@@ -5,6 +5,8 @@ package seed
 
 import (
 	"embed"
+	"io/fs"
+	"path"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
@@ -20,6 +22,29 @@ import (
 
 //go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json data/builds.json data/squads.json data/bonuses.json
 var files embed.FS
+
+// Data is the embedded data files as a filesystem, rooted at the data directory
+// itself: a name in it is `cast.json`, exactly the name that reads the same file
+// out of a directory on disk.
+//
+// It exists so that a reader of the whole set — internal/forge builds a library
+// out of all fifteen books it knows about — can be written **once** over a name
+// and run against either the embedded copy or a directory an author is editing.
+// The alternative was a switch in the caller from a file name to one of the
+// sixteen XxxFile accessors, which is a fourth independent copy of the name list
+// in a package whose digest test already exists because three was too many.
+//
+// ⚠️ **It hands out a filesystem and never a path**, which is the same line
+// DigestOf draws and for the same reason: this package reads the embedded copy
+// and nothing else, and a real directory belongs to internal/forge.
+//
+// The rooting is what a caller has to get right and therefore what this takes
+// off them. The embed names every file under `data/`, so the raw embed.FS
+// answers to `data/cast.json` and a caller reading `cast.json` out of it gets a
+// not-exist error — which for the two optional books internal/forge tolerates
+// would be read as an author's empty catalogue rather than as a bug. The
+// directory comes off dataPrefix rather than being spelled again here.
+func Data() (fs.FS, error) { return fs.Sub(files, path.Clean(dataPrefix)) }
 
 // ElementsFile is the raw affinity chart declaration.
 func ElementsFile() ([]byte, error) { return files.ReadFile("data/elements.json") }
