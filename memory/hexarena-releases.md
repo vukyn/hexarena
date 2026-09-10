@@ -1,6 +1,6 @@
 ---
-name: hexarena-v0-3-0-released
-description: hexarena v0.3.0 and v0.3.1 — the releases that made the installed binaries usable without a checkout; v0.3.1 (941f5af) finishes the job for hexforge's reading subcommands. Verify a release by RUNNING in an empty directory, not by watching the install finish
+name: hexarena-releases
+description: hexarena's release log and the procedure — version IS the git tag and nothing else; prove the tree green BEFORE pushing because a proxy tag is immutable; verify by RUNNING in an empty directory, not by watching the install finish. v0.3.0 · v0.3.1 · v0.4.0
 metadata:
   type: project
 ---
@@ -67,3 +67,30 @@ and its merge.** The merge was CLEAN, which is not the same as tested — the ch
 was re-run on `main` at `941f5af` before the tag, `EXIT=0`, 37 packages, 318s. A
 clean merge over a toolchain change is exactly the case where reusing an earlier
 green result is wrong.
+
+## `v0.4.0` — `9950dd2`, 2026-09-10
+
+The local battle picks both sides. It used to open on whichever catalogue row
+the reader last pointed at, against **the next row wrapping**; now one cursor
+chooses the side you command and one the side across the board. Same digest,
+`9c086a9cf68b`.
+
+⚠️ **A minor bump, not a patch** — it adds behaviour. The two before it were
+patches to "the installed binary cannot run at all".
+
+The menu also stopped describing the wrong feature. It said *"play a battle
+yourself, with the first side on the list"* and never said who plays the other
+half; it now says the machine does. That matters beyond wording:
+⚠️ **the mode was misread twice while planning, in opposite directions**, once as
+PvE with no evidence and once as hot-seat on the strength of a comment. It is
+PvE, and `internal/screen/play.go`'s `run()` settles it in four lines — a turn
+whose `unit.Side == p.Side` stops and asks, every other turn goes to
+`engineOrder`. The `a` key is an assist on *your own* turn. Read the control
+flow, not the comment. → `TODO.md` § `SCR-015`.
+
+**Verifying this one needed a different instrument.** A TUI will not render into
+a redirected file, so the empty-directory check that worked for `v0.3.x` reaches
+only the host and `hexforge`. The client was proved by searching the installed
+binary for the wording — new sentence present, old sentence absent, with the
+previous tag as the control. ⚠️ That search lied the first time: see
+[[a-search-that-returns-zero-needs-a-known-positive]].

@@ -54,7 +54,8 @@ that owns the subject wins and the note is the thing to fix.
 - [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — draft 1…5c xong; spectator 1…5 xong (còn cờ host + xem draft); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire ko nói phòng đủ người, cũng ko báo sắp xếp đã tới; ⚠️ watcher ĐỨNG TRÊN màn draft mà bản ghi rỗng (21/21, Replayed 0) → draft là HAI golden
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [v0.2.0 đã release](memory/hexarena-v0-2-0-released.md) — e442ec3, digest 9c086a9cf68b; version = CHỈ git tag (không hằng số, không ldflags); repo PUBLIC; make check wall-clock 390s
-- [v0.3.0 + v0.3.1 đã release](memory/hexarena-v0-3-0-released.md) — 63a5e93 / 941f5af; bản ĐẦU TIÊN dùng được không cần checkout (v0.3.1 xong nốt hexforge đọc); ⚠️ chứng minh bằng CHẠY trong thư mục rỗng (dưới pty), không phải bằng install xong
+- [Nhật ký release + quy trình](memory/hexarena-releases.md) — v0.3.0/v0.3.1/v0.4.0; version CHỈ là git tag; xanh TRƯỚC khi push vì tag proxy bất biến; ⚠️ chứng minh bằng CHẠY trong thư mục rỗng
+- [Zero từ tìm kiếm cần chứng dương](memory/a-search-that-returns-zero-needs-a-known-positive.md) — grep trả 0 cho chuỗi tiếng Việt CÓ trong binary; ⚠️ phạm vi grep ≠ phạm vi sự thật
 - [4 đội starter, dùng được ngay](memory/hexarena-starter-squads.md) — ⚠️ Rate() BỎ trận Endless khỏi mẫu số: healer gặp healer hoà mãi mà vẫn khoe 85%
 - [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ import ≠ đồng hồ CẢ HAI CHIỀU (WithTimeout lọt; import time mà không đọc vẫn chặn)
 - [CRLF phá data digest](memory/hexarena-crlf-data-digest.md) — ⚠️ join Mac→Win data_mismatch cùng commit; .gitattributes ko chữa checkout cũ
