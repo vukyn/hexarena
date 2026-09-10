@@ -699,12 +699,12 @@ q hoặc ctrl+c để thoát`,
 	GameMenuWorksDetail:  "tra cứu nguồn: các tác phẩm nhân vật được mượn từ",
 	GameMenuSquadsDetail: "các đội đã dựng, và mang một đội vào trận",
 	GameMenuBattle:       "vào trận",
-	GameMenuBattleDetail: "tự cầm quân đánh một trận với đội đầu danh sách",
+	GameMenuBattleDetail: "chọn cả hai đội, rồi tự cầm đội mình; máy cầm đội kia",
 
 	// Màn chọn hai phe. Để riêng một khối chứ không mượn lời của màn đấu bên
 	// công cụ soạn: bên đó đo một cặp đội, còn đây là chọn xem ai ra sân.
 	PairingHeading:  "hai phe ra trận",
-	PairingHint:     "chọn cho mỗi phe một đội, rồi tự cầm quân đánh",
+	PairingHint:     "một đội bạn cầm, đội kia máy cầm",
 	PairingHome:     "phe mình",
 	PairingAway:     "gặp",
 	PairingSameSide: "hai phe cùng một đội: trận này đánh với bản sao của chính nó",

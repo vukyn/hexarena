@@ -531,7 +531,7 @@ ctrl+l English · esc quay lại
 
 hai phe ra trận
 
-  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+  một đội bạn cầm, đội kia máy cầm
 
   phe mình < đội thử 0 >  phe-0
   gặp      < đội thử 0 >  phe-0
@@ -999,7 +999,7 @@ bạn muốn làm gì?
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
   bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
   đội hình            các đội đã dựng, và mang một đội vào trận
-  vào trận            tự cầm quân đánh một trận với đội đầu danh sách
+  vào trận            chọn cả hai đội, rồi tự cầm đội mình; máy cầm đội kia
   vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
 
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
@@ -1152,7 +1152,7 @@ fixture-anime.adept — Example Adept
 
 hai phe ra trận
 
-  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+  một đội bạn cầm, đội kia máy cầm
 
   phe mình < đội thử 0 >  phe-0
   gặp      < đội thử 1 >  phe-1
@@ -2624,7 +2624,7 @@ ctrl+l English · esc quay lại
 
 hai phe ra trận
 
-  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+  một đội bạn cầm, đội kia máy cầm
 
   phe mình < đội thử 0 >  phe-0
   gặp      < đội thử 0 >  phe-0
@@ -3812,7 +3812,7 @@ bạn muốn làm gì?
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
   bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
   đội hình            các đội đã dựng, và mang một đội vào trận
-  vào trận            tự cầm quân đánh một trận với đội đầu danh sách
+  vào trận            chọn cả hai đội, rồi tự cầm đội mình; máy cầm đội kia
   vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
 
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
@@ -4217,7 +4217,7 @@ fixture-anime.adept — Example Adept
 
 hai phe ra trận
 
-  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+  một đội bạn cầm, đội kia máy cầm
 
   phe mình < đội thử 0 >  phe-0
   gặp      < đội thử 1 >  phe-1
@@ -5041,7 +5041,7 @@ ctrl+l tiếng Việt · esc back
 
 the two sides
 
-  choose a side for each half, then play the battle out yourself
+  one side is yours to take, the other is the machine's
 
   your side < đội thử 0 >  phe-0
   against   < đội thử 0 >  phe-0
@@ -5509,7 +5509,7 @@ what would you like to do?
   origins        look a work up: the fictions the cast is borrowed from
   squad bonuses  the thresholds a squad is paid for, and what each one grants
   squads         the sides that have been built, and take one into a battle
-  battle         play a battle yourself, with the first side on the list
+  battle         pick both sides, then take yours; the machine plays the other
   join a room    paste the code a friend sent and play them over the local network
 
 A battle here is fought out of the directory above, while the game boots from
@@ -5662,7 +5662,7 @@ fixture-anime.adept — Example Adept
 
 the two sides
 
-  choose a side for each half, then play the battle out yourself
+  one side is yours to take, the other is the machine's
 
   your side < đội thử 0 >  phe-0
   against   < đội thử 1 >  phe-1
@@ -7134,7 +7134,7 @@ ctrl+l tiếng Việt · esc back
 
 the two sides
 
-  choose a side for each half, then play the battle out yourself
+  one side is yours to take, the other is the machine's
 
   your side < đội thử 0 >  phe-0
   against   < đội thử 0 >  phe-0
@@ -8322,7 +8322,7 @@ what would you like to do?
   origins        look a work up: the fictions the cast is borrowed from
   squad bonuses  the thresholds a squad is paid for, and what each one grants
   squads         the sides that have been built, and take one into a battle
-  battle         play a battle yourself, with the first side on the list
+  battle         pick both sides, then take yours; the machine plays the other
   join a room    paste the code a friend sent and play them over the local network
 
 A battle here is fought out of the directory above, while the game boots from
@@ -8727,7 +8727,7 @@ fixture-anime.adept — Example Adept
 
 the two sides
 
-  choose a side for each half, then play the battle out yourself
+  one side is yours to take, the other is the machine's
 
   your side < đội thử 0 >  phe-0
   against   < đội thử 1 >  phe-1
