@@ -762,7 +762,7 @@ func TestReplaceFileLeavesTheOldOneOnFailure(t *testing.T) {
 	// any more: a write may now name a folder of its own — a battle log lands in
 	// one — so the writer creates what is not there. The failure has to come
 	// from a folder that cannot be made at all, which is one under a file.
-	lib.dir = filepath.Join(dir, castFile, "under-a-file")
+	lib.home = dataHome{dir: filepath.Join(dir, castFile, "under-a-file")}
 	if err := lib.replaceFile(castFile, []byte("{}")); err == nil {
 		t.Fatal("writing into a missing directory succeeded")
 	}

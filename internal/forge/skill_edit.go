@@ -2,7 +2,6 @@ package forge
 
 import (
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
@@ -225,7 +224,15 @@ func (l *Library) EditSkill(edited skill.Skill) (SkillChange, error) {
 // character names the archetype it was tuned from — and because a preset refused
 // for holding an edited skill is a refusal about the skill either way.
 func (l *Library) recheckCarriers(edited *skill.Book, id string) (*cast.ArchetypeBook, *cast.Book, error) {
-	rawArchetypes, err := os.ReadFile(filepath.Join(l.dir, archetypesFile))
+	// A library with no directory refuses here rather than at the write below it.
+	// The bytes this re-parse needs are the ones on disk, and there are none — so
+	// the check it exists to make cannot be made, which is a different thing from
+	// making it and passing.
+	archetypePath, err := l.home.join(archetypesFile)
+	if err != nil {
+		return nil, nil, err
+	}
+	rawArchetypes, err := os.ReadFile(archetypePath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -242,7 +249,11 @@ func (l *Library) recheckCarriers(edited *skill.Book, id string) (*cast.Archetyp
 	if err != nil {
 		return nil, nil, l.brokenPreset(edited, id, err)
 	}
-	rawCast, err := os.ReadFile(filepath.Join(l.dir, castFile))
+	castPath, err := l.home.join(castFile)
+	if err != nil {
+		return nil, nil, err
+	}
+	rawCast, err := os.ReadFile(castPath)
 	if err != nil {
 		return nil, nil, err
 	}

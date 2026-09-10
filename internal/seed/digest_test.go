@@ -389,3 +389,52 @@ func TestAnUneditedDirectoryDigestsAsTheEmbeddedCopyDoes(t *testing.T) {
 			"embedded copy, so the notice this feeds would never fire")
 	}
 }
+
+// TestTheEmbeddedDataIsAlsoReadableAsAFilesystem is the contract Data owes its
+// one caller: a filesystem whose names are the ones a data directory on disk
+// answers to.
+//
+// The assertion is DigestOf over it, which is the cheapest exhaustive one
+// available and the only one that could not pass on a subset. DigestOf frames
+// every name back under `data/` before hashing it and reads it with the prefix
+// trimmed, so agreeing with DataDigest means all sixteen files came back, in
+// order, byte for byte, through a filesystem rooted one directory down. A
+// wrongly rooted one does not disagree — it errors on the first name — and the
+// two failures are told apart below because they mean different things: a
+// mis-rooted Sub is a bug here, and a differing digest would be a bug in the
+// framing DigestOf does.
+//
+// ⚠️ It is not a golden. The value moves on every data commit and this compares
+// two readings of one set of bytes, exactly as the test above it does.
+func TestTheEmbeddedDataIsAlsoReadableAsAFilesystem(t *testing.T) {
+	data, err := Data()
+	if err != nil {
+		t.Fatalf("root the embedded files at their own directory: %v", err)
+	}
+	// The reading a caller actually does: a bare name, with no `data/` on it.
+	// This is what fails outright if Sub was handed the wrong directory, and it
+	// is worth its own line because the digest below would report the same thing
+	// as an unreadable file rather than as a rooting mistake.
+	for _, name := range dataFiles {
+		bare := strings.TrimPrefix(name, dataPrefix)
+		if _, err := fs.ReadFile(data, bare); err != nil {
+			t.Fatalf("read %s out of the rooted filesystem: %v. The embed names every file "+
+				"under %s, so a caller reading a bare name gets a not-exist error — which "+
+				"internal/forge reads as an author's empty catalogue for the two books it "+
+				"treats as optional", bare, dataPrefix, err)
+		}
+	}
+	rooted, err := DigestOf(data)
+	if err != nil {
+		t.Fatalf("digest the rooted filesystem: %v", err)
+	}
+	embedded, err := DataDigest()
+	if err != nil {
+		t.Fatalf("digest the embedded copy: %v", err)
+	}
+	if rooted != embedded {
+		t.Errorf("the rooted filesystem digests %s and the embed it came from digests %s: "+
+			"one set of bytes read two ways", rooted.Short(), embedded.Short())
+	}
+	t.Logf("%d files, digest %s", len(dataFiles), rooted.Short())
+}

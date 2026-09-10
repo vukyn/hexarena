@@ -81,15 +81,22 @@ const assetsDir = "assets"
 const battlesDir = "battles"
 
 // Library is every book a character is validated against, loaded from one data
-// directory.
+// directory — or from the copy the binary embeds, which is a library with no
+// directory at all.
 //
-// The directory rather than the embedded copy is the point: an author edits
-// files, and a tool that validated the baked-in bytes would keep saying yes to
-// a change it had not read. The other side of that is the note a check prints —
-// the game boots from the embedded copy, so an edit needs a rebuild before it
-// reaches a battle.
+// For **authoring**, the directory rather than the embedded copy is the point:
+// an author edits files, and a tool that validated the baked-in bytes would keep
+// saying yes to a change it had not read. The other side of that is the note a
+// check prints — the game boots from the embedded copy, so an edit needs a
+// rebuild before it reaches a battle.
+//
+// For **playing**, the embedded copy is the point, for the mirror image of that
+// reason: a game client is not editing anything, and a battle it fought from a
+// directory would be a battle the embedded roster and every peer's copy might
+// not agree with. → LoadEmbedded, and MatchesEmbeddedData for what a client
+// still says about a directory it was pointed at.
 type Library struct {
-	dir    string
+	home   dataHome
 	rules  combat.Rules
 	chart  *element.Chart
 	limits progression.Limits
@@ -127,6 +134,78 @@ type Library struct {
 	squads []placement.Squad
 }
 
+// ErrNoDataDirectory is what a library built from the embedded copy answers to
+// every question that is really a question about a directory.
+//
+// It is a sentinel rather than a message written at each site because callers
+// have to be able to tell it apart from a directory that is merely broken: a
+// front-end offering to write a character wants to say *this library cannot be
+// written to at all*, and a permission error on cast.json is a different
+// sentence about a different problem.
+var ErrNoDataDirectory = errors.New(
+	"this library was built from the copy embedded in the binary, so it has no directory on disk")
+
+// dataHome is where a library's files live, or nothing at all when the library
+// was built from the embedded copy.
+//
+// ⚠️ **It is a type rather than a string, and that is the whole of what stops
+// the embedded library reading and writing files in whatever directory the
+// player happened to be standing in.** `filepath.Join("", "cast.json")` is
+// `"cast.json"` — a perfectly valid *relative* path — so every one of the
+// sixteen places that used to join a `dir string` field would silently have
+// become a read from, or a write into, the working directory. That is strictly
+// worse than the old behaviour, which was to refuse: a refusal names the
+// problem, a relative path finds a stranger's file.
+//
+// Wrapping the string means `filepath.Join(l.home, name)` does not compile, so
+// join below is the only expression in the package that can build a path under a
+// data directory, and it is the only place the emptiness has to be checked. A
+// consumer added later cannot skip the check by writing the join out by hand —
+// there is nothing to write it out of.
+//
+// → TestEveryLibraryAccessorThatReachesTheDataDirectoryDecidesWhatNoDirectoryMeans,
+// which walks this package's source and holds every reader of the field to a
+// written-down decision, so a seventeenth consumer arrives with one.
+type dataHome struct{ dir string }
+
+// known reports whether there is a directory at all.
+func (h dataHome) known() bool { return h.dir != "" }
+
+// directory is the raw directory, and "" for the embedded copy.
+//
+// It is the one way past join, so its callers are the short list the walk keeps
+// separately: something that hands the directory to os.DirFS or to a package
+// function taking one needs the string itself rather than a path under it, and
+// each such caller owes its own emptiness check.
+func (h dataHome) directory() string { return h.dir }
+
+// join is the only expression in this package that builds a path under a data
+// directory, and it refuses when there is no directory to build one under.
+func (h dataHome) join(elem ...string) (string, error) {
+	if !h.known() {
+		return "", ErrNoDataDirectory
+	}
+	return filepath.Join(append([]string{h.dir}, elem...)...), nil
+}
+
+// show is join for an accessor whose signature cannot carry a refusal: it
+// answers the empty path where join answers an error.
+//
+// Empty rather than a best guess, and this is the same reading PlayerSquadsPath
+// takes of a machine with no configuration directory: there is no file, so there
+// is no path, and "" is the one string that cannot be opened, written or walked
+// by accident. It is quiet — which is why the loud half of the decision lives in
+// the write path, where every one of these paths would have been used: replaceFile
+// goes through join and refuses with ErrNoDataDirectory, so nothing is written to
+// nowhere.
+func (h dataHome) show(elem ...string) string {
+	shown, err := h.join(elem...)
+	if err != nil {
+		return ""
+	}
+	return shown
+}
+
 // Load reads every book from a data directory.
 func Load(dir string) (*Library, error) {
 	if dir == "" {
@@ -139,7 +218,45 @@ func Load(dir string) (*Library, error) {
 		}
 		return raw, nil
 	}
-	lib := &Library{dir: dir}
+	return loadBooks(dataHome{dir: dir}, read)
+}
+
+// LoadEmbedded reads every book out of the copy go:embed baked into the binary.
+//
+// It is the reading a **game** client wants and the one an authoring tool must
+// not have: nothing here can be written back, because there is nowhere to write
+// it, and a check run against it would be reporting on bytes nobody can edit.
+// What it buys is a client that needs no data directory to exist at all — the
+// battle it fights is the battle the embedded roster describes, which is the
+// same one every peer on the same build fights.
+//
+// The books are the same fifteen files Load reads, read through the same closure
+// shape off seed.Data, so there is one parse order and one set of dependency
+// lists rather than a second assembly that can fall out of step with it. The two
+// optional books are optional here as well and cannot be absent — both are
+// embedded — which is why the equivalence test asserts their contents are not
+// empty rather than only that nothing errored: a wrongly rooted filesystem would
+// hand back a not-exist error, and this package reads that as an author's empty
+// catalogue.
+func LoadEmbedded() (*Library, error) {
+	data, err := seed.Data()
+	if err != nil {
+		return nil, err
+	}
+	read := func(name string) ([]byte, error) {
+		raw, err := fs.ReadFile(data, name)
+		if err != nil {
+			return nil, fmt.Errorf("read the embedded %s: %w", name, err)
+		}
+		return raw, nil
+	}
+	return loadBooks(dataHome{}, read)
+}
+
+// loadBooks parses every book out of whatever read hands it, which is the one
+// place the order the books depend on each other in is written down.
+func loadBooks(home dataHome, read func(name string) ([]byte, error)) (*Library, error) {
+	lib := &Library{home: home}
 
 	raw, err := read(combatFile)
 	if err != nil {
@@ -263,8 +380,14 @@ func Load(dir string) (*Library, error) {
 	return lib, nil
 }
 
-// Dir is the directory the books were read from and will be written back to.
-func (l *Library) Dir() string { return l.dir }
+// Dir is the directory the books were read from and will be written back to,
+// and "" for a library built from the embedded copy, which was read from nowhere
+// and cannot be written back at all.
+//
+// It hands back the directory it was given rather than a cleaned form of it: two
+// clients draw it in a header line, so it is a string a reader recognises rather
+// than a path anything resolves.
+func (l *Library) Dir() string { return l.home.directory() }
 
 // MatchesEmbeddedData reports whether the files in this library's directory
 // digest to the same fingerprint as the copy the binary embeds.
@@ -287,12 +410,20 @@ func (l *Library) Dir() string { return l.dir }
 // An unreadable directory is **not** a difference: it is reported as an error,
 // because "these two disagree" and "this could not be read" are different
 // things to say to a player and only one of them is about the data.
+// A library that **is** the embedded copy matches it, and answers so without
+// reading anything: there is no directory to digest, and os.DirFS("") errors
+// rather than resolving to the working directory. Saying yes here is what keeps
+// a client built on LoadEmbedded from drawing "your edits will not reach the
+// battle" over data nobody could have edited.
 func (l *Library) MatchesEmbeddedData() (bool, error) {
+	if !l.home.known() {
+		return true, nil
+	}
 	embedded, err := seed.DataDigest()
 	if err != nil {
 		return false, err
 	}
-	here, err := seed.DigestOf(os.DirFS(l.dir))
+	here, err := seed.DigestOf(os.DirFS(l.home.directory()))
 	if err != nil {
 		return false, err
 	}
@@ -375,22 +506,32 @@ func (l *Library) CastDeps() cast.Deps {
 
 // CastPath is the file a saved character lands in, which is what a
 // confirmation has to name.
-func (l *Library) CastPath() string { return filepath.Join(l.dir, castFile) }
+//
+// Every path accessor below answers "" for a library with no directory, which is
+// dataHome.show's decision and is explained there. The refusal a front-end acts
+// on comes from the write itself.
+func (l *Library) CastPath() string { return l.home.show(castFile) }
 
 // OriginsPath is the file a saved origin lands in.
-func (l *Library) OriginsPath() string { return filepath.Join(l.dir, originsFile) }
+func (l *Library) OriginsPath() string { return l.home.show(originsFile) }
 
 // SpeciesPath is the file a saved species lands in.
-func (l *Library) SpeciesPath() string { return filepath.Join(l.dir, speciesFile) }
+func (l *Library) SpeciesPath() string { return l.home.show(speciesFile) }
 
 // SkillsPath is the file a saved skill lands in.
-func (l *Library) SkillsPath() string { return filepath.Join(l.dir, skillsFile) }
+func (l *Library) SkillsPath() string { return l.home.show(skillsFile) }
 
 // ImagePath turns an authored image path into a real one. Authored paths are
 // always slash-separated and relative to the data directory; only here does
 // either of those become an operating system's business.
+//
+// ⚠️ An embedded library answers "" for every picture, and that is the answer
+// rather than a gap: the art is **not** embedded — sixty-six files and 16 MB — so
+// a client on the embedded books has no picture files, and a path relative to
+// nowhere would have had ImageExists reading whatever assets folder happened to
+// sit beside the player's shell.
 func (l *Library) ImagePath(image string) string {
-	return filepath.Join(l.dir, filepath.FromSlash(path.Clean(image)))
+	return l.home.show(filepath.FromSlash(path.Clean(image)))
 }
 
 // ImageExists reports whether the art a character names is really there. This
@@ -406,7 +547,7 @@ func (l *Library) ImageExists(image string) bool {
 // art to offer. "Nothing found" without naming where it looked is a line nobody
 // can act on, and a front-end joining the folder name on itself would be a
 // second declaration of where art lives.
-func (l *Library) AssetsPath() string { return filepath.Join(l.dir, assetsDir) }
+func (l *Library) AssetsPath() string { return l.home.show(assetsDir) }
 
 // ArtFiles is every image under a data directory's assets folder, as the paths
 // a character may name: relative to the data directory, slash separated, and
@@ -426,7 +567,17 @@ func (l *Library) AssetsPath() string { return filepath.Join(l.dir, assetsDir) }
 // A missing assets folder is an empty list and not an error. A data directory
 // is allowed to have no art yet, and what a front-end owes an author then is a
 // field they can still fill in, not a refusal to draw the form.
+// ⚠️ **An empty directory is a refusal and not an empty list**, which is the one
+// place those two answers had to be told apart. filepath.Join("", "assets") is
+// "assets", so an empty directory would have walked whatever assets folder sits
+// in the process's working directory and offered its contents as this library's
+// art — a picker handing over paths that belong to somebody else's data. The
+// list-versus-refusal rule above is about a directory that exists and holds no
+// art; this is about there being no directory to look in.
 func ArtFiles(dir string) ([]string, error) {
+	if dir == "" {
+		return nil, fmt.Errorf("look for art: %w", ErrNoDataDirectory)
+	}
 	root := filepath.Join(dir, assetsDir)
 	var found []string
 	walk := func(name string, entry fs.DirEntry, err error) error {
@@ -470,7 +621,7 @@ func ArtFiles(dir string) ([]string, error) {
 
 // ArtFiles is the package function over the directory the books were read from,
 // which is what a front-end holding a library has.
-func (l *Library) ArtFiles() ([]string, error) { return ArtFiles(l.dir) }
+func (l *Library) ArtFiles() ([]string, error) { return ArtFiles(l.home.directory()) }
 
 // LookupKit resolves a list of skill ids against the book.
 // KitSkills resolves a kit's ids against the book for a caller that is drawing
@@ -658,7 +809,7 @@ func (l *Library) Squads() []placement.Squad {
 }
 
 // SquadsPath is where a saved squad lands, for a front-end that says so.
-func (l *Library) SquadsPath() string { return filepath.Join(l.dir, squadsFile) }
+func (l *Library) SquadsPath() string { return l.home.show(squadsFile) }
 
 // SaveSquad writes one squad into the catalogue, replacing the squad of the same
 // id if there is one and appending it if there is not.
@@ -724,7 +875,7 @@ func (l *Library) DeleteSquad(id string) error {
 }
 
 // BattlesPath is the folder battle logs land in, for a front-end that says so.
-func (l *Library) BattlesPath() string { return filepath.Join(l.dir, battlesDir) }
+func (l *Library) BattlesPath() string { return l.home.show(battlesDir) }
 
 // SaveBattleLog writes a battle out where the game client can replay it, and
 // reports the path it landed on.
@@ -750,10 +901,19 @@ func (l *Library) SaveBattleLog(home, away string, seed uint64, log battle.Log) 
 	}
 	name := filepath.Join(battlesDir,
 		fmt.Sprintf("%s-vs-%s-seed%d.json", fileToken(home), fileToken(away), seed))
+	// The path is resolved before the write rather than after it, so a library
+	// with no directory refuses here instead of reporting a path it built out of
+	// nothing. replaceFile would refuse as well — it goes through the same join —
+	// and having this one ahead of it means the refusal cannot arrive alongside a
+	// half-written file on some future rearrangement of the two.
+	target, err := l.home.join(name)
+	if err != nil {
+		return "", err
+	}
 	if err := l.replaceFile(name, raw); err != nil {
 		return "", err
 	}
-	return filepath.Join(l.dir, name), nil
+	return target, nil
 }
 
 // fileToken is an id made safe to put in a file name.
@@ -894,8 +1054,17 @@ func (l *Library) noteLines(facts []Note) []string {
 // and renamed over the target, so a failure halfway through leaves the previous
 // file intact rather than a half-written one. A data file that a crash can
 // truncate is a data file that stops the game booting.
+// ⚠️ **This is where a library with no directory refuses, and it is the loud
+// half of that decision**: every write in this package funnels through here —
+// a character, an origin, a species, a skill, a squad, a battle log — so one
+// guard covers all of them and a write added later is covered by having been
+// written at all. The path accessors are quiet about it because their signatures
+// cannot be anything else; a write can say so, and does.
 func (l *Library) replaceFile(name string, data []byte) error {
-	target := filepath.Join(l.dir, name)
+	target, err := l.home.join(name)
+	if err != nil {
+		return err
+	}
 	// The temporary file goes in the target's own folder rather than the data
 	// directory, because a name may now carry one: a rename across folders is
 	// not the atomic swap this relies on, and a name with a separator in it
