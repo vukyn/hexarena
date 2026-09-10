@@ -147,8 +147,13 @@ hexforge authors the cast the battles are fought with.
                                       opponents, so a carrier may be compared
                                       only to itself at another value
 
-Every subcommand takes --data <dir> (default `+forge.DefaultDataDir+`), which is the
-directory it reads and writes. Run any subcommand with -h for its own flags.
+Every subcommand takes --data <dir> (default `+forge.DefaultDataDir+`, which is
+relative to the root of a checkout). Run any subcommand with -h for its own flags.
+
+A subcommand that only reads falls back to the copy of the books embedded in this
+binary when that directory is not there, so an installed hexforge lists, shows,
+checks, spars, censuses and weighs from anywhere. One that writes -- origins add,
+species add, skills add, skills edit, new -- needs a real directory and says so.
 
 hexforge-tui is the same authoring in a full-screen program; this one is what a
 script and a pipe use.

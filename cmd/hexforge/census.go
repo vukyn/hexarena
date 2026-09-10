@@ -26,7 +26,7 @@ func runCensus(args []string) error {
 	if len(operands) != 1 {
 		return fmt.Errorf("usage: hexforge census <build> [--against SQUAD] [--seeds N]")
 	}
-	lib, err := forge.Load(*dir)
+	lib, err := loadForReading("census", set, *dir)
 	if err != nil {
 		return err
 	}

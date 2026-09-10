@@ -253,6 +253,74 @@ func LoadEmbedded() (*Library, error) {
 	return loadBooks(dataHome{}, read)
 }
 
+// LoadForReading is where a **reading** front-end's books come from, and it is
+// the one rule about that a person installing a binary from the module proxy
+// notices.
+//
+// The rule is three lines, and the middle one is why the other two are not one:
+//
+//	--data given                the directory, always
+//	--data not given, it exists the directory, exactly as before
+//	--data not given, it is not the copy the binary embeds
+//
+// An installed binary is the third line. DefaultDataDir is a **relative** path —
+// it is where the data sits inside a checkout — so away from one it names a
+// directory in whatever the caller happened to be standing in, and a front-end
+// died on it with `read internal/seed/data/combat.json: no such file or
+// directory` while carrying a copy of every one of those files.
+//
+// ⚠️ **The fallback keys on the directory being ABSENT and never on the load
+// failing.** "Load, and take the embedded copy if that returned an error" reads
+// the same from here and is a different program: an author who leaves a trailing
+// comma in skills.json would be handed the baked-in books and told nothing, and
+// would spend the evening wondering why an edit they can see in the file does
+// not reach the screen. A directory that exists and will not parse must refuse
+// exactly as it did before this function existed. It is the distinction
+// testfixture.RequireSharedArt is built on — a guard keyed on the *result* of
+// the thing it guards deletes itself, so key on the *probe*.
+//
+// ⚠️ **Absent means absent**, rather than "the stat did not succeed". A stat
+// that fails for any other reason is not a missing data directory, and
+// answering that with the embedded copy would swallow the one error naming the
+// real problem. Only fs.ErrNotExist takes the third line.
+//
+// ⚠️ **A named directory is never second-guessed**, which is the first line. A
+// caller who typed `--data /nope` gets a refusal naming it; handing them
+// different data is not an answer to what they asked. A front-end may want to
+// say that better than a bare read error does — DataDirectoryIsAbsent is the
+// same probe, exported so a refusal can be phrased before the load is attempted.
+//
+// Why the second line is not "always embed": a run from inside a checkout with
+// no flag is an author who wants to see the file they just edited. Embedding
+// regardless would take that away without saying so, and anything drawn off
+// MatchesEmbeddedData needs a directory to compare.
+//
+// ⚠️ **This is for readers only.** A front-end that writes may not use it: the
+// embedded copy has nowhere to write back to, so a writer handed one either
+// refuses late, in the words of ErrNoDataDirectory, or — before dataHome was a
+// type — wrote a relative path into the caller's working directory. A writer
+// takes Load and states its own refusal when there is no directory.
+//
+// It lives here rather than in either front-end because two commands cannot
+// import each other, and a rule with three lines and three ⚠️ notes spelled
+// twice is two rules that will disagree.
+func LoadForReading(dir string, dataGiven bool) (*Library, error) {
+	if dataGiven || !DataDirectoryIsAbsent(dir) {
+		return Load(dir)
+	}
+	return LoadEmbedded()
+}
+
+// DataDirectoryIsAbsent reports whether there is nothing at all at dir.
+//
+// Anything that is there — a directory, or a file sitting where one should be —
+// is not absent, and is left to Load to read and to refuse in its own words.
+// This function's whole job is to be narrower than "the load failed".
+func DataDirectoryIsAbsent(dir string) bool {
+	_, err := os.Stat(dir)
+	return errors.Is(err, fs.ErrNotExist)
+}
+
 // loadBooks parses every book out of whatever read hands it, which is the one
 // place the order the books depend on each other in is written down.
 func loadBooks(home dataHome, read func(name string) ([]byte, error)) (*Library, error) {

@@ -42,7 +42,7 @@ func loadForListing(name string, args []string) (*forge.Library, error) {
 	if len(operands) > 0 {
 		return nil, fmt.Errorf("hexforge %s takes no arguments, got %v", name, operands)
 	}
-	return forge.Load(*dir)
+	return loadForReading(name, set, *dir)
 }
 
 func renderOrigins(out io.Writer, lib *forge.Library) {
@@ -90,7 +90,7 @@ func runOriginsAdd(args []string) error {
 	if err != nil {
 		return err
 	}
-	lib, err := forge.Load(*dir)
+	lib, err := loadForWriting("origins add", set, *dir)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func runSpeciesAdd(args []string) error {
 	if *name == "" {
 		return fmt.Errorf("species %q needs --name", id)
 	}
-	lib, err := forge.Load(*dir)
+	lib, err := loadForWriting("species add", set, *dir)
 	if err != nil {
 		return err
 	}

@@ -50,6 +50,7 @@
 - [The fixture reserves the id](feedback_the_fixture_reserves_the_id.md) — testfixture APPENDS 5 archetypes; ⚠️ their gloss already existing reads as "step done"
 - [Measure in the slot it competes for](feedback_measure_in_the_slot_it_competes_for.md) — flex slot priced the composition (381‰) not the unit (491‰); a rate pinned at 0 both arms measures nothing
 - [A mono-element mirror cannot resolve](feedback_a_mono_element_mirror_cannot_resolve.md) — all-Endless reads 0‰ not "red"; kit the probe OFF the element it is counted for (affinity is what counts)
+- [A survey keyed on one name misses the wrapper](feedback_a_site_survey_keyed_on_one_name_misses_the_wrapper.md) — "10 forge.Load sites" was 11; check.go went via forge.Inspect. Key the walk on the WIDER marker
 - [A pre-reg floor is the point when it FAILS](feedback_a_prereg_floor_is_the_point_when_it_fails.md) — +48‰ vs +50‰: ship the null, do not add a board; the vacuous-rung mutation is what makes a null honest
 
 ## Ongoing work

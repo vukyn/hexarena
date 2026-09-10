@@ -33,7 +33,7 @@ func runSpar(args []string) error {
 	if len(operands) != 1 {
 		return fmt.Errorf("usage: hexforge spar <id> [--level N] [--seeds N] [--stage NAME]")
 	}
-	lib, err := forge.Load(*dir)
+	lib, err := loadForReading("spar", set, *dir)
 	if err != nil {
 		return err
 	}

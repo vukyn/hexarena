@@ -210,9 +210,13 @@ func Inspect(dir string) (Report, error) {
 // problem for every character in the cast, each naming an empty path: a report
 // telling somebody to go and find files that are exactly where they belong.
 //
-// Nothing reports on a data directory from a library that has none today, since
-// both front-ends that call Inspect load one. This is what makes that stay true
-// rather than becoming sixty-six false problems the day something does.
+// ⚠️ **Something does now.** This used to say that nothing inspected a library
+// with no directory, since both front-ends that call Inspect loaded one — that
+// stopped being true when `hexforge check` learned to run from a clean install
+// (→ TODO.md § FRG-004), which is exactly the day the sixty-six false problems
+// would have arrived. The front-end owes the other half of the honesty: a report
+// that looked at no art is a narrower claim than one that did, so cmd/hexforge's
+// closing note says the art was not looked for.
 func (l *Library) artToCheck(character cast.Character) []cast.ArtEntry {
 	if !l.home.known() {
 		return nil
