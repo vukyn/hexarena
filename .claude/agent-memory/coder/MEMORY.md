@@ -53,6 +53,8 @@
 - [A survey keyed on one name misses the wrapper](feedback_a_site_survey_keyed_on_one_name_misses_the_wrapper.md) — "10 forge.Load sites" was 11; check.go went via forge.Inspect. Key the walk on the WIDER marker
 - [A new default can move every golden](feedback_a_new_default_can_move_every_golden.md) — a derived value becoming a cursor: pick the start that reproduces yesterday; 328 added 0 removed
 - [A pre-reg floor is the point when it FAILS](feedback_a_prereg_floor_is_the_point_when_it_fails.md) — +48‰ vs +50‰: ship the null, do not add a board; the vacuous-rung mutation is what makes a null honest
+- [A bulk spend needs a wall DEEPER than the volley](feedback_a_bulk_spend_needs_a_wall_deeper_than_the_volley.md) — 3 charges × 2 strikes is the only discriminating cell; 2 of 4 guards stay green BY DESIGN
+- [Dodge cannot make an accuracy-1000 skill miss](feedback_dodge_cannot_make_a_full_accuracy_skill_miss.md) — Chance returns Base before reading dodge; every multi-strike fixture skill is 1000, so author one in YOUR file
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam

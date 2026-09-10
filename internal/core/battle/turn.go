@@ -1342,6 +1342,16 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		if spent := charges - left; spent > 0 {
 			target.Statuses.Remove(blockStatus, spent)
 		}
+		// What the wall had before any of it was spent, for exactly the reason
+		// the pool below is snapshotted: the line above has already taken the
+		// WHOLE volley's spend off the set, so reading the set again inside the
+		// loop reports the figure after all of it and every blocked strike of a
+		// multi-strike skill claims the same remainder — the log telling a
+		// reader the barrier fell all at once. It comes down by one per blocked
+		// strike rather than by an amount, because a charge cancels a strike
+		// whole; the last blocked strike therefore reports what Roll handed
+		// back as left.
+		wall := int64(charges)
 		// What the guard had before any of it was spent, kept so each strike's
 		// line can report the pool as it stood at that moment. Reading the set
 		// again inside the loop would report the figure after the *whole* volley,
@@ -1370,7 +1380,8 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 				event.Kind = Missed
 			case combat.Blocked:
 				event.Kind = Blocked
-				event.Remaining = int64(target.Statuses.Stacks(blockStatus))
+				wall--
+				event.Remaining = wall
 				blocked = true
 			default:
 				// The guard's line comes first and on its own, because the two
