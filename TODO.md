@@ -134,6 +134,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-012` | done | A draft's last pick can have one candidate, and the screen presented it as a choice — DONE. The mechanism was already shipped; the GAME CLIENT's record of it was… |
 | `SCR-013` | done | `SCR-011`'s own guard cannot pass in the environment `SCR-011` was measured in: five packages assert that art was SHARED, and Windows across two volumes refuses both kinds of link — DONE. The guard PROBES the filesystem instead of reading what the copy did, in one home… |
 | `SCR-014` | done | The game client could not run from a clean `go install` — it read the data directory off a relative path that exists only inside a checkout, and then told the player their pictures were MISSING when the binary never carried any. DONE in three steps; a fourth site turned up that the plan did not name |
+| `SCR-015` | done | The local battle took whoever was next on the file as the opponent and the menu called it *"the first side on the list"* — DONE. Both sides are chosen now, and the menu says the machine plays the other. ⚠️ The mode was misread TWICE while planning this, in opposite directions |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -310,6 +311,75 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [x] `SCR-015` ⚠️ **The local battle chose the opponent for you, and the menu
+      described the wrong feature.** Raised and closed 2026-09-10, out of a
+      question about which squad the menu takes — `#412` and this entry's own
+      wording change.
+
+      **What shipped.** The PvE entry opens a chooser: one cursor for the side
+      you command, one for the side across the board, `enter` plays it. It used
+      to open a battle on whichever row the reader last pointed at, against **the
+      next row wrapping** — `pairing.go` called that a local stand-in for
+      matchmaking and said so deliberately, which is why it lasted. The chooser
+      is client-local rather than shared with `cmd/hexforge-tui`'s `fightScreen`,
+      because that one *measures* a pairing — seed ladder, rate, by-side split,
+      a squad against itself as the control — while this one settles who turns
+      up, and `pairing.go` already records that the two clients owe `Open`
+      different pairings. What is copied from it is one structural decision: the
+      cursors hold **indices into the catalogue, not ids**.
+
+      ⚠️ **The away cursor opens on row 1, not row 0**, and that is the whole
+      reason the golden diff is a pure insertion. Nought is the obvious start and
+      would have made every unchosen pairing a side against a copy of itself,
+      moving all eight battle entries. Row 1 is exactly what "the next row,
+      wrapping" already gave a reader sitting on the first row.
+
+      ⚠️ **The mode was misread twice while planning this, in opposite
+      directions, and both readings reached the owner before they were checked.**
+      First it was called PvE with no evidence; then, on finding `pairing.go`'s
+      phrase *"the hot-seat battle"* and `play.go`'s `a` key — *"the engine's own
+      answer, taken as the player's"* — it was called hot-seat, meaning the
+      reader takes both sides. **It is PvE**, and `run()` settles it in four
+      lines: a turn whose `unit.Side == p.Side` stops and asks, and every other
+      turn goes to `engineOrder`. `a` is an assist on *your own* turn, and
+      "hot-seat" in that comment means **local rather than networked**. The tell
+      that should have been followed the first time is that only `run()` sets
+      `Pending` on the local path — lines 385–402 are the live PvP path and read
+      `live.Asking`.
+
+      ⚠️ **A second claim made and then measured false**: that the six shipped
+      sides were never offered to this client, on the strength of `.Squads()`
+      appearing nowhere under `cmd/hexarena-tui`. The call is
+      `draw.SquadsScreen.Refresh` → `forge.SquadsOffered(c.Lib.Squads(),
+      c.Player)`, in the shared screen the client draws. Measured on a real
+      machine: `shipped=6 player=1 offered=7`. A planned step to "add the shipped
+      sides" was therefore dropped as a null before anybody built it. ⚠️ The whole
+      suite is blind to this because `scratchDataFrom` **deletes `squads.json`**
+      from every scratch data directory, so no fixture anywhere has a shipped
+      side on it — worth its own item if a shipped side ever needs asserting.
+
+      ⚠️ **`pairing.go` carried a false sentence** and it is fixed in place rather
+      than contradicted beside: it claimed `m.taking` "is now also what fills
+      `wire.Hello.Squad` when a room is joined". It does not — `model.dialling`
+      reads `joinScreen.Chosen()`, which exists because a drafting room needs a
+      "bring none" position no catalogue row can express.
+      `TestThePairingChooserDoesNotReachThePvPSquad` now holds that by behaviour
+      **and** by source.
+
+      **The wording.** `GameMenuBattleDetail` said *"play a battle yourself, with
+      the first side on the list"*, which after the chooser was false twice over
+      — the entry opens a chooser, and "the first side" describes a pairing whose
+      both halves are choices. Neither it nor the chooser's own hint said the
+      opponent is the machine, which is the fact a reader most needs and the one
+      that started this. Both now say it, in both languages. Twelve golden lines
+      move and every one of them is one of those two sentences.
+
+      **Related, and already true before any of this**: `s06` is five units while
+      the other shipped sides are three, so an asymmetric pairing is reachable
+      from the chooser. It builds — `s06.Take` answers five rosters and a
+      three-unit side answers three, both without error. Whether it is *fair* is
+      unmeasured and is not claimed here.
 
 - [x] `FRG-004` ⚠️ **`hexforge` could not run from a clean `go install` either,
       and most of it only reads.** Raised and closed 2026-09-10, out of the last

@@ -716,13 +716,13 @@ q or ctrl+c to quit`,
 	GameMenuWorksDetail:  "look a work up: the fictions the cast is borrowed from",
 	GameMenuSquadsDetail: "the sides that have been built, and take one into a battle",
 	GameMenuBattle:       "battle",
-	GameMenuBattleDetail: "play a battle yourself, with the first side on the list",
+	GameMenuBattleDetail: "pick both sides, then take yours; the machine plays the other",
 
 	// The pairing chooser. Its own block rather than the authoring tool's fight
 	// wordings reworded: that screen is measuring a matchup and this one is
 	// choosing who turns up.
 	PairingHeading:  "the two sides",
-	PairingHint:     "choose a side for each half, then play the battle out yourself",
+	PairingHint:     "one side is yours to take, the other is the machine's",
 	PairingHome:     "your side",
 	PairingAway:     "against",
 	PairingSameSide: "the same side on both halves: the battle is fought against a copy of itself",
