@@ -133,6 +133,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `SCR-011` | done | Every scratch data directory copied 17 MB of art and re-ran the injection — BOTH FIXED; the ~1300s was Win… |
 | `SCR-012` | done | A draft's last pick can have one candidate, and the screen presented it as a choice — DONE. The mechanism was already shipped; the GAME CLIENT's record of it was… |
 | `SCR-013` | done | `SCR-011`'s own guard cannot pass in the environment `SCR-011` was measured in: five packages assert that art was SHARED, and Windows across two volumes refuses both kinds of link — DONE. The guard PROBES the filesystem instead of reading what the copy did, in one home… |
+| `SCR-014` | done | The game client could not run from a clean `go install` — it read the data directory off a relative path that exists only inside a checkout, and then told the player their pictures were MISSING when the binary never carried any. DONE in three steps; a fourth site turned up that the plan did not name |
 | `CLI-001` | open | Graphical client with ebiten |
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
@@ -308,6 +309,106 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [x] `SCR-014` ⚠️ **The game client could not run from a clean `go install`, and
+      then accused the player of a defect the binary caused.** Raised 2026-09-09
+      from a real report — `hexforge-tui` first, and the client turned out to have
+      the same fault — and closed 2026-09-10 in three steps: `#404`, `#405`,
+      `#406`.
+
+      **What was wrong.** `cmd/hexarena-tui` opened with
+      `forge.Load(forge.DefaultDataDir)`, and `DefaultDataDir` is
+      `"internal/seed/data"` — a path **relative to the working directory**, which
+      exists only inside a checkout. Installed from the proxy and run anywhere
+      else it died:
+
+      ```
+      hexarena-tui: read internal/seed/data/combat.json: open internal/seed/data/combat.json: no such file or directory
+      ```
+
+      ⚠️ **The battle never needed that directory**, which is what made this a
+      startup bug rather than a design one: `model.go` already builds the mirror
+      from the embedded books, deliberately, because the digest at the room's gate
+      is over the embedded files and a client fighting on an edited directory
+      would pass a promise it then breaks. Only the load stood in the way.
+
+      **Why the obvious fix was refused.** "Create the data directory if it is not
+      there" was the first request, and it cannot work: `go:embed` names **16 JSON
+      files**, and the art — **16 MB across 66 files** under
+      `internal/seed/data/assets` — is not embedded and is not going to be. A
+      directory the program wrote for itself would hold the books and no pictures,
+      and the program's own checker calls that broken: `hexforge check` over a
+      JSON-only directory reports `MISSING 3/3` for all 25 characters and exits 1.
+      So the answer is to read the embedded copy and own no directory at all.
+
+      **Step 1 (`#404`) — `forge` learns the second way in.** `Load` splits into
+      `Load(dir)` and `LoadEmbedded()` over one `loadBooks`; `internal/seed` grows
+      `Data() (fs.FS, error)`. ⚠️ The real work was what a library with **no**
+      directory does with the sixteen functions that reached `dir`, because
+      leaving the field empty is not neutral: `filepath.Join("", "cast.json")` is
+      `"cast.json"`, a relative path in whatever directory the player is standing
+      in. `dir string` therefore became `home dataHome`, whose `join` is the only
+      expression in the package that builds a path under the data directory —
+      `filepath.Join(l.home, name)` **does not compile**, so a seventeenth
+      consumer cannot write the join out by hand. Anything that can refuse does,
+      with `ErrNoDataDirectory`; an accessor whose signature is a bare string
+      answers `""`.
+
+      **Step 2 (`#405`) — the caller switch**, three lines of rule: `--data` given
+      → `Load`, never a fallback; not given and the directory absent →
+      `LoadEmbedded`; not given and present → `Load`, which is what keeps
+      `make play-tui` showing an author their own edits. ⚠️ **The fallback keys on
+      the directory being ABSENT, never on the load failing** — "load, and use the
+      embedded copy if that errored" would swallow an author's trailing comma and
+      play the shipped data in silence. Same distinction `SCR-013` rests on: probe,
+      do not read the result.
+
+      **Step 3 (`#406`) — the sentence.** With two states where there was one, the
+      program said the same thing about both. `MISSING` is right for an author and
+      **false** for somebody who installed the binary: nothing is missing, their
+      setup is not broken, and the error styling accuses them of a defect they did
+      not cause and cannot fix. The states now read `THIẾU` / `MISSING` in the bad
+      style against `không kèm theo` / `not shipped` dimmed, and in the preview,
+      *"chương trình không kèm ảnh — ảnh nằm cùng mã nguồn chứ không nhúng vào file
+      chạy"*. The screen asks `forge.Library.HasDataDirectory()` rather than
+      comparing `Dir()` to `""`: `Dir()` is a display string, empty because there
+      was no path to show, and a comparison written in `internal/screen` would sit
+      outside every guard `internal/forge` has.
+
+      ⚠️ **A fourth site the plan did not name.** `internal/screen/browse.go` was
+      written off as the authoring tool's browser. It is **one screen both clients
+      draw**, so a player met the bad-styled `MISSING` on the cast detail pane one
+      keystroke *before* the preview. Grepping the key rather than reading the
+      screen list is what found it — `grep -rn "i18n.ArtMissing"` gives exactly two
+      production sites.
+
+      ⚠️ **Two guards were missing and the reviews found them, not the tests.**
+      First, step 2's probe narrows to `fs.ErrNotExist` rather than any stat
+      failure, because a path blocked by a file gives ENOTDIR — measured, and
+      `errors.Is(err, fs.ErrNotExist)` is false for it. That narrowing arrived with
+      a ⚠️ comment stating it and **nothing enforcing it**: widening it to
+      `err != nil` compiles and leaves the whole suite green.
+      `TestADataDirectoryPathBlockedByAFileIsRefusedRatherThanQuietlyReplaced` is
+      what closes it. Second, step 3 recorded only the **new** half of the new
+      distinction in the goldens. Measured at `9db0119`, `MISSING` / `THIẾU`
+      appeared **zero** times across the **516** recorded renders, because every
+      fixture has both a directory and its art — so the older half, the one a
+      regression silently deletes, was held by nothing. Both halves now sit
+      adjacent in `screens.golden`, differing in exactly one line, so a diff over
+      them is a diff about the sentence; the count is now 524 renders and 4
+      sightings. ⚠️ The figure first written here was "~460", carried out of a
+      report rather than counted — `grep -c '^===== '` over both golden files is
+      where the number comes from.
+
+      **What is deliberately not done.** The cast row gets no golden entry: one
+      there would add layout the `browse` entry already records, while which
+      verdict appears is pinned harder by a table that refuses each arm the other
+      two words. The condition for revisiting it is written on the entry map — if
+      `artLine` ever grows a column the verdict sits in, those entries should
+      arrive. And `hexforge` / `hexforge-tui` still require a real directory,
+      correctly: they **write** files, and `go:embed` is read-only. ⚠️ Their error
+      message is still the bare relative path with no hint about `--data` or the
+      module root; that is a separate item and is not raised yet.
 
 - [ ] `ENG-014` ⚠️ **Nothing runs the test suite on a pull request.** A
       stale golden merged to `main` and sat there red for one commit, and the
