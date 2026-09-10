@@ -718,6 +718,16 @@ q or ctrl+c to quit`,
 	GameMenuBattle:       "battle",
 	GameMenuBattleDetail: "play a battle yourself, with the first side on the list",
 
+	// The pairing chooser. Its own block rather than the authoring tool's fight
+	// wordings reworded: that screen is measuring a matchup and this one is
+	// choosing who turns up.
+	PairingHeading:  "the two sides",
+	PairingHint:     "choose a side for each half, then play the battle out yourself",
+	PairingHome:     "your side",
+	PairingAway:     "against",
+	PairingSameSide: "the same side on both halves: the battle is fought against a copy of itself",
+	PairingFooter:   "↑/↓ your side · ←/→ the other side · enter play it · ctrl+l tiếng Việt · esc back · q quit",
+
 	// The thirteen lines of the two internal/wire enums. Whoever reads one is
 	// standing at a lobby with nothing else in front of them, so each says both
 	// what happened and what to do next — a bare translation of the id would be

@@ -44,9 +44,15 @@ const (
 	// it.
 	screenBonuses
 	screenSquads
-	// screenBattle is on the menu and is also raised from the squad catalogue
-	// with `f`. See pairing.go for which two squads it opens on and why that is
-	// the seam the network work replaces.
+	// screenPairing is where the two sides of a hot-seat battle are chosen: the
+	// side the reader takes in and the side it is put against, one cursor each.
+	// It is what the menu's battle entry opens, and the battle is entered from
+	// it. See pairing.go, which holds both the screen and the pairing its two
+	// cursors are read into.
+	screenPairing
+	// screenBattle is entered from the chooser above and is also raised from the
+	// squad catalogue with `f`. See pairing.go for which two squads it opens on
+	// and why that is the seam the network work replaces.
 	screenBattle
 	// screenStatuses is raised from the traits listing with `?`, which is where a
 	// trait names a status. It is not on the menu: the question it answers is
@@ -159,7 +165,7 @@ var menuItems = []menuItem{
 	{i18n.MenuOrigins, i18n.GameMenuWorksDetail, screenWorks},
 	{i18n.MenuBonuses, i18n.MenuBonusesDetail, screenBonuses},
 	{i18n.MenuSquads, i18n.GameMenuSquadsDetail, screenSquads},
-	{i18n.GameMenuBattle, i18n.GameMenuBattleDetail, screenBattle},
+	{i18n.GameMenuBattle, i18n.GameMenuBattleDetail, screenPairing},
 	{i18n.GameMenuJoin, i18n.GameMenuJoinDetail, screenJoin},
 }
 
@@ -215,6 +221,22 @@ type model struct {
 	// not know. The raise names an id and subject.go turns it into this. See
 	// pairing.go for what the row is turned into.
 	taking int
+	// against is the row the side above is being put against, and it is taking's
+	// opposite number: one cursor for each half of the pairing, both of them
+	// rows for the same reason, and both read by pairing.
+	//
+	// ⚠️ **It opens on the SECOND row rather than on the first**, which is
+	// awayOpensOn below, and that is the whole of what keeps a catalogue nobody
+	// has chosen anything on opening the way it always has: two different sides.
+	// It is clamped like taking, so a catalogue holding one row lands back on it
+	// and the battle is a side against a copy of itself — which pairing.go
+	// argues is a real opponent rather than a degenerate one.
+	//
+	// ⚠️ **It is a standing answer rather than a screen's cursor**, which is why
+	// it lives here beside taking instead of on a screen struct: the catalogue's
+	// `f` names a home side and says nothing about the other half, so the answer
+	// it does not give has to be one the reader gave earlier and can give again.
+	against int
 
 	cast     draw.BrowseScreen
 	skills   draw.SkillsScreen
@@ -305,6 +327,7 @@ func newModel(lib *forge.Library, lang i18n.Lang, sess *session, player []placem
 		lang:     lang,
 		style:    style,
 		player:   player,
+		against:  awayOpensOn,
 		cast:     draw.NewBrowseScreen(lib),
 		skills:   draw.NewSkillsScreen(ctx),
 		traits:   draw.NewPassivesScreen(lib),
@@ -647,6 +670,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		next, action, command := m.squads.Update(m.ctx(), message)
 		m.squads = next
 		return m.navigateWith(screenSquads, action, command)
+	case screenPairing:
+		return m.updatePairing(message)
 	case screenBattle:
 		next, action := m.battle.Update(m.ctx(), message)
 		m.battle = next
@@ -1106,6 +1131,13 @@ func (m model) enter(target screen) model {
 		m.works = m.works.Refresh(m.ctx())
 	case screenSquads:
 		m.squads = m.squads.Refresh(m.ctx())
+	case screenPairing:
+		// Re-read for the reason the battle re-reads it: the chooser walks the
+		// catalogue, and the ordinary way somebody plays a side is to have just
+		// built it in the other front-end. The two cursors are not clamped here —
+		// pairing clamps them where they are read, which is the one place that
+		// can be sure the list they index is the list in hand.
+		m.squads = m.squads.Refresh(m.ctx())
 	case screenBattle:
 		// The catalogue is re-read before the pairing is taken off it, because the
 		// pairing is read out of that list rather than off this screen — the same
@@ -1137,8 +1169,17 @@ func (m model) enter(target screen) model {
 // entry is refused for the mirror image of the same reason — a second Dial
 // would orphan the first socket. Both go to the match instead, which is where
 // the reader was trying to get back to anyway.
+//
+// ⚠️ **The chooser is on this list as well, and it is the entry the menu
+// actually names.** A hot-seat battle is Opened one keystroke later now, from
+// screenPairing rather than from the menu, so a guard that named only the
+// battle would let a reader in a match walk to the chooser and press enter —
+// the same Open over the same live mirror, one screen further along. The
+// battle stays named beside it because nothing about that risk is the menu's:
+// it is the screen the Open happens on.
 func (m model) enterUnlessInAMatch(target screen) model {
-	if !m.session.live() || (target != screenBattle && target != screenJoin) {
+	if !m.session.live() ||
+		(target != screenPairing && target != screenBattle && target != screenJoin) {
 		return m.enter(target)
 	}
 	if m.battle.Live && m.battle.Fight != nil {
@@ -1212,6 +1253,8 @@ func (m model) parts() (body, footer string) {
 		return m.works.View(m.ctx())
 	case screenSquads:
 		return m.squads.View(m.ctx())
+	case screenPairing:
+		return m.viewPairing()
 	case screenBattle:
 		return m.battle.View(m.ctx())
 	case screenStatuses:

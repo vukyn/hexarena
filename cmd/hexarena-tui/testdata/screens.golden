@@ -527,6 +527,29 @@ trận đấu đã xong
 
 
 ctrl+l English · esc quay lại
+===== vi | 120x24 | a pairing against a copy =====
+
+hai phe ra trận
+
+  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+
+  phe mình < đội thử 0 >  phe-0
+  gặp      < đội thử 0 >  phe-0
+
+  hai phe cùng một đội: trận này đánh với bản sao của chính nó
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ phe mình · ←/→ phe kia · enter vào trận · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a refused join =====
 
 vào phòng đấu
@@ -1125,6 +1148,29 @@ fixture-anime.adept — Example Adept
                                             ++++++++++++++++++++++++++++++++                                          
 
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | the pairing =====
+
+hai phe ra trận
+
+  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+
+  phe mình < đội thử 0 >  phe-0
+  gặp      < đội thử 1 >  phe-1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ phe mình · ←/→ phe kia · enter vào trận · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | traits =====
 
 nội tại  các nội tại đã khai báo, và ai mang
@@ -2574,6 +2620,65 @@ trận đấu đã xong
 
 
 ctrl+l English · esc quay lại
+===== vi | 160x60 | a pairing against a copy =====
+
+hai phe ra trận
+
+  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+
+  phe mình < đội thử 0 >  phe-0
+  gặp      < đội thử 0 >  phe-0
+
+  hai phe cùng một đội: trận này đánh với bản sao của chính nó
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ phe mình · ←/→ phe kia · enter vào trận · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a refused join =====
 
 vào phòng đấu
@@ -4108,6 +4213,65 @@ fixture-anime.adept — Example Adept
                             ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                          
 
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | the pairing =====
+
+hai phe ra trận
+
+  chọn cho mỗi phe một đội, rồi tự cầm quân đánh
+
+  phe mình < đội thử 0 >  phe-0
+  gặp      < đội thử 1 >  phe-1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ phe mình · ←/→ phe kia · enter vào trận · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | traits =====
 
 nội tại  các nội tại đã khai báo, và ai mang
@@ -4873,6 +5037,29 @@ the match is over
 
 
 ctrl+l tiếng Việt · esc back
+===== en | 120x24 | a pairing against a copy =====
+
+the two sides
+
+  choose a side for each half, then play the battle out yourself
+
+  your side < đội thử 0 >  phe-0
+  against   < đội thử 0 >  phe-0
+
+  the same side on both halves: the battle is fought against a copy of itself
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ your side · ←/→ the other side · enter play it · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a refused join =====
 
 join a room
@@ -5471,6 +5658,29 @@ fixture-anime.adept — Example Adept
                                             ++++++++++++++++++++++++++++++++                                          
 
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | the pairing =====
+
+the two sides
+
+  choose a side for each half, then play the battle out yourself
+
+  your side < đội thử 0 >  phe-0
+  against   < đội thử 1 >  phe-1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ your side · ←/→ the other side · enter play it · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | traits =====
 
 traits  the declared traits, and who carries each
@@ -6920,6 +7130,65 @@ the match is over
 
 
 ctrl+l tiếng Việt · esc back
+===== en | 160x60 | a pairing against a copy =====
+
+the two sides
+
+  choose a side for each half, then play the battle out yourself
+
+  your side < đội thử 0 >  phe-0
+  against   < đội thử 0 >  phe-0
+
+  the same side on both halves: the battle is fought against a copy of itself
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ your side · ←/→ the other side · enter play it · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a refused join =====
 
 join a room
@@ -8454,6 +8723,65 @@ fixture-anime.adept — Example Adept
                             ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                          
 
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | the pairing =====
+
+the two sides
+
+  choose a side for each half, then play the battle out yourself
+
+  your side < đội thử 0 >  phe-0
+  against   < đội thử 1 >  phe-1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ your side · ←/→ the other side · enter play it · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | traits =====
 
 traits  the declared traits, and who carries each

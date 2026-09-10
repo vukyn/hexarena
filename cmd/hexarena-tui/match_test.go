@@ -472,7 +472,12 @@ func TestTheMenuWillNotOpenABattleOverALiveMatch(t *testing.T) {
 	}
 	engine := m.battle.Fight
 
-	for _, target := range []screen{screenBattle, screenJoin} {
+	// ⚠️ **The chooser is the entry the menu actually names**, since a hot-seat
+	// battle is Opened one screen further along than it used to be — so a guard
+	// naming the battle alone would let a reader in a match walk to the chooser
+	// and press enter there. The battle stays in the list beside it because the
+	// risk is the Open rather than the menu entry.
+	for _, target := range []screen{screenPairing, screenBattle, screenJoin} {
 		after := m.enterUnlessInAMatch(target)
 		if !after.battle.Live {
 			t.Errorf("entering %v from the menu while a match is live turned the battle "+
