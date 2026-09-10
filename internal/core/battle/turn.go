@@ -994,72 +994,92 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	if err != nil {
 		return err
 	}
-	var bitten []*Unit
 	for position, cell := range covers(shape, known, aim, unit.Side) {
 		target := b.occupant(cell)
 		if target == nil {
 			continue
 		}
-		// Every target takes the whole skill before anybody answers it. A reply
-		// resolved here, in the middle of the loop, could kill the actor while
-		// it still had cells to hit — and "what happens to the rest of the
-		// skill" is a question with no good answer, so the shape of this loop is
-		// what stops it being asked.
-		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, aim, brought, turn); dealt > 0 {
-			bitten = append(bitten, target)
-		}
+		// A reply now resolves inside the strike loop, one per connecting
+		// strike, so it can kill the actor while the skill still has cells to
+		// hit. This loop used to be shaped to stop that being possible: every
+		// target took the whole skill before anybody answered it, because "what
+		// happens to the rest of the skill" was a question with no good answer.
+		//
+		// The game's owner answered it — a reply answers a strike rather than a
+		// use — and the rest of the skill is what a dead caster does not get:
+		// nothing further is thrown, at this cell or at any cell after it. That
+		// is the whole of the guard below, and the strike loop in resolveAgainst
+		// carries the other half of it.
+		b.resolveAgainst(unit, target, known, shape.Name, position, aim, brought, turn)
 		if b.finished {
 			return nil
 		}
+		// Breaking rather than returning, because the turn still has to be
+		// tidied up after: a caster killed by what it provoked has come off the
+		// queue and its statuses are gone with it, which is a retune, and the
+		// board it left behind may be a stalemate, which is a settle.
+		if unit.Dead {
+			break
+		}
 	}
-	b.answer(unit, bitten, turn)
 	b.retuneAll(turn)
 	b.settle()
 	return nil
 }
 
-// answer is what the units a skill just hurt cost the unit that hurt them.
+// answer is what a strike that drew blood costs the unit that threw it.
 //
-// # When it runs, and why here rather than anywhere else
+// # When it runs, and why there rather than after the skill
 //
-// After the whole skill, once, per holder. Three of the four rules this feature
-// was designed under are simply where this call sits: a reply answers a *use* of
-// a skill rather than a strike, so a trait's worth cannot scale with somebody
-// else's strike count; the holder takes every strike first, so a striker never
-// dies partway through its own turn; and a reply never triggers a reply, which
-// is closed by the shape of the code rather than by a depth counter — the list
-// is built from the skill loop above and a reply is not in it, so there is
-// nothing here for a second one to answer.
+// Inside the strike loop, once per connecting strike, against the one holder
+// that strike hurt. It used to run after the whole skill, once per holder, and
+// that was a rule with a number attached: a reply answered a *use*, so a trait
+// was worth the same against a five strike volley as against one blow. The
+// game's owner reversed it — a volley that connects five times is answered five
+// times — so reply damage now multiplies by the strikes that got through, which
+// is a balance change rather than a change of bookkeeping.
+//
+// Two of the four rules the feature was designed under still sit in where this
+// is called from. A reply never triggers a reply, closed by the shape of the
+// code rather than by a depth counter: this is reached only from the strike
+// loop of a skill, and a reply throws no strikes. And a striker CAN now die
+// partway through its own turn, which is the rule that changed — resolveAgainst
+// stops the volley and Act stops the cell walk, both off actor.Dead.
 //
 // # What does not answer
 //
-// A holder the skill killed does not, the way a dead unit cannot be healed.
-// Neither does one whose trait is gated shut, nor the actor itself: a skill that
-// caught its own caster is still not somebody attacking it.
-func (b *Battle) answer(actor *Unit, bitten []*Unit, turn atb.Turn) {
-	if len(bitten) == 0 || b.books.Passives == nil {
+// A strike that drew no blood, which is the caller's guard: a blocked or missed
+// strike costs nothing, and a shield that made a reply fire would turn every
+// point blocked into a point taken back — the more you guard, the harder you
+// are answered.
+//
+// A holder the strike just killed does not, the way a dead unit cannot be
+// healed. The test is health rather than the Dead flag for the reason
+// reconsider gives: the strike loop leaves a target at nought for the rest of
+// the skill and kills it afterwards, so a flag-only guard would have a corpse
+// answering from two events before its died line.
+//
+// Nor does a holder whose trait is gated shut, nor the actor itself: a skill
+// that caught its own caster is still not somebody attacking it.
+func (b *Battle) answer(actor, holder *Unit, turn atb.Turn) {
+	if b.books.Passives == nil || holder == actor || holder.Dead || holder.HP <= 0 {
 		return
 	}
-	for _, holder := range bitten {
-		if holder.Dead || holder == actor {
+	for _, id := range holder.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
 			continue
 		}
-		for _, id := range holder.Passives {
-			held, err := b.books.Passives.Lookup(id)
-			if err != nil {
-				continue
-			}
-			if !held.Replies.Answers() || !b.inForce(holder, held) {
-				continue
-			}
-			b.reply(holder, actor, held, turn)
-			if actor.Dead {
-				// The attacker is gone, so anybody still holding a reply is
-				// answering nothing. Returning rather than breaking is the
-				// difference between a corpse taking one more hit and taking
-				// several.
-				return
-			}
+		if !held.Replies.Answers() || !b.inForce(holder, held) {
+			continue
+		}
+		b.reply(holder, actor, held, turn)
+		if actor.Dead {
+			// The attacker is gone, so anybody still holding a reply is
+			// answering nothing. Returning rather than breaking is the
+			// difference between a corpse taking one more hit and taking
+			// several.
+			return
 		}
 	}
 }
@@ -1432,6 +1452,28 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			// reader could find on either skill.
 			if event.Kind == Damaged {
 				b.reconsider(target, turn)
+			}
+			// The strike is answered here, where it landed, rather than once
+			// for the whole skill afterwards: a volley that connects three
+			// times is answered three times. Only a strike that drew blood —
+			// a blocked one arrived and cost nothing, and a shield that
+			// provoked a reply would pay a target for guarding.
+			//
+			// After reconsider, deliberately. A trait that came on because of
+			// this strike is in force for the answer to it, which is what the
+			// gate says and what the reply read back when it ran at the end of
+			// the skill.
+			if event.Kind == Damaged && attempt.Damage > 0 {
+				b.answer(actor, target, turn)
+				// The reply may have killed the caster, and a dead caster
+				// throws nothing further. Breaking rather than returning
+				// leaves the payout for the strikes that DID land — this
+				// target's riders, its restore, the drain on what was dealt —
+				// where the rest of this function already puts it; what stops
+				// is the volley. The cell walk in Act stops on the same flag.
+				if actor.Dead {
+					break
+				}
 			}
 			// A target that has fallen takes no further strikes; the rest of a
 			// multi-strike skill is simply wasted on it.

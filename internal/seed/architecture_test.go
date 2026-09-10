@@ -63,7 +63,17 @@ import (
 // annoying: a different skill book is a different battle, and two peers on
 // different data are already refused at the gate by the data digest. What it must
 // never do is differ between two machines running the same commit.
-const theWholeBattleDigest = "33cb730dd32bc9e9d937ec46a068597de406bda9290c85440ea32b594291c4c0"
+//
+// ⚠️ **A rule change moves it too, on unchanged data**, which is the same
+// sentence one layer down and was first paid on the day a reply started
+// answering every strike rather than each use of a skill: the roster fields one
+// trait that answers, so the battle from seed 11 took a different path from its
+// second turn. Two peers on different *code* are refused by the version rather
+// than by the data digest, so nothing about that is a hole — but read the
+// replay golden beside this constant before accepting a new one, because a
+// digest that moved for a reason nobody can name in the log is the failure this
+// test is for.
+const theWholeBattleDigest = "bac8254b824ac25c621c0f9312c2f9c74d5860875584e7b4580f3d7d25ff3618"
 
 // TestTheEventDigestIsTheSameOnEveryArchitecture is the assumption PvP rests on,
 // pinned.

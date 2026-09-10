@@ -1324,6 +1324,13 @@ the entries were written in, which is roughly the order they landed.
       *not* by a depth counter; **once per USE, not per strike**; **every target
       takes the whole skill first**. A holder the skill killed does not answer,
       and once one reply kills the attacker the holders behind it do not either.
+      ⚠️ **The third and fourth of those were REVERSED later**, by the owner: a
+      reply now fires **once per damaging strike**, inside the strike loop, so
+      reply damage multiplies by the strikes that connected — and a reply that
+      kills the caster stops the volley and the rest of the shape with it. The
+      two that survive are unchanged. The rest of this entry is the record of
+      what was decided at the time and is left standing; `README.md` § *the four
+      rules* carries the rule as it is now.
       ⚠️ **A reply is priced by how often its holder is attacked and how long it
       survives, and no number on the trait can say that.** Both Bulbasaurs hold
       `venom_blood`, but the ally fields Venusaur at 60 and the enemy Ivysaur at

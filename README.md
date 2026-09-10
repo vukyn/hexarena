@@ -4781,8 +4781,11 @@ another, and a trait reading it would make a fire creature's blood weak to water
 for a reason written nowhere on the trait; an accuracy roll asks whether contact
 was made, and contact is the thing that has already happened.
 
-Four rules, and three of them are simply where the call sits — after the whole
-skill, once, per holder.
+Four rules, and three of them are simply where the call sits — **inside the
+strike loop, once per damaging strike, against the holder that strike hurt.**
+⚠️ Two of the four read the other way round until the owner reversed the middle
+one below; the old placement (after the whole skill, once, per holder) is kept
+in the bullets, because it is the reason the code had the shape it had.
 
 - **A reply may kill**, and a battle can end on a turn nobody took. A
   damage-over-time tick already ends battles, so the shape existed; what is new
@@ -4792,21 +4795,36 @@ skill, once, per holder.
   built from the skill's own targets, and a reply is not in it — so there is
   nothing for a second one to answer. Two holders facing each other settle in one
   exchange.
-- **A reply answers a use of a skill, not a strike.** Otherwise a trait's worth
-  would scale with somebody else's strike count, and `fire_fang` would be quietly
-  worse than `flamethrower` into one holder for a reason written on neither.
-- **The holder takes every strike first and answers afterwards** — indeed, every
-  *target* takes the whole skill before anybody answers it. A reply resolved
-  inside the loop could kill the actor while it still had cells to hit, and "what
-  happens to the rest of the skill" is a question with no good answer.
+- ⚠️ **A reply answers a strike, not a use of a skill** — **reversed**, by the
+  game's owner, and it is a balance change rather than a change of bookkeeping:
+  reply damage is now multiplied by the number of strikes that connected, so a
+  volley that lands five times is answered five times. It read the other way for
+  the reason it is worth keeping written down — a trait's worth then could not
+  scale with somebody else's strike count, and `fire_fang` could not be quietly
+  worse than `flamethrower` into one holder for a reason written on neither. The
+  owner took the trade: a multi-strike attack into a spiked target is now
+  meaningfully worse than a single heavy one, and that difference is the point.
+  ⚠️ **A strike that drew no blood is still not answered**, per strike now: a
+  blocked volley costs its attacker nothing at all, because a shield that
+  provoked a reply would be a thorns amplifier — the more you stopped, the
+  harder you would be answered.
+- **The holder takes each strike and answers it before the next one is thrown**,
+  and a reply can therefore kill the caster in the middle of its own volley. The
+  old shape — every *target* takes the whole skill before anybody answers it —
+  existed to make that impossible, because "what happens to the rest of the
+  skill" was a question with no good answer. It has one now: the caster is dead,
+  so nothing further happens. No further strikes at that target, and no further
+  cells of the shape.
 
-That last one leaves the holder's death as the only one that can land first, and
-dead is dead: **a holder killed by the skill does not answer**, the way it cannot
-be healed. Which hands retaliation a counter without anybody designing one —
-killing the holder outright is how a reply is avoided, so a trait that punishes
-attacking rewards hitting hard instead of taxing everybody equally. The same rule
-runs the other way: once one holder's reply has killed the attacker, the holders
-behind it are answering a corpse, and they do not.
+Two deaths can therefore land partway through a skill, and each has its own
+rule. **A holder killed by the strike does not answer it**, the way a dead unit
+cannot be healed — so the strikes it survived are answered and the one that
+finished it is not. That hands retaliation a counter without anybody designing
+one: killing the holder outright is how a reply is avoided, so a trait that
+punishes attacking rewards hitting hard instead of taxing everybody equally. And
+once one holder's reply has killed the attacker, the holders behind it are not
+answering a corpse — they are never reached at all, because the shape stops with
+the caster.
 
 #### What the sweep found, which is why the shipped numbers are small
 
@@ -4832,7 +4850,13 @@ cannot be big without the roster stopping being a measuring instrument:
 So the shipped reply is a scratch and a two and a half per cent chance of poison.
 ⚠️ Every figure in the table above was measured **before** a placement brought
 four skills of nine, which moved the same roster from 51.9 to 49.5 — so read them
-as the shape of the curve rather than as today's numbers. Anything an author is tempted
+as the shape of the curve rather than as today's numbers.
+⚠️ **And every one of them predates a reply answering each strike.** A holder is
+now answered as often as a volley connects, so the whole column is a floor on
+what the same numbers buy today: `razor_leaf` alone is two strikes, and the
+roster's own repliers are hit by it. What that is worth has not been re-measured
+— it wants the same thousands of seeds this table was taken over, not the
+40-seed sweep in the tests. Anything an author is tempted
 to raise here should be measured over thousands of seeds first, because the
 40-seed sweep in the tests cannot see a move of this size.
 
