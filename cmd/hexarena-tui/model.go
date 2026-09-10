@@ -1280,7 +1280,22 @@ func (m model) viewTooSmall() string {
 // somebody else's frame. That is a mirror rather than a declaration, which is
 // why both clients' goldens record the framed result.
 func (m model) frame(body, footer string) string {
-	header := m.style.Title.Render(programName) + m.style.Dim.Render("  "+m.lib.Dir())
+	// ⚠️ **The separator belongs to the directory, not to the header.** This
+	// client is the one that can run without a data directory at all — the
+	// embedded books need none — and `programName + "  " + ""` is the program's
+	// name with two spaces welded to the end of it, on every screen it ever
+	// draws. Nothing shows, so nothing looks wrong; what it costs is a trailing
+	// run on the first line of every copy anybody takes out of a terminal, and a
+	// first line no assertion can compare without trimming it.
+	//
+	// cmd/hexforge-tui's frame is deliberately the same arithmetic and is
+	// deliberately **not** the same line: an authoring tool is a tool for
+	// editing a directory, forge.Load refuses an empty one, and a header there
+	// is never handed nothing to draw.
+	header := m.style.Title.Render(programName)
+	if dir := m.lib.Dir(); dir != "" {
+		header += m.style.Dim.Render("  " + dir)
+	}
 	lines := []string{header, ""}
 	lines = append(lines, strings.Split(body, "\n")...)
 

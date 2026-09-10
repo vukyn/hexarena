@@ -280,7 +280,38 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"statuses":         NewStatusesScreen(lib),
 		"bonuses":          NewBonusesScreen(lib),
 		"the art preview":  theArtPreview(t, c, lib),
-		"trait blurb":      traitBlurb(t, c, lib),
+		// ⚠️ **The two states the preview draws when there is no picture, as a
+		// pair and deliberately adjacent.** One is an author's directory with a
+		// file nobody has drawn yet and one is a binary that carries no art at
+		// all, and the whole subject of the change that added them is that they
+		// are not the same sentence — so a reader of this file sees the
+		// distinction rather than inferring it from one entry and a comment. See
+		// each builder for what it holds.
+		//
+		// ⚠️ **The cast browser draws the same three-way verdict on its art row
+		// and is deliberately NOT recorded in those two states. That is a
+		// decision, not an oversight.** `browse.go`'s artLine answers `present` /
+		// `MISSING` / `not shipped`, and only the first of the three is in this
+		// file. What a record would add over
+		// TestTheCastRowSaysMissingOnlyWhereThereIsADirectoryToBeMissingFrom —
+		// which tables all three arms in both languages and refuses each arm the
+		// other two words — is **layout**, and the layout is already here: the
+		// `browse` entry records that row four times, and the three verdicts
+		// differ only in the word at the end of a line that has no column of its
+		// own. The preview is the opposite case and is why it earned two entries:
+		// its two states return early and draw a structurally different body, no
+		// picture in it at all.
+		//
+		// The cost is the second argument rather than the first, and it is
+		// measured: a `browse` render is 25–50 lines against this preview's 8, so
+		// the two extra states would be about **300 golden lines to pin two
+		// words** — and, per the note on detail panes below, they would pin them
+		// for whichever character the cursor happens to sit on. If artLine ever
+		// grows a *column* the verdict sits in, that argument stops holding and
+		// these entries should arrive.
+		"the art preview with nothing drawn":   theArtPreviewWithNothingDrawn(t, c),
+		"the art preview with nothing shipped": theArtPreviewWithNothingShipped(t, c),
+		"trait blurb":                          traitBlurb(t, c, lib),
 		// ⚠️ **The three read-only views over the one shipped character whose
 		// evolution line forks**, which is the case every entry above walks past.
 		// See theForkedRaise for what they hold that the linear ones cannot.
@@ -1552,6 +1583,125 @@ func theArtPreview(t *testing.T, c Context, lib *forge.Library) PreviewScreen {
 			"to, so this is not a record of a full-width drawing", widest, want)
 	}
 	return preview
+}
+
+// theArtPreviewWithNothingDrawn is the preview over an author's directory whose
+// picture is not there yet: MISSING, in the bad style, which is a real problem
+// somebody can go and fix.
+//
+// ⚠️ **It is the OLDER of the two states and it was in no golden at all**, which
+// is why it is here rather than left to the hand-written table in
+// nodirectory_test.go. Measured 2026-09-10: `MISSING` and `THIẾU` had **nought
+// hits across all three screens.golden files** — every fixture in this
+// repository loads a directory *and* its art, so in something like 460 recorded
+// renders the art verdict had only ever been drawn in its `present` form. A
+// distinction whose new half is recorded and whose old half is not is a
+// distinction one careless edit deletes in silence: the record would still show
+// a screen saying the right thing to a player and nothing anywhere would say
+// what an author is owed.
+//
+// The directory is books and no assets, built by booksWithoutArt, and the two
+// reasons it is built that way rather than by deleting pictures out of a
+// scratch copy are written down there.
+//
+// ⚠️ Nothing of the directory reaches the drawing — the preview names the
+// character's authored path, which is relative — so this entry is reproducible
+// on any machine and noAbsolutePath has nothing to catch. That is a property of
+// *this* screen and not of the fixture: an entry recording the check screen
+// would print the directory in its count line.
+func theArtPreviewWithNothingDrawn(t *testing.T, c Context) drawable {
+	t.Helper()
+	onDisk := booksWithoutArt(t)
+	browser := NewBrowseScreen(onDisk)
+	browser.Level = progression.LevelCap
+	subject := browser.Subject()
+	if subject.Of == 0 {
+		t.Fatal("the shipped cast has no rows, so there is nothing to preview")
+	}
+	preview := NewPreviewScreen()
+	preview.Subject = subject
+	over := overALibrary{inner: preview, lib: onDisk}
+	drawn, _ := over.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.ArtMissing)) {
+		t.Fatalf("the preview over a directory with no pictures does not say the art is "+
+			"missing, so this entry records something else:\n%s", drawn)
+	}
+	if strings.Contains(drawn, c.Text(i18n.PreviewArtNotShipped)) {
+		t.Fatalf("the preview over a real directory says the pictures are not carried, "+
+			"which is the player's sentence and not this state's:\n%s", drawn)
+	}
+	return over
+}
+
+// theArtPreviewWithNothingShipped is the same screen drawn for somebody who
+// installed the binary: the books came out of go:embed, the art did not, and the
+// picture's row is one sentence saying so.
+//
+// ⚠️ **It is recorded because it is a state a shipped binary is in by default
+// and no golden anywhere could reach it.** Both clients' fixtures and this one
+// load a directory, so every entry in all three files draws a library that has
+// one — the sentence a player actually reads had nought hits in 3,851 + 8,200 +
+// 3,936 lines before this. What the record then holds is the *wording in both
+// languages* and the fact that the rest of the screen is ordinary: the heading,
+// the art/level/stage line and the footer are all still there, which is the
+// claim "no picture is not an error page" reduces to.
+//
+// It is cheap for the same reason it is worth having: View returns at the line,
+// so nothing below it is drawn and the entry is a handful of rows rather than a
+// rasterised cast member.
+//
+// ⚠️ **Both halves are asserted, and the negative half is the one that matters.**
+// A wrong fix here does not crash and does not blank the screen — it draws the
+// author's MISSING at a player, which is a perfectly well-formed render that a
+// record with no assertion over it would happily freeze.
+func theArtPreviewWithNothingShipped(t *testing.T, c Context) drawable {
+	t.Helper()
+	embedded, err := forge.LoadEmbedded()
+	if err != nil {
+		t.Fatalf("load the embedded copy: %v", err)
+	}
+	if embedded.HasDataDirectory() {
+		t.Fatal("the embedded library reports a data directory, so this entry records " +
+			"the ordinary preview under a second name")
+	}
+	browser := NewBrowseScreen(embedded)
+	browser.Level = progression.LevelCap
+	subject := browser.Subject()
+	if subject.Of == 0 {
+		t.Fatal("the embedded cast has no rows, so there is nothing to preview")
+	}
+	preview := NewPreviewScreen()
+	preview.Subject = subject
+	over := overALibrary{inner: preview, lib: embedded}
+	drawn, _ := over.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.PreviewArtNotShipped)) {
+		t.Fatalf("the preview over an embedded library does not say the pictures are "+
+			"not carried, so this entry records something else:\n%s", drawn)
+	}
+	if strings.Contains(drawn, c.Text(i18n.ArtMissing)) {
+		t.Fatalf("the preview over an embedded library still says MISSING, which is the "+
+			"line this entry exists to record the absence of:\n%s", drawn)
+	}
+	return over
+}
+
+// overALibrary draws a screen against a library other than the one the record's
+// Context carries, keeping its language, its palette and its size.
+//
+// The map every entry goes into is handed **one** Context per language, which is
+// what makes the record comparable — so a state whose whole subject is a
+// *different library* has nowhere else to live. Swapping the field on the copy a
+// value receiver already has is the smallest thing that can express it: nothing
+// else about the render changes, so a diff between this entry and the one above
+// it is a diff about the library and nothing else.
+type overALibrary struct {
+	inner drawable
+	lib   *forge.Library
+}
+
+func (o overALibrary) View(c Context) (string, string) {
+	c.Lib = o.lib
+	return o.inner.View(c)
 }
 
 // aRampRow reports whether a line is drawn art rather than wording.

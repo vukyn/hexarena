@@ -385,39 +385,63 @@ func mustAbs(t *testing.T, path string) string {
 	return resolved
 }
 
-// TestTheArtPreviewOverAnEmbeddedLibrarySaysThePictureIsMissing records what the
-// one screen that reads a **file** does when there is no directory to read one
-// from.
+// TestTheArtPreviewOverAnEmbeddedLibraryDoesNotAccuseThePlayer is what the one
+// screen that reads a **file** says when there is no directory to read one from,
+// driven through this client's own construction.
 //
-// ⚠️ **This is a record of today's behaviour rather than a design, and the art
-// experience is the next step's to decide.** The art is not embedded — sixty-six
-// files and 16 MB — so an embedded library answers the empty path for every
-// picture (forge.Library.ImagePath), `os.Stat("")` fails, ArtStamp answers "not
-// present", and the preview draws the same "no picture" line it draws for a
-// character whose art has not been drawn yet. That is a sentence from
-// internal/i18n on a screen that otherwise renders normally: no panic, no error
-// text carrying a path, nothing corrupt. Nothing was guarded here because there
-// was nothing to guard.
+// ⚠️ **It replaces TestTheArtPreviewOverAnEmbeddedLibrarySaysThePictureIsMissing,
+// which recorded the opposite claim and said in its own comment that the art
+// step was free to move it.** What that test froze was the honest state of the
+// program at the time: the art is not embedded — sixty-six files and 16 MB — so
+// an embedded library answers the empty path for every picture, os.Stat("")
+// fails, and the preview drew `i18n.ArtMissing` in the bad style. For an author
+// that word is right and somebody should go and draw the file. For a player who
+// installed the binary it is false in every part: nothing is missing, their
+// setup is not broken, and there is no directory they could put a picture in.
 //
-// What it is worth keeping is the negative half: whatever step three does with
-// art, the preview may not start panicking or drawing a raw decode error at a
-// player who has no assets folder and never asked for one.
-func TestTheArtPreviewOverAnEmbeddedLibrarySaysThePictureIsMissing(t *testing.T) {
+// This is the client's half of the pair. The wording decision itself, and the
+// arm that keeps the author's MISSING where it belongs, are in
+// internal/screen/nodirectory_test.go — a package test can build both libraries
+// side by side, and what only this file can add is that the whole path holds
+// through `m.enter`: the browser and the raise, drawn inside `frame`.
+//
+// *Sees:* a player accused; the raise breaking; the preview reduced to an error
+// page. *Cannot see:* the author's state, which this client cannot be in.
+func TestTheArtPreviewOverAnEmbeddedLibraryDoesNotAccuseThePlayer(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
 	lib, err := forge.LoadEmbedded()
 	if err != nil {
 		t.Fatalf("load the embedded copy: %v", err)
 	}
+	if lib.HasDataDirectory() {
+		t.Fatal("the embedded library reports a data directory, so this test measures " +
+			"the ordinary preview")
+	}
 	m := newModel(lib, i18n.En, newSession(), nil)
 	m.width, m.height = 120, 44
 
 	browser := m.enter(screenCast)
+	// The cast browser is on the way to the preview and carries the same verdict
+	// on a row of its own, so it is asserted here rather than being passed
+	// through: a player meets it one keystroke earlier than the preview.
+	if said := browser.text(i18n.ArtMissing); strings.Contains(drawnBody(browser), said) {
+		t.Errorf("the cast browser over an embedded library says %q at a player:\n%s",
+			said, drawnBody(browser))
+	}
+	if want := browser.text(i18n.ArtNotShipped); !strings.Contains(drawnBody(browser), want) {
+		t.Errorf("the cast browser over an embedded library does not say %q:\n%s",
+			want, drawnBody(browser))
+	}
+
 	preview := raisedFrom(t, browser, "p", screenPreview)
 	drawn := drawnBody(preview)
-
-	if want := preview.text(i18n.ArtMissing); !strings.Contains(drawn, want) {
-		t.Errorf("the preview over an embedded library does not say the picture is "+
-			"missing:\n%s", drawn)
+	if want := preview.text(i18n.PreviewArtNotShipped); !strings.Contains(drawn, want) {
+		t.Errorf("the preview over an embedded library does not say the pictures are "+
+			"not carried:\n%s", drawn)
+	}
+	if said := preview.text(i18n.ArtMissing); strings.Contains(drawn, said) {
+		t.Errorf("the preview over an embedded library still says %q, which is the "+
+			"author's word for a file somebody forgot to draw:\n%s", said, drawn)
 	}
 	// The character is still named, so this is the screen drawn over a library
 	// that works rather than an error page.
@@ -428,4 +452,62 @@ func TestTheArtPreviewOverAnEmbeddedLibrarySaysThePictureIsMissing(t *testing.T)
 	if _, err := lib.ArtFiles(); !errors.Is(err, forge.ErrNoDataDirectory) {
 		t.Errorf("an embedded library offered an art list rather than refusing: %v", err)
 	}
+}
+
+// TestTheHeaderCarriesNoTrailingSpaceWithNoDataDirectory is the header's half of
+// the same state.
+//
+// `frame` used to write `programName + Dim("  " + lib.Dir())` unconditionally,
+// so a client with no directory drew the program's name with two spaces welded
+// to the end of it — on every screen, for the whole run. Nothing shows on a
+// terminal, which is why it lasted: what it costs is a trailing run on the first
+// line of every copy anybody pastes out of one, and a first line no assertion
+// can compare without trimming it first.
+//
+// ⚠️ **The assertion is on the rendered line and not on the expression**, which
+// is the difference between measuring the fix and restating it: the separator,
+// the styling and the clip all sit between `Dir()` and what a reader sees, and
+// only the rendered line has all three in it.
+//
+// ⚠️ **The control is the whole test.** "No trailing space" is satisfied by a
+// header that has stopped naming the directory at all, which would be a
+// regression wearing this test's clothes — so the second half runs the same
+// window over a real directory and insists the name and its separator are
+// both there.
+func TestTheHeaderCarriesNoTrailingSpaceWithNoDataDirectory(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
+	embedded, err := forge.LoadEmbedded()
+	if err != nil {
+		t.Fatalf("load the embedded copy: %v", err)
+	}
+	m := newModel(embedded, i18n.Vi, newSession(), nil)
+	m.width, m.height = 120, 44
+	header := firstLineOf(m.screenContent())
+	if header != programName {
+		t.Errorf("the header with no data directory is %q, want exactly %q — "+
+			"%d trailing space(s)",
+			header, programName, len(header)-len(strings.TrimRight(header, " ")))
+	}
+
+	// The same header over a directory, which is what says the line above is a
+	// separator that went away with its subject rather than a header that lost
+	// its subject.
+	dir := scratchData(t)
+	onDisk, err := forge.Load(dir)
+	if err != nil {
+		t.Fatalf("load %s: %v", dir, err)
+	}
+	withDir := newModel(onDisk, i18n.Vi, newSession(), nil)
+	withDir.width, withDir.height = 400, 44
+	named := firstLineOf(withDir.screenContent())
+	if want := programName + "  " + dir; named != want {
+		t.Errorf("the header over a directory is %q, want %q", named, want)
+	}
+}
+
+// firstLineOf is a drawn screen's header row, kept whole — trailing run and all,
+// which is the only reason this is not strings.Cut written inline.
+func firstLineOf(drawn string) string {
+	line, _, _ := strings.Cut(drawn, "\n")
+	return line
 }

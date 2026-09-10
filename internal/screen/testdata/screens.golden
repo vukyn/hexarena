@@ -1308,6 +1308,22 @@ naruto.naruto — Naruto
 
 ----- footer -----
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | the art preview with nothing drawn =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · cấp 60 · giai đoạn Sennin
+
+  THIẾU
+
+----- footer -----
+←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | the art preview with nothing shipped =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · cấp 60 · giai đoạn Sennin
+
+  chương trình không kèm ảnh — ảnh nằm cùng mã nguồn chứ không nhúng vào file chạy
+
+----- footer -----
+←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | trait blurb =====
 Mew  cấp 60
 
@@ -3439,6 +3455,22 @@ naruto.naruto — Naruto
 
 ----- footer -----
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | the art preview with nothing drawn =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · cấp 60 · giai đoạn Sennin
+
+  THIẾU
+
+----- footer -----
+←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | the art preview with nothing shipped =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · cấp 60 · giai đoạn Sennin
+
+  chương trình không kèm ảnh — ảnh nằm cùng mã nguồn chứ không nhúng vào file chạy
+
+----- footer -----
+←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | trait blurb =====
 Mew  cấp 60
 
@@ -4980,6 +5012,22 @@ naruto.naruto — Naruto
                                                    %%%%@#%    %#                                                      
                                                     %%@##%    %**                                                     
                                                        %#     ###                                                     
+
+----- footer -----
+←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | the art preview with nothing drawn =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · level 60 · stage Sennin
+
+  MISSING
+
+----- footer -----
+←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | the art preview with nothing shipped =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · level 60 · stage Sennin
+
+  this program does not carry the pictures — the art lives with the source, not in the binary
 
 ----- footer -----
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
@@ -7090,6 +7138,22 @@ naruto.naruto — Naruto
                                                           @@@@@%*+***%%%               #@+=-==*#                                                              
                                                                %#****%%                 %######                                                               
                                                                  %%%%                                                                                         
+
+----- footer -----
+←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | the art preview with nothing drawn =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · level 60 · stage Sennin
+
+  MISSING
+
+----- footer -----
+←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | the art preview with nothing shipped =====
+naruto.naruto — Naruto
+  assets/naruto-sage-mode.svg · level 60 · stage Sennin
+
+  this program does not carry the pictures — the art lives with the source, not in the binary
 
 ----- footer -----
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit

@@ -87,8 +87,24 @@ func (p PreviewScreen) View(c Context) (string, string) {
 	// screen say it, rather than as a decode error carrying an absolute path: a
 	// missing picture is the ordinary case while art is still being drawn, and
 	// the raw error belongs to the case that is actually strange.
+	//
+	// ⚠️ **"Not there" is TWO states and they are not the same sentence.** An
+	// author has a data directory and a picture nobody has drawn yet: MISSING,
+	// in the bad style, is exactly right and somebody should go and draw it. A
+	// player installed a binary, and the art — sixty-six files and 16 MB — is
+	// deliberately not embedded in one: nothing is missing, their setup is not
+	// broken, and there is no directory for them to put a file in. Telling them
+	// MISSING in red accuses them of a defect they did not cause and cannot fix,
+	// so the second state gets its own sentence and the dim style, which is what
+	// this screen already uses for a fact about the drawing rather than a fault
+	// in it. → forge.Library.HasDataDirectory for why the state is asked of the
+	// library rather than read off the emptiness of Dir.
 	stamp, present := c.Lib.ArtStamp(art)
 	if !present {
+		if !c.Lib.HasDataDirectory() {
+			out.WriteString("  " + c.Style.Dim.Render(c.Text(i18n.PreviewArtNotShipped)) + "\n")
+			return out.String(), footer
+		}
 		out.WriteString("  " + c.Style.Bad.Render(c.Text(i18n.ArtMissing)) + "\n")
 		return out.String(), footer
 	}

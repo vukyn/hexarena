@@ -140,6 +140,54 @@ setup, and a screen that must behave differently on a plain terminal has to ask
 its own `Palette.Plain` rather than render and notice nothing happened. Still
 assert an escape is present before reading one, or the colour claims go vacuous.
 
+⚠️ **A fourth blind spot, and it is a whole STATE rather than a detail: every
+fixture in all three files loads a data directory.** Measured 2026-09-10 on the
+art step. `cmd/hexarena-tui` can now run off `forge.LoadEmbedded()` with no
+directory at all, which is what a `go install` gives a player — and the wording
+that state deserves had **nought hits in 3,851 + 8,200 + 3,936 lines**, both
+languages, because no fixture anywhere is in it. Under mutation: making the
+player's "the pictures are not carried" line apply to *both* states — i.e.
+deleting the author's `MISSING` — reddened **only the two hand-written tests**
+in `internal/screen/nodirectory_test.go`; `go test ./internal/screen
+./cmd/hexarena-tui` was otherwise green, every golden included.
+
+The fix for the record half is cheap and worth knowing, because the golden
+harness looks like it forbids it: `everyMovedScreenDrawn` builds **one** Context
+per language and hands the same one to every entry, so a state whose subject is
+a *different library* has nowhere to live. It does — wrap the entry:
+
+```go
+type overALibrary struct { inner drawable; lib *forge.Library }
+func (o overALibrary) View(c Context) (string, string) { c.Lib = o.lib; return o.inner.View(c) }
+```
+
+`drawable` is one method, the receiver is a value, so swapping the field on the
+copy changes nothing else about the render. **+64 lines, 0 removed** for the
+pair — pure insertion, 8 renders — because the preview returns at the line and
+draws no picture.
+
+⚠️ **Record BOTH halves of a new distinction, and the older half is the one to
+check for.** The first pass recorded only the new state (`nothing shipped`) and
+left the author's `MISSING` where it had always been: in no golden at all. That
+is the weaker half of the job — the new wording is the one somebody is looking
+at, and the *old* one is what a careless edit silently deletes. The pair is
+adjacent in the file on purpose (`"the art preview with nothing drawn"` sorts
+just before `"…with nothing shipped"`), so a reader sees the distinction rather
+than inferring it.
+
+⚠️ **A golden entry can go red two ways, and they are not equally strong.** The
+same mutation, run again with the pair in place: the golden test failed through
+the **builder's own `t.Fatalf`** ("does not say the art is missing"), which
+aborts before any byte is compared. To find out whether the record itself pins
+the wording, the builder's guards had to be lifted temporarily — and it does:
+
+    line 1315, under ===== vi | 120x24 | the art preview with nothing drawn =====
+      golden "  THIẾU"
+      drawn  "  chương trình không kèm ảnh — ảnh nằm cùng mã nguồn chứ không nhúng vào file chạy"
+
+So "the golden reddened" is worth one more question — *through the assertion or
+through the bytes?* — because only the second says the record is a record.
+
 **How to apply:** when a screen moves into `internal/screen`, add its entries to
 *all three* goldens; when one reddens alone, read the table above before assuming
 the others are broken; when a mutation reddens *only* a golden, ask what the
