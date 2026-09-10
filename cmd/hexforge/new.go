@@ -193,7 +193,7 @@ func runNew(args []string) error {
 		return fmt.Errorf("usage: hexforge new [id] [flags]")
 	}
 
-	lib, err := forge.Load(*dir)
+	lib, err := loadForWriting("new", set, *dir)
 	if err != nil {
 		return err
 	}

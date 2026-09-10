@@ -138,6 +138,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `FRG-001` | shipped | Authoring |
 | `FRG-002` | refused | A dependency ban |
 | `FRG-003` | done | The cast census has no command — DONE. `hexforge census` walks the authored… |
+| `FRG-004` | done | `hexforge` could not run from a clean `go install` either, and most of it only READS — DONE. The six reading code paths take the embedded books, the five writing ones refuse in words naming the way out, and a walk holds every path to a declared decision. A `~/.hexforge` default was asked for and REFUSED: nothing in the game ever plays from `--data` |
 | `NET-001` | open | PvP over a LAN — 3v3 or 5v5, one server and n clients |
 
 ## Done
@@ -310,6 +311,149 @@ is only so the shape is readable.
 
 ## Not done
 
+- [x] `FRG-004` ⚠️ **`hexforge` could not run from a clean `go install` either,
+      and most of it only reads.** Raised and closed 2026-09-10, out of the last
+      paragraph of `SCR-014`, which had written the whole tool off as a writer.
+
+      **What was wrong.** All fourteen subcommands opened on
+      `forge.Load(forge.DefaultDataDir)`, and that default is
+      `"internal/seed/data"` — relative to the working directory, so it exists
+      only inside a checkout. Installed from the proxy and run anywhere else,
+      every one of them died on the same line the game client used to:
+
+      ```
+      hexforge: read internal/seed/data/combat.json: open internal/seed/data/combat.json: no such file or directory
+      ```
+
+      **The decision is per CODE PATH, not per subcommand**, which is the one
+      thing a table keyed on the fourteen names would have got wrong. `origins`
+      lists the catalogue and `origins add` appends to it, under one name,
+      dispatched by a single `args[0] == "add"` inside `runOrigins`; `species`
+      and `skills` are the same shape. Eleven code paths reach a data directory:
+
+      | path | reads or writes | how it gets there |
+      |---|---|---|
+      | `loadForListing` | reads | the shared helper behind `origins` `species` `statuses` `archetypes` `passives` `skills` `cast` `builds` — **8** subcommands, one function |
+      | `runShow` | reads | resolving one character and pricing it |
+      | `runCheck` | reads | ⚠️ through `forge.Inspect`, **not** `forge.Load` |
+      | `runSpar` | reads | duels fought in memory |
+      | `runCensus` | reads | the same |
+      | `runWeigh` | reads | the same, both the single and the `--carriers all` form |
+      | `runOriginsAdd` | writes | `origins.json` |
+      | `runSpeciesAdd` | writes | `species.json` |
+      | `runSkillsAdd` | writes | `skills.json` |
+      | `runSkillsEdit` | writes | `skills.json` |
+      | `runNew` | writes | `cast.json` |
+
+      ⚠️ **`runCheck` is the row a `grep` for `forge.Load` cannot see**, and the
+      survey this item was raised from listed ten sites rather than eleven for
+      exactly that reason. `forge.Inspect(dir)` is `Load` and then `Inspect`, and
+      it reaches a directory just as hard while being spelled nothing like it.
+      `check` is now the two halves written out, so the reading rule sits between
+      them. The walk below therefore matches on **registering `--data`** rather
+      than on calling into `forge`: a subcommand that takes the flag has declared
+      it touches a data directory whatever it then does with the string, and one
+      that reached a directory *without* taking the flag would be a worse defect
+      than the one this item is about.
+
+      **The rule is shared with the game client rather than spelled twice.**
+      `SCR-014`'s three lines moved into `forge.LoadForReading(dir, dataGiven)`,
+      and `cmd/hexarena-tui`'s `loadLibrary` is now one line calling it. Two
+      commands cannot import each other, and this is the tool whose own doc
+      comment says neither authoring front-end may restate a rule the other has,
+      **the wording of a refusal included**. The three ⚠️ notes on it — the
+      fallback keys on the directory being ABSENT and never on the load failing;
+      absent means `fs.ErrNotExist` and not "the stat failed"; a named directory
+      is never second-guessed — travel with the function, so a second front-end
+      cannot get two of the three. `forge.DataDirectoryIsAbsent` is exported
+      beside it so a front-end can phrase its own refusal **before** attempting
+      the load.
+
+      **Writers refuse, and the refusal names the way out.** They cannot fall
+      back for the reason `go:embed` is read-only, and the refusal happens on the
+      absence probe rather than at the write: `forge.ErrNoDataDirectory` would
+      otherwise arrive after eleven prompts, which is a worse program than one
+      that says so first. As printed:
+
+      ```
+      hexforge: origins add writes to a data directory and there is none at "internal/seed/data": the copy of the books embedded in this binary cannot be written to, so pass --data <dir> naming a directory that exists, or run hexforge from the root of a hexarena checkout, where internal/seed/data is the game's own
+      hexforge: show reads a data directory and there is none at "/nope": pass --data <dir> naming one that exists, or leave --data off to read the copy of the books embedded in this binary
+      ```
+
+      The second is the other half `SCR-014` left bare: an explicitly named
+      `--data` that is not there is still never replaced, but `forge.Load` could
+      only answer with the read error on whichever book it reached first, naming
+      a file nobody typed.
+
+      ⚠️ **`check` now makes a narrower claim and says so.** A library with no
+      directory asks for no art at all — `forge.artToCheck` already returns
+      nothing, which is what stops sixty-six false problems, and that function's
+      comment used to say nothing inspected such a library. Something does now. So
+      a clean `hexforge check` off the embedded books is *not* the same clean it
+      is over a directory, and the closing note says the art was not looked for
+      and how to look for it.
+
+      ⚠️ **A `~/.hexforge` home default was asked for and REFUSED, and the refusal
+      is a measurement rather than a taste.** Nothing in the game ever plays from
+      the `--data` directory. ⚠️ **Re-measured, and the figures this item was
+      raised with were two out.** `cmd/hexarena-tui/model.go:781` — not 774 —
+      builds its mirror from `seed.Books()` whatever `--data` says, and
+      `cmd/hexarena` calls `seed.Books()` at **four** production sites, not five
+      (`main.go:112`, `:181`, `:593`, `:619`; the fifth in the survey was
+      `cmd/hexarena-host/main.go:455`, a different binary). The direction is
+      unchanged and in fact stronger: `cmd/hexarena` and `cmd/hexarena-host`
+      declare **no `--data` flag at all** — `hexarena-tui` is the only one of the
+      three game binaries that has one, and it uses it for the catalogues and
+      never for a battle. The game's data is
+      `internal/seed/data`, embedded and tracked in git. A home default would send
+      an author to edit a copy that reaches **neither a battle nor the
+      repository** — which is strictly worse than the error it replaces, because
+      it looks like it worked. The one thing that legitimately lives under
+      `os.UserConfigDir` is `forge.PlayerSquadsPath`, and that is the *player's
+      own squads*, which the game really does read. Do not add one; this
+      paragraph exists because the question will be asked again.
+
+      **The guard.** `TestEveryHexforgeCodePathThatReachesTheDataDirectorySaysWhetherItReadsOrWrites`
+      is `internal/forge`'s own idiom — the walk over
+      `Library.home` — pointed at this package: it parses the twelve non-test
+      sources, collects every function registering `--data`, and holds that set
+      **equal** both ways to the decision table. It also reads which of
+      `loadForReading` / `loadForWriting` each one calls, so a row that *claims*
+      to read while the source writes is red, and it forbids anything but those
+      two helpers from calling `forge.Load` / `LoadEmbedded` / `LoadForReading` /
+      `Inspect`. A second bijection covers `loadForListing`'s eight subcommand
+      names, since one function serving eight names would otherwise let a ninth
+      arrive unrun. It logs **12 source files, 11 code paths, 6 reading and 5
+      writing, 8 listing subcommands**, and fails on none — a walk whose predicate
+      has stopped matching agrees with every claim there is. Measured to bite:
+      a fifteenth subcommand with a flag set and no row fails naming it; declaring
+      a writer and calling `loadForReading` fails twice, once on the source and
+      once on the run, where the writer really does get handed the embedded books
+      and renders a skill it can never save; a row for a function that no longer
+      exists fails as stale.
+
+      Beside it, `TestEveryListingSubcommandListsFromACleanInstall` runs all eight
+      names for real, and
+      `TestANamedDataDirectoryThatIsBrokenIsRefusedRatherThanQuietlyReplaced`
+      holds the trap the reading rule is really about — the two-line "load, and
+      take the embedded copy if that errored" version passes every clean-install
+      test here and quietly plays the shipped books over an author's trailing
+      comma. Its second arm builds a checkout-shaped working directory, so the
+      **unnamed and present** line of the rule is measured and not only the named
+      one. ⚠️ Its assertion matches `decode combat rules` rather than
+      `combat.json`: a *read* error is wrapped with the path, a *decode* error is
+      not, so matching the file name would pass only while the load was failing
+      for the wrong reason.
+
+      **What is deliberately not done.** `cmd/hexforge-tui` is untouched. It is an
+      interactive editor whose every screen is one keystroke from a write through
+      `form.go`, so opening it browse-only would mean gating those keys on
+      `HasDataDirectory` at each screen, and `screen.Context.Authoring` is already
+      the flag that decides whether a screen offers authoring at all — the honest
+      shape is a third state (authoring / browsing / read-only) rather than a
+      fallback, and it moves both clients' goldens. Raised as a reading, not
+      built. No golden moved for this item.
+
 - [x] `SCR-014` ⚠️ **The game client could not run from a clean `go install`, and
       then accused the player of a defect the binary caused.** Raised 2026-09-09
       from a real report — `hexforge-tui` first, and the client turned out to have
@@ -408,7 +552,10 @@ is only so the shape is readable.
       arrive. And `hexforge` / `hexforge-tui` still require a real directory,
       correctly: they **write** files, and `go:embed` is read-only. ⚠️ Their error
       message is still the bare relative path with no hint about `--data` or the
-      module root; that is a separate item and is not raised yet.
+      module root; that is a separate item — raised and closed as `FRG-004`
+      above, which also corrects the sentence before it: `hexforge` requires a
+      real directory only where it **writes**, and most of it does not, and
+      `hexforge-tui` is untouched and still requires one everywhere.
 
 - [ ] `ENG-014` ⚠️ **Nothing runs the test suite on a pull request.** A
       stale golden merged to `main` and sat there red for one commit, and the

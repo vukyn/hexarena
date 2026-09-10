@@ -41,7 +41,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"runtime/debug"
 
@@ -266,66 +265,29 @@ func run(chosen options, out io.Writer) error {
 // loadLibrary is where this client's books come from, and it is the one thing
 // about this binary a player installing it from the module proxy notices.
 //
-// The rule is three lines, and the middle one is why the other two are not one:
+// The rule itself is `forge.LoadForReading` and its doc comment is where the
+// three lines and the three traps are written down. It lives in the package
+// rather than here because `cmd/hexforge`'s reading subcommands now follow the
+// same rule, two commands cannot import each other, and a rule spelled twice is
+// two rules that will disagree — which is the same reason neither authoring
+// front-end may restate a refusal.
 //
-//	--data given                the directory, always
-//	--data not given, it exists the directory, exactly as before
-//	--data not given, it is not the copy the binary embeds
+// What is worth saying *here* is why this client may take the third line at all:
+// nothing about a battle needs the directory. model.go builds its mirror from
+// seed.Books() whatever --data says, because the digest at a room's gate is over
+// the embedded files. And why the second line is not "always embed":
+// `make play-tui` passes no --data and is run from the module root by an author
+// who wants the cast browser to show the file they just edited, and the join
+// screen's warning that those edits will not reach a battle is drawn off
+// forge.MatchesEmbeddedData, which needs a directory to compare.
 //
-// An installed binary is the third line. `forge.DefaultDataDir` is a **relative**
-// path — it is where the data sits inside a checkout — so away from one it names
-// a directory in whatever the player happened to be standing in, and this client
-// died on it with `read internal/seed/data/combat.json: no such file or
-// directory`. Nothing about a battle needed that directory: model.go builds its
-// mirror from seed.Books() whatever --data says, because the digest at a room's
-// gate is over the embedded files.
-//
-// ⚠️ **The fallback keys on the directory being ABSENT and never on the load
-// failing.** "Load, and take the embedded copy if that returned an error" reads
-// the same from here and is a different program: an author who leaves a trailing
-// comma in skills.json would be handed the baked-in books and told nothing, and
-// would spend the evening wondering why an edit they can see in the file does
-// not reach the screen. A directory that exists and will not parse must refuse
-// exactly as it did before this function existed. It is the distinction
-// testfixture.RequireSharedArt is built on — a guard keyed on the *result* of
-// the thing it guards deletes itself, so key on the *probe*.
-//
-// ⚠️ **Absent means absent**, rather than "the stat did not succeed". A stat
-// that fails for any other reason is not a missing data directory, and
-// answering that with the embedded copy would swallow the one error naming the
-// real problem. Only fs.ErrNotExist takes the third line — and that is measured
-// rather than asserted here, by
+// ⚠️ The fs.ErrNotExist half of the rule is measured from this package by
 // TestADataDirectoryPathBlockedByAFileIsRefusedRatherThanQuietlyReplaced, which
 // puts a plain file where a path component should be a directory: every stat
 // below it then fails with ENOTDIR, which is neither present nor absent.
-// Widening this to `err != nil` compiles and passes every other test in the
-// package.
-//
-// ⚠️ **A named directory is never second-guessed**, which is the first line.
-// A player who typed `--data /nope` gets a refusal naming it; handing them
-// different data is not an answer to what they asked.
-//
-// Why the second line is not "always embed": `make play-tui` passes no --data
-// and is run from the module root by an author who wants the cast browser to
-// show the file they just edited. Embedding regardless would take that away
-// without saying so, and the join screen's warning that those edits will not
-// reach a battle is drawn off forge.MatchesEmbeddedData, which needs a
-// directory to compare.
+// Widening the probe to `err != nil` compiles and passes every other test here.
 func loadLibrary(chosen options) (*forge.Library, error) {
-	if chosen.dataGiven || !dataDirectoryIsAbsent(chosen.dir) {
-		return forge.Load(chosen.dir)
-	}
-	return forge.LoadEmbedded()
-}
-
-// dataDirectoryIsAbsent reports whether there is nothing at all at dir.
-//
-// Anything that is there — a directory, or a file sitting where one should be —
-// is not absent, and is left to forge.Load to read and to refuse in its own
-// words. This function's whole job is to be narrower than "the load failed".
-func dataDirectoryIsAbsent(dir string) bool {
-	_, err := os.Stat(dir)
-	return errors.Is(err, fs.ErrNotExist)
+	return forge.LoadForReading(chosen.dir, chosen.dataGiven)
 }
 
 // build is the version string this binary announces, stamped by a release:

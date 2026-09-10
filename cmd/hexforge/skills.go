@@ -157,7 +157,7 @@ func runSkillsAdd(args []string) error {
 		return fmt.Errorf("usage: hexforge skills add [id] [flags]")
 	}
 
-	lib, err := forge.Load(*dir)
+	lib, err := loadForWriting("skills add", set, *dir)
 	if err != nil {
 		return err
 	}
@@ -264,7 +264,7 @@ func runSkillsEdit(args []string) error {
 			"as in `hexforge skills edit %s --power 1200`", id)
 	}
 
-	lib, err := forge.Load(*dir)
+	lib, err := loadForWriting("skills edit", set, *dir)
 	if err != nil {
 		return err
 	}

@@ -58,7 +58,7 @@ func TestTheClientStartsWithNoDataDirectoryReachableAtAll(t *testing.T) {
 	// The guard on the fixture: if the default ever stops being a relative path,
 	// or something arranges a data directory under the scratch one, this test
 	// would be measuring the second line of the rule and not the third.
-	if !dataDirectoryIsAbsent(chosen.dir) {
+	if !forge.DataDirectoryIsAbsent(chosen.dir) {
 		t.Fatalf("%q exists from the scratch working directory, so this test is not the "+
 			"case it is named for", chosen.dir)
 	}
@@ -230,7 +230,7 @@ func TestADataDirectoryPathBlockedByAFileIsRefusedRatherThanQuietlyReplaced(t *t
 	// widened probe is only half the finding — what it *causes* is a library
 	// coming back, and a failure that stops here would report the mechanism
 	// while leaving the consequence unmeasured.
-	if dataDirectoryIsAbsent(chosen.dir) {
+	if forge.DataDirectoryIsAbsent(chosen.dir) {
 		t.Error("the probe calls a blocked path absent, so the fallback is keyed on the " +
 			"stat failing rather than on the directory being gone — an error naming the " +
 			"real problem is about to be answered with the embedded copy")

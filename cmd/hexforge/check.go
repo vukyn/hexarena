@@ -19,22 +19,41 @@ func runCheck(args []string) error {
 	if len(operands) > 0 {
 		return fmt.Errorf("hexforge check takes no arguments, got %v", operands)
 	}
-	report, err := forge.Inspect(*dir)
+	// forge.Inspect is Load and then Inspect, and this needs the reading rule in
+	// between, so the two halves are spelled out. Library.Inspect already knows
+	// what a library with no directory means — artToCheck asks for no pictures
+	// rather than reporting sixty-six missing ones — which is what makes an
+	// embedded check a report rather than a wall of false problems.
+	lib, err := loadForReading("check", set, *dir)
 	if err != nil {
 		return err
 	}
+	report := lib.Inspect()
 	renderReport(os.Stdout, report)
 	if !report.OK() {
-		return fmt.Errorf("%d problem(s) in %s", len(report.Problems), report.Dir)
+		return fmt.Errorf("%d problem(s) in %s", len(report.Problems), inspected(report))
 	}
 	return nil
+}
+
+// inspected is what the report calls the books it read.
+//
+// Report.Dir is empty for a library with no directory — that is the decision
+// forge's own walk holds it to — and this is the one place that empty becomes
+// words, so the header, the failure and the closing note cannot disagree about
+// what was checked.
+func inspected(r forge.Report) string {
+	if r.Dir == "" {
+		return embeddedBooks
+	}
+	return r.Dir
 }
 
 // renderReport is this front-end's drawing of forge.Report. The finding is in
 // the package; only the columns are here.
 func renderReport(out io.Writer, r forge.Report) {
 	fmt.Fprintf(out, "checked %s: %d origins, %d archetypes, %d characters\n\n",
-		r.Dir, r.Origins, r.Archetypes, len(r.Rows))
+		inspected(r), r.Origins, r.Archetypes, len(r.Rows))
 	if len(r.Rows) > 0 {
 		rendered := newTable("character", "art", "stage at cap", "absorbs", "budget left", "stats at cap").
 			rightAlign(3, 4)
@@ -71,6 +90,19 @@ func renderReport(out io.Writer, r forge.Report) {
 	// exactly when they matter: nothing else is going to say this.
 	for _, warning := range r.Warnings {
 		fmt.Fprintf(out, "warning: %s\n", warning)
+	}
+	// ⚠️ The embedded note says the art was not looked at, and that is the part
+	// worth printing. A check with no directory silently stops asking the one
+	// question only a program allowed to read the filesystem can answer, so a
+	// clean report here is a narrower claim than a clean report over a directory
+	// — and a reader who is not told that reads it as the wider one.
+	if r.Dir == "" {
+		fmt.Fprintf(out, "\nnote: there was no data directory to read, so this checked %s —\n"+
+			"which is exactly what the game boots from, so nothing here needs a rebuild.\n"+
+			"The art is NOT embedded and no picture was looked for: run this from the root of\n"+
+			"a hexarena checkout, or with --data <dir>, to check that the art is really there.\n",
+			embeddedBooks)
+		return
 	}
 	fmt.Fprintf(out, "\nnote: this reads %s from disk. The game boots from the copies baked in by\n"+
 		"go:embed, so an edit here needs a rebuild before it reaches a battle.\n", r.Dir)

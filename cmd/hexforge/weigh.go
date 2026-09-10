@@ -94,7 +94,7 @@ func runWeigh(args []string) error {
 	if sweeping && !wasSet(set, "seeds") {
 		*seeds = defaultCarrierSeeds
 	}
-	lib, err := forge.Load(*dir)
+	lib, err := loadForReading("weigh", set, *dir)
 	if err != nil {
 		return err
 	}
