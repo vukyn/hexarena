@@ -18,6 +18,8 @@
 - [A two-point reading names no distance](feedback_a_two_point_reading_names_no_distance.md) — "30×" was /4 and /64; every rung says /5–/6, and past a CLIFF a correct half-sized term reads as no term
 - [A scripted revert can restore the wrong line](feedback_scripted_revert_wrong_occurrence.md) — green tests do not prove an undo; read git diff on the file
 - [A fixture-cast edit costs goldens](feedback_fixture_cast_edit_costs_goldens.md) — one skill into a fixture kit moved 656 golden lines; build the carrier in the test (twinOf/forkedTwin)
+- [A named site can be unreachable](feedback_a_named_site_can_be_unreachable.md) — the spec's `filepath.Rel("", p)` sits behind an early return; measure the call AND read upward
+- [A shared screen has no tool-only wording](feedback_a_shared_screen_has_no_tool_only_wording.md) — grep the i18n KEY, not the screens a spec names; artLine was a 4th site
 - [A refusal can be right for the wrong reason](feedback_a_refusal_can_be_right_for_the_wrong_reason.md) — separate the verdict from its evidence; re-run a TODO's own example first, it may not reproduce
 - [A reproducer for new code needs the OLD vocabulary](feedback_a_reproducer_for_new_code_needs_the_old_vocabulary.md) — `undefined: loadLibrary` on the base is not a red test; re-spell it, or run the base binary under a pty
 - [A refinement beyond the spec owes its own test](feedback_a_refinement_beyond_the_spec_owes_its_own_test.md) — the spec's list covers the spec's rule; a ⚠️ comment no test names is an unguarded claim (ENOTDIR ≠ ErrNotExist)
@@ -54,7 +56,7 @@
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
 - [The ban/pick draft machine](project_draft_state_machine.md) — 2a…5b done (5c + host flag left); ⚠️ NOTHING tells the host the room is full; internal/screen declares its OWN DraftLive
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
-- [The client runs without a checkout](project_client_runs_without_a_checkout.md) — steps 1+2 done (probe-keyed --data fallback); step 3 = art, and the preview already degrades to MISSING
+- [The client runs without a checkout](project_client_runs_without_a_checkout.md) — all 3 steps done; the no-directory state and what each screen now says (⚠️ 4 art sites, not 3)
 
 ## Moved in from the platform-level store (2026-09-05)
 

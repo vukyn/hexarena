@@ -389,6 +389,26 @@ func loadBooks(home dataHome, read func(name string) ([]byte, error)) (*Library,
 // than a path anything resolves.
 func (l *Library) Dir() string { return l.home.directory() }
 
+// HasDataDirectory reports whether this library was read from a directory on
+// disk at all, which is the difference between a picture nobody has drawn yet
+// and a program that carries no pictures.
+//
+// ⚠️ **It exists so that nothing outside this package has to read that state off
+// the emptiness of Dir.** `Dir() == ""` gives the right answer today and is the
+// wrong question: Dir is a **display** string — two clients draw it in a header
+// line, uncleaned — and it is empty because show had no path to show, not
+// because emptiness is how this package states the fact. A screen branching on
+// it is a rendering decision keyed on a formatting accident, and it would keep
+// compiling and stop being true the first time a header wanted a word there.
+//
+// The second half of the reason is the guard. Reaching home is what
+// TestEveryLibraryAccessorThatReachesTheDataDirectoryDecidesWhatNoDirectoryMeans
+// walks for, so a question asked here arrives with a written-down decision
+// beside the sixteen others and is checked against a real embedded library; the
+// same question asked as `Dir() == ""` in another package is outside every guard
+// this file has.
+func (l *Library) HasDataDirectory() bool { return l.home.known() }
+
 // MatchesEmbeddedData reports whether the files in this library's directory
 // digest to the same fingerprint as the copy the binary embeds.
 //

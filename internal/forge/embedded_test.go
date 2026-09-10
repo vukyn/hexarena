@@ -189,6 +189,23 @@ var homeDecisions = map[string]aHomeDecision{
 			}
 		},
 	},
+	"(*Library).HasDataDirectory": {
+		decision: "false — that there is no directory is the whole of what it answers",
+		check: func(t *testing.T, embedded, onDisk *Library) {
+			if embedded.HasDataDirectory() {
+				t.Error("the embedded library says it has a data directory, so a screen " +
+					"asking this draws the author's MISSING at a player whose binary was " +
+					"never going to carry a picture")
+			}
+			// The other half, and it is the half that makes the first one a
+			// measurement: a predicate answering false to everything is what a
+			// deleted guard looks like from the embedded side alone.
+			if !onDisk.HasDataDirectory() {
+				t.Errorf("the library loaded from %s says it has no data directory, so this "+
+					"row is not measuring the difference it claims", shippedDataDir)
+			}
+		},
+	},
 	"(*Library).MatchesEmbeddedData": {
 		decision: "true — it IS the embedded copy",
 		check: func(t *testing.T, embedded, onDisk *Library) {

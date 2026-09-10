@@ -463,10 +463,21 @@ func (b BrowseScreen) affinity(character cast.Character) element.Affinity {
 // stage it was handed and nothing the screen keeps, and a method taking neither
 // its receiver's cursor nor its level would be claiming a relationship it has
 // not got.
+//
+// ⚠️ **Three answers rather than two, because this browser is drawn by both
+// clients.** The art preview's own note has the whole argument; the short of it
+// is that a library built from the embedded copy has no pictures by design, so
+// MISSING there is an accusation aimed at a player who did nothing and can do
+// nothing. The row keeps naming the path — the character really does name that
+// picture, and the id is what an author would go and draw — and only the verdict
+// on the end of it changes.
 func artLine(c Context, character cast.Character, stage progression.Stage) string {
 	art := character.StageArt(stage)
 	if c.Lib.ImageExists(art) {
 		return c.Style.Good.Render(art + "  " + c.Text(i18n.ArtPresent))
+	}
+	if !c.Lib.HasDataDirectory() {
+		return c.Style.Dim.Render(art + "  " + c.Text(i18n.ArtNotShipped))
 	}
 	return c.Style.Bad.Render(art + "  " + c.Text(i18n.ArtMissing))
 }

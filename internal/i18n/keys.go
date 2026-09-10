@@ -64,6 +64,19 @@ const (
 	ConfirmFooter
 	ArtPresent
 	ArtMissing
+	// ArtNotShipped is what an art row says when the library was built from the
+	// copy embedded in the binary, which is a **different state** from a picture
+	// that is not on disk and may not borrow ArtMissing's word for it.
+	//
+	// ⚠️ MISSING is an accusation, and to a player it is a false one. The art —
+	// sixty-six files and 16 MB — is deliberately not embedded, so a game client
+	// running from `go install` has no pictures and nothing about that is broken:
+	// nobody forgot to draw one, and there is no directory the player could put
+	// one in. The author's reading of the same row is unchanged, because an
+	// authoring tool always has a data directory.
+	// → forge.Library.HasDataDirectory, which is the question that tells the two
+	// apart.
+	ArtNotShipped
 	ArtSomeMissing
 	ChoicePosition
 	// ChoiceSlots is ChoicePosition's answer for a list that fills slots
@@ -314,6 +327,15 @@ const (
 	PreviewFooter
 	PreviewTitle
 	PreviewArtUnreadable
+	// PreviewArtNotShipped is ArtNotShipped's sentence, for the one screen whose
+	// whole subject is the picture.
+	//
+	// A sentence rather than the label, because the preview gives the line a row
+	// of its own where the browser gives it the end of a row: two words there
+	// would leave a player looking at an empty frame with no idea why. It says
+	// where the pictures are instead of only that they are absent, which is the
+	// difference between a state and a fault.
+	PreviewArtNotShipped
 	BrowseNothingHere
 	BrowseNothingAuthored
 	BrowseNoneFromThisWork
@@ -949,6 +971,22 @@ const (
 	PlayFooter
 	PlayAimFooter
 	PlayOverFooter
+	// PlayNoSaveFooter and PlayOverNoSaveFooter are the two local footers for a
+	// library with nowhere to write a log — a game client running on the
+	// embedded books.
+	//
+	// ⚠️ **Second wordings rather than the local ones with the save clause
+	// deleted**, which is the same rule the three live footers are written
+	// under: dropping a clause out of a rendered line leaves the separators
+	// either side of it and nothing measures what is left.
+	//
+	// They exist because a footer naming a key the screen ignores is the program
+	// promising something it does not do — and here the promise could only ever
+	// be kept by an error line reading *"this library was built from the copy
+	// embedded in the binary"*, which is a sentence about the program's
+	// construction shown to somebody who pressed a key it offered them.
+	PlayNoSaveFooter
+	PlayOverNoSaveFooter
 	// What the battle screen gave up to fit the window, and why. The screen
 	// budgets its own body — the heading and the option list are reserved and
 	// everything else takes what is left — so a window shorter than the whole

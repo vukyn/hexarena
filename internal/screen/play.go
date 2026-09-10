@@ -804,8 +804,18 @@ func (p PlayScreen) undo(c Context) PlayScreen {
 func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Action) {
 	// Saving is asked before the switch because it answers to more than one
 	// keystroke; IsSaveKey is the single declaration of which.
+	//
+	// ⚠️ The second half of the guard is the library, and it is **one**
+	// condition rather than a second guard further down, for the reason the six
+	// above are one each: with two, deleting either leaves every test green. A
+	// library built from the embedded copy has nowhere to write a log, so
+	// SaveBattleLog refuses and the whole of what a press could achieve is
+	// forge.ErrNoDataDirectory drawn as a red line — a sentence about how the
+	// binary was built, shown to somebody who pressed a key the footer offered
+	// them. The footer does not offer it in that state either; the two have to
+	// agree, or the ignored key is the program going quiet on a promise.
 	if IsSaveKey(message) {
-		if p.Live {
+		if p.Live || !c.Lib.HasDataDirectory() {
 			return p, Action{}
 		}
 		return p.save(c), Action{}
@@ -1062,6 +1072,18 @@ func (p PlayScreen) save(c Context) PlayScreen {
 	// It names the file relative to the data directory, because what goes after
 	// --replay is a path somebody has to type and the absolute one is mostly the
 	// part they are already standing in.
+	//
+	// ⚠️ **The empty first argument is unreachable, measured rather than
+	// assumed, and it needs no guard.** A library with no directory refuses in
+	// SaveBattleLog above and this function has already returned; the key that
+	// gets here is not even offered in that state. And if it were reached, the
+	// `err == nil` is what carries it: measured, `filepath.Rel("", p)` **errors**
+	// for a rooted p — which is what SaveBattleLog returns whenever a directory
+	// was rooted — so `relative` keeps the whole path, and it hands back a
+	// relative p unchanged, which is already the answer. The one input it
+	// mangles is `Rel("", "")`, which comes back ".", and path is "" only when
+	// err was non-nil, which returned above.
+	// → TestTheReplayNoteIsNeverBuiltWithoutADataDirectory.
 	relative := path
 	if shortened, err := filepath.Rel(c.Lib.Dir(), path); err == nil {
 		relative = shortened
@@ -1476,6 +1498,13 @@ func (d playDrawn) sizes() playSizes {
 // which is a reason to measure them rather than a reason not to.
 func (p PlayScreen) View(c Context) (string, string) {
 	footer := c.Text(i18n.PlayFooter, SaveKeyLabel())
+	// ⚠️ **An offer that can only fail is worse than no offer**, so the two
+	// local footers that name the save key have a second wording for a library
+	// with nowhere to write. See the guard in Update, which is what makes this a
+	// withdrawn offer rather than a footer disagreeing with the keyboard.
+	if !c.Lib.HasDataDirectory() {
+		footer = c.Text(i18n.PlayNoSaveFooter)
+	}
 	if p.Live {
 		footer = c.Text(i18n.PlayLiveFooter)
 	}
@@ -1512,6 +1541,9 @@ func (p PlayScreen) View(c Context) (string, string) {
 	drawn := p.drawings(c)
 	if drawn.over {
 		footer = c.Text(i18n.PlayOverFooter, SaveKeyLabel())
+		if !c.Lib.HasDataDirectory() {
+			footer = c.Text(i18n.PlayOverNoSaveFooter)
+		}
 		if p.Live {
 			footer = c.Text(i18n.PlayLiveOverFooter)
 		}
