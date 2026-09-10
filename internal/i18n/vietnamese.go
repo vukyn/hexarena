@@ -701,6 +701,15 @@ q hoặc ctrl+c để thoát`,
 	GameMenuBattle:       "vào trận",
 	GameMenuBattleDetail: "tự cầm quân đánh một trận với đội đầu danh sách",
 
+	// Màn chọn hai phe. Để riêng một khối chứ không mượn lời của màn đấu bên
+	// công cụ soạn: bên đó đo một cặp đội, còn đây là chọn xem ai ra sân.
+	PairingHeading:  "hai phe ra trận",
+	PairingHint:     "chọn cho mỗi phe một đội, rồi tự cầm quân đánh",
+	PairingHome:     "phe mình",
+	PairingAway:     "gặp",
+	PairingSameSide: "hai phe cùng một đội: trận này đánh với bản sao của chính nó",
+	PairingFooter:   "↑/↓ phe mình · ←/→ phe kia · enter vào trận · ctrl+l English · esc quay lại · q thoát",
+
 	// Mười ba dòng của hai enum trong internal/wire. Người đọc chúng đang đứng
 	// ở phòng chờ và không có thông tin nào khác trước mặt, nên mỗi dòng phải
 	// nói cả chuyện gì đã xảy ra lẫn phải làm gì tiếp — dịch trần cái id ra thì

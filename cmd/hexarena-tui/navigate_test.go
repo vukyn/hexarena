@@ -307,39 +307,49 @@ func TestAWayBackSurvivesTheScreenItRaised(t *testing.T) {
 // the off-by-one #223 measured. And **both squads are named**, because the away
 // side is the half a swap moves: home alone would be satisfied by a client that
 // fielded the named side twice.
+//
+// ⚠️ **The raise names one side and the other is the standing answer**, so both
+// are walked here: the away side used to be the next row wrapping and is the row
+// the chooser is pointed at now, which a raise says nothing about. It is pointed
+// with the keys a reader presses rather than written onto the model, so what is
+// measured is the answer surviving a trip through the catalogue — → pairing.go
+// on why that half is a standing answer at all.
 func TestABattleOpensOnTheSideTheRaiseNamed(t *testing.T) {
 	base, _, _ := start(t, i18n.En)
-	catalogue := base.enter(screenSquads)
-	sides := catalogue.squads.Saved
+	sides := base.enter(screenSquads).squads.Saved
 	if len(sides) < 2 {
 		t.Fatalf("the fixture catalogue holds %d sides; one row cannot tell a swap from "+
 			"correct", len(sides))
 	}
-	for row, side := range sides {
-		raised, _ := catalogue.navigate(screenSquads, draw.Action{
-			Kind: draw.Raise, Target: draw.Fight,
-			Subject: draw.Subject{Kind: draw.SquadSubject, ID: side.ID},
-		})
-		after := raised.(model)
-		if after.screen != screenBattle {
-			t.Fatalf("a raise about %q landed on screen %v", side.ID, after.screen)
-		}
-		if after.battle.Home.ID != side.ID {
-			t.Errorf("a raise about %q opened the battle on %q as the home side",
-				side.ID, after.battle.Home.ID)
-		}
-		if want := sides[(row+1)%len(sides)].ID; after.battle.Away.ID != want {
-			t.Errorf("a raise about %q put %q on the other side, want %q",
-				side.ID, after.battle.Away.ID, want)
-		}
-		// The player fights the side they named, which is what makes "home" mean
-		// anything at all: a client that got the pairing right and the side wrong
-		// would hand the reader the opponent's turns.
-		if after.battle.Side != hex.SideAlly {
-			t.Errorf("a raise about %q put the player on %v, and Take fields the home side "+
-				"as the ally half", side.ID, after.battle.Side)
+	for _, side := range sides {
+		for away := range sides {
+			catalogue := awayPointedAt(t, base, away).enter(screenSquads)
+			raised, _ := catalogue.navigate(screenSquads, draw.Action{
+				Kind: draw.Raise, Target: draw.Fight,
+				Subject: draw.Subject{Kind: draw.SquadSubject, ID: side.ID},
+			})
+			after := raised.(model)
+			if after.screen != screenBattle {
+				t.Fatalf("a raise about %q landed on screen %v", side.ID, after.screen)
+			}
+			if after.battle.Home.ID != side.ID {
+				t.Errorf("a raise about %q opened the battle on %q as the home side",
+					side.ID, after.battle.Home.ID)
+			}
+			if want := sides[away].ID; after.battle.Away.ID != want {
+				t.Errorf("a raise about %q with the chooser on row %d put %q on the other "+
+					"side, want %q", side.ID, away, after.battle.Away.ID, want)
+			}
+			// The player fights the side they named, which is what makes "home"
+			// mean anything at all: a client that got the pairing right and the
+			// side wrong would hand the reader the opponent's turns.
+			if after.battle.Side != hex.SideAlly {
+				t.Errorf("a raise about %q put the player on %v, and Take fields the home "+
+					"side as the ally half", side.ID, after.battle.Side)
+			}
 		}
 	}
+	catalogue := base.enter(screenSquads)
 
 	// And a side the catalogue does not hold declines the whole trip rather than
 	// opening a battle on whichever row `taking` happened to point at.

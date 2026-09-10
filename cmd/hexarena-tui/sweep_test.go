@@ -110,6 +110,31 @@ func everyScreen(t *testing.T, m model) map[string]model {
 			"listing twice:\n%s", drawnBody(empty))
 	}
 	screens["an empty squad catalogue"] = empty
+	// The pairing chooser, in the two states that differ by a line: two
+	// different sides, and one side on both halves. Entered rather than
+	// assigned, like every other state here, and the second is driven with the
+	// key a reader presses rather than by writing a cursor.
+	//
+	// ⚠️ **A third state — the chooser with an empty catalogue — is
+	// deliberately not registered.** It draws the same heading, the same hint
+	// and the same footer with the two rows left out and says nothing else, so
+	// it has no line of its own to assert and would record this screen a third
+	// time. What that state means for a reader is drawn one keystroke later, by
+	// the battle, and "a battle with no pairing" below is where it is recorded.
+	pairing := m.enter(screenPairing)
+	if body := drawnBody(pairing); strings.Contains(body, pairing.text(i18n.PairingSameSide)) {
+		t.Fatalf("the fixture's two sides are drawn as one side on both halves, so the two "+
+			"pairing states record the same screen twice:\n%s", body)
+	}
+	screens["the pairing"] = pairing
+	// left moves the away cursor onto the row the home cursor is on, which with
+	// two sides saved is the first of them.
+	copied := key(t, pairing, "left")
+	if body := drawnBody(copied); !strings.Contains(body, copied.text(i18n.PairingSameSide)) {
+		t.Fatalf("the chooser drew no line saying both halves are one side, so this records "+
+			"an ordinary pairing twice:\n%s", body)
+	}
+	screens["a pairing against a copy"] = copied
 	// The battle, in each of the states it draws. Every one of them enters the
 	// screen for itself — see the note above.
 	screens["a battle"] = withAFullLog(t, m.enter(screenBattle))

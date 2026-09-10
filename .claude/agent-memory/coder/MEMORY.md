@@ -51,11 +51,13 @@
 - [Measure in the slot it competes for](feedback_measure_in_the_slot_it_competes_for.md) — flex slot priced the composition (381‰) not the unit (491‰); a rate pinned at 0 both arms measures nothing
 - [A mono-element mirror cannot resolve](feedback_a_mono_element_mirror_cannot_resolve.md) — all-Endless reads 0‰ not "red"; kit the probe OFF the element it is counted for (affinity is what counts)
 - [A survey keyed on one name misses the wrapper](feedback_a_site_survey_keyed_on_one_name_misses_the_wrapper.md) — "10 forge.Load sites" was 11; check.go went via forge.Inspect. Key the walk on the WIDER marker
+- [A new default can move every golden](feedback_a_new_default_can_move_every_golden.md) — a derived value becoming a cursor: pick the start that reproduces yesterday; 328 added 0 removed
 - [A pre-reg floor is the point when it FAILS](feedback_a_prereg_floor_is_the_point_when_it_fails.md) — +48‰ vs +50‰: ship the null, do not add a board; the vacuous-rung mutation is what makes a null honest
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
 - [The ban/pick draft machine](project_draft_state_machine.md) — 2a…5b done (5c + host flag left); ⚠️ NOTHING tells the host the room is full; internal/screen declares its OWN DraftLive
+- [The PvE pairing chooser](project_pve_pairing_chooser.md) — step 1 done; ⚠️ TWO brief premises measured false: m.taking is not on the wire, and s01…s06 are ALREADY offered
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 - [The client runs without a checkout](project_client_runs_without_a_checkout.md) — all 3 steps done; the no-directory state and what each screen now says (⚠️ 4 art sites, not 3)
 

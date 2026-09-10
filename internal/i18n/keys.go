@@ -1035,6 +1035,24 @@ const (
 	GameMenuBattle
 	GameMenuBattleDetail
 
+	// The pairing chooser, which is cmd/hexarena-tui's own screen and the one
+	// place both halves of a hot-seat battle are decided.
+	//
+	// ⚠️ **It is not the authoring tool's fight and may not borrow its
+	// wording.** That screen chooses two sides to *measure* — a rate over
+	// hundreds of battles, with a squad against itself as its control — so
+	// FightControl reads "it comes out exactly even", which is a fact about an
+	// average and says nothing to somebody about to play one battle.
+	// PairingSameSide is the same board described as the thing that happens on
+	// it. The two screens' footers differ for the same reason: there are no
+	// seeds to move here.
+	PairingHeading
+	PairingHint
+	PairingHome
+	PairingAway
+	PairingSameSide
+	PairingFooter
+
 	// The two protocol enums, worded. wire.Code is why a peer was turned away
 	// at the gate and wire.Closure is why a match stopped for a reason the
 	// board cannot show; both travel as an **id** precisely so the sentence

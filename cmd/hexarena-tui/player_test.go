@@ -549,7 +549,7 @@ func TestAPlayerSideWinsTheIdItSharesAndTheRowSaysSo(t *testing.T) {
 				"is %q; want exactly one, and it:\n%s", marked, lang, mine1, shadowed.ID,
 				drawnBody(carrying.enter(screenSquads)))
 		}
-		// The other place a side is picked, on the row the chooser lands on.
+		// The second place a side is picked, on the row the chooser lands on.
 		joined := carrying.enter(screenJoin)
 		landed := false
 		for range len(offered) + 1 {
@@ -564,6 +564,26 @@ func TestAPlayerSideWinsTheIdItSharesAndTheRowSaysSo(t *testing.T) {
 		}
 		if body := drawnBody(joined); !strings.Contains(body, mark) {
 			t.Errorf("the %s join screen does not say the side under the chooser is the "+
+				"player's:\n%s", lang, body)
+		}
+		// The third place, and it is a pairing rather than a join: the hot-seat
+		// chooser picks two sides out of the same list, so a row of it showing an
+		// id alone would offer two different squads under one spelling for
+		// exactly the reason the join screen does not.
+		paired := carrying.enter(screenPairing)
+		reached := false
+		for range len(offered) + 1 {
+			if _, away := paired.pairing(); away.ID == shadowed.ID {
+				reached = true
+				break
+			}
+			paired = key(t, paired, "right")
+		}
+		if !reached {
+			t.Fatalf("→ never reaches %q on the %s pairing chooser", shadowed.ID, lang)
+		}
+		if body := drawnBody(paired); !strings.Contains(body, mark) {
+			t.Errorf("the %s pairing chooser does not say the side across the board is the "+
 				"player's:\n%s", lang, body)
 		}
 		// And the shipped side of that id is drawn nowhere, which is the whole of
