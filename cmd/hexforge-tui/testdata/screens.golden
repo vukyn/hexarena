@@ -1460,7 +1460,7 @@ next: A1 A1 A1 A1 A1 A1
   
   A1  turn 33
     A1  uses riptide <sóng ngầm> at 3,1
-    A1   is blocked by E1, 0 charges left
+    A1   is blocked by E1, 1 charges left
     A1   is blocked by E1, 0 charges left
   
   E1  turn 34
@@ -6134,7 +6134,7 @@ next: A1 A1 A1 A1 A1 A1
   
   A1  turn 33
     A1  uses riptide at 3,1
-    A1   is blocked by E1, 0 charges left
+    A1   is blocked by E1, 1 charges left
     A1   is blocked by E1, 0 charges left
   
   E1  turn 34
