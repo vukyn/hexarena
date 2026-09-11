@@ -94,10 +94,37 @@ func TestARedrawDoesNotRaceTheGoroutineSteppingTheMatch(t *testing.T) {
 		for _, message := range fake.take() {
 			m = send(t, m, message)
 		}
-		if !started && m.screen == screenBattle && m.battle.Live && m.battle.Fight != nil {
+		// ⚠️ The copy is taken on the first frame that has an OPEN TURN on it,
+		// not on the first frame with a battle on it. It used to be the latter,
+		// and the difference is what the widening below needs: a battle arrives
+		// several frames before the player is asked anything, so a copy taken at
+		// the first sight of one has a nil prompt and can draw no option list and
+		// no aim list at all. The cost is a handful of redraws at the start of
+		// the match; the vacuity floors below say whether that mattered.
+		if !started && m.screen == screenBattle && m.battle.Live &&
+			m.battle.Fight != nil && m.battle.Pending != nil && !m.battle.Answered {
 			started = true
 			comparedAtStart = comparedBy(m)
 			renderer = m
+			// ⚠️ **The aim list is opened on the renderer's own copy, because
+			// the loop below would never reach it.** The copy is taken at the
+			// moment the battle arrives, when the screen is on the option list,
+			// so without this the goroutine draws the board, the roster, the
+			// order line and the options — and nothing under them. That left
+			// two reads of the mirror's battle on the drawing path unmeasured
+			// for as long as they existed: the aim list resolves a shape in the
+			// CASTER's frame and marks each target's matchup, and both of those
+			// are facts about a unit. They come off the reading now; a version
+			// that asked p.Fight instead is a race this test can see and the
+			// rest of the suite cannot, because a local battle nobody is
+			// stepping gives the same answer either way.
+			//
+			// Aiming is set by assignment rather than by a keystroke on purpose
+			// — the renderer is a copy the client never drives, and a key would
+			// have to go through the model this loop is answering turns on.
+			if renderer.battle.Pending != nil {
+				renderer.battle.Aiming = true
+			}
 			go func() {
 				defer close(drawing)
 				for {
@@ -148,6 +175,19 @@ func TestARedrawDoesNotRaceTheGoroutineSteppingTheMatch(t *testing.T) {
 	last := body.Load()
 	if last == nil || *last == "" {
 		t.Fatal("every redraw came back empty, so the drawing path was never reached")
+	}
+	// The aim list really was among what got drawn. Without this the widening
+	// above is a line that could be deleted with the test still passing, which
+	// is the whole class of defect this file exists for.
+	if renderer.battle.Pending == nil {
+		t.Fatal("the copy the goroutine drew from had no open turn, so the aim list was " +
+			"never on the screen being raced")
+	}
+	aiming := renderer.ctx().Text(i18n.PlayAimAt,
+		renderer.battle.Pending.Options[renderer.battle.Option].Skill)
+	if !strings.Contains(*last, aiming) {
+		t.Fatalf("the redrawn body has no aim list on it (looked for %q), so the reads "+
+			"that list makes were not raced:\n%s", aiming, *last)
 	}
 	// And the drawing really did read the battle rather than an error line or a
 	// waiting notice: a unit tag is drawn by the board and the roster, which are

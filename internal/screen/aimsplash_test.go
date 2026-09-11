@@ -123,7 +123,7 @@ func aimingAtAnAreaFrom(t *testing.T, c Context, p PlayScreen) (PlayScreen, []he
 		for aim := range p.Pending.Options[option].Aims {
 			probe := p
 			probe.Option, probe.Aim, probe.Aiming = option, aim, true
-			if splash := probe.splashUnder(c, probe.Pending.Options[option]); len(splash) > 0 {
+			if splash := probe.splashUnder(c, probe.read(), probe.Pending.Options[option]); len(splash) > 0 {
 				return probe, splash
 			}
 		}
@@ -204,7 +204,7 @@ func TestTheSplashIsResolvedFromTheAimAndNotFromTheDiagram(t *testing.T) {
 		}
 		elsewhere := p
 		elsewhere.Aim = other
-		if !slices.Equal(elsewhere.splashUnder(c, option), splash) {
+		if !slices.Equal(elsewhere.splashUnder(c, elsewhere.read(), option), splash) {
 			moved = true
 			break
 		}

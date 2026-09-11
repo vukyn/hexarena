@@ -1538,6 +1538,17 @@ const (
 	ArrangeSendFooter
 	ArrangeWaitingFooter
 
+	// PlayAimMatchup names the four marks an aim row can carry, for the reason
+	// PlayAimSplash names its one: a symbol nothing explains is a drawing the
+	// reader has to guess at, and this one is the difference between spending a
+	// turn well and spending it on the unit that shrugs it off.
+	//
+	// One wording for all four rather than a key each. They are a single ladder
+	// — two rungs above neutral and two below — and a language that had to say
+	// "and also" four times would spend four lines of a screen that has none
+	// spare, on a heading the marks already sit twenty cells away from.
+	PlayAimMatchup
+
 	keyCount
 )
 

@@ -749,6 +749,29 @@ nhắm psychic vào
   3,0  E3 Machamp
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 120x24 | aiming at a matchup =====
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [#########.]  3180/3400    134   phalanx x2 (always), tailwind (always), burn (1t)
+A2   Sennin               [#########.]  3247/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+A3   Sennin               [#########.]  3324/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+E1   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E2   Charizard            [##########]  3100/3100    140   phalanx x2 (always)
+E3   Sennin               [##########]  3400/3400    134   phalanx x2 (always)
+
+A1 Sennin, lượt 1
+  wind_shuriken  124% công · tầm 2 · 3 ô · hồi 2
+
+nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực  ++/+ bị khắc hệ này, -/-- kháng hệ này
+> 3,2  E1 Venusaur  -
+    .. 3,1  E2 Charizard  +
+    .. 4,2
+  3,1  E2 Charizard  +
+  3,0  E3 Sennin
+----- footer -----
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | aiming at an area skill =====
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 3 đơn vị, thứ tự lượt, diễn biến
@@ -2517,6 +2540,65 @@ nhắm psychic vào
 > 3,2  E1 Mew
   3,1  E2 Venusaur
   3,0  E3 Machamp
+----- footer -----
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 160x60 | aiming at a matchup =====
+trận đấu  seed 1  diễn biến 4-27/27
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [#########.]  3180/3400    134   phalanx x2 (always), tailwind (always), burn (1t)
+A2   Sennin               [#########.]  3247/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+A3   Sennin               [#########.]  3324/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+E1   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E2   Charizard            [##########]  3100/3100    140   phalanx x2 (always)
+E3   Sennin               [##########]  3400/3400    134   phalanx x2 (always)
+
+next: A2 A3 E3 E1 E2 A1
+
+    A2  Sennin enters at 2,1 on the ally side with 3400 health, wind
+    A2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    A2   3 of wind: tailwind <gió xuôi> x1 (wind_gust <cùng gió>)
+    A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
+    A3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    A3   3 of wind: tailwind <gió xuôi> x1 (wind_gust <cùng gió>)
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E1   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E2   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+    E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
+    E3   3 of column2: phalanx <trận thế> x2 (same_column <cùng tuyến>)
+  
+  E2  turn 1
+    E2  uses fire_spin <xoáy lửa> at 2,1
+    E2   hits A2 for 153 (resisted), 3247 left
+    E2   burn <bỏng> x1 on A2, now 1
+    E2   hits A3 for 76 (resisted), 3324 left
+    E2   burn <bỏng> x1 on A3, now 1
+    E2   hits A1 for 76 (resisted), 3324 left
+    E2   burn <bỏng> x1 on A1, now 1
+  
+  A1  turn 1
+    A1  takes 144 from burn <bỏng> x1
+
+A1 Sennin, lượt 1
+  wind_shuriken  124% công · tầm 2 · 3 ô · hồi 2
+
+nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực  ++/+ bị khắc hệ này, -/-- kháng hệ này
+> 3,2  E1 Venusaur  -
+    .. 3,1  E2 Charizard  +
+    .. 4,2
+  3,1  E2 Charizard  +
+  3,0  E3 Sennin
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | aiming at an area skill =====
@@ -4465,6 +4547,29 @@ point psychic at
   3,0  E3 Machamp
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 120x24 | aiming at a matchup =====
+the battle  seed 1
+the window is too short for: board, turn order, log
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [#########.]  3180/3400    134   phalanx x2 (always), tailwind (always), burn (1t)
+A2   Sennin               [#########.]  3247/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+A3   Sennin               [#########.]  3324/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+E1   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E2   Charizard            [##########]  3100/3100    140   phalanx x2 (always)
+E3   Sennin               [##########]  3400/3400    134   phalanx x2 (always)
+
+A1 Sennin, turn 1
+  wind_shuriken  124% attack · range 2 · 3 cells · cd 2
+
+point wind_shuriken at  .. is a splash cell, at 50%  ++/+ weak to this element, -/-- resists it
+> 3,2  E1 Venusaur  -
+    .. 3,1  E2 Charizard  +
+    .. 4,2
+  3,1  E2 Charizard  +
+  3,0  E3 Sennin
+----- footer -----
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | aiming at an area skill =====
 the battle  seed 1
 the window is too short for: board, 3 units, turn order, log
@@ -6212,6 +6317,65 @@ point psychic at
 > 3,2  E1 Mew
   3,1  E2 Venusaur
   3,0  E3 Machamp
+----- footer -----
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 160x60 | aiming at a matchup =====
+the battle  seed 1  log 4-27/27
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [#########.]  3180/3400    134   phalanx x2 (always), tailwind (always), burn (1t)
+A2   Sennin               [#########.]  3247/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+A3   Sennin               [#########.]  3324/3400    134   phalanx x2 (always), tailwind (always), burn (2t)
+E1   Venusaur             [##########]  3800/3800    100   phalanx x2 (always)
+E2   Charizard            [##########]  3100/3100    140   phalanx x2 (always)
+E3   Sennin               [##########]  3400/3400    134   phalanx x2 (always)
+
+next: A2 A3 E3 E1 E2 A1
+
+    A2  Sennin enters at 2,1 on the ally side with 3400 health, wind
+    A2   3 of column2: phalanx x2 (same_column)
+    A2   3 of wind: tailwind x1 (wind_gust)
+    A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
+    A3   3 of column2: phalanx x2 (same_column)
+    A3   3 of wind: tailwind x1 (wind_gust)
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E1   3 of column2: phalanx x2 (same_column)
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E2   3 of column2: phalanx x2 (same_column)
+    E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
+    E3   3 of column2: phalanx x2 (same_column)
+  
+  E2  turn 1
+    E2  uses fire_spin at 2,1
+    E2   hits A2 for 153 (resisted), 3247 left
+    E2   burn x1 on A2, now 1
+    E2   hits A3 for 76 (resisted), 3324 left
+    E2   burn x1 on A3, now 1
+    E2   hits A1 for 76 (resisted), 3324 left
+    E2   burn x1 on A1, now 1
+  
+  A1  turn 1
+    A1  takes 144 from burn x1
+
+A1 Sennin, turn 1
+  wind_shuriken  124% attack · range 2 · 3 cells · cd 2
+
+point wind_shuriken at  .. is a splash cell, at 50%  ++/+ weak to this element, -/-- resists it
+> 3,2  E1 Venusaur  -
+    .. 3,1  E2 Charizard  +
+    .. 4,2
+  3,1  E2 Charizard  +
+  3,0  E3 Sennin
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | aiming at an area skill =====
