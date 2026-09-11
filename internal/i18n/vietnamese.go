@@ -864,4 +864,6 @@ q hoặc ctrl+c để thoát`,
 	ArrangeFooter:        "↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận",
 	ArrangeSendFooter:    "↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận",
 	ArrangeWaitingFooter: "ctrl+l English · esc rời trận",
+
+	PlayAimMatchup: "%s/%s bị khắc hệ này, %s/%s kháng hệ này",
 }

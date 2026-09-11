@@ -366,6 +366,7 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"a battle":                 aBattle(t, c),
 		"aiming":                   aBattleAiming(t, c),
 		"aiming at an area skill":  aBattleAimingAnArea(t, c),
+		"aiming at a matchup":      aBattleAimingAMatchup(t, c),
 		"a battle over":            aFinishedBattle(t, c),
 		"a scrolled battle log":    aScrolledBattleLog(t, c),
 		"a saved battle":           aSavedBattle(t, c),
@@ -633,6 +634,46 @@ func aBattleAimingAnArea(t *testing.T, c Context) PlayScreen {
 		if !strings.Contains(drawn, cell.String()) {
 			t.Fatalf("the area aim list does not draw the caught cell %s:\n%s", cell, drawn)
 		}
+	}
+	return p
+}
+
+// aBattleAimingAMatchup is the aim list with a matchup mark on it, and it is a
+// third entry for the same reason the second one was.
+//
+// ⚠️ **Neither `aiming` nor `aiming at an area skill` can draw a mark, and that
+// was measured rather than assumed.** battleCast picks the cast's most-traited
+// characters and the unit it opens on carries neutral skills; the area fixture's
+// caster throws water at a water/ice half, which composes back to the neutral
+// multiplier. So every row of both is a 1000 and draws nothing — the feature is
+// absent from both pictures and would go on being absent if it were deleted.
+//
+// The board is built from a matchup found BY PROPERTY, so this records the
+// drawing rather than a named pairing: whichever attacker, skill and defender
+// the library holds that composes past a single advantage, which is the state
+// with the most to say and the one no shipped squad can field.
+func aBattleAimingAMatchup(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p, chosen, marks := aMixedAimList(t, c, hex.FormationRows)
+	drawn, _ := p.View(c)
+	if !strings.Contains(drawn, matchupLegend(c)) {
+		t.Fatalf("the matchup aim list explains no mark:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, c.Text(i18n.PlayAimAt, chosen)) {
+		t.Fatalf("the matchup battle draws no aim list:\n%s", drawn)
+	}
+	// ⚠️ The picture is worth nothing unless the rows differ: a list whose rows
+	// all say the same thing records the mark and not the comparison, and the
+	// comparison is the whole feature.
+	var distinct int
+	for _, mark := range marks {
+		if mark != "" {
+			distinct++
+		}
+	}
+	if distinct < 2 {
+		t.Fatalf("the recorded aim list draws %d different marks %v, so it pictures no "+
+			"comparison at all", distinct, marks)
 	}
 	return p
 }

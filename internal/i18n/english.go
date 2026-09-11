@@ -883,4 +883,6 @@ q or ctrl+c to quit`,
 	ArrangeFooter:        "↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave",
 	ArrangeSendFooter:    "↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave",
 	ArrangeWaitingFooter: "ctrl+l tiếng Việt · esc leave the match",
+
+	PlayAimMatchup: "%s/%s weak to this element, %s/%s resists it",
 }

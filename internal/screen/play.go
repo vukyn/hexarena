@@ -9,8 +9,10 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/tui"
@@ -487,10 +489,25 @@ type playReading struct {
 }
 
 // playUnit is one unit as a drawing needs it.
+//
+// ⚠️ **Side and Affinity are here because a drawing may not go and ask.** Both
+// are facts a live screen would otherwise have to read off the battle at the
+// moment it draws, which is the one thing the reading exists to stop — the
+// mirror's lock is held in Attach and nowhere else. Affinity is what the aim
+// list marks a target's matchup from, and Side is which half a shape is walked
+// in; the second used to be read through p.Fight.Unit inside splashUnder, on
+// the drawing path, which is exactly the race readBattle was written to remove.
+//
+// They are captured for every unit rather than for the few an aim list happens
+// to name, for the reason the rest of this struct is: the reading is taken once
+// per redraw and a selective one would need to know what the draw was going to
+// ask before the draw asked it.
 type playUnit struct {
 	ID, Name string
 	Cell     hex.Offset
 	Dead     bool
+	Side     hex.Side
+	Affinity element.Affinity
 }
 
 // readBattle takes a reading. A nil battle reads as the zero value, which is
@@ -517,6 +534,7 @@ func readBattle(fight *battle.Battle, tags map[string]string) playReading {
 	for _, unit := range units {
 		read.units = append(read.units, playUnit{
 			ID: unit.ID, Name: unit.Name, Cell: unit.Cell, Dead: unit.Dead,
+			Side: unit.Side, Affinity: unit.Affinity,
 		})
 	}
 	return read
@@ -1882,11 +1900,27 @@ func (p PlayScreen) choices(c Context, read playReading) string {
 	// The splash the aim under the cursor also reaches, worked out before the
 	// heading because the heading is where the mark is explained and there is
 	// nothing to explain when the shape catches one cell.
-	splash := p.splashUnder(c, option)
+	splash := p.splashUnder(c, read, option)
+	// The skill behind the option, looked up once for the whole list rather than
+	// per row: every mark below is a fact about this one skill's element and its
+	// power, and a lookup a row would be the same answer fetched up to nine
+	// times. A skill the book cannot find marks nothing, which is the reading
+	// summarise gives the same miss — the options come out of a battle built
+	// from this library, so it is unreachable, and an aim row is the wrong place
+	// to say so.
+	declared, _ := c.Lib.Skills().Lookup(option.Skill)
 	heading := c.Text(i18n.PlayAimAt, option.Skill)
 	if len(splash) > 0 {
 		heading += "  " + c.Style.Dim.Render(
 			c.Text(i18n.PlayAimSplash, shapeSplashMark, c.Lib.SplashShare()))
+	}
+	// The matchup legend, on the same heading and on the same rule as the splash
+	// one: drawn when a mark below is drawn, and never otherwise. Worked out by
+	// walking the rows this list is about to print rather than by asking whether
+	// the skill has an element — most turns are neutral against everybody, and a
+	// legend for four marks none of which appear is a legend about nothing.
+	if p.marksAMatchup(c, declared, read, option, splash) {
+		heading += "  " + c.Style.Dim.Render(matchupLegend(c))
 	}
 	out.WriteString("\n" + c.Style.Label.Render(heading) + "\n")
 	for index, cell := range option.Aims {
@@ -1894,6 +1928,12 @@ func (p PlayScreen) choices(c Context, read playReading) string {
 		line := cell.String()
 		if held := p.occupant(read, cell); held != "" {
 			line += "  " + held
+		}
+		// After the occupant rather than before it, because the mark is about
+		// whoever is standing there: a mark on a row naming nobody would be a
+		// claim about an empty cell.
+		if mark := p.matchupOn(c, declared, read, cell); mark != "" {
+			line += "  " + mark
 		}
 		if index == p.Aim {
 			marker = "> "
@@ -1911,10 +1951,44 @@ func (p PlayScreen) choices(c Context, read playReading) string {
 			if held := p.occupant(read, caught); held != "" {
 				row += "  " + held
 			}
+			// The same mark on the same rule: a splash cell is a unit this cast
+			// is about to hit, so the matchup is as much a fact about it as
+			// about the cell the cursor is on. A row that carried the occupant
+			// and not the mark would be the one place a reader had to work it
+			// out for themselves.
+			if mark := p.matchupOn(c, declared, read, caught); mark != "" {
+				row += "  " + mark
+			}
 			out.WriteString("    " + c.Style.Dim.Render(row) + "\n")
 		}
 	}
 	return out.String()
+}
+
+// marksAMatchup says whether any row this aim list is about to draw carries a
+// mark, which is what decides whether the heading explains them.
+//
+// It walks the same cells in the same order as the list itself rather than
+// asking a cheaper question — "does this skill have an element" would draw the
+// legend on every neutral turn, and "is anybody dual" would miss the ordinary
+// single weakness that is most of what a reader sees. The cost is one pass over
+// at most nine cells.
+func (p PlayScreen) marksAMatchup(c Context, declared skill.Skill, read playReading,
+	option battle.Option, splash []hex.Offset) bool {
+	for _, cell := range option.Aims {
+		if p.matchupOn(c, declared, read, cell) != "" {
+			return true
+		}
+	}
+	// The splash rows belong to the aim under the cursor alone, which is the
+	// only one whose caught cells are drawn, so they are the only ones that can
+	// put a mark on the screen.
+	for _, caught := range splash {
+		if p.matchupOn(c, declared, read, caught) != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // splashUnder is every cell but the primary that the option under the cursor
@@ -1935,7 +2009,7 @@ func (p PlayScreen) choices(c Context, read playReading) string {
 // which is the reading summarise gives the same miss two hundred lines down: the
 // options come out of a battle built from this library, so it is unreachable,
 // and an aim row is the wrong place to say so.
-func (p PlayScreen) splashUnder(c Context, option battle.Option) []hex.Offset {
+func (p PlayScreen) splashUnder(c Context, read playReading, option battle.Option) []hex.Offset {
 	if len(option.Aims) == 0 {
 		return nil
 	}
@@ -1945,9 +2019,16 @@ func (p PlayScreen) splashUnder(c Context, option battle.Option) []hex.Offset {
 	// every battle this screen opens, and reading the one that is true by
 	// definition rather than the one that happens to agree is what stops this
 	// from drawing the wrong cells the day it is not. → package pattern's doc.
+	//
+	// ⚠️ **Off the READING and not off the battle.** This used to call
+	// p.Fight.Unit(p.Pending.Unit) right here, which is a read of the mirror's
+	// battle taken while drawing, on a live screen, outside the only lock there
+	// is — the defect readBattle exists to remove, rebuilt in the one place the
+	// rule was not being looked at. The reading already carries every unit's
+	// side; taking it from there costs nothing and cannot race.
 	caster := hex.SideAlly
-	if p.Fight != nil && p.Pending != nil {
-		if unit, known := p.Fight.Unit(p.Pending.Unit); known {
+	if p.Pending != nil {
+		if unit, known := read.unit(p.Pending.Unit); known {
 			caster = unit.Side
 		}
 	}
@@ -2061,13 +2142,28 @@ func OptionRefusal(c Context, option battle.Option) string {
 // occupant is the tag and name standing on a cell, so an aim reads as somebody
 // rather than as a coordinate.
 func (p PlayScreen) occupant(read playReading, cell hex.Offset) string {
-	for _, unit := range read.units {
+	unit, standing := read.standing(cell)
+	if !standing {
+		return ""
+	}
+	return p.Tags[unit.ID] + " " + unit.Name
+}
+
+// standing is the live unit a cell holds, and whether it holds one at all.
+//
+// Separate from occupant because two questions are asked about the same cell and
+// only one of them is about words: the aim row wants a tag and a name, and the
+// matchup mark wants the unit's affinity. Walking the reading twice would be two
+// answers to "who is there", and the day they disagreed the row would name one
+// unit and mark another.
+func (r playReading) standing(cell hex.Offset) (playUnit, bool) {
+	for _, unit := range r.units {
 		if unit.Dead || unit.Cell != cell {
 			continue
 		}
-		return p.Tags[unit.ID] + " " + unit.Name
+		return unit, true
 	}
-	return ""
+	return playUnit{}, false
 }
 
 // ending is how the battle finished, in the words the game client uses for it.
