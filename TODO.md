@@ -704,6 +704,15 @@ is only so the shape is readable.
       lands, which is precisely what `#395` did. A gate guarding only the door a
       change came through does not notice the room changing behind it.
 
+      **The runner's wall-clock, measured on the run this workflow's own pull
+      request triggered: 731s, 12m11s** — against 357s on eight local cores, so
+      **2.05×**. That is the figure this entry said was unmeasured. Twelve
+      minutes is affordable per pull request, so the fast-gate split floated
+      above is still not needed for cost. ⚠️ `internal/room`'s loopback test did
+      **not** flake on that run, which is one sample and not a clearance — the
+      60s bound has been hit three times under parallel load locally, and a
+      hosted runner has fewer cores than the machine that did it.
+
       ⚠️ **The first line of the gate did not gate, and had not since it was
       written.** `make check` opened with `gofmt -l .`, and `gofmt -l` LISTS and
       exits 0 — measured: an unformatted file in the tree prints its name and the
