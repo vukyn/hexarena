@@ -54,10 +54,13 @@ const (
 	// squad catalogue with `f`. See pairing.go for which two squads it opens on
 	// and why that is the seam the network work replaces.
 	screenBattle
-	// screenStatuses is raised from the traits listing with `?`, which is where a
-	// trait names a status. It is not on the menu: the question it answers is
-	// "what is this thing the trait just mentioned", and a reader has that
-	// question after reading a trait rather than before.
+	// screenStatuses is on the menu, and is also raised from the traits listing
+	// with `?`, which is where a trait names a status. Both routes are wanted:
+	// the menu answers "what does this debuff do" asked cold, the `?` answers
+	// "what is this thing the trait just mentioned". It used to be the second
+	// only, on the reasoning that a reader has the question after reading a
+	// trait rather than before — true of that reader, and it left a player with
+	// no way to reach a catalogue that is a peer of skills and traits.
 	screenStatuses
 	// screenChart is raised from the elements listing with `g`, for the reason
 	// screenStatuses is raised from the traits one: it is the same subject read
@@ -150,12 +153,25 @@ type menuItem struct {
 // A wording naming a key this client ignores is the failure readonly_test.go
 // exists to measure, and a menu detail is as much a promise as a footer is.
 //
-// ⚠️ **The build catalogue is deliberately not here.** It is the eighth listing
-// internal/screen owns and a reader would want it; it is left out because this
-// client's menu is the seven the step that built it asked for, and adding an
-// eighth is a decision about what a game client offers rather than a line of
-// wiring. Nothing else in this package mentions draw.BuildsScreen, so it is a
-// gap rather than a half-finished screen — see TODO.md.
+// ⚠️ **The build catalogue is deliberately not here**, and it is a gap rather
+// than a half-finished screen: nothing else in this package mentions
+// draw.BuildsScreen at all — see TODO.md. Adding it is a decision about what a
+// game client offers rather than a line of wiring.
+//
+// ⚠️ Two screens this client draws are reached from a listing rather than from
+// here, and only one of them is a decision that still holds. screenChart is the
+// elements listing read the other way round, so it belongs to elements and is
+// raised with `g`. screenStatuses used to be justified the same way — a reader
+// asks what a status is *after* a trait mentions it — but a status catalogue is
+// a peer of the skill and trait ones rather than a detail of either, and a
+// player looking up what a debuff does has that question before reading any
+// trait at all. It is on the menu now, with the wording cmd/hexforge-tui
+// already uses; `?` from the traits listing still works and still answers the
+// question it was built for.
+//
+// ⚠️ This block said "the seven the step that built it asked for" while the
+// list below held ten. A count in prose beside the list it counts is a fact
+// with nothing holding it, so it is not restated here — read the list.
 var menuItems = []menuItem{
 	{i18n.MenuCast, i18n.MenuCastDetail, screenCast},
 	{i18n.MenuSkills, i18n.GameMenuSkillsDetail, screenSkills},
@@ -164,6 +180,7 @@ var menuItems = []menuItem{
 	{i18n.MenuSpecies, i18n.MenuSpeciesDetail, screenSpecies},
 	{i18n.MenuOrigins, i18n.GameMenuWorksDetail, screenWorks},
 	{i18n.MenuBonuses, i18n.MenuBonusesDetail, screenBonuses},
+	{i18n.MenuStatuses, i18n.MenuStatusesDetail, screenStatuses},
 	{i18n.MenuSquads, i18n.GameMenuSquadsDetail, screenSquads},
 	{i18n.GameMenuBattle, i18n.GameMenuBattleDetail, screenPairing},
 	{i18n.GameMenuJoin, i18n.GameMenuJoinDetail, screenJoin},
