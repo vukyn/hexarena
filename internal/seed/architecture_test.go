@@ -73,7 +73,19 @@ import (
 // replay golden beside this constant before accepting a new one, because a
 // digest that moved for a reason nobody can name in the log is the failure this
 // test is for.
-const theWholeBattleDigest = "bac8254b824ac25c621c0f9312c2f9c74d5860875584e7b4580f3d7d25ff3618"
+//
+// ⚠️ **And it can move on a pure REORDERING, with every figure unchanged**,
+// which is the second time it was paid and is worth knowing before hunting for
+// a balance answer that is not there. A drain now takes back each strike as
+// that strike lands, which puts the heal ahead of the skill's riders instead of
+// after them; the seed 11 battle still runs to 255 events, every one of them
+// byte-identical, with one `status_resisted` and one `healed` swapping places.
+// DigestEvents digests the sequence, so an adjacent transposition is a new
+// digest and no change to the game at all. The way to tell the two apart is to
+// dump the event stream on either side and diff it — a rule change that moved a
+// battle shows up as different amounts, not as the same amounts in a different
+// order.
+const theWholeBattleDigest = "5c99c04c23794920e5bc7353b1df701f26413af05a8f0c6e55896a2522188d8f"
 
 // TestTheEventDigestIsTheSameOnEveryArchitecture is the assumption PvP rests on,
 // pinned.

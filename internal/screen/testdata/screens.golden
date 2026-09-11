@@ -1531,8 +1531,8 @@ next: E2 E1 E2 E1 E2 E1
     E1  takes 105 from poison <trúng độc> x1
     E1  uses dream_eater <nuốt mộng> at 2,1
     E1   hits A2 for 160, 295 left
-    A2   E1 resists poison <trúng độc> (4%)
     E1  drains 112, 70% of what it dealt, 920 hp left
+    A2   E1 resists poison <trúng độc> (4%)
   
   A2  turn 23
     A2  expose <phá giáp> wears off
@@ -5236,8 +5236,8 @@ next: E2 E1 E2 E1 E2 E1
     E1  takes 105 from poison x1
     E1  uses dream_eater at 2,1
     E1   hits A2 for 160, 295 left
-    A2   E1 resists poison (4%)
     E1  drains 112, 70% of what it dealt, 920 hp left
+    A2   E1 resists poison (4%)
   
   A2  turn 23
     A2  expose wears off

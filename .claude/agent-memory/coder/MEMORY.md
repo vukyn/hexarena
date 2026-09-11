@@ -57,6 +57,8 @@
 - [Dodge cannot make an accuracy-1000 skill miss](feedback_dodge_cannot_make_a_full_accuracy_skill_miss.md) — Chance returns Base before reading dodge; every multi-strike fixture skill is 1000, so author one in YOUR file
 - [Moving a call INTO a loop reorders the rolls](feedback_moving_a_call_into_a_loop_reorders_the_rolls.md) — it also crossed the riders and the drain; a 1-strike cast changed battle without changing the reply
 - [A golden screen shows only the rows that FIT](feedback_a_golden_screen_shows_only_the_rows_that_fit.md) — spar prints 9 of 27; 4 repliers exist and 1 is above the cut, so 1 moved row ≠ 1 moved matchup
+- [spar cannot field a pairing](feedback_spar_cannot_see_a_trait_the_first_slot_hides.md) — seedKit takes the FIRST trait AND the first four skills; 2400 battles byte-identical measured nothing; FightSquads is the instrument
+- [A digest can move on a transposition](feedback_a_digest_can_move_on_a_transposition.md) — 255 events byte-identical, two swapped; dump and diff the stream before writing a balance sentence
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
