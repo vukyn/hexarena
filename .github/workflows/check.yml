@@ -1,0 +1,58 @@
+# The gate this repository already had, run where a human is not required to
+# remember it.
+#
+# ⚠️ It runs `make check` rather than spelling the steps out again. The Makefile
+# is where the gate is defined, and a workflow listing `go vet` and four `-race`
+# packages would be a second copy that drifts — the first time somebody adds a
+# package to the gate, the copy that runs on every pull request would be the one
+# that did not get it.
+#
+# Raised as ENG-014 after `main` merged red: a data change landed without its
+# goldens re-accepted, `make check` named the break exactly, and nobody ran it.
+# The only check on a pull request until now was a secret scanner.
+name: check
+
+on:
+  pull_request:
+  # ⚠️ Also on main, and that is the case this was raised for. A pull request
+  # green against an older main can still break main when it lands, which is
+  # exactly what happened: the golden went stale between one merge and the next.
+  # A gate that only guards the door a change came through does not notice the
+  # room changing behind it.
+  push:
+    branches: [main]
+
+# A new push supersedes the run it replaces. The gate takes minutes, and a
+# reviewer waiting on a run for a commit nobody will merge is waiting for
+# nothing.
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # Measured at 390s wall-clock on 8 cores; a hosted runner has fewer, so this
+    # is generous rather than tight. It exists to stop a hung test holding a
+    # runner for six hours, not to police the duration.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # ⚠️ The version comes off go.mod rather than being written here. It is
+      # already the one place this repository states which Go it needs, and a
+      # second statement is a second thing to forget: the directive moved to
+      # 1.27.1 in #409, between one branch's check and its merge.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # One command, because the gate is one command. Its first line is a real
+      # gofmt failure now — `gofmt -l` lists and exits 0, so for as long as the
+      # target opened with the bare form it printed the unformatted files and
+      # passed.
+      - run: make check
