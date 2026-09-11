@@ -1389,6 +1389,11 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		// actually left at that moment. A log where the second strike of a pair
 		// reports more health than the first is worse than no log.
 		for strike, attempt := range attempts {
+			// What THIS strike took off, which is the base its drain is a share
+			// of. It is not `dealt`: draining from the running total would pay
+			// out on the first strike's damage again on the second, so a four
+			// strike volley would take back ten strikes' worth.
+			struck := int64(0)
 			event := Event{
 				At: turn.At, Turn: turn.Number, Actor: actor.ID, Target: target.ID,
 				Skill: known.ID, Strike: strike + 1, Chance: chance,
@@ -1422,6 +1427,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 				event.Amount = attempt.Damage
 				event.Critical = attempt.Critical
 				dealt += attempt.Damage
+				struck += attempt.Damage
 				target.HP -= attempt.Damage
 				if target.HP < 0 {
 					target.HP = 0
@@ -1438,7 +1444,18 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			// rider: a blocked blow arrived and was stopped, a missed one never
 			// touched anybody.
 			if conduit && event.Kind != Missed {
-				dealt += b.discharge(actor, known, aim, turn)
+				// Into this strike's own base as well as the running total. A
+				// discharge is once per STRIKE by its own doc comment — it is
+				// re-walked and re-spent every time round this loop — so it has
+				// a well defined per-strike figure, and leaving it out would
+				// stop a conduit's damage being drained from at all, which is a
+				// balance change this step is not. It is added on a BLOCKED
+				// strike too, for the same reason the discharge happens there:
+				// a guard stops the blow, not the charge that was already
+				// sitting on the target, and that health really did come off.
+				charge := b.discharge(actor, known, aim, turn)
+				dealt += charge
+				struck += charge
 				if b.finished {
 					return dealt
 				}
@@ -1452,6 +1469,50 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			// reader could find on either skill.
 			if event.Kind == Damaged {
 				b.reconsider(target, turn)
+			}
+			// A drain takes back its share of what THIS strike dealt, as that
+			// strike lands, so a strike that missed or was blocked returns
+			// nothing and one that overkilled returns only the damage that
+			// landed.
+			//
+			// # Before the reply, and that ordering is the whole of this step
+			//
+			// damage → drain → reply. A caster facing thorns takes the answer
+			// to strike one with the heal from strike one already in hand, so a
+			// volley it cannot survive on paper is one it can survive in play —
+			// which is a rule about who lives rather than about bookkeeping.
+			// Put the reply first and the caster meets every answer at the
+			// health the last one left it, which is the engine as it stood
+			// between the per-strike reply and this, and is more lethal than
+			// either the old rule or this one.
+			//
+			// It pairs with the actor.Dead break below: a drain that keeps the
+			// caster on its feet keeps the volley going, and the strikes that
+			// buys are themselves drained from.
+			//
+			// # What is not corrected here
+			//
+			// N truncations instead of one, since b.drain divides by the base
+			// per call. The total taken back is therefore at most today's and
+			// short of it by less than one point per strike, on a scale where
+			// health is in the thousands. That is what a per-strike drain pays
+			// and it is not a rounding error to accumulate a remainder against
+			// — a carried remainder would be a fourth figure a reader cannot
+			// reproduce from the log.
+			//
+			// # The share
+			//
+			// The skill's and the caster's traits are added rather than
+			// composed, and the total is capped at the base. That cap is not
+			// the hard cap this engine rejects elsewhere: a buff ceiling bounds
+			// how good a number may get, where this bounds a *conservation* —
+			// health taken back cannot exceed damage dealt, which is the same
+			// invariant skill.resolve enforces on a single share. Saturating
+			// instead would be worse than either: it would take a trait's four
+			// hundred and pay out two hundred and eighty-five on a skill that
+			// drains nothing, so a trait would be worth less than it says.
+			if drained := drainShare(known.Drains + b.lifesteal(actor)); drained > 0 && struck > 0 {
+				b.drain(actor, struck, drained, turn)
 			}
 			// The strike is answered here, where it landed, rather than once
 			// for the whole skill afterwards: a volley that connects three
@@ -1468,9 +1529,12 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 				// The reply may have killed the caster, and a dead caster
 				// throws nothing further. Breaking rather than returning
 				// leaves the payout for the strikes that DID land — this
-				// target's riders, its restore, the drain on what was dealt —
-				// where the rest of this function already puts it; what stops
-				// is the volley. The cell walk in Act stops on the same flag.
+				// target's riders and its restore — where the rest of this
+				// function already puts it; what stops is the volley. The
+				// strikes that landed have already been drained from, above,
+				// one by one as they landed, and a dead caster takes no heal
+				// for the ones it never threw. The cell walk in Act stops on
+				// the same flag.
 				if actor.Dead {
 					break
 				}
@@ -1545,21 +1609,11 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		}
 	}
 	b.restore(actor, target, known, brought, position, turn)
-	// A drain takes its share of what was *dealt*, so a strike that missed or
-	// was blocked returns nothing, and one that overkilled returns only the
-	// damage that landed.
-	//
-	// The skill's share and the caster's traits are added rather than composed,
-	// and the total is capped at the base. That cap is not the hard cap this
-	// engine rejects elsewhere: a buff ceiling bounds how good a number may get,
-	// where this bounds a *conservation* — health taken back cannot exceed damage
-	// dealt, which is the same invariant skill.resolve enforces on a single
-	// share. Saturating instead would be worse than either: it would take a
-	// trait's four hundred and pay out two hundred and eighty-five on a skill
-	// that drains nothing, so a trait would be worth less than it says.
-	if drained := drainShare(known.Drains + b.lifesteal(actor)); drained > 0 && dealt > 0 {
-		b.drain(actor, dealt, drained, turn)
-	}
+	// No drain here. It used to sit on this line, once per target, on the whole
+	// volley's `dealt` — and it now runs inside the strike loop above, once per
+	// strike, on that strike's own damage. Nothing is left for it to do at this
+	// point: every contribution to `dealt` is made inside that loop, so a
+	// second pass here would take the whole volley back a second time.
 	if target.HP <= 0 {
 		b.kill(target)
 	}
