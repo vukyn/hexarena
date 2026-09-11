@@ -1,6 +1,6 @@
 ---
 name: hexarena-releases
-description: hexarena's release log and the procedure — version IS the git tag and nothing else; prove the tree green BEFORE pushing because a proxy tag is immutable; verify by RUNNING in an empty directory, not by watching the install finish. v0.3.0 · v0.3.1 · v0.4.0
+description: hexarena's release log and the procedure — version IS the git tag and nothing else; prove the tree green BEFORE pushing because a proxy tag is immutable; verify by RUNNING in an empty directory, not by watching the install finish. v0.3.0 · v0.3.1 · v0.4.0 · v0.5.0
 metadata:
   type: project
 ---
@@ -93,4 +93,29 @@ a redirected file, so the empty-directory check that worked for `v0.3.x` reaches
 only the host and `hexforge`. The client was proved by searching the installed
 binary for the wording — new sentence present, old sentence absent, with the
 previous tag as the control. ⚠️ That search lied the first time: see
+[[a-search-that-returns-zero-needs-a-known-positive]].
+
+## `v0.5.0` — `a36a669`, 2026-09-11
+
+Three balance changes and two screens. A reply answers **each strike** rather
+than each use of a skill; a drain takes back **each strike**, before the reply
+to it; block charges count down in the log instead of every line reporting the
+whole volley. The status catalogue reached the client's menu, and the aim list
+now marks which targets are weak to the skill and which resist it. Digest
+unchanged, `9c086a9cf68b` — no data moved.
+
+⚠️ **Old logs no longer pass `--verify`**, which compares every event struct.
+Decided and accepted rather than worked around; there is no log version.
+
+⚠️ **This is the first tag cut behind CI**, and the proof is different in kind.
+`ENG-014` landed in the same range: `make check` now runs on every pull request
+**and on pushes to `main`**, so the evidence for this tag is a green run on a
+clean machine at the exact commit (`34578299041`, `a36a669`) rather than a local
+run only. The runner takes **731s then 663s**, about **1.95×** the 357s of eight
+local cores. Keep waiting for `MERGEABLE CLEAN` — it now means something it did
+not before, and it costs ~11 minutes.
+
+Verified the usual way, from one empty directory: host prints the tag, `hexforge
+cast` lists, and the client binary carries both new strings in both languages —
+**counted as UTF-8 bytes, not with `grep`**, per
 [[a-search-that-returns-zero-needs-a-known-positive]].
