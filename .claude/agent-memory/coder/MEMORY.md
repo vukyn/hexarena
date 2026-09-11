@@ -55,6 +55,8 @@
 - [A pre-reg floor is the point when it FAILS](feedback_a_prereg_floor_is_the_point_when_it_fails.md) — +48‰ vs +50‰: ship the null, do not add a board; the vacuous-rung mutation is what makes a null honest
 - [A bulk spend needs a wall DEEPER than the volley](feedback_a_bulk_spend_needs_a_wall_deeper_than_the_volley.md) — 3 charges × 2 strikes is the only discriminating cell; 2 of 4 guards stay green BY DESIGN
 - [Dodge cannot make an accuracy-1000 skill miss](feedback_dodge_cannot_make_a_full_accuracy_skill_miss.md) — Chance returns Base before reading dodge; every multi-strike fixture skill is 1000, so author one in YOUR file
+- [Moving a call INTO a loop reorders the rolls](feedback_moving_a_call_into_a_loop_reorders_the_rolls.md) — it also crossed the riders and the drain; a 1-strike cast changed battle without changing the reply
+- [A golden screen shows only the rows that FIT](feedback_a_golden_screen_shows_only_the_rows_that_fit.md) — spar prints 9 of 27; 4 repliers exist and 1 is above the cut, so 1 moved row ≠ 1 moved matchup
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam

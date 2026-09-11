@@ -89,13 +89,19 @@ func TestATraitAnswersTheUnitThatAttackedItsHolder(t *testing.T) {
 	}
 }
 
-// TestAReplyAnswersAUseOfASkillRatherThanAStrike is one of the four rules, and
-// the one with a number attached.
+// TestAReplyAnswersAStrikeRatherThanAUseOfASkill is one of the four rules, and
+// it is the one that has been REVERSED.
 //
-// If a reply fired per strike, a trait's worth would scale with somebody else's
-// strike count — a three-strike skill would cost three times what a single one
-// does, for a reason written on neither skill and readable from neither.
-func TestAReplyAnswersAUseOfASkillRatherThanAStrike(t *testing.T) {
+// It used to read the other way round: a reply answered a use, so a trait's
+// worth could not scale with somebody else's strike count and a three-strike
+// skill cost exactly what a single one did. The game's owner decided the
+// opposite — a volley that connects three times is answered three times — so
+// reply damage is now multiplied by the strikes that got through, deliberately.
+//
+// The count is what is asserted here, beside its siblings. The damage total,
+// the blocked cases, the mid-volley kill and the one-strike control are in
+// reply_perstrike_test.go, which owns the rule.
+func TestAReplyAnswersAStrikeRatherThanAUseOfASkill(t *testing.T) {
 	fight := answering(t, "spiked", "", []string{"strike"}, []string{"triple"})
 	fight.Begin()
 	fight.Drain()
@@ -116,8 +122,8 @@ func TestAReplyAnswersAUseOfASkillRatherThanAStrike(t *testing.T) {
 	if strikes < 2 {
 		t.Fatalf("the attacking skill landed %d strikes, so this measures nothing", strikes)
 	}
-	if answered := replies(events); len(answered) != 1 {
-		t.Errorf("a %d-strike skill drew %d replies, want one for the use of it",
+	if answered := replies(events); len(answered) != strikes {
+		t.Errorf("a skill that connected %d times drew %d replies, want one per strike",
 			strikes, len(answered))
 	}
 }
@@ -237,66 +243,96 @@ func TestAReplyMayKill(t *testing.T) {
 // TestNobodyAnswersACorpse is the second holder's turn to speak, and the point
 // is that it does not get one.
 //
-// An area skill can bite two holders at once, and the first reply may kill the
-// unit that cast it. Whatever is left to answer is answering a dead unit: the
-// log would carry damage against something whose died line is already written,
-// and the difference between letting that happen and not is one hit or several.
+// An area skill can bite two holders at once, and the first one's reply may kill
+// the unit that cast it. It used to be able to reach the second holder anyway —
+// every cell was resolved before anybody answered — so the rule that saved the
+// log from carrying damage against an already-dead attacker was a guard inside
+// the answering loop. It is now a guard in the cell walk instead: the second
+// holder is never touched at all, so there is nothing for it to answer.
+//
+// The two arms are the same cast with the same aim, and only the caster's
+// health differs. The surviving one is what says the shape really covers two
+// holders — without it, "the second holder was not hit" would hold just as well
+// for an aim that never reached it.
 func TestNobodyAnswersACorpse(t *testing.T) {
-	fight, err := battle.New(books(t), 7, []battle.Roster{
-		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
-			Affinity: single("neutral"), Stats: stats(4800, 800, 400, 90),
-			Skills: []string{"lob"}, Passives: []string{"spiked"}},
-		{ID: "b", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
-			Affinity: single("neutral"), Stats: stats(4800, 800, 400, 80),
-			Skills: []string{"lob"}, Passives: []string{"spiked"}},
-		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
-			Affinity: single("neutral"), Stats: stats(200, 800, 100, 120),
-			Skills: []string{"sweep"}},
-	})
-	if err != nil {
-		t.Fatalf("new battle: %v", err)
-	}
-	fight.Begin()
-	fight.Drain()
-
-	prompt, err := fight.Advance()
-	if err != nil {
-		t.Fatalf("advance: %v", err)
-	}
-	if prompt == nil || prompt.Unit != "f" {
-		t.Fatalf("the attacker did not go first: %+v", prompt)
-	}
-	acted := false
-	for _, option := range prompt.Options {
-		if option.Skill != "sweep" || !option.Available() {
-			continue
+	sweep := func(t *testing.T, casterHealth int64) (*battle.Battle, []battle.Event) {
+		t.Helper()
+		fight, err := battle.New(books(t), 7, []battle.Roster{
+			{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
+				Affinity: single("neutral"), Stats: stats(4800, 800, 400, 90),
+				Skills: []string{"lob"}, Passives: []string{"spiked"}},
+			{ID: "b", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(4800, 800, 400, 80),
+				Skills: []string{"lob"}, Passives: []string{"spiked"}},
+			{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(casterHealth, 800, 100, 120),
+				Skills: []string{"sweep"}},
+		})
+		if err != nil {
+			t.Fatalf("new battle: %v", err)
 		}
-		for _, aim := range option.Aims {
-			if err := fight.Act("sweep", aim); err != nil {
-				t.Fatalf("act quake: %v", err)
+		fight.Begin()
+		fight.Drain()
+
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt == nil || prompt.Unit != "f" {
+			t.Fatalf("the attacker did not go first: %+v", prompt)
+		}
+		acted := false
+		for _, option := range prompt.Options {
+			if option.Skill != "sweep" || !option.Available() {
+				continue
 			}
-			acted = true
+			for _, aim := range option.Aims {
+				if err := fight.Act("sweep", aim); err != nil {
+					t.Fatalf("act sweep: %v", err)
+				}
+				acted = true
+				break
+			}
 			break
 		}
-		break
-	}
-	if !acted {
-		t.Fatal("the attacker could not use its area skill")
-	}
-	events := fight.Drain()
-
-	bitten := map[string]bool{}
-	for _, event := range events {
-		if event.Kind == battle.Damaged && event.Passive == "" && event.Amount > 0 {
-			bitten[event.Target] = true
+		if !acted {
+			t.Fatal("the attacker could not use its area skill")
 		}
+		return fight, fight.Drain()
 	}
-	if len(bitten) < 2 {
-		t.Fatalf("the area skill bit %d holders, so there is no second reply to withhold", len(bitten))
+	bitten := func(events []battle.Event) map[string]bool {
+		out := map[string]bool{}
+		for _, event := range events {
+			if event.Kind == battle.Damaged && event.Passive == "" && event.Amount > 0 {
+				out[event.Target] = true
+			}
+		}
+		return out
 	}
+
+	// The premise: a caster that can take both answers reaches both holders and
+	// is answered by both.
+	survived, whole := sweep(t, 4800)
+	if reached := bitten(whole); len(reached) != 2 {
+		t.Fatalf("the area skill bit %d holders when its caster survived, want 2: "+
+			"the arm below measures nothing unless the shape covers them both", len(reached))
+	}
+	if unitByID(t, survived, "f").Dead {
+		t.Fatal("the caster with full health died anyway, so it is not the control")
+	}
+	if answered := replies(whole); len(answered) != 2 {
+		t.Errorf("two holders bitten once each answered %d times, want twice", len(answered))
+	}
+
+	// The case: a caster the first answer kills.
+	fight, events := sweep(t, 200)
 	attacker := unitByID(t, fight, "f")
 	if !attacker.Dead {
 		t.Fatalf("the attacker survived at %d, so no reply ever killed it", attacker.HP)
+	}
+	if reached := bitten(events); len(reached) != 1 {
+		t.Errorf("a caster killed at the first cell of its shape still bit %d holders, "+
+			"want 1: the cells after it are not walked", len(reached))
 	}
 	answered := replies(events)
 	if len(answered) != 1 {
