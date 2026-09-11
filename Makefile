@@ -141,8 +141,17 @@ vet:
 # runs a one-second allowance against a client that thinks for three — so the
 # detector's share of it is smaller than the totals suggest. A race test nobody
 # runs is not a net, so all four are in the gate rather than in a comment.
+# ⚠️ gofmt is run through a test rather than as a bare `gofmt -l .`, because
+# `gofmt -l` LISTS and exits 0. For as long as this target opened with the bare
+# form it printed the name of every unformatted file and then passed — the first
+# line of the gate did not gate. The shell below fails when the list is not
+# empty, and prints it, which is what the bare form only looked like it did.
 check:
-	@gofmt -l .
+	@out=$$(gofmt -l .); if [ -n "$$out" ]; then \
+		echo "gofmt: these files are not formatted; run \`make fmt\`:"; \
+		echo "$$out"; \
+		exit 1; \
+	fi
 	@go vet ./...
 	@go test ./... -count=1
 	@go test -race -count=1 ./internal/room/

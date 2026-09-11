@@ -89,7 +89,7 @@ its measurements), `shipped` (§ *Done*) or `refused` (§ *Decided against*).
 | `ENG-011` | done | `main` did not build, and no conflict was raised |
 | `ENG-012` | done | A pattern's splash is walked in absolute board directions — FIXED, the walk is the caster's frame now and the control arm closes |
 | `ENG-013` | done | A summon lives in the gap between the format and the team cap, and at five a side there is no gap — SPLIT, `hex.BoardSlots` against `hex.MaxSquadSize`, and five a side is open |
-| `ENG-014` | open | Nothing runs the test suite on a pull request — `make check` caught a stale golden correctly and main still merged red, because the only check on a PR is a secret scanner. The mtime guard this was first raised as is REFUSED by its own measurement |
+| `ENG-014` | done | Nothing runs the test suite on a pull request — `make check` caught a stale golden correctly and main still merged red, because the only check on a PR is a secret scanner. The mtime guard this was first raised as is REFUSED by its own measurement — DONE. A workflow on `pull_request` AND on pushes to `main`, running `make check` itself. ⚠️ Its first line never gated: `gofmt -l` lists and exits 0 |
 | `RAT-001` | shipped | The opponent |
 | `RAT-002` | shipped | Measuring the opponent |
 | `RAT-003` | done | A declined turn makes a slow board slower — RE-TAKEN, and every statement in… |
@@ -627,7 +627,7 @@ is only so the shape is readable.
       real directory only where it **writes**, and most of it does not, and
       `hexforge-tui` is untouched and still requires one everywhere.
 
-- [ ] `ENG-014` ⚠️ **Nothing runs the test suite on a pull request.** A
+- [x] `ENG-014` ⚠️ **Nothing runs the test suite on a pull request.** A
       stale golden merged to `main` and sat there red for one commit, and the
       reason is not that the break was undetectable — `make check` names it
       exactly, in the words the golden test was written to say. Nobody ran it.
@@ -690,6 +690,38 @@ is only so the shape is readable.
       ~0.4s in isolation — a **160×** margin — so a shared CI runner is exactly the machine that will make it
       flake. A gate that flakes is a gate people learn to re-run, which is a gate
       that is off.
+
+      **DONE — a workflow on `pull_request` and on pushes to `main`.** It runs
+      `make check` rather than spelling the steps out again: the Makefile is
+      where the gate is defined, and a workflow listing `go vet` and four
+      `-race` packages is a second copy that drifts the first time somebody adds
+      a package to the gate. The Go version comes off `go.mod` for the same
+      reason, and `#409` is the proof it was needed — the directive moved to
+      1.27.1 between one branch's check and its merge.
+
+      ⚠️ **It runs on `main` too, and that is the case this was raised for.** A
+      pull request green against an older `main` can still break `main` when it
+      lands, which is precisely what `#395` did. A gate guarding only the door a
+      change came through does not notice the room changing behind it.
+
+      **The runner's wall-clock, measured on the run this workflow's own pull
+      request triggered: 731s, 12m11s** — against 357s on eight local cores, so
+      **2.05×**. That is the figure this entry said was unmeasured. Twelve
+      minutes is affordable per pull request, so the fast-gate split floated
+      above is still not needed for cost. ⚠️ `internal/room`'s loopback test did
+      **not** flake on that run, which is one sample and not a clearance — the
+      60s bound has been hit three times under parallel load locally, and a
+      hosted runner has fewer cores than the machine that did it.
+
+      ⚠️ **The first line of the gate did not gate, and had not since it was
+      written.** `make check` opened with `gofmt -l .`, and `gofmt -l` LISTS and
+      exits 0 — measured: an unformatted file in the tree prints its name and the
+      target passes. The formatting half of this repository's gate has never
+      failed anything. It is now a shell that exits 1 on a non-empty list, which
+      is what the bare form only looked like it did. ⚠️ Read that twice before
+      trusting any other one-line step: a command whose *output* is the finding
+      is not a command whose *status* is the finding, and `make` reads only the
+      status.
 
 - [x] `DAT-013` **`cleffa.hex` lost four battles in five because of the KIT, not
       because the rating underprices control — MEASURED, and the build was
