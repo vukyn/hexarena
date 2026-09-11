@@ -411,7 +411,7 @@ func TestTheMenuOpensEveryCatalogueItOffers(t *testing.T) {
 			t.Errorf("entry %d drew nothing", index)
 		}
 	}
-	// Eight catalogues, a battle and a room to join, which is what this client
+	// Nine catalogues, a battle and a room to join, which is what this client
 	// offers. A count rather than a spot check: an entry quietly dropped is a
 	// catalogue nothing reaches, and the sweep would still pass because the
 	// screen is registered there directly.
@@ -421,7 +421,16 @@ func TestTheMenuOpensEveryCatalogueItOffers(t *testing.T) {
 	// other reference here is: what a squad is paid for what it shares is a rule
 	// a *player* builds towards, and it is the one rule with no trace on the
 	// board to read instead.
-	if got, want := len(menuItems), 10; got != want {
+	//
+	// The ninth is the status listing, and it is here for the same reason one
+	// step further on. It was reachable only from the traits listing with `?`,
+	// on the reasoning that a reader asks what a status is *after* a trait names
+	// one — true of that reader, and it left a player who wants to know what a
+	// debuff does before building anything with no route at all. A status
+	// catalogue is a peer of the skill and trait ones, not a detail of either,
+	// and cmd/hexforge-tui has always listed it. ⚠️ The `?` route is kept: the
+	// two answer different questions and neither replaces the other.
+	if got, want := len(menuItems), 11; got != want {
 		t.Errorf("the menu offers %d entries, want the %d this client was built to offer",
 			got, want)
 	}

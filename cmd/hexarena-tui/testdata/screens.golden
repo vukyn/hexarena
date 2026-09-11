@@ -998,6 +998,7 @@ bạn muốn làm gì?
   chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
   bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
+  hiệu ứng            tra cứu buff, debuff: làm gì, mấy lượt, mấy cộng dồn
   đội hình            các đội đã dựng, và mang một đội vào trận
   vào trận            chọn cả hai đội, rồi tự cầm đội mình; máy cầm đội kia
   vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
@@ -1005,7 +1006,6 @@ bạn muốn làm gì?
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
 sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
 diễn biến để hexarena --replay vẽ lại đúng trận đó.
-
 
 
 
@@ -3811,6 +3811,7 @@ bạn muốn làm gì?
   chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
   bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
+  hiệu ứng            tra cứu buff, debuff: làm gì, mấy lượt, mấy cộng dồn
   đội hình            các đội đã dựng, và mang một đội vào trận
   vào trận            chọn cả hai đội, rồi tự cầm đội mình; máy cầm đội kia
   vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
@@ -3818,7 +3819,6 @@ bạn muốn làm gì?
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
 sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
 diễn biến để hexarena --replay vẽ lại đúng trận đó.
-
 
 
 
@@ -5508,6 +5508,7 @@ what would you like to do?
   species        look a kind up: what each one means
   origins        look a work up: the fictions the cast is borrowed from
   squad bonuses  the thresholds a squad is paid for, and what each one grants
+  statuses       look a buff or debuff up: what each does, how long, how many
   squads         the sides that have been built, and take one into a battle
   battle         pick both sides, then take yours; the machine plays the other
   join a room    paste the code a friend sent and play them over the local network
@@ -5515,7 +5516,6 @@ what would you like to do?
 A battle here is fought out of the directory above, while the game boots from
 the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
 writes the log that hexarena --replay draws that same battle back from.
-
 
 
 
@@ -8321,6 +8321,7 @@ what would you like to do?
   species        look a kind up: what each one means
   origins        look a work up: the fictions the cast is borrowed from
   squad bonuses  the thresholds a squad is paid for, and what each one grants
+  statuses       look a buff or debuff up: what each does, how long, how many
   squads         the sides that have been built, and take one into a battle
   battle         pick both sides, then take yours; the machine plays the other
   join a room    paste the code a friend sent and play them over the local network
@@ -8328,7 +8329,6 @@ what would you like to do?
 A battle here is fought out of the directory above, while the game boots from
 the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
 writes the log that hexarena --replay draws that same battle back from.
-
 
 
 

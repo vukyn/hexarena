@@ -2385,10 +2385,13 @@ is only so the shape is readable.
             added without an entry or a written exclusion is a red test rather
             than a screen nothing measures.
             ⚠️ One catalogue is left out on purpose and it is a gap rather than a
-            half-finished screen: **`BuildsScreen`** is the eighth listing
-            `internal/screen` owns and this client's menu is the seven the step
-            asked for. (The **art preview** was the other one and is registered in
-            every sweep now, on a linear character *and* on a forking one.)
+            half-finished screen: **`BuildsScreen`** — nothing in the client
+            mentions it at all. (The **art preview** was the other one and is
+            registered in every sweep now, on a linear character *and* on a
+            forking one.) ⚠️ This said the client's menu "is the seven the step
+            asked for" while it held ten, and the statuses listing has since been
+            added as an eleventh; a count in prose is a fact with nothing holding
+            it, so read `menuItems`.
       - [x] `internal/wire`: the protocol as one stdlib-only package. The
             envelope, the three version numbers, and error **codes** rather than
             prose. A golden per message, so a wire change shows up in a diff.
