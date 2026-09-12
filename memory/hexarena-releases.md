@@ -1,6 +1,6 @@
 ---
 name: hexarena-releases
-description: hexarena's release log and the procedure — version IS the git tag and nothing else; prove the tree green BEFORE pushing because a proxy tag is immutable; verify by RUNNING in an empty directory, not by watching the install finish. v0.3.0 · v0.3.1 · v0.4.0 · v0.5.0 · v0.5.1
+description: hexarena's release log and the procedure — version IS the git tag and nothing else; prove the tree green BEFORE pushing because a proxy tag is immutable; verify by RUNNING in an empty directory, not by watching the install finish. v0.3.0 · v0.3.1 · v0.4.0 · v0.5.0 · v0.5.1 · v0.5.2
 metadata:
   type: project
 ---
@@ -143,3 +143,23 @@ Two lessons came out of it and are their own notes:
 Verified from an empty directory as always; the decisive strings are the
 localised heading sentences, one per language, since the short labels are
 substrings of other wording and their counts say nothing.
+
+## `v0.5.2` — `98ce9fb`, 2026-09-12
+
+The wide roster's element column becomes a three-letter code in that element's
+own colour, and the heading drops the rule it was carrying. Digest unchanged.
+
+Three letters rather than two is a measurement: `grass` and `ground` share their
+first two. The codes are **ids, not words** — the Vietnamese golden has always
+drawn `neutral`, `grass`, `ground`, because `internal/i18n` keeps element ids
+untranslated and glosses them *beside* rather than instead, so a code cut from
+the id follows that rule rather than departing from it. ⚠️ The brief for the work
+claimed the opposite and was wrong.
+
+The heading's `(no countdown means permanent)` moved to the statuses catalogue
+rather than being deleted — the reason it was written is unchanged, only its
+home. It costs that screen one listing row at the floor.
+
+⚠️ **The trap worth carrying forward is
+[[a-golden-under-no-colour-cannot-see-an-alignment-bug]]**, found while doing
+this and not by me.
