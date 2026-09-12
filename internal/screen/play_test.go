@@ -973,7 +973,7 @@ func whatIsDrawn(c Context, p PlayScreen) (drawnSections, string, string) {
 	// Through RosterFor rather than Roster: this package draws whichever table
 	// the window has room for, so a test that named the narrow one would find no
 	// rows at all on a wide window and report that as a screen drawing none.
-	for _, row := range strings.Split(tui.RosterFor(c.Lang, p.Fight, p.Tags, c.UsableWidth()), "\n")[1:] {
+	for _, row := range strings.Split(tui.RosterFor(c.Lang, p.Fight, p.Tags, c.UsableWidth(), c.Style.ElementInk()), "\n")[1:] {
 		if present[row] > 0 {
 			found.roster++
 		}

@@ -1,5 +1,5 @@
 == vi ==
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Bulwark       [##########]  4800/4800     80   toughened, phalanx x2, ironhide, poison (3t), burn (2t) +1
 A2 Vanguard      [##########]  3600/3600    110   phalanx x2, ironhide
 A3 Sentinel      [##########]  3100/3100     90   phalanx x2
@@ -12,7 +12,7 @@ E4 Tidecaller    [##########]  2600/2600    150   -
 E5 Nightveil     [##########]  2200/2200    200   -
 
 == en ==
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Bulwark       [##########]  4800/4800     80   toughened, phalanx x2, ironhide, poison (3t), burn (2t) +1
 A2 Vanguard      [##########]  3600/3600    110   phalanx x2, ironhide
 A3 Sentinel      [##########]  3100/3100     90   phalanx x2

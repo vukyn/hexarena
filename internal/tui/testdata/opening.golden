@@ -9,7 +9,7 @@
 \__/  \__/E2\__/  \
    \__/  \__/  \__/
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Bulwark       [##########]  4800/4800     80   toughened, phalanx x2, ironhide
 A2 Vanguard      [##########]  3600/3600    110   phalanx x2, ironhide
 A3 Sentinel      [##########]  3100/3100     90   phalanx x2

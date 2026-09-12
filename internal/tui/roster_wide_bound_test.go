@@ -196,12 +196,17 @@ func TestTheWideRosterThresholdLandsBetweenTheTwoGoldenWindows(t *testing.T) {
 // and it is taken over the element book rather than over the cast.
 //
 // ⚠️ **An observed maximum is not a bound.** The widest affinity anything ships
-// today is `electric/metal` at fourteen cells, and a column sized to that would
-// be a fact about the current cast — a fixture library or a later character
-// pairing two longer names would push the stat columns right on one row, which
-// is a table that misaligns quietly. What bounds the column is what
-// element.Affinity can hold at all: one name, or two distinct non-inert names
-// joined by a slash.
+// today is `electric/metal`, and a column sized to that would be a fact about the
+// current cast — a fixture library or a later character pairing two longer names
+// would push the stat columns right on one row, which is a table that misaligns
+// quietly. What bounds the column is what element.Affinity can hold at all: one
+// element, or two distinct non-inert ones joined by a slash.
+//
+// ⚠️ **What is measured is the CELL, not the affinity's name.** The column draws
+// codes now, so a test asserting `Affinity.String()` fits would be measuring a
+// string the table stopped putting there — it would have gone red on a column
+// that was correct, and would say nothing at all about one that was not.
+// elementCell is what the row is handed, so elementCell is what this walks.
 func TestEveryAffinityTheRosterCanDrawFitsItsColumn(t *testing.T) {
 	// The column's own width, read back out of the format string so the format
 	// and the bound below it cannot part company.
@@ -212,7 +217,7 @@ func TestEveryAffinityTheRosterCanDrawFitsItsColumn(t *testing.T) {
 	if start < 0 || next < 0 {
 		t.Fatal("the element column was not found in the row at all, so this measured nothing")
 	}
-	if got, want := next-start, rosterElementRoom+1; got != want {
+	if got, want := next-start, rosterElementCell; got != want {
 		t.Fatalf("the element column and its gap are %d cells and the bound is written for %d",
 			got, want)
 	}
@@ -244,17 +249,22 @@ func TestEveryAffinityTheRosterCanDrawFitsItsColumn(t *testing.T) {
 	}
 }
 
-// measure is one affinity against the column it is drawn in.
+// measure is one affinity's drawn cell against the column it is drawn in.
+//
+// ⚠️ **Exactly the column, rather than at most it.** The cell pads itself, so a
+// short one is as wrong as a long one: a cell narrower than the column would let
+// the format's own verb do the padding, which is the arrangement an inked cell
+// breaks — and it would break it silently, in colour only, where no golden looks.
 //
 // Counted in runes for the reason the name bound is: Go's fmt pads a string verb
 // by runes, so measuring bytes would refuse a name that fits.
 func measure(t *testing.T, affinity element.Affinity) {
 	t.Helper()
-	drawn := affinity.String()
-	if got := utf8.RuneCountInString(drawn); got > rosterElementRoom {
-		t.Errorf("the affinity %q is %d cells and the roster column holds %d — that row's "+
-			"attack figure would be pushed out of line by %d",
-			drawn, got, rosterElementRoom, got-rosterElementRoom)
+	drawn := elementCell(affinity, nil)
+	if got := utf8.RuneCountInString(drawn); got != rosterElementCell {
+		t.Errorf("the affinity %q draws the cell %q, which is %d cells against a column of "+
+			"%d — that row's attack figure would be out of line by %d",
+			affinity, drawn, got, rosterElementCell, got-rosterElementCell)
 	}
 }
 

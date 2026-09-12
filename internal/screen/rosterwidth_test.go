@@ -50,7 +50,7 @@ func TestAResizePicksTheOtherRosterWithoutANewTurn(t *testing.T) {
 	// What the battle reads as at the moment of that one attach. Both tables,
 	// taken now, because the battle is about to move underneath the screen.
 	atAttachNarrow := tui.Roster(c.Lang, fight, live.Tags)
-	atAttachWide := tui.RosterWide(c.Lang, fight, live.Tags)
+	atAttachWide := tui.RosterWide(c.Lang, fight, live.Tags, c.Style.ElementInk())
 	if atAttachNarrow == atAttachWide {
 		t.Fatal("the two tables draw the same thing on this fixture, so nothing here could " +
 			"tell which one a draw picked")
@@ -105,7 +105,7 @@ func TestALocalBattleTakesTheWideRosterOnAWideWindowToo(t *testing.T) {
 	roomy := c
 	roomy.Width = roomyWindow
 	drawn := strings.Join(local.drawings(roomy).roster, "\n")
-	if want := tui.RosterWide(c.Lang, local.Fight, local.Tags); drawn != want {
+	if want := tui.RosterWide(c.Lang, local.Fight, local.Tags, c.Style.ElementInk()); drawn != want {
 		t.Errorf("a hot-seat screen at %d cells draws\n%s\nwant\n%s", roomyWindow, drawn, want)
 	}
 	if narrow := strings.Join(local.drawings(c).roster, "\n"); narrow == drawn {

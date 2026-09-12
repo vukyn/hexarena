@@ -1561,22 +1561,14 @@ const (
 	// log cross-references a unit by, and the unit's name — so it names both, in
 	// the order they are drawn.
 	RosterHeadingUnit
-	// RosterHeadingEffects carries a rule as well as a label, which is why it is
-	// one wording rather than a heading and a note glued together: where the
-	// parenthesis goes, and whether it is a parenthesis at all, is a decision
-	// each language gets to take.
+	// RosterHeadingEffects is a column label and nothing else.
 	//
-	// The rule is that an effect with no countdown beside it is permanent. It
-	// has to be said somewhere, because the roster stopped spelling it out on
-	// every entry — a permanent effect outnumbered a timed one 1123 to 192
-	// across the goldens, so the common case was costing nine cells a thousand
-	// times over while the rare one already identified itself. Dropping the
-	// words is what bought the table its width; saying it here once is what that
-	// trade owes a reader.
-	//
-	// ⚠️ The word for permanent is BlurbStatusAlways' word, deliberately. A
-	// second Vietnamese term for the same property would be this module's own
-	// glossary disagreeing with itself on one screen.
+	// ⚠️ **It carried a rule for two changes and does not any more** — "no
+	// countdown means permanent" was in the parenthesis after the label, and the
+	// parenthesis has gone. The rule has not: it is StatusesNoCountdown, on the
+	// statuses catalogue. What a heading can say is what the column under it
+	// holds; a rule about the whole notation belongs where a reader goes to ask
+	// what an effect is, and is read there once rather than over every battle.
 	RosterHeadingEffects
 	// RosterHeadingElement stands over the element column the roster gains when
 	// the window is wide enough to hold it.
@@ -1586,7 +1578,30 @@ const (
 	// two of the six this package keeps as ids in both languages, because they
 	// are what an author types and what the data files store — and an element
 	// column is named after a word.
+	//
+	// ⚠️ The column's **values** are ids all the same, and short ones: the roster
+	// draws `gra`, not `grass` and not `cỏ`. → tui.ElementCode.
 	RosterHeadingElement
+	// StatusesNoCountdown is the roster's notation, stated on the screen that
+	// exists to explain what an effect is.
+	//
+	// ⚠️ **It is here rather than over the column it is about**, which is the one
+	// thing worth knowing: an effect with no countdown beside it is permanent,
+	// the roster spells that out nowhere, and a convention nobody states is a
+	// fact a reader has to guess. The roster's own heading said it for two
+	// changes and the line cost every battle in every window the same
+	// parenthesis. The statuses catalogue is where a reader already goes to ask
+	// what a buff or a debuff does and how long it lasts, it is on both clients'
+	// menus, and it is read once.
+	//
+	// ⚠️ The word for permanent is BlurbStatusAlways' word, deliberately. A
+	// second Vietnamese term for the same property would be this module's own
+	// glossary disagreeing with itself between two screens.
+	//
+	// It names the battle rather than "the roster": no screen in this program
+	// calls that table a roster out loud, so a reader told to look at one would
+	// be hunting a word they have never seen.
+	StatusesNoCountdown
 
 	keyCount
 )

@@ -66,6 +66,9 @@
 - [Go's fmt pads a string verb by RUNES](feedback_go_fmt_pads_a_string_verb_by_runes.md) — `phân thân 1` is 11 cells / 13 bytes and the golden is aligned; ⚠️ elided's len() is bytes
 - [A fixture near a cap reddens on the cap](feedback_a_fixture_near_a_cap_reddens_on_the_cap.md) — the lengthening mutation hit the elision premise, not the claim; pick the fixture by HEADROOM
 - [A fixture keyed on the marker it tests](feedback_a_fixture_keyed_on_the_marker_it_tests.md) — deleting ` +N` stopped the fixture REACHING its state, so the golden never compared; count, do not look for the marker
+- [fmt cannot pad an inked cell](feedback_fmt_cannot_pad_an_inked_cell.md) — `%-8s` counts escapes as runes, so colour alone shifts the column; every golden is NO_COLOR and blind to it
+- [A var states its type on the LITERAL](feedback_a_var_states_its_type_on_the_literal.md) — `var x = [N]T{…}` leaves ValueSpec.Type nil; the walk found 0 and passed. Assert the count
+- [The screen cast carries no dual affinity](feedback_the_screen_cast_carries_no_dual_affinity.md) — 0 duals at sizes 1..5; build the affinity in internal/tui instead of fielding one
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
@@ -74,6 +77,7 @@
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 - [The client runs without a checkout](project_client_runs_without_a_checkout.md) — all 3 steps done; the no-directory state and what each screen now says (⚠️ 4 art sites, not 3)
 - [The roster row widening](project_the_roster_row_widening.md) — BOTH steps done; option A = a 2nd table at a derived 139-cell threshold; ⚠️ "step 2 must cut effectsRoom" was FALSE
+- [The element column is a code](project_the_element_column_is_a_code.md) — 3-letter IDS inked per half, threshold 139→131 (still over the 120 floor); permanence rule moved to the statuses catalogue
 
 ## Moved in from the platform-level store (2026-09-05)
 
