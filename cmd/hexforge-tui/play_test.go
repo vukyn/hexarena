@@ -786,7 +786,7 @@ func whatIsDrawn(m model) (drawn, string, string) {
 	board := strings.Split(tui.Board(p.Fight, p.Tags), "\n")
 	found.board = present[board[0]] > 0 && present[board[len(board)-1]] > 0
 	// The header is not a unit, so the count starts past it.
-	for _, row := range strings.Split(tui.Roster(p.Fight, p.Tags), "\n")[1:] {
+	for _, row := range strings.Split(tui.Roster(m.lang, p.Fight, p.Tags), "\n")[1:] {
 		if present[row] > 0 {
 			found.roster++
 		}

@@ -123,7 +123,7 @@ func aimingAtAnAreaFrom(t *testing.T, c Context, p PlayScreen) (PlayScreen, []he
 		for aim := range p.Pending.Options[option].Aims {
 			probe := p
 			probe.Option, probe.Aim, probe.Aiming = option, aim, true
-			if splash := probe.splashUnder(c, probe.read(), probe.Pending.Options[option]); len(splash) > 0 {
+			if splash := probe.splashUnder(c, probe.read(c), probe.Pending.Options[option]); len(splash) > 0 {
 				return probe, splash
 			}
 		}
@@ -147,7 +147,7 @@ func TestTheAimListNamesTheCellsAnAreaSkillAlsoCatches(t *testing.T) {
 		// And whoever is standing there, which is the half a count could never
 		// carry: "3 ô" is three cells and says nothing about whether any of them
 		// holds an ally.
-		if held := p.occupant(p.read(), cell); held != "" && !strings.Contains(drawn, held) {
+		if held := p.occupant(p.read(c), cell); held != "" && !strings.Contains(drawn, held) {
 			t.Errorf("the aim list names the cell %s but not %q standing in it:\n%s",
 				cell, held, drawn)
 		}
@@ -204,7 +204,7 @@ func TestTheSplashIsResolvedFromTheAimAndNotFromTheDiagram(t *testing.T) {
 		}
 		elsewhere := p
 		elsewhere.Aim = other
-		if !slices.Equal(elsewhere.splashUnder(c, elsewhere.read(), option), splash) {
+		if !slices.Equal(elsewhere.splashUnder(c, elsewhere.read(c), option), splash) {
 			moved = true
 			break
 		}

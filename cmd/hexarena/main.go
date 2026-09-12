@@ -334,7 +334,7 @@ func play(cfg config) error {
 // finish prints the closing board and summary, and writes the log if asked.
 func finish(current *session) error {
 	fmt.Println()
-	fmt.Println(tui.Roster(current.fight, current.tags))
+	fmt.Println(tui.Roster(i18n.Vi, current.fight, current.tags))
 	fmt.Println()
 	fmt.Println("== summary ==")
 	fmt.Println(tui.Summary(current.events, current.tags, current.names))
@@ -359,7 +359,7 @@ func finish(current *session) error {
 func show(current *session) {
 	fmt.Println(tui.Board(current.fight, current.tags))
 	fmt.Println()
-	fmt.Println(tui.Roster(current.fight, current.tags))
+	fmt.Println(tui.Roster(i18n.Vi, current.fight, current.tags))
 }
 
 type outcome uint8

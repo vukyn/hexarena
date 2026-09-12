@@ -62,6 +62,10 @@
 - [A probe whose fallback coincides](feedback_a_probe_whose_fallback_coincides.md) — nil-ing Fight measured nothing and -race was silent (Side/Affinity never written); mutate the READING
 - [Both aiming goldens compose to 1000](feedback_both_aiming_goldens_compose_to_neutral.md) — neutral-on-neutral and water-on-water/ice; an aim-row feature moved 0 lines in all 3 screens.golden
 - [A digest can move on a transposition](feedback_a_digest_can_move_on_a_transposition.md) — 255 events byte-identical, two swapped; dump and diff the stream before writing a balance sentence
+- [A cap re-derived from what is left spends the gift](feedback_a_cap_rederived_from_what_is_left_spends_the_gift.md) — narrowing a column bought 0 of row bound; elided redrew into the freed cells (28 was CONTENT arithmetic, 9 is the bound)
+- [Go's fmt pads a string verb by RUNES](feedback_go_fmt_pads_a_string_verb_by_runes.md) — `phân thân 1` is 11 cells / 13 bytes and the golden is aligned; ⚠️ elided's len() is bytes
+- [A fixture near a cap reddens on the cap](feedback_a_fixture_near_a_cap_reddens_on_the_cap.md) — the lengthening mutation hit the elision premise, not the claim; pick the fixture by HEADROOM
+- [A fixture keyed on the marker it tests](feedback_a_fixture_keyed_on_the_marker_it_tests.md) — deleting ` +N` stopped the fixture REACHING its state, so the golden never compared; count, do not look for the marker
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
@@ -69,6 +73,7 @@
 - [The PvE pairing chooser](project_pve_pairing_chooser.md) — step 1 done; ⚠️ TWO brief premises measured false: m.taking is not on the wire, and s01…s06 are ALREADY offered
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 - [The client runs without a checkout](project_client_runs_without_a_checkout.md) — all 3 steps done; the no-directory state and what each screen now says (⚠️ 4 art sites, not 3)
+- [The roster row widening](project_the_roster_row_widening.md) — ceiling 119→110, measured 119→100; heading now localised; crowded.golden re-pictures elision; ⚠️ step 2 has 9 cells not 28
 
 ## Moved in from the platform-level store (2026-09-05)
 

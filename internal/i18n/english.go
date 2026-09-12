@@ -885,4 +885,7 @@ q or ctrl+c to quit`,
 	ArrangeWaitingFooter: "ctrl+l tiếng Việt · esc leave the match",
 
 	PlayAimMatchup: "%s/%s weak to this element, %s/%s resists it",
+
+	RosterHeadingUnit:    "tag  unit",
+	RosterHeadingEffects: "effects (no countdown means permanent)",
 }

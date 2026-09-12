@@ -9,17 +9,17 @@
 \__/  \__/E2\__/  \
    \__/  \__/  \__/
 
-tag  unit                 hp                        spd   effects
-A1   Bulwark              [##########]  4800/4800     80   toughened (always), phalanx x2 (always), ironhide (always)
-A2   Vanguard             [##########]  3600/3600    110   phalanx x2 (always), ironhide (always)
-A3   Sentinel             [##########]  3100/3100     90   phalanx x2 (always)
-A4   Duelist              [##########]  2600/2600    150   -
-A5   Skirmisher           [##########]  2200/2200    200   -
-E1   Warden               [##########]  4800/4800     80   phalanx x2 (always)
-E2   Bramble              [##########]  3600/3600    110   phalanx x2 (always)
-E3   Ironclad             [##########]  3100/3100     90   phalanx x2 (always)
-E4   Tidecaller           [##########]  2600/2600    150   -
-E5   Nightveil            [##########]  2200/2200    200   -
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Bulwark       [##########]  4800/4800     80   toughened, phalanx x2, ironhide
+A2 Vanguard      [##########]  3600/3600    110   phalanx x2, ironhide
+A3 Sentinel      [##########]  3100/3100     90   phalanx x2
+A4 Duelist       [##########]  2600/2600    150   -
+A5 Skirmisher    [##########]  2200/2200    200   -
+E1 Warden        [##########]  4800/4800     80   phalanx x2
+E2 Bramble       [##########]  3600/3600    110   phalanx x2
+E3 Ironclad      [##########]  3100/3100     90   phalanx x2
+E4 Tidecaller    [##########]  2600/2600    150   -
+E5 Nightveil     [##########]  2200/2200    200   -
 
 next: A5 E5 A4 E4 A2 E2 A5 E5
 

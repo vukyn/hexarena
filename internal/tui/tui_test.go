@@ -11,6 +11,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/testfixture"
 	"github.com/vukyn/hexarena/internal/tui"
@@ -469,7 +470,9 @@ func TestOpeningGolden(t *testing.T) {
 	var b strings.Builder
 	b.WriteString(tui.Board(fight, tags))
 	b.WriteString("\n\n")
-	b.WriteString(tui.Roster(fight, tags))
+	// The program default. The English heading is recorded by crowded.golden,
+	// which draws both, and by the two clients' sweeps.
+	b.WriteString(tui.Roster(i18n.Vi, fight, tags))
 	b.WriteString("\n\n")
 	b.WriteString(tui.Order(fight.Queue(), tags, 8))
 	b.WriteString("\n\n")

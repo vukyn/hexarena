@@ -866,4 +866,7 @@ q hoặc ctrl+c để thoát`,
 	ArrangeWaitingFooter: "ctrl+l English · esc rời trận",
 
 	PlayAimMatchup: "%s/%s bị khắc hệ này, %s/%s kháng hệ này",
+
+	RosterHeadingUnit:    "mã  đơn vị",
+	RosterHeadingEffects: "hiệu ứng (không đếm ngược là vĩnh viễn)",
 }

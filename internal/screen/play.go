@@ -383,7 +383,7 @@ func (p PlayScreen) Attach(c Context, live PlayLive) PlayScreen {
 	// reading kept from an earlier call would draw a board several turns stale.
 	// The comment above this block already knew the rule and said it about one
 	// call; it is the whole path. → the reading field.
-	p.reading = readBattle(p.Fight, p.Tags)
+	p.reading = readBattle(c.Lang, p.Fight, p.Tags)
 	opened := live.Asking
 	switch {
 	case opened == nil:
@@ -516,14 +516,14 @@ type playUnit struct {
 // ⚠️ **Whoever calls this has to be allowed to read the battle.** For a live
 // screen that is Attach and only Attach, under the mirror's read lock; for a
 // local one it is any time, because nothing else holds the battle. → read.
-func readBattle(fight *battle.Battle, tags map[string]string) playReading {
+func readBattle(lang i18n.Lang, fight *battle.Battle, tags map[string]string) playReading {
 	if fight == nil {
 		return playReading{}
 	}
 	winner, _ := fight.Winner()
 	read := playReading{
 		board:    tui.Board(fight, tags),
-		roster:   tui.Roster(fight, tags),
+		roster:   tui.Roster(lang, fight, tags),
 		order:    tui.Order(fight.Queue(), tags, 6),
 		finished: fight.Finished(),
 		outcome:  fight.Outcome(),
@@ -548,11 +548,11 @@ func readBattle(fight *battle.Battle, tags map[string]string) playReading {
 // lazily rather than storing one is deliberate — a stored reading would have to
 // be refreshed at every site that steps the local battle, and a site missed
 // there draws a stale board with every test still green.
-func (p PlayScreen) read() playReading {
+func (p PlayScreen) read(c Context) playReading {
 	if p.Live {
 		return p.reading
 	}
-	return readBattle(p.Fight, p.Tags)
+	return readBattle(c.Lang, p.Fight, p.Tags)
 }
 
 // unit is the unit an id names, and whether the board has one at all.
@@ -1438,7 +1438,7 @@ type playDrawn struct {
 // screen the battle underneath it is being stepped by another goroutine. → read.
 func (p PlayScreen) drawings(c Context) playDrawn {
 	var drawn playDrawn
-	read := p.read()
+	read := p.read(c)
 	// The turn in front, read before anything else because it is what the rest of
 	// the screen is budgeted around. A finished battle first, because its ending
 	// is the answer to the question a prompt would have asked; then the prompt.
@@ -1840,7 +1840,7 @@ func (p PlayScreen) logFrame(rows []string, room int) []string {
 
 // choices is the turn in front: whose it is, what they may do, and where it may
 // be pointed once a skill is picked.
-func (p PlayScreen) Choices(c Context) string { return p.choices(c, p.read()) }
+func (p PlayScreen) Choices(c Context) string { return p.choices(c, p.read(c)) }
 
 // choices is Choices over a reading already taken, which is what the drawing
 // path has: one reading serves the whole screen, and a second one taken here

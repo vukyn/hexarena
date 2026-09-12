@@ -151,7 +151,7 @@ func aMarkedAim(t *testing.T, c Context, want string) (PlayScreen, string) {
 			"was given", triple.chosen)
 	}
 	p.Option, p.Aiming = index, true
-	aim, standing := aimStandingOn(p, option, triple.defender)
+	aim, standing := aimStandingOn(c, p, option, triple.defender)
 	if !standing {
 		t.Fatalf("%s can be pointed at %d cells and none of them holds the other side",
 			triple.chosen, len(option.Aims))
@@ -326,8 +326,8 @@ func optionNamed(p PlayScreen, id string) (battle.Option, int, bool) {
 
 // aimStandingOn is the index of the first aim a unit of the given character is
 // standing on.
-func aimStandingOn(p PlayScreen, option battle.Option, defender cast.Character) (int, bool) {
-	read := p.read()
+func aimStandingOn(c Context, p PlayScreen, option battle.Option, defender cast.Character) (int, bool) {
+	read := p.read(c)
 	for index, aim := range option.Aims {
 		if unit, standing := read.standing(aim); standing && unit.Affinity == defender.Element {
 			return index, true
@@ -482,7 +482,7 @@ func TestANeutralMatchupDrawsNoMarkAndNoLegend(t *testing.T) {
 		}
 		probe := p
 		probe.Option, probe.Aim = index, 0
-		read := probe.read()
+		read := probe.read(c)
 		var marked bool
 		for _, aim := range option.Aims {
 			if probe.matchupOn(c, declared, read, aim) != "" {
@@ -616,7 +616,7 @@ func TestTheSplashRowsCarryTheMatchupMark(t *testing.T) {
 			for aim := range option.Aims {
 				probe := p
 				probe.Aim = aim
-				read := probe.read()
+				read := probe.read(c)
 				if _, standing := read.standing(option.Aims[aim]); !standing {
 					continue
 				}
@@ -734,7 +734,7 @@ func TestTheMatchupIsTakenFromTheReadingAndNotFromTheBattle(t *testing.T) {
 	c, _ := start(t, i18n.En)
 	for _, want := range everyMatchupMark {
 		p, chosen := aMarkedAim(t, c, want)
-		read := p.read()
+		read := p.read(c)
 		withTheBattle := p.choices(c, read)
 		// The same reading, and no battle at all. Every read of p.Fight on this
 		// path would answer differently; nothing else can.
@@ -757,7 +757,7 @@ func TestTheMatchupIsTakenFromTheReadingAndNotFromTheBattle(t *testing.T) {
 func TestTheReadingCarriesEveryUnitsAffinity(t *testing.T) {
 	c, _ := start(t, i18n.En)
 	p := atABattleOf(t, c, 3)
-	read := p.read()
+	read := p.read(c)
 	if len(read.units) == 0 {
 		t.Fatal("the reading holds no units, so it cannot carry an affinity")
 	}
@@ -952,7 +952,7 @@ func TestWhichMarksTheShippedDataReaches(t *testing.T) {
 func TestTheSplashFrameComesFromTheReading(t *testing.T) {
 	c, _ := start(t, i18n.En)
 	p := anAreaBattle(t, c)
-	read := p.read()
+	read := p.read(c)
 	flipped := playReading{units: make([]playUnit, len(read.units))}
 	copy(flipped.units, read.units)
 	for index := range flipped.units {

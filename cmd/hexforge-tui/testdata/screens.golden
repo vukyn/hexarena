@@ -3,9 +3,9 @@
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 
@@ -59,9 +59,9 @@ cửa sổ quá ngắn cho: diễn biến
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   492/3100     90   -
-E1   Example Adept        fallen                      90   -
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [#.........]   492/3100     90   -
+E1 Example Adept fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
 
@@ -256,17 +256,17 @@ thế đứng
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
-A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
-E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [#######...]   989/1360     43   mire (2t)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [######....]   858/1360     43   mire (2t)
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [#######...]  2418/3100     90   phalanx x2
+A2 Bloom         [##........]   621/2200    161   phalanx x2, mire (2t)
+A3 Sennin        [#######...]  2490/3400    134   toughened, phalanx x2, poison (2t)
+E1 Example Adept [#######...]  2236/3100     90   phalanx x2, poison (1t)
+E2 Bloom         [###.......]   802/2200    161   phalanx x2, mire (2t)
+E3 Sennin        [#####.....]  1930/3400    134   toughened, phalanx x2
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [#######...]   989/1360     43   mire (2t)
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [######....]   858/1360     43   mire (2t)
 
 A3 Sennin, lượt 3
 > kunai          70% công · tầm 2
@@ -394,17 +394,17 @@ space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · c
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-A4   Alakazam             [##########]  2800/2800    158   -
-A5   Venusaur             [##########]  4166/4166    100   heartwood (always)
-E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-E2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-E4   Alakazam             [##########]  2800/2800    158   -
-E5   Venusaur             [##########]  4166/4166    100   heartwood (always)
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+A4 Alakazam      [##########]  2800/2800    158   -
+A5 Venusaur      [##########]  4166/4166    100   heartwood
+E1 Example Adept [##########]  3100/3100     90   phalanx x2
+E2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+E4 Alakazam      [##########]  2800/2800    158   -
+E5 Venusaur      [##########]  4166/4166    100   heartwood
 
 A2 Bloom, lượt 1
 > bolt          80% công · tầm 3
@@ -417,10 +417,10 @@ A2 Bloom, lượt 1
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 7 đơn vị, thứ tự lượt, diễn biến
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
 
 A2 Bloom, lượt 1
   bolt          80% công · tầm 3
@@ -486,9 +486,9 @@ năm để trống được nếu không rõ; ghi chú là chữ tự do
 trận đấu  seed 1  diễn biến 3-4/4
 cửa sổ quá ngắn cho: bàn cờ
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 
@@ -1323,9 +1323,9 @@ trận đấu  seed 1
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 
@@ -1441,9 +1441,9 @@ trận đấu  seed 1  diễn biến 291-326/326
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   492/3100     90   -
-E1   Example Adept        fallen                      90   -
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [#.........]   492/3100     90   -
+E1 Example Adept fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
 
@@ -1972,17 +1972,17 @@ trận đấu  seed 1  diễn biến 108-131/131
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
-A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
-E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [#######...]   989/1360     43   mire (2t)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [######....]   858/1360     43   mire (2t)
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [#######...]  2418/3100     90   phalanx x2
+A2 Bloom         [##........]   621/2200    161   phalanx x2, mire (2t)
+A3 Sennin        [#######...]  2490/3400    134   toughened, phalanx x2, poison (2t)
+E1 Example Adept [#######...]  2236/3100     90   phalanx x2, poison (1t)
+E2 Bloom         [###.......]   802/2200    161   phalanx x2, mire (2t)
+E3 Sennin        [#####.....]  1930/3400    134   toughened, phalanx x2
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [#######...]   989/1360     43   mire (2t)
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [######....]   858/1360     43   mire (2t)
 
 next: E3 A2 E2 ally.2,2#1 enemy.2,2#1 ally.2,2#2
 
@@ -2326,17 +2326,17 @@ trận đấu  seed 1
 /  \__/A3\__/E4\__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-A4   Alakazam             [##########]  2800/2800    158   -
-A5   Venusaur             [##########]  4166/4166    100   heartwood (always)
-E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-E2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-E4   Alakazam             [##########]  2800/2800    158   -
-E5   Venusaur             [##########]  4166/4166    100   heartwood (always)
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+A4 Alakazam      [##########]  2800/2800    158   -
+A5 Venusaur      [##########]  4166/4166    100   heartwood
+E1 Example Adept [##########]  3100/3100     90   phalanx x2
+E2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+E4 Alakazam      [##########]  2800/2800    158   -
+E5 Venusaur      [##########]  4166/4166    100   heartwood
 
 next: E2 A4 E4 A3 E3 A2
 
@@ -2385,17 +2385,17 @@ trận đấu  seed 1  diễn biến 8-24/24
 /  \__/A3\__/E4\__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-A4   Alakazam             [##########]  2800/2800    158   -
-A5   Venusaur             [##########]  4166/4166    100   heartwood (always)
-E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-E2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-E4   Alakazam             [##########]  2800/2800    158   -
-E5   Venusaur             [##########]  4166/4166    100   heartwood (always)
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+A4 Alakazam      [##########]  2800/2800    158   -
+A5 Venusaur      [##########]  4166/4166    100   heartwood
+E1 Example Adept [##########]  3100/3100     90   phalanx x2
+E2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+E4 Alakazam      [##########]  2800/2800    158   -
+E5 Venusaur      [##########]  4166/4166    100   heartwood
 
 next: E2 A4 E4 A3 E3 A2
 
@@ -2562,9 +2562,9 @@ trận đấu  seed 1
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 
@@ -4677,9 +4677,9 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 the battle  seed 1
 the window is too short for: board
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 
@@ -4733,9 +4733,9 @@ the window is too short for: log
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   492/3100     90   -
-E1   Example Adept        fallen                      90   -
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [#.........]   492/3100     90   -
+E1 Example Adept fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
 
@@ -4930,17 +4930,17 @@ the formation
 the battle  seed 1
 the window is too short for: board, turn order, log
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
-A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
-E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [#######...]   989/1360     43   mire (2t)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [######....]   858/1360     43   mire (2t)
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [#######...]  2418/3100     90   phalanx x2
+A2 Bloom         [##........]   621/2200    161   phalanx x2, mire (2t)
+A3 Sennin        [#######...]  2490/3400    134   toughened, phalanx x2, poison (2t)
+E1 Example Adept [#######...]  2236/3100     90   phalanx x2, poison (1t)
+E2 Bloom         [###.......]   802/2200    161   phalanx x2, mire (2t)
+E3 Sennin        [#####.....]  1930/3400    134   toughened, phalanx x2
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [#######...]   989/1360     43   mire (2t)
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [######....]   858/1360     43   mire (2t)
 
 A3 Sennin, turn 3
 > kunai          70% attack · range 2
@@ -5068,17 +5068,17 @@ space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l ti
 the battle  seed 1
 the window is too short for: board, turn order, log
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-A4   Alakazam             [##########]  2800/2800    158   -
-A5   Venusaur             [##########]  4166/4166    100   heartwood (always)
-E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-E2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-E4   Alakazam             [##########]  2800/2800    158   -
-E5   Venusaur             [##########]  4166/4166    100   heartwood (always)
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+A4 Alakazam      [##########]  2800/2800    158   -
+A5 Venusaur      [##########]  4166/4166    100   heartwood
+E1 Example Adept [##########]  3100/3100     90   phalanx x2
+E2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+E4 Alakazam      [##########]  2800/2800    158   -
+E5 Venusaur      [##########]  4166/4166    100   heartwood
 
 A2 Bloom, turn 1
 > bolt          80% attack · range 3
@@ -5091,10 +5091,10 @@ A2 Bloom, turn 1
 the battle  seed 1
 the window is too short for: board, 7 units, turn order, log
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
 
 A2 Bloom, turn 1
   bolt          80% attack · range 3
@@ -5160,9 +5160,9 @@ the year may be left empty when it is unknown; the note is free text
 the battle  seed 1  log 3-4/4
 the window is too short for: board
 
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 
@@ -5997,9 +5997,9 @@ the battle  seed 1
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 
@@ -6115,9 +6115,9 @@ the battle  seed 1  log 291-326/326
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]   492/3100     90   -
-E1   Example Adept        fallen                      90   -
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [#.........]   492/3100     90   -
+E1 Example Adept fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
 
@@ -6646,17 +6646,17 @@ the battle  seed 1  log 108-131/131
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#######...]  2418/3100     90   phalanx x2 (always)
-A2   Bloom                [##........]   621/2200    161   phalanx x2 (always), mire (2t)
-A3   Sennin               [#######...]  2490/3400    134   toughened (always), phalanx x2 (always), poison (2t)
-E1   Example Adept        [#######...]  2236/3100     90   phalanx x2 (always), poison (1t)
-E2   Bloom                [###.......]   802/2200    161   phalanx x2 (always), mire (2t)
-E3   Sennin               [#####.....]  1930/3400    134   toughened (always), phalanx x2 (always)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [#######...]   989/1360     43   mire (2t)
-     phân thân 1          [##########]  1360/1360     53   -
-     phân thân 2          [######....]   858/1360     43   mire (2t)
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [#######...]  2418/3100     90   phalanx x2
+A2 Bloom         [##........]   621/2200    161   phalanx x2, mire (2t)
+A3 Sennin        [#######...]  2490/3400    134   toughened, phalanx x2, poison (2t)
+E1 Example Adept [#######...]  2236/3100     90   phalanx x2, poison (1t)
+E2 Bloom         [###.......]   802/2200    161   phalanx x2, mire (2t)
+E3 Sennin        [#####.....]  1930/3400    134   toughened, phalanx x2
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [#######...]   989/1360     43   mire (2t)
+   phân thân 1   [##########]  1360/1360     53   -
+   phân thân 2   [######....]   858/1360     43   mire (2t)
 
 next: E3 A2 E2 ally.2,2#1 enemy.2,2#1 ally.2,2#2
 
@@ -7000,17 +7000,17 @@ the battle  seed 1
 /  \__/A3\__/E4\__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-A4   Alakazam             [##########]  2800/2800    158   -
-A5   Venusaur             [##########]  4166/4166    100   heartwood (always)
-E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-E2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-E4   Alakazam             [##########]  2800/2800    158   -
-E5   Venusaur             [##########]  4166/4166    100   heartwood (always)
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+A4 Alakazam      [##########]  2800/2800    158   -
+A5 Venusaur      [##########]  4166/4166    100   heartwood
+E1 Example Adept [##########]  3100/3100     90   phalanx x2
+E2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+E4 Alakazam      [##########]  2800/2800    158   -
+E5 Venusaur      [##########]  4166/4166    100   heartwood
 
 next: E2 A4 E4 A3 E3 A2
 
@@ -7059,17 +7059,17 @@ the battle  seed 1  log 8-24/24
 /  \__/A3\__/E4\__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-A2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-A3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-A4   Alakazam             [##########]  2800/2800    158   -
-A5   Venusaur             [##########]  4166/4166    100   heartwood (always)
-E1   Example Adept        [##########]  3100/3100     90   phalanx x2 (always)
-E2   Bloom                [##########]  2416/2416    200   phalanx x2 (always), heartwood (always)
-E3   Sennin               [##########]  3400/3400    134   toughened (always), phalanx x2 (always)
-E4   Alakazam             [##########]  2800/2800    158   -
-E5   Venusaur             [##########]  4166/4166    100   heartwood (always)
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   phalanx x2
+A2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+A4 Alakazam      [##########]  2800/2800    158   -
+A5 Venusaur      [##########]  4166/4166    100   heartwood
+E1 Example Adept [##########]  3100/3100     90   phalanx x2
+E2 Bloom         [##########]  2416/2416    200   phalanx x2, heartwood
+E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2
+E4 Alakazam      [##########]  2800/2800    158   -
+E5 Venusaur      [##########]  4166/4166    100   heartwood
 
 next: E2 A4 E4 A3 E3 A2
 
@@ -7236,9 +7236,9 @@ the battle  seed 1
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
    \__/  \__/  \__/
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [##########]  3100/3100     90   -
-E1   Example Adept        [##########]  3100/3100     90   -
+tag  unit        hp                        spd    effects (no countdown means permanent)
+A1 Example Adept [##########]  3100/3100     90   -
+E1 Example Adept [##########]  3100/3100     90   -
 
 next: E1 A1 E1 A1 E1 A1
 

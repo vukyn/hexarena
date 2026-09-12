@@ -1549,6 +1549,36 @@ const (
 	// spare, on a heading the marks already sit twenty cells away from.
 	PlayAimMatchup
 
+	// The two roster headings that are prose rather than a stat label.
+	//
+	// ⚠️ **`hp` and `spd` are deliberately absent from this pair**, and not by
+	// oversight: this package's own doc comment says the six stat labels stay as
+	// they are in both languages, because they are what an author types and what
+	// the data files store. Nothing else on that row is an id, so the rest is
+	// worded here.
+	//
+	// RosterHeadingUnit stands over one column holding two things — the tag the
+	// log cross-references a unit by, and the unit's name — so it names both, in
+	// the order they are drawn.
+	RosterHeadingUnit
+	// RosterHeadingEffects carries a rule as well as a label, which is why it is
+	// one wording rather than a heading and a note glued together: where the
+	// parenthesis goes, and whether it is a parenthesis at all, is a decision
+	// each language gets to take.
+	//
+	// The rule is that an effect with no countdown beside it is permanent. It
+	// has to be said somewhere, because the roster stopped spelling it out on
+	// every entry — a permanent effect outnumbered a timed one 1123 to 192
+	// across the goldens, so the common case was costing nine cells a thousand
+	// times over while the rare one already identified itself. Dropping the
+	// words is what bought the table its width; saying it here once is what that
+	// trade owes a reader.
+	//
+	// ⚠️ The word for permanent is BlurbStatusAlways' word, deliberately. A
+	// second Vietnamese term for the same property would be this module's own
+	// glossary disagreeing with itself on one screen.
+	RosterHeadingEffects
+
 	keyCount
 )
 
