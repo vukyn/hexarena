@@ -148,7 +148,16 @@ func (s StatusesScreen) Update(_ Context, message tea.KeyPressMsg) (StatusesScre
 func statusesRoom(c Context) int {
 	const (
 		above = 2 // the heading and the blank line under it
-		below = 6 // a blank, the three-line description, a blank, the caveat
+		// A blank, the three-line description, a blank, the notation line and
+		// the caveat.
+		//
+		// ⚠️ **It went from six to seven and that is a row off the listing**,
+		// which is the price of the notation line and is worth knowing rather
+		// than discovering: the floor draws eleven statuses where it drew
+		// twelve. The frame cuts from the bottom, so a line the room does not
+		// reserve for is a line nobody ever sees — which would have made the
+		// convention's new home a home it never reaches.
+		below = 7
 	)
 	room := c.Height - 4 - above - below
 	if room < 3 {
@@ -210,12 +219,23 @@ func (s StatusesScreen) View(c Context) (string, string) {
 	for _, line := range strings.Split(c.Lang.DescribeStatus(selected.Kind), "\n") {
 		out.WriteString("  " + line + "\n")
 	}
-	// Once, at the foot, rather than as a line of every description: it is true
-	// of all of them, and a warning repeated under every row is a warning nobody
+	// Two lines at the foot, and both are about every status rather than the one
+	// under the cursor: repeated under every row they would be warnings nobody
 	// finishes reading.
-	// No newline after it: the frame pads the body out to the window, and a
-	// trailing one is a twenty-first line in a twenty-line body — which costs
-	// the caveat itself, since the frame cuts from the bottom.
+	//
+	// ⚠️ **The first is the battle roster's notation, and it is on this screen
+	// because this screen is the vocabulary.** A permanent effect draws no
+	// countdown there, so the absence *is* the notation — and the roster's own
+	// heading, which used to say so, cost that parenthesis in every window of
+	// every battle to state a fact a reader learns once. Here it sits under the
+	// listing of the very things it is about, beside a description that already
+	// says "always in force" for each of them in so many words.
+	//
+	// No newline after the last: the frame pads the body out to the window, and
+	// a trailing one is a twenty-first line in a twenty-line body — which costs
+	// the caveat itself, since the frame cuts from the bottom. Both lines are
+	// reserved for in statusesRoom.
+	out.WriteString("\n  " + c.Style.Dim.Render(c.Text(i18n.StatusesNoCountdown)))
 	out.WriteString("\n  " + c.Style.Dim.Render(c.Text(i18n.BlurbStatusCaveat)))
 	return out.String(), footer
 }

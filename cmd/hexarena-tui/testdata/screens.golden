@@ -3,7 +3,7 @@
 trận đấu  seed 1  diễn biến 71-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -49,7 +49,7 @@ strike <đòn đánh>  1/4
 trận đấu  seed 1  diễn biến 223-227/227
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept fallen                      90   phalanx x2, tidewell x2, poison x3 (2t)
 A2 Example Adept fallen                      90   phalanx x2, tidewell x2, poison (3t)
 A3 Example Adept fallen                      90   phalanx x2, tidewell x2, poison x3 (2t), stun (1t)
@@ -440,7 +440,7 @@ tab đổi ô · ←/→ chọn đội · ctrl+w xem · enter vào phòng · ctr
 trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 71-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -463,7 +463,7 @@ A2 Example Adept, lượt 1
 trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 67-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -486,7 +486,7 @@ mất kết nối — đang lấy lại chỗ ngồi, bàn cờ vẫn còn nguy�
 trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 67-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -578,7 +578,7 @@ tab đổi ô · ←/→ chọn đội · ctrl+w xem · enter vào phòng · ctr
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -601,7 +601,7 @@ nhúng trong nó chứ không đọc mấy file này
 trận đấu  seed 1  diễn biến 123-123/162
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept fallen                      90   phalanx x2, tidewell x2, poison x3 (2t)
 A2 Example Adept [#.........]    60/3100     90   phalanx x2, tidewell x2
 A3 Example Adept [########..]  2507/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
@@ -647,7 +647,7 @@ vine_whip <roi dây leo>  1/182
 trận đấu  seed 1  diễn biến 71-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -716,7 +716,7 @@ Mew  cấp 60
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -739,7 +739,7 @@ nhắm strike vào
 trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -1106,7 +1106,6 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 
 hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
 
-  control      khống chế, mất lượt
   stun         choáng
   buff         tăng chỉ số
   fury         cuồng nộ
@@ -1122,6 +1121,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   Tăng thủ 15%.
   Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
+  Trong trận, hiệu ứng nào không có đếm ngược bên cạnh là vĩnh viễn.
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
 
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
@@ -1222,7 +1222,7 @@ ctrl+l English · esc rời phòng
 trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 67-71/71
 cửa sổ quá ngắn cho: bàn cờ
 
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+mã  đơn vị       hp                        spd    hiệu ứng
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -1277,13 +1277,13 @@ trận đấu  seed 1  diễn biến 44-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -1395,13 +1395,13 @@ trận đấu  seed 1  diễn biến 196-227/227
 /  \__/  \__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A2 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-A3 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t), stun (1t)
-E1 Bloom         [#######...]  1866/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A2 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+A3 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t), stun (1t)
+E1 Bloom         [#######...]  1866/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: E3 E1 E2 E3 E1 E2
 
@@ -2398,13 +2398,13 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 44-71/
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2457,13 +2457,13 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 40-71/
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2516,13 +2516,13 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 40-71/
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2752,13 +2752,13 @@ trận đấu  seed 1  diễn biến 48-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -2811,13 +2811,13 @@ trận đấu  seed 1  diễn biến 123-150/162
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A2 Example Adept [#.........]    60/3100     90   water/ice        500  945   phalanx x2, tidewell x2
-A3 Example Adept [########..]  2507/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A2 Example Adept [#.........]    60/3100     90   wat/ice  500  945   phalanx x2, tidewell x2
+A3 Example Adept [########..]  2507/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -2929,13 +2929,13 @@ trận đấu  seed 1  diễn biến 44-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -3106,13 +3106,13 @@ trận đấu  seed 1  diễn biến 49-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -3165,13 +3165,13 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 49-71/
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4146,11 +4146,11 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   charge       tích lại để tiêu
   charge       nhiễm điện
   absorb       lá chắn, thấm sát thương cho tới khi cạn
-  aegis        lá chắn
 
   Tăng thủ 15%.
   Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
+  Trong trận, hiệu ứng nào không có đếm ngược bên cạnh là vĩnh viễn.
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
 
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
@@ -4404,13 +4404,13 @@ trận đấu  seed 1  lượt A 1:12 · E 1:30  diễn biến 40-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+mã  đơn vị       hp                        spd    hệ      atk  def    hiệu ứng
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4513,7 +4513,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 the battle  seed 1  log 71-71/71
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -4559,7 +4559,7 @@ strike  1 of 4
 the battle  seed 1  log 223-227/227
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept fallen                      90   phalanx x2, tidewell x2, poison x3 (2t)
 A2 Example Adept fallen                      90   phalanx x2, tidewell x2, poison (3t)
 A3 Example Adept fallen                      90   phalanx x2, tidewell x2, poison x3 (2t), stun (1t)
@@ -4950,7 +4950,7 @@ tab next field · ←/→ squad · ctrl+w watch · enter join · ctrl+l tiếng 
 the battle  seed 1  your turn 1:12 · them 1:30  log 71-71/71
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -4973,7 +4973,7 @@ A2 Example Adept, turn 1
 the battle  seed 1  you 1:30 · their turn 1:12  log 67-71/71
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -4996,7 +4996,7 @@ the connection dropped — taking your seat back, the board is still there
 the battle  seed 1  you 1:30 · their turn 1:12  log 67-71/71
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -5088,7 +5088,7 @@ tab next field · ←/→ squad · ctrl+w watch · enter join · ctrl+l tiếng 
 the battle  seed 1
 the window is too short for: board, turn order, log
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -5111,7 +5111,7 @@ the copy baked into it rather than these files
 the battle  seed 1  log 123-123/162
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept fallen                      90   phalanx x2, tidewell x2, poison x3 (2t)
 A2 Example Adept [#.........]    60/3100     90   phalanx x2, tidewell x2
 A3 Example Adept [########..]  2507/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
@@ -5157,7 +5157,7 @@ vine_whip  1 of 182
 the battle  seed 1  log 71-71/71
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -5226,7 +5226,7 @@ your formation  3 of 3 placed
 the battle  seed 1
 the window is too short for: board, 1 unit, turn order, log
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -5249,7 +5249,7 @@ point strike at
 the battle  seed 1  your turn 1:12 · them 1:30
 the window is too short for: board, 1 unit, turn order, log
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -5616,7 +5616,6 @@ squads  2 built, at most 5 to a side
 
 statuses  the buffs and debuffs a skill or a trait puts on a unit
 
-  control      costs a turn
   stun         
   buff         raises a stat
   fury         
@@ -5632,6 +5631,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   Raises defence by 15%.
   Raises a stat · always in force · 1 stack.
 
+  In battle, an effect with no countdown beside it is always in force.
   Declared figures: a trait amplifying or resisting changes what lands.
 
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
@@ -5732,7 +5732,7 @@ ctrl+l tiếng Việt · esc leave the room
 the battle  seed 1  A on turn 1:12 · E 1:30  log 67-71/71
 the window is too short for: board
 
-tag  unit        hp                        spd    effects (no countdown means permanent)
+tag  unit        hp                        spd    effects
 A1 Example Adept [##........]   872/3100     90   phalanx x2, tidewell x2, poison x2 (2t)
 A2 Example Adept [#######...]  2443/3100     90   phalanx x2, tidewell x2, poison x3 (2t)
 A3 Example Adept [#########.]  2908/3100     90   phalanx x2, tidewell x2, poison (3t)
@@ -5787,13 +5787,13 @@ the battle  seed 1  log 44-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -5905,13 +5905,13 @@ the battle  seed 1  log 196-227/227
 /  \__/  \__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A2 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-A3 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t), stun (1t)
-E1 Bloom         [#######...]  1866/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A2 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+A3 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t), stun (1t)
+E1 Bloom         [#######...]  1866/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: E3 E1 E2 E3 E1 E2
 
@@ -6908,13 +6908,13 @@ the battle  seed 1  your turn 1:12 · them 1:30  log 44-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -6967,13 +6967,13 @@ the battle  seed 1  you 1:30 · their turn 1:12  log 40-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7026,13 +7026,13 @@ the battle  seed 1  you 1:30 · their turn 1:12  log 40-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7262,13 +7262,13 @@ the battle  seed 1  log 48-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7321,13 +7321,13 @@ the battle  seed 1  log 123-150/162
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept fallen                      90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A2 Example Adept [#.........]    60/3100     90   water/ice        500  945   phalanx x2, tidewell x2
-A3 Example Adept [########..]  2507/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept fallen                      90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A2 Example Adept [#.........]    60/3100     90   wat/ice  500  945   phalanx x2, tidewell x2
+A3 Example Adept [########..]  2507/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -7439,13 +7439,13 @@ the battle  seed 1  log 44-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7616,13 +7616,13 @@ the battle  seed 1  log 49-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -7675,13 +7675,13 @@ the battle  seed 1  your turn 1:12 · them 1:30  log 49-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -8656,11 +8656,11 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   charge       builds up to be spent
   charge       
   absorb       soaks up damage until it is used up
-  aegis        
 
   Raises defence by 15%.
   Raises a stat · always in force · 1 stack.
 
+  In battle, an effect with no countdown beside it is always in force.
   Declared figures: a trait amplifying or resisting changes what lands.
 
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
@@ -8914,13 +8914,13 @@ the battle  seed 1  A on turn 1:12 · E 1:30  log 40-71/71
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
-A1 Example Adept [##........]   872/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x2 (2t)
-A2 Example Adept [#######...]  2443/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison x3 (2t)
-A3 Example Adept [#########.]  2908/3100     90   water/ice        500  945   phalanx x2, tidewell x2, poison (3t)
-E1 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E2 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
-E3 Bloom         [##########]  2416/2416    209   grass/electric   760  298   phalanx x2, galvanise, heartwood
+tag  unit        hp                        spd    element atk  def    effects
+A1 Example Adept [##........]   872/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x2 (2t)
+A2 Example Adept [#######...]  2443/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison x3 (2t)
+A3 Example Adept [#########.]  2908/3100     90   wat/ice  500  945   phalanx x2, tidewell x2, poison (3t)
+E1 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E2 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
+E3 Bloom         [##########]  2416/2416    209   gra/ele  760  298   phalanx x2, galvanise, heartwood
 
 next: A3 E1 E2 E3 E1 E2
 

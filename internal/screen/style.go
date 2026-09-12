@@ -7,6 +7,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/tui"
 )
 
 // Palette is every style the screens draw with.
@@ -137,6 +138,29 @@ func (p Palette) Element(member element.Element) lipgloss.Style {
 		return lipgloss.NewStyle()
 	}
 	return p.Elements[member]
+}
+
+// ElementInk is the roster's element column drawn in the colours above.
+//
+// ⚠️ **It is the whole of the wiring, and it exists so that there is one of
+// it.** internal/tui draws the table and has no palette; this package has the
+// palette and may not restate the table. So the renderer asks for one cell's ink
+// and gets it from `Element` — the same array the chart screen and the matchup
+// marks read — rather than from a second list of colours chosen again here. A
+// second list would agree on the day it was written and drift on the first day
+// somebody decided ground should be brown.
+//
+// Under NO_COLOR every style in the palette is the identity, so this returns the
+// code untouched and the goldens stay plain without a case of their own. That is
+// also the property the column rests on: the code carries the meaning and the
+// colour only reinforces it.
+// A method rather than a function so that a caller holding a palette cannot
+// draw the table without one: `tui.RosterWide(…, nil)` is legal and plain, and
+// the thing that should never happen is the *client* passing it.
+func (p Palette) ElementInk() tui.ElementInk {
+	return func(member element.Element, code string) string {
+		return p.Element(member).Render(code)
+	}
 }
 
 // NewInput is a text field dressed the way these clients draw them.

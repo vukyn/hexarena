@@ -383,7 +383,7 @@ func (p PlayScreen) Attach(c Context, live PlayLive) PlayScreen {
 	// reading kept from an earlier call would draw a board several turns stale.
 	// The comment above this block already knew the rule and said it about one
 	// call; it is the whole path. → the reading field.
-	p.reading = readBattle(c.Lang, p.Fight, p.Tags)
+	p.reading = readBattle(c.Lang, c.Style, p.Fight, p.Tags)
 	opened := live.Asking
 	switch {
 	case opened == nil:
@@ -481,6 +481,20 @@ type playReading struct {
 	// rosterWide is tui.RosterWide: the same table with the element, attack and
 	// defence columns, for a window with room for them.
 	//
+	// ⚠️ **It is the one section that arrives already inked, and the rule above
+	// still holds.** The palette is consulted at the reading rather than at the
+	// draw for exactly one cell — the element code — and that is safe where
+	// consulting the *width* here would not be: a palette is built once, from the
+	// environment, before the first screen is drawn, and nothing in either client
+	// can change it afterwards, where a window is resized between one turn and the
+	// next. The alternative was finding the element column inside a table this
+	// program had already rendered, which is reading back its own output.
+	//
+	// ⚠️ Nothing styles this section where it is *placed* either — drawings sets
+	// `drawn.roster` with no style at all, unlike `drawn.order` — so the escape
+	// codes inside it cannot collide with one applied over the block. The rows are
+	// counted and never measured, so they cost the budget nothing.
+	//
 	// ⚠️ **Both are rendered, because only the DRAW can say which one is
 	// wanted.** A reading is taken when a turn arrives — for a live screen that
 	// is Attach, the one place the mirror's lock is held — and on a ninety-second
@@ -541,7 +555,12 @@ type playUnit struct {
 // ⚠️ **Whoever calls this has to be allowed to read the battle.** For a live
 // screen that is Attach and only Attach, under the mirror's read lock; for a
 // local one it is any time, because nothing else holds the battle. → read.
-func readBattle(lang i18n.Lang, fight *battle.Battle, tags map[string]string) playReading {
+//
+// The palette is taken as a value rather than off a Context for the reason the
+// language is: what this needs is the ink for one column, and a Context carries a
+// window as well — which is the one thing a reading may not consult.
+// → playReading.rosterWide.
+func readBattle(lang i18n.Lang, style Palette, fight *battle.Battle, tags map[string]string) playReading {
 	if fight == nil {
 		return playReading{}
 	}
@@ -549,7 +568,7 @@ func readBattle(lang i18n.Lang, fight *battle.Battle, tags map[string]string) pl
 	read := playReading{
 		board:      tui.Board(fight, tags),
 		roster:     tui.Roster(lang, fight, tags),
-		rosterWide: tui.RosterWide(lang, fight, tags),
+		rosterWide: tui.RosterWide(lang, fight, tags, style.ElementInk()),
 		order:      tui.Order(fight.Queue(), tags, 6),
 		finished:   fight.Finished(),
 		outcome:    fight.Outcome(),
@@ -578,7 +597,7 @@ func (p PlayScreen) read(c Context) playReading {
 	if p.Live {
 		return p.reading
 	}
-	return readBattle(c.Lang, p.Fight, p.Tags)
+	return readBattle(c.Lang, c.Style, p.Fight, p.Tags)
 }
 
 // rosterTable is the roster as the window in hand can hold it.

@@ -71,6 +71,17 @@ func mainRoster(lang i18n.Lang, fight *battle.Battle, tags map[string]string) st
 // Both languages, because the heading is the one line a language changes, and
 // over a battle that has been fought rather than an opening board, so that a
 // fallen unit, a spent bar and an elided effects column are all in the sample.
+//
+// ⚠️ **What is frozen is the table's SHAPE, not its wording, and the difference
+// now matters.** The copy above reads the heading out of the catalog exactly as
+// the shipped code does, so a *wording* change moves both sides together and
+// this stays green — which is right: dropping the parenthesis from the effects
+// heading was asked for, and a test that went red on it would be freezing a
+// decision nobody made here. What it does catch is a column moving, a width
+// changing, a verb changing or a field arriving, in either the row or the
+// heading, because those are the literals and they are copied rather than read.
+// The heading's own wording is held by TestTheRosterHeadingNoLongerCarriesTheRule
+// in internal/screen instead.
 func TestTheNarrowRosterDrawsWhatMainDrewToTheByte(t *testing.T) {
 	var opened string
 	for _, one := range []struct {
@@ -146,11 +157,18 @@ func stepped(fight *battle.Battle) bool {
 //
 // ⚠️ **The dual-element case is the one worth naming**, because a single element
 // is what a column sized for two would draw correctly while joining two of them
-// wrongly, and `ground/metal` is a string neither half of which is a row's own.
+// wrongly, and `gro/met` is a string neither half of which is a row's own.
+//
+// ⚠️ The element is asserted as the **codes**, derived from the unit's affinity
+// rather than written down: the column draws `gro/met` where it used to draw
+// `ground/metal`, and a walk still looking for the spelled-out name would go red
+// on a correct column. What it must not become is a copy of elementCell, which
+// would agree with a broken one — so it joins the codes here and lets the
+// separator be the only thing both sides share.
 func TestTheWideRosterCarriesTheElementAttackAndDefenceOfEveryUnit(t *testing.T) {
 	fight, tags := opening(t)
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
-		lines := strings.Split(tui.RosterWide(lang, fight, tags), "\n")
+		lines := strings.Split(tui.RosterWide(lang, fight, tags, nil), "\n")
 		if got, want := len(lines)-1, len(fight.Units()); got != want {
 			t.Fatalf("%v: the wide roster drew %d rows for %d units", lang, got, want)
 		}
@@ -165,8 +183,12 @@ func TestTheWideRosterCarriesTheElementAttackAndDefenceOfEveryUnit(t *testing.T)
 			if unit.Affinity.IsDual() {
 				duals++
 			}
+			codes := make([]string, 0, 2)
+			for _, member := range unit.Affinity.Elements() {
+				codes = append(codes, tui.ElementCode(member))
+			}
 			for _, want := range []string{
-				unit.Affinity.String(),
+				strings.Join(codes, "/"),
 				strconv.FormatInt(stats[progression.Attack], 10),
 				strconv.FormatInt(stats[progression.Defense], 10),
 			} {
@@ -197,7 +219,7 @@ func TestTheWideRosterIsTheNarrowOneWithThreeColumnsAdded(t *testing.T) {
 	fight, tags := opening(t)
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
 		narrow := strings.Split(tui.Roster(lang, fight, tags), "\n")[1:]
-		wide := strings.Split(tui.RosterWide(lang, fight, tags), "\n")[1:]
+		wide := strings.Split(tui.RosterWide(lang, fight, tags, nil), "\n")[1:]
 		if len(narrow) != len(wide) {
 			t.Fatalf("%v: the two tables drew %d and %d rows", lang, len(narrow), len(wide))
 		}

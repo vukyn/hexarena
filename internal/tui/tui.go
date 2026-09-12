@@ -18,6 +18,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/atb"
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
@@ -53,17 +54,23 @@ func Board(fight *battle.Battle, tags map[string]string) string {
 
 // Roster lists every unit with its health, tempo and active effects.
 //
-// The language is a parameter for the reason Detail's is, and for one more of
-// its own: the heading carries a rule — that an effect with no countdown is
-// permanent — and a rule is the one part of a screen that cannot be left in a
-// language its reader does not have. The rest of the table is ids and figures,
-// which is why this was English for as long as it was.
+// The language is a parameter for the reason Detail's is: the column headings are
+// words rather than ids, and a heading nobody can read is a column nobody can
+// use. The rest of the table is ids and figures, which is why this was English
+// for as long as it was.
+//
+// ⚠️ **The heading used to carry a rule as well as a label** — that an effect
+// with no countdown beside it is permanent — and it does not any more. The rule
+// itself has not gone: it is stated on the statuses catalogue, which is the
+// screen a reader goes to when they want to know what an effect is and how long
+// it lasts, and which both clients carry on their menu. → screen.StatusesScreen,
+// i18n.StatusesNoCountdown.
 //
 // This is the narrow table, and it is what the program promises to draw: every
 // window at all is at least MinWidth, and this fits that. RosterWide is the same
 // table with three more columns and is only offered where there is room for it.
 func Roster(lang i18n.Lang, fight *battle.Battle, tags map[string]string) string {
-	return rosterTable(lang, fight, tags, false)
+	return rosterTable(lang, fight, tags, false, nil)
 }
 
 // RosterWide is Roster with the three columns a player needs to decide who to
@@ -78,16 +85,19 @@ func Roster(lang i18n.Lang, fight *battle.Battle, tags map[string]string) string
 // The three sit **after** the tempo and before the effects, so the narrow row is
 // this row's own prefix: the columns a reader already knows stay where they were
 // and the new ones arrive in a block, rather than the whole table shifting.
-func RosterWide(lang i18n.Lang, fight *battle.Battle, tags map[string]string) string {
-	return rosterTable(lang, fight, tags, true)
+//
+// The ink is how the element column is coloured, and a nil one draws it plain.
+// → ElementInk for why this package takes a function rather than a palette.
+func RosterWide(lang i18n.Lang, fight *battle.Battle, tags map[string]string, ink ElementInk) string {
+	return rosterTable(lang, fight, tags, true, ink)
 }
 
 // RosterFor draws whichever of the two a window of this width has room for.
 //
 // It exists so that a caller holding a width does not write the comparison out
 // itself — one declaration of the rule, as RosterIsWide's comment says.
-func RosterFor(lang i18n.Lang, fight *battle.Battle, tags map[string]string, width int) string {
-	return rosterTable(lang, fight, tags, RosterIsWide(width))
+func RosterFor(lang i18n.Lang, fight *battle.Battle, tags map[string]string, width int, ink ElementInk) string {
+	return rosterTable(lang, fight, tags, RosterIsWide(width), ink)
 }
 
 // rosterTable is the one walk over the units, drawing whichever row shape it is
@@ -97,7 +107,7 @@ func RosterFor(lang i18n.Lang, fight *battle.Battle, tags map[string]string, wid
 // the fields fed into it is the same question asked twice — which unit, what its
 // health bar says, what its effects come to — and two walks would be two places
 // for "a dead unit reads as fallen" to be answered differently.
-func rosterTable(lang i18n.Lang, fight *battle.Battle, tags map[string]string, wide bool) string {
+func rosterTable(lang i18n.Lang, fight *battle.Battle, tags map[string]string, wide bool, ink ElementInk) string {
 	var b strings.Builder
 	b.WriteString(rosterHeadingFor(lang, wide) + "\n")
 	for _, unit := range fight.Units() {
@@ -113,7 +123,7 @@ func rosterTable(lang i18n.Lang, fight *battle.Battle, tags map[string]string, w
 			// them more than a reader watching it stand there does.
 			fmt.Fprintf(&b, rosterWideRow,
 				unitColumn(tags[unit.ID], unit.Name), state,
-				stats[progression.Speed], unit.Affinity.String(),
+				stats[progression.Speed], elementCell(unit.Affinity, ink),
 				stats[progression.Attack], stats[progression.Defense], Effects(unit))
 			continue
 		}
@@ -136,28 +146,126 @@ const rosterRow = "%-17s%-26s%4d   %s\n"
 // rosterWideRow is the same row with the element, the attack and the defence
 // between the tempo and the effects.
 //
-// Read against rosterRow it is that string with `%-16s%4d %4d   ` spliced in:
+// Read against rosterRow it is that string with `%-8s%4d %4d   ` spliced in:
 // the element column and its gap, the two stat columns with one cell between
 // them, and the same three-cell gap the effects already stood behind. Everything
 // before the splice is byte-identical, which is what makes the narrow row this
 // one's prefix rather than a different table.
-const rosterWideRow = "%-17s%-26s%4d   %-16s%4d %4d   %s\n"
+const rosterWideRow = "%-17s%-26s%4d   %-8s%4d %4d   %s\n"
 
-// rosterElementRoom is the widest affinity that column can hold.
+// rosterElementRoom is the widest element cell that column can hold.
 //
-// Fifteen is `electric/ground` — the two longest element names that may share an
-// affinity, joined by the slash Affinity.String draws. Neutral is the longest
-// name in the book at seven, and it can only ever appear alone: element.Dual
-// refuses it outright, because an inert half adds nothing. The sixteenth cell in
-// the format is the gap after the column, not part of it.
+// Seven is a dual affinity as ElementCode writes one — two three-letter codes
+// and the slash between them — and that is the bound rather than an observation,
+// because element.Dual admits no third half. A single element is three. The
+// eighth cell in the format is the gap after the column, not part of it.
 //
-// ⚠️ **Sized to the whole element book rather than to the pair that ships.** The
-// widest affinity anything currently declares is `electric/metal` at fourteen;
-// sizing to that would make the column a fact about today's cast, and a fixture
-// library that pairs two longer names would push the stats out of line on one
-// row. TestEveryAffinityTheRosterCanDrawFitsItsColumn walks every pair the
-// element package admits.
-const rosterElementRoom = 15
+// ⚠️ **It used to be fifteen, for `electric/ground` spelled out**, and the eight
+// cells the codes give back are eight the wide table no longer has to find a
+// window for: the row's ceiling and the threshold derived from it both move on
+// their own, because both are read off the format above.
+const rosterElementRoom = 7
+
+// rosterElementCell is the whole of that column: the code and the gap after it.
+//
+// ⚠️ **elementCell pads to this rather than leaving the padding to the format,
+// and it has to.** Go's `%-8s` pads by counting runes, and an inked cell carries
+// escape sequences that are runes a terminal never draws — so a coloured cell
+// would be counted as far past the column and padded by nothing, and every row
+// carrying one would sit a few cells left of every row that did not. The verb
+// stays in the format anyway: it is what the bound tests measure the column off,
+// and it still pads a plain cell that arrived short.
+const rosterElementCell = rosterElementRoom + 1
+
+// elementCodeJoiner is what stands between the two halves of a dual affinity,
+// and it is the slash Affinity.String already writes: the codes are shorter
+// spellings of the same thing, so they are joined the same way.
+const elementCodeJoiner = "/"
+
+// elementCodeLength is how many letters of an element's id a code keeps.
+//
+// ⚠️ **Three, because two do not separate the book.** `grass` and `ground` share
+// their first two letters, so a two-letter scheme has to invent a spelling for
+// one of them — and an invented code is no longer something a reader can read
+// back to an id. Three is the shortest length at which every declared element is
+// its own prefix, which is what TestEveryElementCodeIsItsOwnIdShortened holds.
+const elementCodeLength = 3
+
+// ElementCode is how the roster's element column names one element.
+//
+// ⚠️ **It is an id shortened, never a word translated**, and that is the whole
+// reason it may be the same in both languages. internal/i18n's own doc comment
+// keeps element ids as they are in Vietnamese and in English, because they are
+// what an author types and what the data files store; the gloss table beside it
+// puts the Vietnamese *next to* the id — `grass/electric <cỏ/điện>` — rather than
+// instead of it, precisely so the id stays readable. A code is the same id with
+// its tail cut off, so `gra` is still `grass` to a reader of either language,
+// where a code derived from a translation would name a different word on each.
+//
+// The column drew the names in full until this, and they cost fifteen cells to
+// say what seven now say. What the colour adds is emphasis and never meaning:
+// the goldens are recorded under NO_COLOR, so the code alone has to tell every
+// element apart — which TestEveryElementDrawsItsOwnCodeWithNoColourAtAll holds.
+//
+// A value the enum does not have is drawn whole rather than shortened. Nothing
+// in the book can produce one, and the alternative is worse than an overlong
+// cell: `element(12)` cut to three letters is `ele`, which is electric's code,
+// so the unreadable case would quietly name a real element.
+func ElementCode(member element.Element) string {
+	name := member.String()
+	if !member.Valid() || utf8.RuneCountInString(name) <= elementCodeLength {
+		return name
+	}
+	return string([]rune(name)[:elementCodeLength])
+}
+
+// ElementInk draws one element's code in whatever ink its caller has.
+//
+// ⚠️ **A function rather than a palette, because this package may not have
+// one.** internal/tui renders a battle as text and knows nothing about styles,
+// terminals or lipgloss; the screen layer owns the palette and the one table of
+// element colours in the program. Handing that table in as a *table* would make
+// this package depend on the styling library, and re-deriving the colours here
+// would be a second copy of a table whose entries were chosen with reasons. So
+// the caller keeps the ink and this package keeps the table — the same division
+// Detail already makes with a language it cannot know.
+//
+// ⚠️ **The ink is applied to the code alone and never to the padding**, which is
+// what elementCell relies on to measure the column: the plain width of a cell has
+// to be knowable without asking what the ink did to it.
+type ElementInk func(member element.Element, code string) string
+
+// elementCell is one unit's element column, padded to its full width.
+//
+// Each half of a dual affinity is inked on its own, because the colour is about
+// the element rather than about the row: a `grass/electric` unit is half green
+// and half yellow, and inking the pair in the primary's colour would say
+// something untrue about the other half.
+//
+// The padding is counted off the codes rather than off the drawn cell for the
+// reason rosterElementCell gives — an escape sequence is runes nobody sees — and
+// a cell already at or past its width is left alone, so an element the enum does
+// not have pushes its own row right exactly as an over-long name does.
+func elementCell(affinity element.Affinity, ink ElementInk) string {
+	var drawn strings.Builder
+	plain := 0
+	for index, member := range affinity.Elements() {
+		if index > 0 {
+			drawn.WriteString(elementCodeJoiner)
+			plain += utf8.RuneCountInString(elementCodeJoiner)
+		}
+		code := ElementCode(member)
+		plain += utf8.RuneCountInString(code)
+		if ink != nil {
+			code = ink(member, code)
+		}
+		drawn.WriteString(code)
+	}
+	if pad := rosterElementCell - plain; pad > 0 {
+		drawn.WriteString(strings.Repeat(" ", pad))
+	}
+	return drawn.String()
+}
 
 // rosterStatRoom is the room the attack and defence columns each have.
 //
@@ -200,14 +308,16 @@ const rosterTagRoom = 3
 // value nobody can match back to the file they are editing. Nothing else on this
 // row is an id, so the rest is worded.
 //
-// ⚠️ **The heading over the effects column carries a rule, not just a label.** A
-// permanent effect draws no countdown at all, so "no countdown means permanent"
-// is a convention the row never states — and a convention nobody states is a
-// fact a reader has to guess. It is said here, directly over the column it is
-// about, because it is a rule of this table's notation rather than a rule of the
-// game: a reader of that column cannot miss the line above it, and one line per
-// table is what the alternative (nine cells on every permanent entry, 1123 of
-// them across the goldens) was being spent on.
+// ⚠️ **The heading over the effects column used to carry a rule as well as a
+// label, and no longer does.** A permanent effect draws no countdown at all, so
+// "no countdown means permanent" is a convention the row never states — and a
+// convention nobody states is a fact a reader has to guess. It was said here,
+// over the column it is about; it is now said on the **statuses catalogue**,
+// which is the screen a reader opens to ask what an effect does and how long it
+// lasts, and which both clients carry on their menu. The rule went to the
+// vocabulary rather than to the table: it is read once and remembered, where this
+// heading repeated it over every battle, in every window, at every width.
+// → i18n.StatusesNoCountdown, screen.StatusesScreen.View.
 //
 // The first heading names both halves of the column it stands over, in the order
 // they are drawn, because they are one column now — a heading for the whole of
@@ -225,7 +335,12 @@ func rosterHeading(lang i18n.Lang) string {
 // the six stat labels — hp atk def spd acc ddg — as they are in both languages,
 // because they are what an author types and what the data files store. A
 // translated `atk` is a value nobody can match back to the file they are
-// editing. The element column is a word rather than a stat id, so it is worded.
+// editing.
+//
+// The element **heading** is a word and is worded; the element **values** under
+// it are ids and are not. That is not a split in the rule, it is the rule: a
+// heading names a column to a reader and a cell names a thing in a data file.
+// → ElementCode.
 func rosterWideHeading(lang i18n.Lang) string {
 	return fmt.Sprintf(rosterWideHeadingRow,
 		lang.Text(i18n.RosterHeadingUnit), "hp", "spd",
@@ -254,7 +369,7 @@ const rosterHeadingRow = "%-17s%-26s%-4s   %s"
 // rosterWideHeadingRow is rosterWideRow with the same one verb changed, three
 // times over: the tempo, the attack and the defence are left-aligned words here
 // and right-aligned numbers there.
-const rosterWideHeadingRow = "%-17s%-26s%-4s   %-16s%-4s %-4s   %s"
+const rosterWideHeadingRow = "%-17s%-26s%-4s   %-8s%-4s %-4s   %s"
 
 // RosterIsWide reports whether a window this wide has room for the wide table.
 //
@@ -348,7 +463,9 @@ func Effects(unit *battle.Unit) string {
 		// 1123 to 192, so spelling the common case out cost nine cells over a
 		// thousand times while the rare case already identifies itself — a timed
 		// entry carries its own `(2t)`. What that trade owes a reader is a place
-		// the convention is stated, and that is rosterHeader.
+		// the convention is stated, and that is the **statuses catalogue**: it
+		// stood over this column for two changes and moved to the screen that
+		// exists to explain what an effect is. → i18n.StatusesNoCountdown.
 		if !entry.Permanent {
 			part += fmt.Sprintf(" (%dt)", entry.Remaining)
 		}
