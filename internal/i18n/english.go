@@ -888,4 +888,5 @@ q or ctrl+c to quit`,
 
 	RosterHeadingUnit:    "tag  unit",
 	RosterHeadingEffects: "effects (no countdown means permanent)",
+	RosterHeadingElement: "element",
 }

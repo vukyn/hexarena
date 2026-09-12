@@ -1492,13 +1492,13 @@ trận đấu  seed 1
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -1539,13 +1539,13 @@ trận đấu  seed 1  diễn biến 549-580/580
 /  \__/  \__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           fallen                     110   evasive, phalanx x2, expose (1t)
-A2 Venusaur      fallen                     100   phalanx x2
-A3 Machamp       fallen                      85   phalanx x2, heft x3 (4t)
-E1 Mew           [#.........]   473/3600    110   evasive, phalanx x2
-E2 Venusaur      [####......]  1629/3800    100   phalanx x2
-E3 Machamp       fallen                      85   phalanx x2, heft x4 (4t)
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           fallen                     110   neutral          590  446   evasive, phalanx x2, expose (1t)
+A2 Venusaur      fallen                     100   grass            620  618   phalanx x2
+A3 Machamp       fallen                      85   ground           760  547   phalanx x2, heft x3 (4t)
+E1 Mew           [#.........]   473/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [####......]  1629/3800    100   grass            620  618   phalanx x2
+E3 Machamp       fallen                      85   ground           760  547   phalanx x2, heft x4 (4t)
 
 next: E2 E1 E2 E1 E2 E1
 
@@ -2094,13 +2094,13 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -2141,13 +2141,13 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -2243,13 +2243,13 @@ trận đấu  seed 1
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -2294,13 +2294,13 @@ trận đấu  seed 1  diễn biến 93-120/132
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [########..]  3136/3800    100   phalanx x2
-A3 Machamp       [##........]   744/3300     85   phalanx x2, heft (4t)
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [########..]  3190/3800    100   phalanx x2
-E3 Machamp       [#####.....]  1760/3300     85   phalanx x2, heft x2 (4t), stun (1t)
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [########..]  3136/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##........]   744/3300     85   ground           760  547   phalanx x2, heft (4t)
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [########..]  3190/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [#####.....]  1760/3300     85   ground           760  547   phalanx x2, heft x2 (4t), stun (1t)
 
 next: E1 A3 E3 A2 E2 A1
 
@@ -2503,13 +2503,13 @@ trận đấu  seed 1
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -2555,13 +2555,13 @@ trận đấu  seed 1  diễn biến 4-27/27
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Sennin        [#########.]  3180/3400    134   phalanx x2, tailwind, burn (1t)
-A2 Sennin        [#########.]  3247/3400    134   phalanx x2, tailwind, burn (2t)
-A3 Sennin        [#########.]  3324/3400    134   phalanx x2, tailwind, burn (2t)
-E1 Venusaur      [##########]  3800/3800    100   phalanx x2
-E2 Charizard     [##########]  3100/3100    140   phalanx x2
-E3 Sennin        [##########]  3400/3400    134   phalanx x2
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Sennin        [#########.]  3180/3400    134   wind             590  476   phalanx x2, tailwind, burn (1t)
+A2 Sennin        [#########.]  3247/3400    134   wind             590  476   phalanx x2, tailwind, burn (2t)
+A3 Sennin        [#########.]  3324/3400    134   wind             590  476   phalanx x2, tailwind, burn (2t)
+E1 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E2 Charizard     [##########]  3100/3100    140   fire             700  476   phalanx x2
+E3 Sennin        [##########]  3400/3400    134   wind             590  476   phalanx x2
 
 next: A2 A3 E3 E1 E2 A1
 
@@ -2614,13 +2614,13 @@ trận đấu  seed 1  diễn biến 6-26/26
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-A2 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-E1 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-E2 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+A2 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+A3 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+E1 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+E2 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+E3 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
 
 next: A2 A3 E1 E2 E3 A1
 
@@ -3718,13 +3718,13 @@ trận đấu  seed 1  lượt A 1:12 · E 1:30
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -3761,9 +3761,9 @@ trận đấu  seed 0  diễn biến 451-486/486
 /  \__/  \__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
-A1 Mew           fallen                     110   evasive
-E1 Mew           [##........]   966/3600    110   evasive, expose (1t)
+mã  đơn vị       hp                        spd    hệ              atk  def    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Mew           fallen                     110   neutral          590  490   evasive
+E1 Mew           [##........]   966/3600    110   neutral          590  380   evasive, expose (1t)
 
 next: E1 E1 E1 E1 E1 E1
 
@@ -5279,13 +5279,13 @@ the battle  seed 1
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -5326,13 +5326,13 @@ the battle  seed 1  log 549-580/580
 /  \__/  \__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           fallen                     110   evasive, phalanx x2, expose (1t)
-A2 Venusaur      fallen                     100   phalanx x2
-A3 Machamp       fallen                      85   phalanx x2, heft x3 (4t)
-E1 Mew           [#.........]   473/3600    110   evasive, phalanx x2
-E2 Venusaur      [####......]  1629/3800    100   phalanx x2
-E3 Machamp       fallen                      85   phalanx x2, heft x4 (4t)
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           fallen                     110   neutral          590  446   evasive, phalanx x2, expose (1t)
+A2 Venusaur      fallen                     100   grass            620  618   phalanx x2
+A3 Machamp       fallen                      85   ground           760  547   phalanx x2, heft x3 (4t)
+E1 Mew           [#.........]   473/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [####......]  1629/3800    100   grass            620  618   phalanx x2
+E3 Machamp       fallen                      85   ground           760  547   phalanx x2, heft x4 (4t)
 
 next: E2 E1 E2 E1 E2 E1
 
@@ -5871,13 +5871,13 @@ the battle  seed 1  your turn 1:12 · them 1:30
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -5918,13 +5918,13 @@ the battle  seed 1  you 1:30 · their turn 1:12
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -6020,13 +6020,13 @@ the battle  seed 1
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -6071,13 +6071,13 @@ the battle  seed 1  log 93-120/132
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [########..]  3136/3800    100   phalanx x2
-A3 Machamp       [##........]   744/3300     85   phalanx x2, heft (4t)
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [########..]  3190/3800    100   phalanx x2
-E3 Machamp       [#####.....]  1760/3300     85   phalanx x2, heft x2 (4t), stun (1t)
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [########..]  3136/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##........]   744/3300     85   ground           760  547   phalanx x2, heft (4t)
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [########..]  3190/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [#####.....]  1760/3300     85   ground           760  547   phalanx x2, heft x2 (4t), stun (1t)
 
 next: E1 A3 E3 A2 E2 A1
 
@@ -6280,13 +6280,13 @@ the battle  seed 1
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -6332,13 +6332,13 @@ the battle  seed 1  log 4-27/27
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Sennin        [#########.]  3180/3400    134   phalanx x2, tailwind, burn (1t)
-A2 Sennin        [#########.]  3247/3400    134   phalanx x2, tailwind, burn (2t)
-A3 Sennin        [#########.]  3324/3400    134   phalanx x2, tailwind, burn (2t)
-E1 Venusaur      [##########]  3800/3800    100   phalanx x2
-E2 Charizard     [##########]  3100/3100    140   phalanx x2
-E3 Sennin        [##########]  3400/3400    134   phalanx x2
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Sennin        [#########.]  3180/3400    134   wind             590  476   phalanx x2, tailwind, burn (1t)
+A2 Sennin        [#########.]  3247/3400    134   wind             590  476   phalanx x2, tailwind, burn (2t)
+A3 Sennin        [#########.]  3324/3400    134   wind             590  476   phalanx x2, tailwind, burn (2t)
+E1 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E2 Charizard     [##########]  3100/3100    140   fire             700  476   phalanx x2
+E3 Sennin        [##########]  3400/3400    134   wind             590  476   phalanx x2
 
 next: A2 A3 E3 E1 E2 A1
 
@@ -6391,13 +6391,13 @@ the battle  seed 1  log 6-26/26
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-A2 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-A3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-E1 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-E2 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
-E3 Sennin        [##########]  3400/3400    134   toughened, phalanx x2, tailwind
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+A2 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+A3 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+E1 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+E2 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
+E3 Sennin        [##########]  3400/3400    134   wind             590  530   toughened, phalanx x2, tailwind
 
 next: A2 A3 E1 E2 E3 A1
 
@@ -7477,13 +7477,13 @@ the battle  seed 1  A on turn 1:12 · E 1:30
 /  \__/A3\__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-A2 Venusaur      [##########]  3800/3800    100   phalanx x2
-A3 Machamp       [##########]  3300/3300     85   phalanx x2
-E1 Mew           [##########]  3600/3600    110   evasive, phalanx x2
-E2 Venusaur      [##########]  3800/3800    100   phalanx x2
-E3 Machamp       [##########]  3300/3300     85   phalanx x2
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+A2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+A3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
+E1 Mew           [##########]  3600/3600    110   neutral          590  583   evasive, phalanx x2
+E2 Venusaur      [##########]  3800/3800    100   grass            620  618   phalanx x2
+E3 Machamp       [##########]  3300/3300     85   ground           760  547   phalanx x2
 
 next: E1 A2 E2 A3 E3 A1
 
@@ -7520,9 +7520,9 @@ the battle  seed 0  log 451-486/486
 /  \__/  \__/  \__/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
-tag  unit        hp                        spd    effects (no countdown means permanent)
-A1 Mew           fallen                     110   evasive
-E1 Mew           [##........]   966/3600    110   evasive, expose (1t)
+tag  unit        hp                        spd    element         atk  def    effects (no countdown means permanent)
+A1 Mew           fallen                     110   neutral          590  490   evasive
+E1 Mew           [##........]   966/3600    110   neutral          590  380   evasive, expose (1t)
 
 next: E1 E1 E1 E1 E1 E1
 

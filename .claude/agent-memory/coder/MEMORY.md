@@ -73,7 +73,7 @@
 - [The PvE pairing chooser](project_pve_pairing_chooser.md) — step 1 done; ⚠️ TWO brief premises measured false: m.taking is not on the wire, and s01…s06 are ALREADY offered
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 - [The client runs without a checkout](project_client_runs_without_a_checkout.md) — all 3 steps done; the no-directory state and what each screen now says (⚠️ 4 art sites, not 3)
-- [The roster row widening](project_the_roster_row_widening.md) — ceiling 119→110, measured 119→100; heading now localised; crowded.golden re-pictures elision; ⚠️ step 2 has 9 cells not 28
+- [The roster row widening](project_the_roster_row_widening.md) — BOTH steps done; option A = a 2nd table at a derived 139-cell threshold; ⚠️ "step 2 must cut effectsRoom" was FALSE
 
 ## Moved in from the platform-level store (2026-09-05)
 
@@ -94,3 +94,5 @@ here now, and new ones belong here.
 - [An uncommitted harness leaves only a shape](feedback_an_uncommitted_harness_leaves_only_a_shape.md) — 400/400/0 never reproduced; 3 fixtures gave 462/464/410 and the same cliff. Run the CONTROL
 - [A spar golden is fought from the cast](feedback_a_spar_golden_is_fought_from_the_cast.md) — "no golden moves" reasoned over roster.json; naruto's duel moved 58→60. Prove causation by pinning the line back
 - [Diff the verdict clause, not the log line](feedback_diff_the_verdict_clause_not_the_log_line.md) — the fielded-by list grows on ANY addition; the branch move reads as :264→:256; a data-only change scores risk 0.00
+- [No arithmetic test sees a literal that agrees](feedback_no_arithmetic_test_can_see_a_literal_that_agrees.md) — derived==measured is 139==139 until a column moves; AST-walk the declaration
+- [Readings beat draws only when work MOVES](feedback_readings_beat_draws_only_when_work_moves.md) — 130-vs-203 prices a move, not an addition (260); 0.2ms a battle decides nothing, the contract does

@@ -693,6 +693,38 @@ answers rather than screen logic:
     the bound that is now true: the option list survives every window the tool
     draws, the aim list with it, and `frame`'s `Truncated` marker never appears on
     this screen at all.
+  - ⚠️ **The roster has TWO tables and the window picks between them at DRAW
+    time.** `tui.Roster` is the narrow one — the tag-and-name column, the health
+    bar, the tempo and the sixty-cell effects column, ceiling 110 cells — and
+    `tui.RosterWide` is that row with the unit's **element, attack and defence**
+    spliced in between the tempo and the effects, ceiling 138. Nothing is cut to
+    pay for them: a window at the floor draws exactly what it drew before, to the
+    byte, which is what `TestTheNarrowRosterDrawsWhatMainDrewToTheByte` holds
+    against a verbatim copy of the old code rather than against a golden.
+    **The threshold is derived, never typed**: `tui.RosterIsWide` compares a width
+    to `rosterWidth(rosterWideRow, …)` — the widest line that format can draw plus
+    the cell every line leaves empty — which comes to **139**, so the goldens' floor
+    window of 120 takes the narrow table and their roomy 160 takes the wide one.
+    A literal beside the format would be a second copy of an arithmetic that moves
+    whenever a column does, and no arithmetic test can tell a derivation from a
+    constant that agrees with it today, so the guard is an AST walk over the
+    declaration (`TestTheWideRosterThresholdIsComputedFromItsFormat`).
+    ⚠️ **The pick may not move into `readBattle`.** A reading is taken when a turn
+    arrives, not per frame, so a width read there is the width the window had at
+    the last turn — on a ninety-second allowance, most of a minute of the wrong
+    table. `playReading` therefore carries **both** rendered tables and
+    `playReading.rosterTable` picks; nothing reaches `p.Fight` at draw time, which
+    is the rule this file's *redraw* note is about and which has been broken twice.
+    ⚠️ **`atk` and `def` are untranslated and `element` is worded**, which is one
+    rule rather than two: `internal/i18n` keeps the six stat labels as ids in both
+    languages, and an element column is named after a word.
+    ⚠️ **The two stat columns are sized to a real bound, not to an observation.**
+    A stat on the board is `modifier.Set.Stat`'s answer, which saturates towards
+    `ceiling × headroom / 1000` and never reaches it — 2399 under the shipped
+    books, four digits — while the progression ceiling alone (800) would have said
+    three. Past that a `%4d` pushes its own row right rather than clipping a digit,
+    deliberately, and `TestEveryStatTheRosterCanDrawFitsItsColumn` derives the
+    bound from both books so raising either is a red test.
   - **Undo is a shorter script replayed**, not an unwinding: the script is cut at
     the player's last decision and the battle rebuilt from the seed. The engine's
     turns are recorded too, because a half that was not written down would replay

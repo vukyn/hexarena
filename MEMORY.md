@@ -56,6 +56,8 @@ that owns the subject wins and the note is the thing to fix.
 - [v0.2.0 đã release](memory/hexarena-v0-2-0-released.md) — e442ec3, digest 9c086a9cf68b; version = CHỈ git tag (không hằng số, không ldflags); repo PUBLIC; make check wall-clock 390s
 - [Nhật ký release + quy trình](memory/hexarena-releases.md) — tới v0.5.0; version CHỈ là git tag; xanh TRƯỚC khi push vì tag proxy bất biến; ⚠️ chứng minh bằng CHẠY trong thư mục rỗng; từ v0.5.0 có CI gác main
 - [Zero từ tìm kiếm cần chứng dương](memory/a-search-that-returns-zero-needs-a-known-positive.md) — grep trả 0 cho chuỗi tiếng Việt CÓ trong binary; ⚠️ phạm vi grep ≠ phạm vi sự thật
+- [Bound = hai quyển sách nhân nhau](memory/a-bound-is-two-books-multiplied.md) — ceiling 800 × headroom 3000‰ = 2399; ⚠️ ceiling MỘT MÌNH đã sai hôm nay (roster vẽ 945)
+- [AST walk là guard duy nhất chặn literal](memory/an-ast-walk-is-the-only-guard-against-a-literal.md) — test số học không phân biệt được hằng suy ra với hằng gõ tay trùng giá trị
 - [4 đội starter, dùng được ngay](memory/hexarena-starter-squads.md) — ⚠️ Rate() BỎ trận Endless khỏi mẫu số: healer gặp healer hoà mãi mà vẫn khoe 85%
 - [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ import ≠ đồng hồ CẢ HAI CHIỀU (WithTimeout lọt; import time mà không đọc vẫn chặn)
 - [CRLF phá data digest](memory/hexarena-crlf-data-digest.md) — ⚠️ join Mac→Win data_mismatch cùng commit; .gitattributes ko chữa checkout cũ
