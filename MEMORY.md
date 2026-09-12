@@ -54,7 +54,8 @@ that owns the subject wins and the note is the thing to fix.
 - [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — draft 1…5c xong; spectator 1…5 xong (còn cờ host + xem draft); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire ko nói phòng đủ người, cũng ko báo sắp xếp đã tới; ⚠️ watcher ĐỨNG TRÊN màn draft mà bản ghi rỗng (21/21, Replayed 0) → draft là HAI golden
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [v0.2.0 đã release](memory/hexarena-v0-2-0-released.md) — e442ec3, digest 9c086a9cf68b; version = CHỈ git tag (không hằng số, không ldflags); repo PUBLIC; make check wall-clock 390s
-- [Nhật ký release + quy trình](memory/hexarena-releases.md) — tới v0.5.1; version CHỈ là git tag; xanh TRƯỚC khi push vì tag proxy bất biến; ⚠️ chứng minh bằng CHẠY trong thư mục rỗng; từ v0.5.0 có CI gác main
+- [Nhật ký release + quy trình](memory/hexarena-releases.md) — tới v0.5.2; version CHỈ là git tag; xanh TRƯỚC khi push vì tag proxy bất biến; ⚠️ chứng minh bằng CHẠY trong thư mục rỗng; từ v0.5.0 có CI gác main
+- [Golden NO_COLOR mù lỗi canh lề](memory/a-golden-under-no-colour-cannot-see-an-alignment-bug.md) — fmt pad theo rune, escape cũng là rune; ô tô màu không được pad và KHÔNG golden nào thấy
 - [Zero từ tìm kiếm cần chứng dương](memory/a-search-that-returns-zero-needs-a-known-positive.md) — grep trả 0 cho chuỗi tiếng Việt CÓ trong binary; ⚠️ phạm vi grep ≠ phạm vi sự thật
 - [Bound = hai quyển sách nhân nhau](memory/a-bound-is-two-books-multiplied.md) — ceiling 800 × headroom 3000‰ = 2399; ⚠️ ceiling MỘT MÌNH đã sai hôm nay (roster vẽ 945)
 - [AST walk là guard duy nhất chặn literal](memory/an-ast-walk-is-the-only-guard-against-a-literal.md) — test số học không phân biệt được hằng suy ra với hằng gõ tay trùng giá trị
