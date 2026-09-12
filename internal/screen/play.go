@@ -478,6 +478,31 @@ type playReading struct {
 	// board, roster and order are tui.Board, tui.Roster and tui.Order, unstyled:
 	// the palette is applied where the section is placed, exactly as before.
 	board, roster, order string
+	// rosterWide is tui.RosterWide: the same table with the element, attack and
+	// defence columns, for a window with room for them.
+	//
+	// ⚠️ **Both are rendered, because only the DRAW can say which one is
+	// wanted.** A reading is taken when a turn arrives — for a live screen that
+	// is Attach, the one place the mirror's lock is held — and on a ninety-second
+	// allowance the next one can be most of a minute away, so a width consulted
+	// here is the width the window had at the last turn. → playReading.rosterTable.
+	//
+	// ⚠️ **The alternative was carrying the rows and formatting at the draw, and
+	// it is NOT more expensive — the obvious cost argument does not apply.**
+	// "130 readings against 203 views" is the reason for moving work *into* a
+	// reading; this adds a render rather than moving one, so it is 260 renders a
+	// battle against that arrangement's 203. Measured on a 3v3 at this package's
+	// fixture: 4.7µs a narrow table, 5.5µs a wide one, so the whole difference is
+	// about two tenths of a millisecond over a battle that lasts minutes — it
+	// decides nothing either way.
+	//
+	// What decides it is that this keeps the reading's own contract: it holds the
+	// sections **already rendered**, because rendering them is the read. Carrying
+	// rows for one of the four would need a row type exported out of internal/tui
+	// and a second entry point to feed it back in, so that the table's format
+	// stays in the package that owns it — more moving parts for a cost that is
+	// not a cost.
+	rosterWide string
 	// finished, outcome and winner are how the battle stands, which is the
 	// question the turn in front is budgeted around. → drawings, ending.
 	finished bool
@@ -522,12 +547,13 @@ func readBattle(lang i18n.Lang, fight *battle.Battle, tags map[string]string) pl
 	}
 	winner, _ := fight.Winner()
 	read := playReading{
-		board:    tui.Board(fight, tags),
-		roster:   tui.Roster(lang, fight, tags),
-		order:    tui.Order(fight.Queue(), tags, 6),
-		finished: fight.Finished(),
-		outcome:  fight.Outcome(),
-		winner:   winner,
+		board:      tui.Board(fight, tags),
+		roster:     tui.Roster(lang, fight, tags),
+		rosterWide: tui.RosterWide(lang, fight, tags),
+		order:      tui.Order(fight.Queue(), tags, 6),
+		finished:   fight.Finished(),
+		outcome:    fight.Outcome(),
+		winner:     winner,
 	}
 	units := fight.Units()
 	read.units = make([]playUnit, 0, len(units))
@@ -553,6 +579,21 @@ func (p PlayScreen) read(c Context) playReading {
 		return p.reading
 	}
 	return readBattle(c.Lang, p.Fight, p.Tags)
+}
+
+// rosterTable is the roster as the window in hand can hold it.
+//
+// ⚠️ **The pick happens here, at draw time, and may not move into readBattle.**
+// A reading is taken when a turn arrives — for a live screen that is Attach,
+// which is the one place the mirror's lock is held — so a width consulted there
+// is the width the window had at the last turn. Both tables are already in the
+// reading, so this costs a comparison and nothing else, and nothing on this path
+// goes anywhere near p.Fight.
+func (r playReading) rosterTable(c Context) string {
+	if tui.RosterIsWide(c.UsableWidth()) {
+		return r.rosterWide
+	}
+	return r.roster
 }
 
 // unit is the unit an id names, and whether the board has one at all.
@@ -1463,7 +1504,7 @@ func (p PlayScreen) drawings(c Context) playDrawn {
 		drawn.tail = drawnRows(p.choices(c, read))
 	}
 	drawn.board = drawnRows(read.board)
-	drawn.roster = drawnRows(read.roster)
+	drawn.roster = drawnRows(read.rosterTable(c))
 	drawn.order = c.Style.Dim.Render(read.order)
 	drawn.log = p.LogRows(c)
 	drawn.notes = p.Wrote(c)

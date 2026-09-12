@@ -869,4 +869,5 @@ q hoặc ctrl+c để thoát`,
 
 	RosterHeadingUnit:    "mã  đơn vị",
 	RosterHeadingEffects: "hiệu ứng (không đếm ngược là vĩnh viễn)",
+	RosterHeadingElement: "hệ",
 }

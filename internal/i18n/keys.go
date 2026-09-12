@@ -1578,6 +1578,15 @@ const (
 	// second Vietnamese term for the same property would be this module's own
 	// glossary disagreeing with itself on one screen.
 	RosterHeadingEffects
+	// RosterHeadingElement stands over the element column the roster gains when
+	// the window is wide enough to hold it.
+	//
+	// ⚠️ It is worded where `atk` and `def` beside it are not, and the split is
+	// the rule above rather than an inconsistency: those two are stat labels —
+	// two of the six this package keeps as ids in both languages, because they
+	// are what an author types and what the data files store — and an element
+	// column is named after a word.
+	RosterHeadingElement
 
 	keyCount
 )

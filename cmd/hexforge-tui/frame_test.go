@@ -247,7 +247,7 @@ func TestNoDrawingIsEverWideEnoughToBeMarked(t *testing.T) {
 	}
 	for name, drawn := range map[string]string{
 		"board":  tui.Board(fought.play.Fight, fought.play.Tags),
-		"roster": tui.Roster(base.lang, fought.play.Fight, fought.play.Tags),
+		"roster": tui.RosterFor(base.lang, fought.play.Fight, fought.play.Tags, base.usableWidth()),
 	} {
 		rows := strings.Split(strings.TrimRight(drawn, "\n"), "\n")
 		if len(rows) < 2 {

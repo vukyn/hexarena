@@ -786,7 +786,10 @@ func whatIsDrawn(m model) (drawn, string, string) {
 	board := strings.Split(tui.Board(p.Fight, p.Tags), "\n")
 	found.board = present[board[0]] > 0 && present[board[len(board)-1]] > 0
 	// The header is not a unit, so the count starts past it.
-	for _, row := range strings.Split(tui.Roster(m.lang, p.Fight, p.Tags), "\n")[1:] {
+	// Through RosterFor rather than Roster: the screen draws whichever table the
+	// window has room for, so a test that named the narrow one would find no rows
+	// at all on a wide window and report that as a screen drawing none.
+	for _, row := range strings.Split(tui.RosterFor(m.lang, p.Fight, p.Tags, m.usableWidth()), "\n")[1:] {
 		if present[row] > 0 {
 			found.roster++
 		}

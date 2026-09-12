@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/vukyn/hexarena/internal/core/atb"
 	"github.com/vukyn/hexarena/internal/core/battle"
@@ -57,15 +58,65 @@ func Board(fight *battle.Battle, tags map[string]string) string {
 // permanent — and a rule is the one part of a screen that cannot be left in a
 // language its reader does not have. The rest of the table is ids and figures,
 // which is why this was English for as long as it was.
+//
+// This is the narrow table, and it is what the program promises to draw: every
+// window at all is at least MinWidth, and this fits that. RosterWide is the same
+// table with three more columns and is only offered where there is room for it.
 func Roster(lang i18n.Lang, fight *battle.Battle, tags map[string]string) string {
+	return rosterTable(lang, fight, tags, false)
+}
+
+// RosterWide is Roster with the three columns a player needs to decide who to
+// hit first: the unit's element, its attack and its defence.
+//
+// ⚠️ **It is an addition and never a replacement.** The narrow table is what
+// ships in a window at the floor, unchanged to the byte, because the three
+// columns cost more room than the floor has: nothing here is cut to make space
+// for them, so a reader of a narrow terminal loses nothing they had. What decides
+// between the two is the window, and RosterIsWide is the whole of that rule.
+//
+// The three sit **after** the tempo and before the effects, so the narrow row is
+// this row's own prefix: the columns a reader already knows stay where they were
+// and the new ones arrive in a block, rather than the whole table shifting.
+func RosterWide(lang i18n.Lang, fight *battle.Battle, tags map[string]string) string {
+	return rosterTable(lang, fight, tags, true)
+}
+
+// RosterFor draws whichever of the two a window of this width has room for.
+//
+// It exists so that a caller holding a width does not write the comparison out
+// itself — one declaration of the rule, as RosterIsWide's comment says.
+func RosterFor(lang i18n.Lang, fight *battle.Battle, tags map[string]string, width int) string {
+	return rosterTable(lang, fight, tags, RosterIsWide(width))
+}
+
+// rosterTable is the one walk over the units, drawing whichever row shape it is
+// asked for.
+//
+// One function rather than two, because everything except the format string and
+// the fields fed into it is the same question asked twice — which unit, what its
+// health bar says, what its effects come to — and two walks would be two places
+// for "a dead unit reads as fallen" to be answered differently.
+func rosterTable(lang i18n.Lang, fight *battle.Battle, tags map[string]string, wide bool) string {
 	var b strings.Builder
-	b.WriteString(rosterHeading(lang) + "\n")
+	b.WriteString(rosterHeadingFor(lang, wide) + "\n")
 	for _, unit := range fight.Units() {
 		state := HealthBar(unit.HP, fight.MaxHP(unit))
 		if unit.Dead {
 			state = "fallen"
 		}
 		stats := fight.Stats(unit)
+		if wide {
+			// A fallen unit keeps its three new columns rather than blanking
+			// them with its health bar: an element and a stat line are what the
+			// unit is, and a reader looking back at who was on the board wants
+			// them more than a reader watching it stand there does.
+			fmt.Fprintf(&b, rosterWideRow,
+				unitColumn(tags[unit.ID], unit.Name), state,
+				stats[progression.Speed], unit.Affinity.String(),
+				stats[progression.Attack], stats[progression.Defense], Effects(unit))
+			continue
+		}
 		fmt.Fprintf(&b, rosterRow,
 			unitColumn(tags[unit.ID], unit.Name), state,
 			stats[progression.Speed], Effects(unit))
@@ -81,6 +132,49 @@ func Roster(lang i18n.Lang, fight *battle.Battle, tags map[string]string) string
 // twenty-six cells held a tag of two and a name of at most thirteen, so ten of
 // them were never drawn on any row in any golden.
 const rosterRow = "%-17s%-26s%4d   %s\n"
+
+// rosterWideRow is the same row with the element, the attack and the defence
+// between the tempo and the effects.
+//
+// Read against rosterRow it is that string with `%-16s%4d %4d   ` spliced in:
+// the element column and its gap, the two stat columns with one cell between
+// them, and the same three-cell gap the effects already stood behind. Everything
+// before the splice is byte-identical, which is what makes the narrow row this
+// one's prefix rather than a different table.
+const rosterWideRow = "%-17s%-26s%4d   %-16s%4d %4d   %s\n"
+
+// rosterElementRoom is the widest affinity that column can hold.
+//
+// Fifteen is `electric/ground` — the two longest element names that may share an
+// affinity, joined by the slash Affinity.String draws. Neutral is the longest
+// name in the book at seven, and it can only ever appear alone: element.Dual
+// refuses it outright, because an inert half adds nothing. The sixteenth cell in
+// the format is the gap after the column, not part of it.
+//
+// ⚠️ **Sized to the whole element book rather than to the pair that ships.** The
+// widest affinity anything currently declares is `electric/metal` at fourteen;
+// sizing to that would make the column a fact about today's cast, and a fixture
+// library that pairs two longer names would push the stats out of line on one
+// row. TestEveryAffinityTheRosterCanDrawFitsItsColumn walks every pair the
+// element package admits.
+const rosterElementRoom = 15
+
+// rosterStatRoom is the room the attack and defence columns each have.
+//
+// ⚠️ **There IS a bound on a buffed stat, and it is not the ceiling.**
+// modifier.Set.Stat saturates a change towards `ceiling * Headroom / 1000` and
+// scale.Saturate never reaches its limit, so the widest figure the engine can
+// produce is one below that — 2399 under the shipped books, four digits. The
+// progression ceiling alone (800) would have said three, which is why the bound
+// is derived from both books rather than from the one that sounds like a limit.
+//
+// ⚠️ **Four is the bound and not slack.** Go's `%4d` does not clip: a five-digit
+// figure draws five cells and pushes the rest of its own row right, exactly as an
+// over-long name would. That is held by
+// TestEveryStatTheRosterCanDrawFitsItsColumn, which derives the bound from the
+// shipped limits and bounds and names the figure that broke it, rather than by
+// room nobody wrote down.
+const rosterStatRoom = 4
 
 // rosterNameRoom is the longest name that column can hold.
 //
@@ -124,6 +218,29 @@ func rosterHeading(lang i18n.Lang) string {
 		lang.Text(i18n.RosterHeadingEffects))
 }
 
+// rosterWideHeading is the same heading with the three columns named.
+//
+// ⚠️ **`atk` and `def` are untranslated for the reason `hp` and `spd` are**, and
+// it is the same rule rather than a second one: internal/i18n's doc comment keeps
+// the six stat labels — hp atk def spd acc ddg — as they are in both languages,
+// because they are what an author types and what the data files store. A
+// translated `atk` is a value nobody can match back to the file they are
+// editing. The element column is a word rather than a stat id, so it is worded.
+func rosterWideHeading(lang i18n.Lang) string {
+	return fmt.Sprintf(rosterWideHeadingRow,
+		lang.Text(i18n.RosterHeadingUnit), "hp", "spd",
+		lang.Text(i18n.RosterHeadingElement), "atk", "def",
+		lang.Text(i18n.RosterHeadingEffects))
+}
+
+// rosterHeadingFor is the heading over whichever row shape is being drawn.
+func rosterHeadingFor(lang i18n.Lang, wide bool) string {
+	if wide {
+		return rosterWideHeading(lang)
+	}
+	return rosterHeading(lang)
+}
+
 // rosterHeadingRow is rosterRow with one verb changed: the speed is a
 // left-aligned word here and a right-aligned number there, which is the only way
 // a heading and the figures under it can differ and still be the same table.
@@ -133,6 +250,52 @@ func rosterHeading(lang i18n.Lang) string {
 // strings rather than trusting this comment. Writing the heading out by hand is
 // what used to leave `effects` one cell left of the effects.
 const rosterHeadingRow = "%-17s%-26s%-4s   %s"
+
+// rosterWideHeadingRow is rosterWideRow with the same one verb changed, three
+// times over: the tempo, the attack and the defence are left-aligned words here
+// and right-aligned numbers there.
+const rosterWideHeadingRow = "%-17s%-26s%-4s   %-16s%-4s %-4s   %s"
+
+// RosterIsWide reports whether a window this wide has room for the wide table.
+//
+// ⚠️ **This is the one declaration of that rule**, and every caller asks it
+// rather than comparing a width to a number of its own. A second comparison is a
+// second copy of an arithmetic that moves whenever a column does.
+//
+// ⚠️ **It must be asked at DRAW time, not when a battle is read.** A live screen
+// takes its reading when a turn arrives, which on a ninety-second allowance can
+// be a long while before the next one; a player who resizes in between would
+// otherwise keep the layout chosen for a window they no longer have. That is why
+// internal/screen renders both tables into its reading and picks here.
+func RosterIsWide(width int) bool { return width >= rosterWideWidth }
+
+// rosterWideWidth is the narrowest window RosterWide may be drawn in.
+//
+// ⚠️ **Derived from the format string, never typed.** The wide row's ceiling is
+// measurable the same way the narrow one's is — every column padded to its own
+// width, the effects column full — and a literal beside it would be a second copy
+// of an arithmetic that changes whenever a column does. That is the objection
+// that made the matchup marks read their thresholds off the element chart rather
+// than restate them.
+//
+// TestTheWideRosterThresholdIsReadOffItsFormat holds the derivation, in the
+// repository's AST-walking style: it reads this declaration back out of the
+// source and fails on a literal, because no test comparing two numbers can tell
+// a derivation from a constant that happens to agree with it today.
+var rosterWideWidth = rosterWidth(rosterWideRow,
+	"", "", 0, strings.Repeat("e", rosterElementRoom), 0, 0,
+	strings.Repeat("e", effectsRoom))
+
+// rosterWidth is the window a roster layout needs: the widest line its format
+// can draw, plus the one cell every line in this program leaves empty.
+//
+// The empty cell is not decoration — a line filling the last column wraps on some
+// terminals, which is why internal/screen measures its wordings against one less
+// than the floor. Counted in runes, because Go's fmt pads a string verb by runes
+// and a Vietnamese heading is fewer cells than it is bytes.
+func rosterWidth(format string, fields ...any) int {
+	return utf8.RuneCountInString(fmt.Sprintf(strings.TrimSuffix(format, "\n"), fields...)) + 1
+}
 
 // unitColumn draws the tag and the name in the one column they now share.
 //
