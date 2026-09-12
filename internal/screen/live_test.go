@@ -700,7 +700,7 @@ func TestALiveRedrawDrawsTheBattleAsItStandsNow(t *testing.T) {
 	live := NewPlayScreen().Attach(c, PlayLive{Fight: fight, Asking: prompt})
 
 	opening := strings.Join(live.drawings(c).roster, "\n")
-	if opening != tui.Roster(fight, live.Tags) {
+	if opening != tui.Roster(c.Lang, fight, live.Tags) {
 		t.Fatalf("the first attach draws a roster the battle does not agree with:\n%s", opening)
 	}
 
@@ -712,7 +712,7 @@ func TestALiveRedrawDrawsTheBattleAsItStandsNow(t *testing.T) {
 			break
 		}
 	}
-	now := tui.Roster(fight, live.Tags)
+	now := tui.Roster(c.Lang, fight, live.Tags)
 	if now == opening {
 		t.Fatal("six turns moved nothing on the roster, so this test cannot tell a stale " +
 			"reading from a fresh one")

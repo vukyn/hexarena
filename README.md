@@ -2084,9 +2084,9 @@ trận đấu  seed 1
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
  ...
-tag  unit                 hp                        spd   effects
-A1   Example Adept        [#########.]  2856/3100     73   mire (1t)
-E1   Example Adept        [#########.]  2964/3100     90   block x2 (2t)
+mã  đơn vị       hp                        spd    hiệu ứng (không đếm ngược là vĩnh viễn)
+A1 Example Adept [#########.]  2856/3100     73   mire (1t)
+E1 Example Adept [#########.]  2964/3100     90   block x2 (2t)
 
 next: E1 A1 E1 A1 E1 A1
 

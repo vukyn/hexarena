@@ -400,13 +400,13 @@ func TestAWatchedBattleDrawsTheSameBoardAsAPlayerOfIt(t *testing.T) {
 	if got, want := watching.LogRows(c), playing.LogRows(c); !slices.Equal(got, want) {
 		t.Errorf("a watcher reads %d rows of history and a player %d", len(got), len(want))
 	}
-	if got, want := watching.read().board, playing.read().board; got != want {
+	if got, want := watching.read(c).board, playing.read(c).board; got != want {
 		t.Errorf("a watcher's board is not the player's:\n%s\n%s", got, want)
 	}
-	if got, want := watching.read().roster, playing.read().roster; got != want {
+	if got, want := watching.read(c).roster, playing.read(c).roster; got != want {
 		t.Errorf("a watcher's roster is not the player's:\n%s\n%s", got, want)
 	}
-	if got, want := watching.read().order, playing.read().order; got != want {
+	if got, want := watching.read(c).order, playing.read(c).order; got != want {
 		t.Errorf("a watcher's queue line is not the player's:\n%s\n%s", got, want)
 	}
 }

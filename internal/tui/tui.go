@@ -51,20 +51,99 @@ func Board(fight *battle.Battle, tags map[string]string) string {
 }
 
 // Roster lists every unit with its health, tempo and active effects.
-func Roster(fight *battle.Battle, tags map[string]string) string {
+//
+// The language is a parameter for the reason Detail's is, and for one more of
+// its own: the heading carries a rule — that an effect with no countdown is
+// permanent — and a rule is the one part of a screen that cannot be left in a
+// language its reader does not have. The rest of the table is ids and figures,
+// which is why this was English for as long as it was.
+func Roster(lang i18n.Lang, fight *battle.Battle, tags map[string]string) string {
 	var b strings.Builder
-	b.WriteString("tag  unit                 hp                        spd   effects\n")
+	b.WriteString(rosterHeading(lang) + "\n")
 	for _, unit := range fight.Units() {
 		state := HealthBar(unit.HP, fight.MaxHP(unit))
 		if unit.Dead {
 			state = "fallen"
 		}
 		stats := fight.Stats(unit)
-		fmt.Fprintf(&b, "%-5s%-21s%-26s%4d   %s\n",
-			tags[unit.ID], unit.Name, state,
+		fmt.Fprintf(&b, rosterRow,
+			unitColumn(tags[unit.ID], unit.Name), state,
 			stats[progression.Speed], Effects(unit))
 	}
 	return trimLines(b.String())
+}
+
+// rosterRow is the shape of one line of that table, written down once so the
+// tests can measure the row rather than restate it.
+//
+// The first column used to be two — a tag padded to five cells and a name padded
+// to twenty-one — and merging them is what bought this table the room it needed:
+// twenty-six cells held a tag of two and a name of at most thirteen, so ten of
+// them were never drawn on any row in any golden.
+const rosterRow = "%-17s%-26s%4d   %s\n"
+
+// rosterNameRoom is the longest name that column can hold.
+//
+// The seventeen cells above are 2 + 1 + 13 + 1: the tag, the gap after it, this,
+// and the one cell that keeps the health bar's `[` off the end of a name.
+// ⚠️ Thirteen is exactly what the longest name in the data needs and no more,
+// which is headroom the old twenty-one had and this does not — so the bound is
+// held by `TestEveryNameTheRosterCanDrawFitsItsColumn` rather than by slack
+// nobody wrote down. That test also derives the column width back out of the
+// format string, so the two cannot part company.
+const rosterNameRoom = 13
+
+// rosterTagRoom is what unitColumn spends before the name: the tag and its gap.
+const rosterTagRoom = 3
+
+// rosterHeading draws the column headings over the columns rosterRow draws its
+// fields in.
+//
+// ⚠️ **`hp` and `spd` are not asked of the catalog, and that is a rule rather
+// than an omission.** internal/i18n's own doc comment keeps the six stat labels
+// — hp atk def spd acc ddg — as they are in both languages, because they are
+// what an author types and what the data files store; a translated one is a
+// value nobody can match back to the file they are editing. Nothing else on this
+// row is an id, so the rest is worded.
+//
+// ⚠️ **The heading over the effects column carries a rule, not just a label.** A
+// permanent effect draws no countdown at all, so "no countdown means permanent"
+// is a convention the row never states — and a convention nobody states is a
+// fact a reader has to guess. It is said here, directly over the column it is
+// about, because it is a rule of this table's notation rather than a rule of the
+// game: a reader of that column cannot miss the line above it, and one line per
+// table is what the alternative (nine cells on every permanent entry, 1123 of
+// them across the goldens) was being spent on.
+//
+// The first heading names both halves of the column it stands over, in the order
+// they are drawn, because they are one column now — a heading for the whole of
+// it rather than a label sitting on each part's first cell.
+func rosterHeading(lang i18n.Lang) string {
+	return fmt.Sprintf(rosterHeadingRow,
+		lang.Text(i18n.RosterHeadingUnit), "hp", "spd",
+		lang.Text(i18n.RosterHeadingEffects))
+}
+
+// rosterHeadingRow is rosterRow with one verb changed: the speed is a
+// left-aligned word here and a right-aligned number there, which is the only way
+// a heading and the figures under it can differ and still be the same table.
+//
+// ⚠️ The two must put their columns in the same cells, and
+// TestTheRosterHeadingStandsOverTheColumnsItNames measures that off both format
+// strings rather than trusting this comment. Writing the heading out by hand is
+// what used to leave `effects` one cell left of the effects.
+const rosterHeadingRow = "%-17s%-26s%-4s   %s"
+
+// unitColumn draws the tag and the name in the one column they now share.
+//
+// The tag keeps the first cells and its own width, because it is how the log
+// cross-references a unit — `A2 uses pummel` has to find its row at a glance,
+// and a tag hunted for inside a name is a tag that has stopped working. A
+// summoned unit arrives after Tags was taken and reaches this with no tag at
+// all; the gap it leaves is kept rather than closed up, so such a row still
+// reads as a unit with no tag rather than as one whose tag went missing.
+func unitColumn(tag, name string) string {
+	return fmt.Sprintf("%-2s %s", tag, name)
 }
 
 // HealthBar draws a health figure as a bar and a count.
@@ -100,9 +179,14 @@ func Effects(unit *battle.Unit) string {
 		}
 		// A permanent status has no countdown to print, and printing its zero
 		// would read as "about to run out" for the one thing that never does.
-		if entry.Permanent {
-			part += " (always)"
-		} else {
+		//
+		// ⚠️ **It does not print ` (always)` either, and the absence IS the
+		// notation.** Across the goldens a permanent entry outnumbers a timed one
+		// 1123 to 192, so spelling the common case out cost nine cells over a
+		// thousand times while the rare case already identifies itself — a timed
+		// entry carries its own `(2t)`. What that trade owes a reader is a place
+		// the convention is stated, and that is rosterHeader.
+		if !entry.Permanent {
 			part += fmt.Sprintf(" (%dt)", entry.Remaining)
 		}
 		parts = append(parts, part)
@@ -110,13 +194,23 @@ func Effects(unit *battle.Unit) string {
 	return elided(parts, effectsRoom)
 }
 
-// effectsRoom is what the roster row leaves this column at the width the program
+// effectsRoom is the room this column is allowed at the width the program
 // promises to draw in.
 //
-// The row spends 59 cells before it — the tag, the name, the health bar, the
-// speed and the gaps between them, all fixed by the format string above — and the
-// floor is 120 with one cell held back, so what is left is this. It is a constant
-// rather than a measurement because the format string it is derived from is one.
+// ⚠️ **It used to be everything the row had left, and it deliberately is not any
+// more.** The row spends 50 cells before it — the merged tag-and-name column,
+// the health bar, the speed and the gaps between them, all fixed by rosterRow —
+// and the floor is 120 with one cell held back, so 69 are left. This column
+// keeps the 60 it already had and the other 9 stay unspent, because a cap that
+// is re-derived from whatever is left is a cap that immediately spends every
+// cell the columns beside it give up: merging two columns would have bought the
+// table nothing at all, since `elided` would simply have drawn one more effect.
+//
+// ⚠️ **The cheaper thing dropping ` (always)` bought is not width, it is entry
+// cost.** A permanent entry fell from `phalanx x2 (always)` to `phalanx x2`, so
+// the same 60 cells now hold roughly twice as many of them — which is what makes
+// this column affordable to cut when the element, attack and defence columns
+// arrive and need more than 9.
 const effectsRoom = 60
 
 // elided joins what fits and counts what did not.
@@ -127,6 +221,11 @@ const effectsRoom = 60
 // has 60, and `TestEveryWordingFitsTheMinimumWidth` is what said so. Bonuses
 // stack by design and a per-element table is eight more of them, so the row was
 // always going to meet this — the third bonus is simply where it did.
+//
+// ⚠️ That reading is kept as the reading it was, in the wording of the day. A
+// permanent entry no longer draws ` (always)`, so those same four effects are 27
+// cells cheaper — 97 against the 60, still over it, which is the point: making
+// entries cheaper moved where the bound bites rather than removing it.
 //
 // The count is kept rather than the text truncated mid-word, because a reader who
 // can see that two effects are hidden knows to open the unit; one who sees
