@@ -1,6 +1,6 @@
 ---
 name: hexarena-releases
-description: hexarena's release log and the procedure — version IS the git tag and nothing else; prove the tree green BEFORE pushing because a proxy tag is immutable; verify by RUNNING in an empty directory, not by watching the install finish. v0.3.0 · v0.3.1 · v0.4.0 · v0.5.0
+description: hexarena's release log and the procedure — version IS the git tag and nothing else; prove the tree green BEFORE pushing because a proxy tag is immutable; verify by RUNNING in an empty directory, not by watching the install finish. v0.3.0 · v0.3.1 · v0.4.0 · v0.5.0 · v0.5.1
 metadata:
   type: project
 ---
@@ -119,3 +119,27 @@ Verified the usual way, from one empty directory: host prints the tag, `hexforge
 cast` lists, and the client binary carries both new strings in both languages —
 **counted as UTF-8 bytes, not with `grep`**, per
 [[a-search-that-returns-zero-needs-a-known-positive]].
+
+## `v0.5.1` — `cd6e8fe`, 2026-09-12
+
+Screens only, no rule changed, digest unchanged. The battle roster's row was out
+of width — the widest already recorded was **119 of a 120 floor** — so a request
+for three more columns needed room bought first. Two steps: `94580df` dropped
+` (always)` from 1123 effect entries and merged `tag` with `unit`; `cd6e8fe`
+added element, attack and defence **only above a window width the code derives
+from its own format**, leaving the narrow table byte-for-byte what shipped.
+
+⚠️ **The arithmetic that sized the work was wrong by 19 cells, and catching it
+changed the design.** Dropping ` (always)` frees *entry cost*, not *row bound* —
+`effectsRoom` is a cap and `elided` spends the freed cells at once. Step one
+bought **9** cells, not 28. Believing 28 would have sent step two into cutting
+`effectsRoom`, trading a column that changes every turn for three that never
+change. Ask which of the two a saving lands in before planning on it.
+
+Two lessons came out of it and are their own notes:
+[[a-bound-is-two-books-multiplied]] and
+[[an-ast-walk-is-the-only-guard-against-a-literal]].
+
+Verified from an empty directory as always; the decisive strings are the
+localised heading sentences, one per language, since the short labels are
+substrings of other wording and their counts say nothing.
