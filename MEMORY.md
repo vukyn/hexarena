@@ -149,6 +149,9 @@ that owns the subject wins and the note is the thing to fix.
 
 - [heading không phải là luật](memory/a-heading-is-not-a-rule.md) — CLAUDE.md 161KB→70KB; ⚠️ đo bytes TỪNG MỤC, cắt theo câu ràng buộc
 - [gọi việc theo MÃ, không theo dòng](memory/todo-items-are-addressed-by-code.md) — AREA-NNN cố định; ⚠️ đóng mục là DỜI sang docs/decisions.md, và bảng chỉ mục là gõ tay
+- [heading giữ bằng văn xuôi thì phân rã](memory/a-heading-held-by-prose-decays.md) — DOC-001; câu "Not done chỉ chứa việc chưa xong" đúng 8 ngày rồi 30 vs 12; giữ bằng lệnh, và PHẢI chỉ ra ca dương
+- [con trỏ theo tên mục không sống sót](memory/a-pointer-that-names-a-section-outlives-nothing.md) — DOC-001; 7 chỗ gãy khi dời, 2 chỗ gãy sẵn 8 ngày không ai thấy; trỏ theo MÃ. Đếm trong văn xuôi cũng hỏng
+- [agent memory không phải nơi filed defect](memory/agent-memory-is-not-a-defect-tracker.md) — NET-002; flake thứ 3 chỉ nằm trong agent-memory nên cái thứ 4 trông như cái thứ 2; 125/125 pass tại chỗ
 - [Commits always via PR](memory/commits-always-via-pr.md) — never direct push to main
 - [Stage explicit paths](memory/stage-explicit-paths-parallel-sessions.md) — parallel sessions on same repo; never `git add -A`
 - [Verify committer staged files](memory/verify-committer-staged-files.md) — committer misreported 2×; verify show --stat + branch + log
