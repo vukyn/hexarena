@@ -69,6 +69,7 @@
 - [fmt cannot pad an inked cell](feedback_fmt_cannot_pad_an_inked_cell.md) — `%-8s` counts escapes as runes, so colour alone shifts the column; every golden is NO_COLOR and blind to it
 - [A var states its type on the LITERAL](feedback_a_var_states_its_type_on_the_literal.md) — `var x = [N]T{…}` leaves ValueSpec.Type nil; the walk found 0 and passed. Assert the count
 - [The screen cast carries no dual affinity](feedback_the_screen_cast_carries_no_dual_affinity.md) — 0 duals at sizes 1..5; build the affinity in internal/tui instead of fielding one
+- [Sweeping ticked entries out of a list](feedback_sweeping_ticked_entries_out_of_a_list.md) — rebuild from survivors (double/zero blanks break delete-by-range); sha256 per entry; 7 of ~60 § pointers were mine
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
