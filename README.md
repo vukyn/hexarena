@@ -3784,11 +3784,21 @@ nothing reads, which is the shape this repository refuses everything else in —
 what is kept is this table, and the design note that a duration gate is the only kind
 of cost left that could decouple the two.
 
-⚠️ **The mechanism is sound and the trait was the wrong subject**, which is why it is
-on the roadmap rather than in the *decided against* list: what it needs is a trait
-authored *for* a cost that lapses as its holder is worn down, not a trait being
-rescued with one. → `docs/decisions.md` § `ENG-006`, which carries what it costs to
-build and the one defect in `price.go` that only appears once the term exists.
+⚠️ **The mechanism is sound and the trait was the wrong subject**, and what happened
+next is not what this paragraph said until 2026-09-13. It claimed the idea was "on
+the roadmap rather than in the *decided against* list", and **neither half is true
+today**. The gate itself **shipped** — `ENG-006`, `passive.Condition.AboveHealth`,
+per grant rather than per trait, first subject `pristine` on Magnezone — but in the
+opposite polarity: a *benefit* that lapses as its holder is worn down. The polarity
+this table wanted, a **cost** authored to lapse the same way, is **filed nowhere**.
+The nearest entry to it is `DAT-006`, which is in *decided against*: all three
+`reckless` levers are measured dead, and what it leaves open is *"a different kind
+of cost — one the duel prices and the cast-wide matchups do not"*, said as a
+possibility and not as a task. So the honest state is that nobody has raised it, and
+raising it means writing the entry — not finding it. → `docs/decisions.md` §
+`ENG-006` for what the gate cost to build and the one defect in `price.go` that only
+appears once the term exists, and `TODO.md` § *Decided against* `DAT-006` for why
+the trait itself is left as it stands.
 
 ### What re-taking the whole thing on a working `withdraw` was worth
 

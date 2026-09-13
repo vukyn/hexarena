@@ -4602,3 +4602,14 @@ the entries were written in, which is roughly the order they landed.
       rather than a heading: a pointer that names a SECTION is a bet that the
       section keeps its contents, and this file exists because that bet loses.
       Every pointer this sweep wrote names a code.
+
+      ⚠️ **A fourth repair, and the only one that was not a pointer: `README.md`
+      § *What softening `bare`'s defence was worth* claimed the duration-gate idea
+      was "on the roadmap rather than in the *decided against* list", and neither
+      half held.** The gate SHIPPED as `ENG-006` in the opposite polarity — a
+      benefit that lapses, `pristine` on Magnezone — while the **cost** polarity
+      that passage wants is filed nowhere at all; the nearest entry, `DAT-006`, is
+      a refusal that names it as a possibility rather than a task. A claim about
+      where an item is filed is checkable against the index in one grep, which is
+      the whole argument for keeping that index: this one went unchecked long
+      enough to survive the item it described being finished.
