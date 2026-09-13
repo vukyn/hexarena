@@ -3327,7 +3327,7 @@ two ratings against each other*, *A draw nobody can act in*, *Naruto's three
 forms are the three the story has*). A roadmap that is mostly a record of the
 past sends a reader looking for what is next to the wrong place.
 
-**What is still ahead is `TODO.md` § *Not done*** — **thirteen** items, not one of
+**What is still ahead is `TODO.md` § *Not done*** — **fourteen** items, not one of
 them ticked, each carrying the measurements that settled its open questions.
 ⚠️ A count in prose goes stale the day an item is filed; read the section, and
 read the index in § *The codes* for what is closed. What is

@@ -179,6 +179,7 @@ stop telling a reader which file to open. The two are not a quality ranking:
 | `FRG-003` | done | The cast census has no command — DONE. `hexforge census` walks the authored… |
 | `FRG-004` | done | `hexforge` could not run from a clean `go install` either, and most of it only READS — DONE. The six reading code paths take the embedded books, the five writing ones refuse in words naming the way out, and a walk holds every path to a declared decision. A `~/.hexforge` default was asked for and REFUSED: nothing in the game ever plays from `--data` |
 | `NET-001` | open | PvP over a LAN — 3v3 or 5v5, one server and n clients |
+| `NET-002` | open | A FOURTH intermittent LAN test — `TestALateTimeoutLeavesTheLiveAllowanceArmed` failed its own vacuity guard once in CI under the full suite and passes 125/125 locally. ⚠️ The three already recorded are `cmd/hexarena-tui`'s; this one is `internal/socket`'s, and the mechanism is NOT settled |
 | `DOC-001` | done | § *Not done* had decayed to thirty finished entries against twelve open, 2,663 lines of it — SWEPT, the thirty moved to `docs/decisions.md` byte for byte, `done` redefined as *moved*, and the heading is now held by one `awk` line that prints nothing here and thirty on the commit before |
 
 ## Done
@@ -350,6 +351,55 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [ ] `NET-002` ⚠️ **A fourth intermittent LAN test, and the first in
+      `internal/socket`.** Raised 2026-09-13 out of `DOC-001`'s own CI run, which
+      is a documentation-only change — comment text and markdown, no behaviour —
+      so the failure is the suite's and not the commit's.
+
+      **What failed.** `internal/socket`'s
+      `TestALateTimeoutLeavesTheLiveAllowanceArmed`, on the full-suite `go test
+      ./...` pass in GitHub Actions:
+
+      ```
+      timeout_test.go:221: no allowance is armed while the room waits on guest, so this
+      test cannot tell a clock that survived from one that was never there
+      ```
+
+      ⚠️ **That line is the test's own vacuity guard, not an assertion about the
+      product.** What failed is the *precondition* — the test refused to claim
+      anything rather than claiming something false — so nothing here says a clock
+      was lost. It says the test could not prove one was there to lose.
+
+      **Measured.** Passes **125/125** locally: 5 plain, 20 at `GOMAXPROCS=1`, 100
+      at `GOMAXPROCS=1`. `make check` was green on this same tree before the push.
+      So it needs the loaded two-core runner, exactly like the three already
+      recorded, and a targeted re-run is not a way to see it.
+
+      ⚠️ **The three known flakes are all `cmd/hexarena-tui`'s**
+      (`TestShutdownGivesUpAndNamesWhatItWasWaitingFor`,
+      `TestAJoinedMatchPlaysToItsEndOverALoopbackListener`, and the third,
+      `TestTheCountdownReachesTheScreenOverASocket`, which is in the coder's
+      memory and was never filed). This one is a **different package** and a
+      different shape — a precondition rather than a timeout — so do not close it
+      by pointing at them.
+
+      **Two candidate mechanisms, NEITHER settled** — whoever takes this should
+      measure before believing either:
+      - The arm looks like it cannot be late. `Server.settled` re-arms off the
+        room's own reading and is called **before** `forward` sends the prompt on
+        every path read so far (`server.go:310`, `:537`, `:583`, `:655`), so a
+        client paused at its prompt should imply an armed clock.
+      - Which leaves something **un-arming** it, or a batch settling on a reading
+        that was not `Waiting` at that instant — `entry.allowance.stop()`
+        (`server.go:796`) is the one call that takes a live clock away.
+
+      **What closing it needs.** A reproduction under load — the suite constrained
+      to two cores rather than the one test repeated — and then either a
+      synchronisation the test is missing or the ordering defect it has found.
+      ⚠️ If it turns out to be the test's own race, the fix is **not** to drop the
+      vacuity guard: that guard is why this failure is legible at all, and a test
+      that loses it goes back to passing on a clock that was never armed.
 
 - [ ] `DAT-016` **A cost that lapses as its holder is worn down — the polarity
       `reckless` wanted, on the gate `ENG-006` shipped.** Raised 2026-09-13 out of
