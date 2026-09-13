@@ -9,7 +9,7 @@ metadata:
 
 PR#222 (merged `8ba9228`, 2026-09-02) — **chỉ ghi TODO.md, chưa sửa code**. Đo bằng probe dựng-rồi-xoá, mỗi dòng là lựa chọn `Suggest` THẬT trên bàn fixture, không phải đọc source.
 
-## 4 lỗ định giá (TODO.md § Not done)
+## 4 lỗ định giá (`docs/decisions.md` § *Four mechanics `Suggest` resolved and did not price*)
 
 | cơ chế | field | rating làm gì |
 |---|---|---|

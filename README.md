@@ -3787,9 +3787,8 @@ of cost left that could decouple the two.
 ⚠️ **The mechanism is sound and the trait was the wrong subject**, which is why it is
 on the roadmap rather than in the *decided against* list: what it needs is a trait
 authored *for* a cost that lapses as its holder is worn down, not a trait being
-rescued with one. → `TODO.md` § *A gate at the top of the health bar*, which carries
-what it costs to build and the one defect in `price.go` that only appears once the
-term exists.
+rescued with one. → `docs/decisions.md` § `ENG-006`, which carries what it costs to
+build and the one defect in `price.go` that only appears once the term exists.
 
 ### What re-taking the whole thing on a working `withdraw` was worth
 

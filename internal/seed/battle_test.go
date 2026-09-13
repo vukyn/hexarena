@@ -1220,8 +1220,8 @@ func TestUndoRebuildsTheExactPosition(t *testing.T) {
 // is. Left to the bench alone the Split event would be declared, rendered, and
 // never emitted.
 //
-// ⚠️ It is the same hole the hiding has — see TODO.md § "The rating cannot price
-// hiding" — and both are recorded rather than papered over. A hand-played battle
+// ⚠️ It is the same hole the hiding has — see docs/decisions.md § RAT-005 — and
+// both are recorded rather than papered over. A hand-played battle
 // says the mechanic works and says nothing at all about whether anybody would
 // choose it.
 func aHandPlayedSplit(t *testing.T) []battle.Event {

@@ -23,7 +23,7 @@ import (
 // stat lines: `withdraw` a side is **100% endless**, `carapace` a side is **100%
 // endless**, and the same board with neither resolves every seed in 66 turns.
 // The two have different causes and only one of them is a defect —
-// → `TODO.md` § *A guarded mirror never resolves*.
+// → `docs/decisions.md` § `RAT-004`.
 //
 // An asymmetric board is also the right shape for the question. What a guard is
 // worth is what it buys the side carrying it, which is a comparison against a

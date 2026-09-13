@@ -35,7 +35,7 @@ Drop heights were re-measured across #169 and are **unchanged**, which is the ch
 
 `internal/tui`'s drawings untouched — clipping the roster's *rows* is not reformatting its drawing — and at any height where everything fits the body is byte-identical.
 
-⚠️ **`TODO.md`'s "Done" section takes `- **Topic.** prose` bullets, not `- [x]`** — a `[x]` left in "Not done" is a mistake I have now made twice. And `TODO.md` conflicts on essentially every rebase in this repo.
+⚠️ **`TODO.md`'s "Done" section takes `- **Topic.** prose` bullets, not `- [x]`** — a `[x]` left in "Not done" is a mistake made **thirty** times by 2026-09-13, not twice: it was the *rule* until `DOC-001` retired it, so this note was describing a defect the file had adopted as policy. Closing an item **moves** it to `docs/decisions.md` now, and `awk '/^## Not done/{f=1;next} /^## /{f=0} f && /^- \[x\]/' TODO.md` has to print nothing. And `TODO.md` conflicts on essentially every rebase in this repo.
 
 Related: [[hexarena-battle-screen-summaries]], [[fixture-hidden-branch]].
 
