@@ -168,8 +168,7 @@ Rules for anything added to that file:
   ⚠️ The two mirrors stall for **different** reasons and only one is a defect: a
   blow a pool would eat whole is priced at nought so the rating passes for ever and
   the pool is never spent, while `withdraw` simply restores 500 every four turns
-  against blows worth 146 and nobody can die. → `TODO.md` § *A guarded mirror never
-  resolves*.
+  against blows worth 146 and nobody can die. → `docs/decisions.md` § `RAT-004`.
 - **A squad is paid for what it shares, on two axes.** The per-element table
   counts what a side IS — the `same_element` blanket that used to say it was
   retired on 2026-09-08 — and `same_column` counts where it STANDS, and the two

@@ -80,8 +80,8 @@ func TestTheShippedSplitIsCappedForAWholeBattle(t *testing.T) {
 			}
 			fight.Begin()
 			// Cast the split at every opportunity rather than letting the rating
-			// decide — the rating has no term for it at all (TODO.md § "The rating
-			// cannot price hiding"), so a run on autopilot would cast it never and
+			// decide — the rating has no term for it at all (docs/decisions.md
+			// § RAT-005), so a run on autopilot would cast it never and
 			// the cap would hold for want of anybody testing it.
 			mine, _ := fight.Unit("mine")
 			spent := 0

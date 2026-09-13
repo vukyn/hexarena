@@ -240,8 +240,8 @@ func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 //
 // What a stall is here is known and open: two survivors that cannot finish each
 // other, a wall against a healer, healing that nearly matches damage over a
-// thousand blows and fourteen hundred declined turns — `TODO.md` § *A declined
-// turn makes a slow board slower*. It is not what any of these fixtures is
+// thousand blows and fourteen hundred declined turns — `docs/decisions.md`
+// § `RAT-003`. It is not what any of these fixtures is
 // measuring, and `Tally.Rate` already leaves an unresolved battle out of the
 // denominator, so a handful is a stated cost rather than a silent one.
 //

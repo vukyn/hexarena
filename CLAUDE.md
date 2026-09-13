@@ -77,7 +77,7 @@ subject matter — read it when you are in that subject:
 | `docs/balance.md` | how the game is priced and tuned: `Suggest`'s rating, species and origins, the inert element, the strip/guard/grant/summon/amplify/detonate/`charge` categories, `hexforge weigh`, and `forge.Bout` |
 | `docs/screens.md` | the front-ends: what bubbletea v2 broke silently, the save key and the `ctrl+s` footer, `internal/i18n` and the four rules holding its shape, `frame`'s marking cut and the prose-versus-data width rule, the kit picker, the squad builder, the played battle's row budget, the skill filter, `browseRoom`, and the paste bug |
 | `docs/goldens.md` | the data files and the goldens that record them: what each golden under `testdata` is a record *of*, the shape an authoring write leaves a committed file in, why editing a skill can break what adding one cannot, `roster.json`'s four contracts and `builds.json`'s catalogue |
-| `TODO.md` and `docs/decisions.md` | the twenty-eight-item log that lived here: its three open items joined `TODO.md` § *Not done* and its twenty-five finished ones joined `docs/decisions.md`, which is where finished work and its reasoning live |
+| `TODO.md` and `docs/decisions.md` | **`TODO.md` is open work and `docs/decisions.md` is finished work, and closing an item MOVES it.** § *Not done* holds `- [ ]` entries only; the moment one is finished its whole entry goes to `docs/decisions.md` under its `AREA-NNN` code, and the index row in `TODO.md` § *The codes* is what gets a reader there. **So a finished item is found by its code in `docs/decisions.md`, never under § *Not done*.** The twenty-eight-item log that used to live in this file is where that started — three open items joined `TODO.md` and twenty-five finished ones joined `docs/decisions.md` on 2026-09-05 — and thirty more followed on 2026-09-13, once ticking-in-place had refilled § *Not done* with thirty finished entries against twelve open. The heading is held by an `awk` line quoted in `TODO.md`'s own header now, rather than by anybody remembering the rule |
 
 ⚠️ **The one-line rules those sections rest on did NOT move**, and that is the
 point of the split rather than a happy accident. *The layer rule* below still
@@ -752,7 +752,10 @@ ceiling anywhere**: `Skill.Validate` refuses a negative and says nothing about a
 large one, so `Hit.ExpectedStrikes` guards its own product. ⚠️ And **the rating's
 `landed > target.HP` clamp hides overflow**: a wrapped figure that stays positive is
 clamped to health like a correct one, which is why the wall-of-charges product has an
-arithmetic test and no board — see `TODO.md` § *Not done*.
+arithmetic test and no board — see `docs/decisions.md` § *The ninth narrow product
+had no board*. ⚠️ It pointed at `TODO.md` § *Not done* until 2026-09-13 and that
+entry left the file on 2026-09-05: a pointer naming a SECTION outlives nothing,
+which is why every other pointer here names a code.
 
 **Healing is not damage with a sign.** Three mechanisms give health back — a
 skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the

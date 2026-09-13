@@ -3327,8 +3327,10 @@ two ratings against each other*, *A draw nobody can act in*, *Naruto's three
 forms are the three the story has*). A roadmap that is mostly a record of the
 past sends a reader looking for what is next to the wrong place.
 
-**What is still ahead is `TODO.md` § *Not done*** — twelve items, not one of them
-ticked, each carrying the measurements that settled its open questions. What is
+**What is still ahead is `TODO.md` § *Not done*** — **fourteen** items, not one of
+them ticked, each carrying the measurements that settled its open questions.
+⚠️ A count in prose goes stale the day an item is filed; read the section, and
+read the index in § *The codes* for what is closed. What is
 below is the *answer* to a question that was once ahead: what was measured, what
 it cost, and what the number turned out to be. The sub-heading names did not
 change, so every reference into them still resolves.
@@ -3784,12 +3786,21 @@ nothing reads, which is the shape this repository refuses everything else in —
 what is kept is this table, and the design note that a duration gate is the only kind
 of cost left that could decouple the two.
 
-⚠️ **The mechanism is sound and the trait was the wrong subject**, which is why it is
-on the roadmap rather than in the *decided against* list: what it needs is a trait
-authored *for* a cost that lapses as its holder is worn down, not a trait being
-rescued with one. → `TODO.md` § *A gate at the top of the health bar*, which carries
-what it costs to build and the one defect in `price.go` that only appears once the
-term exists.
+⚠️ **The mechanism is sound and the trait was the wrong subject**, and what happened
+next is not what this paragraph said until 2026-09-13. It claimed the idea was "on
+the roadmap rather than in the *decided against* list", and **neither half is true
+today**. The gate itself **shipped** — `ENG-006`, `passive.Condition.AboveHealth`,
+per grant rather than per trait, first subject `pristine` on Magnezone — but in the
+opposite polarity: a *benefit* that lapses as its holder is worn down. The polarity
+this table wanted, a **cost** authored to lapse the same way, was **filed nowhere at
+all** until 2026-09-13 and is now `DAT-016`: gate `reckless`'s `bare` grant on
+`While.AboveHealth` instead of on a duration — one field, no Go, and unmeasured.
+⚠️ **This table is not evidence for it.** What is swept above is the *duration*
+form, and it was reverted; a health gate is a different axis. `DAT-006` stays a
+refusal, and its three levers stay dead. → `docs/decisions.md` § `ENG-006` for what
+the gate cost to build and the one defect in `price.go` that only appears once the
+term exists, `TODO.md` `DAT-016` for what closing it needs, and `TODO.md`
+§ *Decided against* `DAT-006` for why the trait itself is left as it stands.
 
 ### What re-taking the whole thing on a working `withdraw` was worth
 
