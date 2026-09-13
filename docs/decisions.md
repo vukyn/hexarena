@@ -4608,8 +4608,13 @@ the entries were written in, which is roughly the order they landed.
       was "on the roadmap rather than in the *decided against* list", and neither
       half held.** The gate SHIPPED as `ENG-006` in the opposite polarity — a
       benefit that lapses, `pristine` on Magnezone — while the **cost** polarity
-      that passage wants is filed nowhere at all; the nearest entry, `DAT-006`, is
-      a refusal that names it as a possibility rather than a task. A claim about
+      that passage wants was filed nowhere at all; the nearest entry, `DAT-006`, is
+      a refusal that names it as a possibility rather than a task. **It is filed
+      now**, as `DAT-016`, in this same change: gating `reckless`'s `bare` grant on
+      `While.AboveHealth` costs no Go, because `ENG-006` already shipped the
+      per-grant gate it needs. ⚠️ Filing it is not evidence for it — the
+      *duration* form of the same idea is measured and reverted, and a health gate
+      is a different axis with no reading on it at all. A claim about
       where an item is filed is checkable against the index in one grep, which is
       the whole argument for keeping that index: this one went unchecked long
       enough to survive the item it described being finished.

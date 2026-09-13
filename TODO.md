@@ -153,6 +153,7 @@ stop telling a reader which file to open. The two are not a quality ranking:
 | `DAT-013` | done | `cleffa.hex` lost four in five because of the KIT, not the pricing — the census shows no silent slot on any board, so a repricing is refused by measurement; the build was rekitted and the mender fixture now fields it |
 | `DAT-014` | open | The support fixture's shell is a `withdraw` mirror, so every reading in `internal/seed` is taken on a board `RAT-003` measured at 100% endless in isolation — `cleffa.mend` is unquotable against two of three opponents |
 | `DAT-015` | open | 5v5 is open and has ONE board: `s06` ships as content, unmeasured by decision, and the format still cannot field a legal pairing — ⚠️ `forge.FightSquads` will silently fight the 3-vs-5 no room would ever open |
+| `DAT-016` | open | A cost that lapses as its holder is worn down — `reckless`'s `bare` gated on `AboveHealth` rather than on a duration. The mechanism shipped with `ENG-006` and costs no Go; ⚠️ do NOT re-raise `DAT-006`'s three dead levers, and the duration form is already measured and reverted |
 | `CAST-001` | open | Grow the cast |
 | `CAST-002` | open | Traced Pokemon are waiting for a character — run the `comm` in the entry, never read a count off it |
 | `CAST-003` | done | A stage may declare its own element — the mechanism, and the onix line that fields it |
@@ -349,6 +350,49 @@ is only so the shape is readable.
   → `docs/architecture.md` § *The event log is the contract* → the description rules.
 
 ## Not done
+
+- [ ] `DAT-016` **A cost that lapses as its holder is worn down — the polarity
+      `reckless` wanted, on the gate `ENG-006` shipped.** Raised 2026-09-13 out of
+      `DOC-001`, which found `README.md` claiming this was already on the roadmap
+      when no entry for it existed anywhere.
+
+      **What it is.** `reckless` grants `unleashed` and `bare`, both ungated, and
+      `bare` is `defense -400‰` and `dodge -400‰`, permanent. The proposal is one
+      field: gate the **`bare` grant alone** on `While.AboveHealth`, so the cost is
+      paid at full health and lapses as its holder is worn down. That is the
+      polarity `ENG-006` shipped in reverse — `pristine` is a *benefit* that lapses
+      — and `passive.Grant.While` is exactly the per-grant gate that makes the
+      two-tier shape expressible. **It costs no Go at all**: the engine, the
+      wording, the preview and the goldens all already carry per-grant gates.
+
+      ⚠️ **The duration form of this idea is already measured and REVERTED**, and
+      that is not this. Ending the gate after N turns swept 300/500/700/800/1000
+      and the best rung was **29.7%** against a floor of **36.9%**, not even
+      monotone — → `README.md` § *What softening `bare`'s defence was worth*. A
+      health gate is a different axis and is **unmeasured**; nothing above is
+      evidence for it.
+
+      ⚠️ **Do not re-raise any of `DAT-006`'s three levers.** Dropping `bare`'s
+      dodge clause is worth **+2.8**, pairing it with a `vulnerability` **−3.3**,
+      and softening the magnitude cannot land because both gates flip at the same
+      two-point rung — and a stat **saturates**, so a `-400‰` term on a base of 400
+      fights at **290**, not 240. `DAT-006` is a refusal and stays one; what it
+      left open is *"a different kind of cost — one the duel prices and the
+      cast-wide matchups do not"*, which is this entry and only this entry.
+
+      **What closing it needs.** A sweep of the gate rung in the shape `ENG-006`'s
+      own sweep took (200..900), reporting **both arms every time**: the duel
+      against the fire line, which `reckless` loses at **22.1%** against a floor of
+      36.9%, and the cast-wide pair, which it wins at **96.6% / 93.0%** and which
+      saturates at 100% the moment the trait stops being a real trade. The whole
+      question is whether any rung separates the two — every amount measured so far
+      makes `reckless` the 100%-against-the-cast trait `blood_thirst` was refused
+      for being. ⚠️ A rung that moves neither arm is a **null** and closes this
+      entry as a refusal; say so with the numbers rather than leaving it open.
+
+      ⚠️ **`vulnerability` still has no shipped user** and this is not a route to
+      giving it one — a negative share on top of an unchanged defence term makes
+      the build strictly worse, which `DAT-006` measured.
 
 - [ ] `DAT-014` ⚠️ **The support fixture's shell is a `withdraw` mirror, so every
       reading in `internal/seed` is taken on a board `RAT-003` measured at 100%
