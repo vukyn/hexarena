@@ -1,0 +1,31 @@
+# Accepted gitleaks findings. One entry per fingerprint, each with a reason.
+#
+# This file is for findings that CANNOT be fixed in the working tree — values
+# already in git history, or values whose presence is the point. It is NOT a place
+# to silence a live credential: if a scanner can see a real secret in the current
+# code, the fix is to remove it and rotate it, not to list it here.
+#
+# ⚠️ This repository's remote is PUBLIC, so every finding recurs on every scan
+# anybody runs. That is the whole argument for writing the reason down once here
+# rather than re-deciding it each time.
+
+# A DOCUMENTATION EXAMPLE, inside a note about exactly this class of false
+# positive. memory/test-credential-literals-rule.md records that gitleaks'
+# `generic-api-key` rule fires on any *KEY* identifier assigned a string literal,
+# and quotes the case it was learned from — medioa2's
+# `const STORAGE_KEY_PREFIX = "medioa2.recent_buckets"`.
+#
+# Judged not a credential, and the judgement is checkable rather than asserted:
+# the quoted value is a **localStorage key namespace**, which ships inside the
+# browser bundle of a public web app — about as public as a string gets — and it
+# is a *prefix*, with `keyFor()` appending the user id. Nothing to rotate, and
+# nothing that was ever secret.
+#
+# ⚠️ **It is listed rather than renamed, which is the exception this file's own
+# header describes.** The platform rule is that a live literal gets renamed into a
+# fixture constant instead of being ignored — and renaming this one would delete
+# the lesson, because the note's whole point is that the identifier `STORAGE_KEY_
+# PREFIX` is what trips the rule. The note already records the fix that was applied
+# to the real code (rename to `STORAGE_NAMESPACE`); what is left here is the
+# example, and an example that cannot show the thing is not one.
+d7aeece1cd99b9568e5be163c859fdfeb3a2ab54:memory/test-credential-literals-rule.md:generic-api-key:29

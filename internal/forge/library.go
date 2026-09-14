@@ -1168,7 +1168,17 @@ func (l *Library) replaceFile(name string, data []byte) error {
 	tempName := temp.Name()
 	defer os.Remove(tempName)
 	if _, err := temp.Write(data); err != nil {
-		temp.Close()
+		// ⚠️ **Both errors, and the write named first.** The close was thrown
+		// away here, which is the one path where it carries something the write
+		// does not: a buffered write can report success and fail on the flush, so
+		// a failing close on an already-failing write is how a *truncated* temp
+		// file announces itself. It cannot reach the rename — the return below
+		// stops that, and the deferred Remove takes the file away — so what is at
+		// stake is the sentence a reader gets, not the file on disk. The write
+		// error leads because it is the one that says what the caller was doing.
+		if closeErr := temp.Close(); closeErr != nil {
+			return fmt.Errorf("write %s: %w (and closing it: %v)", tempName, err, closeErr)
+		}
 		return fmt.Errorf("write %s: %w", tempName, err)
 	}
 	if err := temp.Close(); err != nil {

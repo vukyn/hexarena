@@ -1,0 +1,25 @@
+# gitleaks configuration.
+#
+# ⚠️ **This file exists because .gitleaksignore does not scan clean on its own**,
+# which is the trap memory/test-credential-literals-rule.md records under
+# "`.gitleaksignore` discipline": that file's entries are 40-character commit
+# fingerprints, and the `generic-api-key` rule reads a 40-character hex string as
+# a high-entropy secret. Every entry added to silence a finding would become a
+# finding. The two files are therefore one change, not two — adding the ignore
+# file without this one trades a known false positive for a new one.
+#
+# The same pairing ships in isme and medioa2; keep the three in step.
+
+[extend]
+# Extend the default rule set rather than replacing it — a hand-written rule list
+# silently loses every detector gitleaks adds later.
+useDefault = true
+
+[allowlist]
+description = "Paths that cannot contain a secret by construction"
+paths = [
+  # .gitleaksignore holds commit fingerprints and file paths, both of which are
+  # already public in this repository's history. Scanning the file that records
+  # accepted findings is circular.
+  '''^\.gitleaksignore$''',
+]
