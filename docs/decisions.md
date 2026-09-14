@@ -4720,3 +4720,148 @@ the entries were written in, which is roughly the order they landed.
       log genuinely re-runs, so the real banner is unmeasured. The knowledge graph
       surfaced it and it is recorded here rather than quietly fixed, because it
       wants a replayable fixture rather than a line.
+
+- [x] `NET-004` ⚠️ **The default room is open to the local network, and nothing
+      on the host's screen said so.** Three separate decisions add up to it, and
+      each is defensible on its own: the listener binds **every interface**
+      (`listen`, which says why — a host advertises one address while a player on
+      another segment still reaches it), `-browse` announces the room over mDNS as
+      `_hexarena._tcp`, and `Config.Password` is optional and empty by default, so
+      an empty one admits any hello past the version gate.
+
+      **What was actually wrong is the sentence.** The banner read
+      `password    none — anybody with the code can join`, which describes a room
+      reached by somebody the host read the code out to. With `-browse` the code
+      is handed to every machine on the segment, so treating it as a secret is
+      describing a different program. It now says the room listens on every
+      interface, says when `-browse` is announcing it, and names the one flag that
+      closes it.
+
+      ⚠️ **The plaintext `ws://` transport is NOT disputed here and was not
+      changed.** It is a stated, reasoned decision of this repository.
+
+      ⚠️ **A generated default password was the alternative and is REFUSED**, on
+      that same decision's terms. A password crossing a plaintext transport
+      travels in the clear, so it is an access token against a casual joiner
+      rather than a secret; generating one would change the security model of
+      every existing invocation **silently**, and would put a value into `ps`,
+      which `-h` already warns about for `-password`. Making the exposure visible
+      changes nothing and hides nothing, which is the whole of the argument for
+      preferring it.
+
+      ⚠️ **The warning is drawn only when it is true**, which is the banner's own
+      rule (→ the draft and watch lines): a room *with* a password says nothing
+      about being open, **including when it is announced**. Being findable is not
+      being enterable, and a warning there would teach a host that `-browse` is
+      the dangerous flag when the empty password is. Both of those are rows in the
+      test table.
+
+- [x] `NET-005` ⚠️ **0755 around 0600.** The host created `-logs` at 0755 while
+      writing 0600 files into it (gosec G301) — so the files were owner-only and
+      the directory listing them was not, and a listing is not nothing: each name
+      carries the room code, the battle number and the seed of a match this host
+      ran. 0700. The directory is this process's to create and nothing else walks
+      it.
+
+      ⚠️ **Asserted on the mode the filesystem ends up with, not on the constant
+      in the source**, because a umask makes those two different questions: 0755
+      under the usual 022 still comes out 0755, so reading the number back off
+      `os.Stat` is the only form of this test that would have failed before the
+      change. The files inside are checked in the same test — a tight directory
+      around loose files is the same gap moved one level down.
+
+- [x] `CLI-003` ⚠️ **`--replay` sized its buffer from the file.** `os.ReadFile`
+      allocates from the file's reported size, so pointing `--replay` at something
+      enormous was a request to allocate it. Self-inflicted — the path is the
+      reader's own argv — which is why this is a LOW and why the fix is a bound
+      rather than a refusal to read local files.
+
+      **The number is derived, not picked.** Measured on the shipped data,
+      `--auto --seed 11` writes **67,447 bytes for 255 events** — 265 bytes an
+      event. The engine's own bound is the turn cap (`room.DefaultTurnCap` is 400;
+      `--turns` defaults to 4000 for a local battle), so a pessimistic ceiling of
+      4000 turns at a hundred events each is about 106MB. 64MiB is a thousand
+      times a real log and six times that absurd one, and four orders of magnitude
+      below the file that makes any of this matter. The refusal **names the
+      number**, because the one honest way to hit it is a battle longer than the
+      derivation allowed for, and a reader who cannot see the limit cannot tell
+      that from a wrong path.
+
+      ⚠️ **`LimitReader(file, longestLog+1)`, and the `+1` is the test.** Reading
+      exactly `longestLog` and comparing `len(raw) > longestLog` accepts every
+      file in the world, and a generous fixture passes that broken version — so
+      the fixtures are one byte over and exactly at the limit.
+
+      ⚠️ **One of this item's tests was vacuous and a mutation caught it.** It
+      asserted that a missing file's error "still names the file", and deleting
+      the path from the wrapper left it **green**: `os.Open` returns a
+      `*fs.PathError` that names the file itself, so the assertion was the
+      standard library's guarantee and not this code's. Rewritten as a claim about
+      this code — the cause is still reachable through `errors.Is`, which a `%v`
+      would have flattened — and the "names the file" assertion moved to the
+      **size** refusal, which is a sentence built from nothing.
+
+- [x] `FRG-005` ⚠️ **A thrown-away `Close` on the one path where it says
+      something.** `replaceFile`'s write-error branch called `temp.Close()` and
+      discarded the result (gosec G104). Ordinarily a close error after a failed
+      write is noise; here it is not, because a buffered write can report success
+      and fail on the flush, so a failing close on an already-failing write is how
+      a **truncated** temp file announces itself. Both errors are joined now, the
+      write named first because it is the one that says what the caller was doing.
+
+      Nothing on disk was ever at risk: the return stops the rename and the
+      deferred `os.Remove` takes the file away. What was at stake is the sentence
+      a reader gets.
+
+      ⚠️ **No test, and that is a decision rather than an omission.** The branch
+      needs a write that fails **and** a close that then also fails, which is not
+      reachable on a real filesystem without injecting a writer into
+      `replaceFile` — the one function every write in this package funnels
+      through, deliberately (its own doc says so). A seam there to exercise a LOW
+      finding is a worse trade than saying this out loud. It is verified by gosec
+      no longer reporting the line, which is a check rather than a claim.
+
+- [x] `DOC-002` ⚠️ **Two hygiene items that are only findings because the remote
+      is PUBLIC.**
+
+      **The recurring false positive.** `gitleaks detect` reported exactly one
+      finding across 446 commits: `memory/test-credential-literals-rule.md:29`,
+      where the note *about* credential literals quotes the case it was learned
+      from — a `STORAGE_KEY_PREFIX` constant assigned a localStorage **namespace**
+      that ships inside a browser bundle, and a prefix at that, with the user id
+      appended after it. It is **listed rather than renamed**, which is the
+      exception the platform rule allows for: renaming it would delete the lesson,
+      because the note's whole point is that the *identifier* is what trips the
+      rule, whatever the value is.
+
+      ⚠️ **This paragraph originally quoted the assignment in full, and that
+      re-created the finding HERE.** Measured: `gitleaks` went from clean to one
+      leak the moment this file was committed, at `docs/decisions.md:4830` — a
+      **second** instance of the exact false positive the entry exists to accept.
+      The reflex is to add a second fingerprint; the fix is not to reproduce the
+      value, because one copy of an example is an example and two is a pattern the
+      scanner is right about. The note keeps the quotation — that is what the
+      accepted finding is *for* — and this record names the identifier instead.
+      **A document about a scanner trigger is a document that can trigger the
+      scanner.**
+
+      ⚠️ **`.gitleaksignore` and `.gitleaks.toml` are ONE change.** The ignore
+      file's entries are 40-character commit fingerprints, which the default
+      `generic-api-key` rule reads as high-entropy secrets — so adopting the
+      ignore file alone trades a known false positive for a new one. The config
+      allowlists it and extends (`useDefault = true`) rather than replacing the
+      rule set. A test holds the pair together and holds every accepted entry to
+      carrying a written reason, because an entry with no reason is how a real
+      credential stays in a repository.
+
+      **The targeting hint.** `memory/gitguardian-dashboard-not-repo-file.md`
+      named four private platform repositories as "the REAL blind spot — a test
+      fixture is exactly where a real key gets pasted by mistake". That sentence
+      is correct and it is a map, in a world-readable file. It is restated by
+      **property** — a repository that holds live credentials versus a standalone
+      game binary — which is the form the rule was always in; the enumeration
+      added nothing a reader of their own repository needed. The note keeps its
+      lesson, its measurements and its three wikilinks, and gains the general rule
+      the incident is an instance of: **a note inside a public repository is
+      public, so do not write about another repository what that repository does
+      not say itself.**

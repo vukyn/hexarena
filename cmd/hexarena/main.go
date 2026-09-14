@@ -571,9 +571,9 @@ func chooseAim(current *session, prompt *battle.Prompt, option battle.Option,
 // property**, and an order is only testable against something a test can read
 // back. → the note on the unverified line below.
 func replay(cfg config, out io.Writer) error {
-	raw, err := os.ReadFile(cfg.replay)
+	raw, err := readLog(cfg.replay)
 	if err != nil {
-		return fmt.Errorf("read %s: %w", cfg.replay, err)
+		return err
 	}
 	log, err := battle.ParseLog(raw)
 	if err != nil {
@@ -636,6 +636,51 @@ func replay(cfg config, out io.Writer) error {
 		return nil
 	}
 	return verify(log, cfg.limit, out)
+}
+
+// longestLog is the most of a saved battle this will read.
+//
+// ⚠️ **It is a bound on the TYPE of thing a log is, not a rule of the format.**
+// `os.ReadFile` sizes its buffer from the file, so `--replay` on a sparse or
+// pathological file was a request to allocate whatever that file claimed to be —
+// self-inflicted, since the path is the reader's own argv, but "I meant to type
+// the log" is exactly how somebody points this at the wrong file.
+//
+// **Derived rather than picked.** Measured on the shipped data, `--auto --seed
+// 11` writes **67,447 bytes for 255 events** — 265 bytes an event. The engine's
+// own bound is the turn cap (`room.DefaultTurnCap` is 400, and `--turns`
+// defaults to 4000 for a local battle), so a pessimistic ceiling is 4000 turns
+// at a hundred events each: about 106MB of events — which is why this is 64MiB
+// rather than something snug. A thousand times a real log, six times a
+// deliberately absurd one, and four orders of magnitude below the file that
+// makes it matter.
+//
+// ⚠️ **The refusal names the number**, because the one honest reason to hit this
+// is a battle longer than the derivation allowed for, and a reader who cannot see
+// the limit cannot tell that from a wrong path.
+const longestLog = 64 << 20
+
+// readLog reads a saved battle, refusing a file too large to be one.
+func readLog(path string) ([]byte, error) {
+	file, err := os.Open(path) // #nosec G304 -- the path is this program's own --replay argument.
+	if err != nil {
+		return nil, fmt.Errorf("read %s: %w", path, err)
+	}
+	defer func() { _ = file.Close() }()
+	// One byte past the limit, so a file exactly at it still reads and anything
+	// larger is detectable without a second stat — a size taken before the read
+	// is a size that can change under it.
+	raw, err := io.ReadAll(io.LimitReader(file, longestLog+1))
+	if err != nil {
+		return nil, fmt.Errorf("read %s: %w", path, err)
+	}
+	if len(raw) > longestLog {
+		return nil, fmt.Errorf(
+			"%s is larger than %d bytes, which is more than a battle log can be: "+
+				"a whole battle is about 70KB, so this is either not a log or not the file you meant",
+			path, longestLog)
+	}
+	return raw, nil
 }
 
 func verify(log battle.Log, limit int, out io.Writer) error {

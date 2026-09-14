@@ -784,7 +784,7 @@ func banner(held *hosted, how string, out io.Writer) {
 			held.config.Budget)
 	}
 	fmt.Fprintf(out, "  seed        %d\n", held.config.Seed)
-	fmt.Fprintf(out, "  password    %s\n", passwordLine(held.config.Password))
+	fmt.Fprintf(out, "  password    %s\n", passwordLine(held.config.Password, held.announced != nil))
 	// The two numbers a refused joiner has to compare against their own. A peer
 	// whose data digest differs is refused at the gate and cannot be told why in
 	// any more detail than an id, so these are what the two people read to each
@@ -800,11 +800,37 @@ func banner(held *hosted, how string, out io.Writer) {
 // different jobs: wire.Password.String is a redaction that has to be safe under
 // every fmt verb anywhere, and this is one line on one screen that has to be
 // plain English.
-func passwordLine(password wire.Password) string {
+// ⚠️ **The "none" wording is a security fix and not a rewording.** It read
+// *"anybody with the code can join"*, which describes a room reached by somebody
+// the host read the code out to — and that is not the room this binary opens.
+// The listener binds **every interface** (→ listen, which says why), and with
+// `-browse` the room is announced over mDNS as `_hexarena._tcp`, so the code a
+// sentence like that treated as a secret is handed to every machine on the
+// segment. An empty password then admits any hello past the version gate. So the
+// default room is open to the local network, and the host is the one person who
+// can decide whether that is what they wanted.
+//
+// ⚠️ **What was NOT done, and why.** Generating a default password was the
+// alternative and is refused, on this repository's own terms: the plaintext-`ws://`
+// transport is a stated, reasoned decision, and a password crossing it travels in
+// the clear — so a generated one would be an access token against a casual joiner
+// rather than a secret, while silently changing the security model of every
+// existing invocation and putting a value in `ps` that `-h` already warns about.
+// **Making the exposure visible changes nothing and hides nothing**; that is the
+// whole of the argument for preferring it.
+//
+// It says what to DO rather than only what is true, because a warning a host
+// cannot act on is a line they learn to read past — and the action is one flag.
+func passwordLine(password wire.Password, announced bool) string {
 	if password.Set() {
 		return "set (players will need it)"
 	}
-	return "none — anybody with the code can join"
+	if announced {
+		return "none — and -browse is ANNOUNCING this room on the local network, " +
+			"so anyone on it can join without being told the code; pass -password to close it"
+	}
+	return "none — this room listens on EVERY interface, so anyone who can reach " +
+		"this machine and has the code is in; pass -password to close it"
 }
 
 // serve waits for the one thing that ends this process and then stops cleanly.
@@ -909,7 +935,12 @@ func (held *hosted) write(reading room.Reading, out io.Writer) error {
 	if len(reading.Played) == 0 {
 		return nil
 	}
-	if err := os.MkdirAll(held.logs, 0o755); err != nil {
+	// 0700 and not 0755: the files written into it are already 0600, and a
+	// world-readable directory around owner-only files is a gap rather than a
+	// convenience — it lists the room code, the battle number and the seed of
+	// every match this host ran to anybody with an account on the machine. The
+	// directory is this process's to create, so nothing else needs to walk it.
+	if err := os.MkdirAll(held.logs, 0o700); err != nil {
 		return fmt.Errorf("make %s to write the logs into: %w", held.logs, err)
 	}
 	for _, fought := range reading.Played {
