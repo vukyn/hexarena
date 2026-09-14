@@ -24,6 +24,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
+	"github.com/vukyn/hexarena/internal/plain"
 )
 
 // Tags assigns each unit a two character label, stable in roster order, so the
@@ -699,6 +700,59 @@ func Aims(fight *battle.Battle, option battle.Option, tags map[string]string,
 	return trimLines(b.String())
 }
 
+// inert is an event with every string in it made fit to print on a terminal.
+//
+// ⚠️ **A saved log is a FILE, and a file is not a fact about this machine.** A
+// log arrives by being handed over — a host writes one per battle and tells both
+// players to replay it, and `--replay` reads whatever path it is given — so the
+// nine strings an event carries are, from here, somebody else's writing. On a
+// terminal an ESC in them is a command rather than a character: OSC 52 writes
+// the reader's clipboard for them to paste into a shell later, OSC 0 renames the
+// window and CSI 2J clears the screen, which is enough to make a replay print a
+// **forged** verdict — measured, a crafted log drew a `verified: … reproduced
+// all 255 events exactly` banner it had not earned. That is an attack on
+// `--verify`, which is the one thing this repository asks anybody to trust.
+//
+// # Why every field and not the free-text three
+//
+// The finding named `name`, `note` and `target`, because those are the three
+// this renderer prints as prose. It is the wrong line to draw. `tag` falls back
+// to the **raw id** for anything the tags map does not hold, and the map is
+// built from a log's opening records alone (→ TagsFromLog), so any id in an
+// event that is not a Started actor is printed as it is written — an `actor`
+// among them, which the finding had judged safe on the grounds that it is
+// matched against unit ids, and it is not matched against anything here. Rather
+// than audit which of nine fields reaches a writer through which of forty format
+// strings, and re-audit it every time a branch is added, all nine are cleaned at
+// the top. TestEveryStringOnAnEventIsMadeInert walks the struct by reflection
+// and fails when a tenth is declared, so a new field is covered by having been
+// added rather than by somebody remembering this comment.
+//
+// ⚠️ **It is free for an honest log and that is not an accident.** plain.Text
+// returns its argument unchanged when there is nothing to take out, so every
+// golden under testdata renders byte for byte as it did — which is the property
+// that let this be a clean sweep rather than a branch per format string.
+//
+// ⚠️ **The cleaning is here rather than in battle.ParseLog on purpose.** The
+// engine may not do it: internal/core imports nothing outside the standard
+// library, that is what a replay reproducing from a seed rests on, and an
+// event the parser had edited would no longer equal the event `--verify`
+// re-runs — a log with one tab in a note would fail verification as a
+// falsified record. The bytes are a *rendering* problem and they are fixed
+// where the rendering happens.
+func inert(event battle.Event) battle.Event {
+	event.Actor = plain.Text(event.Actor)
+	event.Name = plain.Text(event.Name)
+	event.Target = plain.Text(event.Target)
+	event.Skill = plain.Text(event.Skill)
+	event.Status = plain.Text(event.Status)
+	event.Passive = plain.Text(event.Passive)
+	event.Bonus = plain.Text(event.Bonus)
+	event.Shared = plain.Text(event.Shared)
+	event.Note = plain.Text(event.Note)
+	return event
+}
+
 // Line renders one event, using nothing but the event.
 //
 // glosses is data id -> display name, for the skill, status and trait ids the
@@ -714,6 +768,7 @@ func Aims(fight *battle.Battle, option battle.Option, tags map[string]string,
 // pieces, scrolled and frozen at a frame, so "the first mention" is a row a
 // reader may never have on screen.
 func Line(event battle.Event, tags, glosses map[string]string) string {
+	event = inert(event)
 	tag := func(id string) string {
 		if id == "" {
 			return ""
@@ -1127,11 +1182,20 @@ func Summary(events []battle.Event, tags map[string]string, names map[string]str
 		if name == "" {
 			name = tally.Name
 		}
+		// ⚠️ **Both of these came out of the log**, which is somebody else's
+		// file: NamesFromLog reads the names straight off the Started records
+		// and Tallies takes the fallback off the same events, so the summary is
+		// a second way for a crafted log to reach a terminal — and the one
+		// printed **after** the body, where a reader has stopped watching. It is
+		// the same call Line makes on an event, for the same reason, and it
+		// costs an honest log nothing: plain.Text returns what it was given when
+		// there is nothing to take out. → inert.
+		name = plain.Text(name)
 		if tally.Fell {
 			name += " (fell)"
 		}
 		fmt.Fprintf(&b, "%-5s%-21s%6d%9d%9d%10d%7d%7d%8d%7d\n",
-			tags[tally.ID], name, tally.Turns, tally.Dealt, tally.Taken,
+			plain.Text(tags[tally.ID]), name, tally.Turns, tally.Dealt, tally.Taken,
 			tally.Ticked, tally.Hits, tally.Misses, tally.Walled, tally.Kills)
 	}
 	return trimLines(b.String())

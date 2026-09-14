@@ -1,12 +1,10 @@
 package screen
 
 import (
-	"strings"
-	"unicode"
-	"unicode/utf8"
-
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/vukyn/hexarena/internal/plain"
 )
 
 // # Where a pasted string goes, and where it stops
@@ -155,25 +153,18 @@ func allDigits(text string) bool {
 // this and to a real textinput and holds the answers equal, so a bubbles upgrade
 // that changed the rule fails here instead of leaving one field behaving unlike
 // every other.
-func PasteText(text string) string {
-	var out strings.Builder
-	for _, letter := range text {
-		switch {
-		case letter == utf8.RuneError:
-			// A byte that is not UTF-8 decodes to the replacement rune, and it is
-			// dropped rather than drawn: nobody pasted that glyph.
-		case letter == '\n' || letter == '\r' || letter == '\t':
-			out.WriteRune(' ')
-		case unicode.IsControl(letter):
-			// Every other control character is dropped, escape included. It is
-			// unicode.IsControl rather than a range because that is the predicate
-			// bubbles uses, and half a rule is how the two would come apart.
-		default:
-			out.WriteRune(letter)
-		}
-	}
-	return out.String()
-}
+//
+// ⚠️ **The rule itself moved to internal/plain and this is now the one line that
+// applies it here.** It moved because a second caller appeared that has nothing
+// to do with a form: a name off the wire and the free text in a saved log both
+// reach a terminal, where an ESC is a command rather than a character, and the
+// answer to "what does an ESC become" has to be one answer for all three. What
+// this function keeps is its own claim — that a *pasted* string is treated
+// exactly as bubbles would treat it — and that claim is still held by the test
+// named above rather than by the sharing. If a bubbles upgrade ever parts the
+// two, this is where the fork goes; plain.Text is about a terminal, not a field,
+// and must not follow a text widget's mind.
+func PasteText(text string) string { return plain.Text(text) }
 
 // focusedField is the field a form's keyboard is on, and nil when it is on
 // something that is not a field or when the form has not been built at all.

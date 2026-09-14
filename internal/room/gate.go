@@ -215,7 +215,14 @@ func (r *Room) Join(hello wire.Hello) (Admission, []Outbound, error) {
 	}
 	// The squad is the empty one in a drafting room, and the draft fills both in
 	// itself once it is Done. → draftAdvanced.
-	r.seated[index] = peer{taken: true, name: hello.Name, squad: hello.Squad.Clone(), token: token}
+	// ⚠️ **The name is cleaned on the way into the seat, and CleanName is the same
+	// function wire.Hello.UnmarshalJSON already ran.** A hello that arrived over a
+	// socket is clean before it reaches this line; one built in Go — a test, a
+	// client in this process — never passed a decoder, and a seat is where a name
+	// stops being a message and starts being state that outlives the hello. It is
+	// the same call rather than a second rule, so there is one answer to what a
+	// name may contain no matter which door the hello came through. → wire.CleanName.
+	r.seated[index] = peer{taken: true, name: wire.CleanName(hello.Name), squad: hello.Squad.Clone(), token: token}
 	out := r.welcomeTo(seat, token)
 	// The second peer to be seated starts the match, which is the one place a
 	// join produces more than an answer to itself. ⚠️ **A watcher reaches none of
