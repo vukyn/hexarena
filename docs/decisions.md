@@ -4618,3 +4618,105 @@ the entries were written in, which is roughly the order they landed.
       where an item is filed is checkable against the index in one grep, which is
       the whole argument for keeping that index: this one went unchecked long
       enough to survive the item it described being finished.
+
+- [x] `NET-003` ⚠️ **A peer's name reached the host's terminal as commands, and
+      the room it came through needs no password.** `wire.Hello.Name` is the one
+      free-text field in the protocol. `cmd/hexarena-host` cut it to 32 runes and
+      stripped nothing, so whatever a stranger on the network typed was written
+      to a terminal that reads an ESC as an instruction rather than a character.
+
+      **What was measured.** 36 raw ESC bytes reached stdout. The payload that
+      makes it a High is **OSC 52** — `ESC ] 52 ; c ; <base64> BEL`, 22 runes,
+      comfortably inside the old allowance — which writes the reader's clipboard;
+      they paste it into a shell some minutes later, themselves, believing it is
+      what they copied. `OSC 0` renames the window and `CSI 2J` clears the screen,
+      which together let a line the host has already read be replaced.
+
+      ⚠️ **The bound was never a defence and the shape of that is worth keeping.**
+      A length check refuses nothing when the whole attack fits inside the length,
+      and `playerName`'s own doc said in as many words that "nothing in the
+      transport checks it" — the gap was written down beside the code that needed
+      it for as long as both existed.
+
+      **What the attack costs.** Nothing. `-browse` advertises the room over mDNS
+      (`_hexarena._tcp`), the listener binds every interface, and an empty
+      password admits any hello past the version gate. The repository is public,
+      so the client that sends a crafted `Hello` is this one with a string
+      changed.
+
+      ⚠️ **Fixing it at `Room.Join` alone would have left the bug exactly where
+      it was, and the review that proposed it had the call site wrong.** The name
+      on the host's screen does **not** come off the seat the room stored:
+      `internal/socket` hands `Options.Joined` the hello's own field
+      (`server.go`), and `room.peer.name` has **no reader at all**. So the fix is
+      at the protocol — `wire.CleanName`, run by `Hello.UnmarshalJSON`, which
+      every decoded hello passes through whichever door it came in by. `Room.Join`
+      calls the **same function** for the other door, a hello built in Go that
+      never met a decoder; that is one declaration used twice rather than a second
+      rule.
+
+      **Cleaned rather than refused**, because a refusal is a second way for a
+      join to fail over something invisible — an old client sending a stray tab
+      turned away from a room it belongs in — and because refusing tells the
+      sender exactly which byte was noticed. The predicate is
+      `unicode.IsControl`, which the repository already owned in
+      `screen.PasteText`; that rule moved to `internal/plain` and `PasteText` is
+      now one line over it, so a terminal and a text field cannot drift into two
+      answers. ⚠️ `unicode.IsControl` is the complete answer rather than a lucky
+      one: the **C1 controls** (U+0080–U+009F, U+009D being OSC itself) are
+      category Cc, so one predicate covers both the seven-bit and the eight-bit
+      spelling of an escape — a hand-written `== 0x1b` range does not, and the
+      mutation proving that is in the matrix.
+
+      **`internal/plain` imports the standard library only and nothing under
+      `internal/core` imports it**, so the layer contract is untouched:
+      `go list -deps ./internal/core/...` still names no third-party package.
+
+- [x] `CLI-002` ⚠️ **`--replay` let a saved file write the verdict.** A log is a
+      file somebody handed over — a host writes one per battle and tells both
+      players to replay it — so an event's `name`, `note` and `target` are
+      somebody else's writing, and they reached stdout verbatim. Measured: a
+      crafted log rendered a **forged** `verified: re-running seed 11 reproduced
+      all 255 events exactly` banner it had not earned.
+
+      ⚠️ **The forgery needs no escape sequence at all, which is why the
+      reordering is the half that matters.** `cmd/hexarena` prints that exact
+      sentence after a successful `--verify`, and the `unverified:` notice — the
+      only line saying nothing checked the file — was printed **last**, after the
+      whole body and the summary. A log long enough scrolls it off the top of a
+      terminal, so the file decided whether the notice was read. It is now printed
+      **before** the body, which is the one position the file cannot reach. Held
+      by an assertion on the byte **offset**, not on the substring: "the output
+      contains the notice" was true before the fix too.
+
+      ⚠️ **The finding's own field list was too short, and the miss is
+      instructive.** It named `name`, `note` and `target` and judged `actor` safe
+      "because it is matched against unit ids" — but nothing matches it here:
+      `tui.Line`'s `tag` falls back to printing the **raw id** for anything the
+      tags map does not hold, and `TagsFromLog` fills that map from `Started`
+      records only. So an id on any other kind of event is printed as the log
+      wrote it. Rather than audit nine fields against forty format strings and
+      re-audit on every new branch, `tui.Line` cleans **all nine** at the top, and
+      `TestEveryStringOnAnEventIsMadeInert` walks `battle.Event` by reflection so
+      a tenth field is covered by having been declared. `Summary` is cleaned too —
+      it reads a second copy of the names out of the log, and it is the part
+      printed *after* the body, where a reader has stopped watching.
+
+      ⚠️ **The cleaning is in the renderer and may NOT move into
+      `battle.ParseLog`.** `internal/core` imports nothing outside the standard
+      library, and an event the parser had edited would no longer equal the event
+      `--verify` re-runs — a log with one tab in a note would then fail
+      verification as a falsified record. The bytes are a rendering problem and
+      are fixed where the rendering is.
+
+      **No golden moved, and that is the check rather than a relief.**
+      `plain.Text` returns its argument unchanged when there is nothing to take
+      out, so every `testdata` file in `internal/tui` renders byte for byte as
+      before — a security fix that silently moved the design record would be the
+      worse outcome.
+
+      ⚠️ **Still open, and not introduced here: `verify` itself has no test.**
+      This change threaded a writer through it; nothing exercises the path where a
+      log genuinely re-runs, so the real banner is unmeasured. The knowledge graph
+      surfaced it and it is recorded here rather than quietly fixed, because it
+      wants a replayable fixture rather than a line.

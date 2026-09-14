@@ -688,17 +688,34 @@ func listen(port int) (net.Listener, error) {
 // playerName is a name a peer chose, as it goes on this screen.
 //
 // ⚠️ It is **somebody else's bytes**: wire.Hello carries whatever a stranger on
-// the network typed, and nothing in the transport checks it. A name is bounded
-// and an empty one becomes a word, so a peer cannot push the rest of this
-// screen off it or produce a line that says nothing.
+// the network typed. An empty one becomes a word, so a peer cannot produce a
+// line that says nothing, and a long one is cut, so it cannot push the rest of
+// this screen off it.
+//
+// ⚠️ **"nothing in the transport checks it" used to be true here and was the
+// whole of a High finding.** Cutting at 32 runes and stripping nothing let 36
+// raw ESC bytes reach this terminal, where they are commands rather than text —
+// an OSC 52 fits in a quarter of that allowance and writes the reader's
+// clipboard, to be pasted into a shell later — and the room needs no password
+// for a stranger on the LAN to get this far. **The strip is now at the protocol
+// boundary**, in wire.Hello.UnmarshalJSON and again on the way into a seat, so
+// every reader of a name inherits it instead of each one remembering. →
+// wire.CleanName.
+//
+// What is left here is the **screen's** half, and it is deliberately still a cut
+// of its own rather than a call to the protocol's: this function is handed a
+// string and cannot know whether it was ever decoded, and a front-end that
+// assumed an upstream bound is how the bound stops being checked. The number
+// comes from wire.NameLength so the two cannot drift apart; the ellipsis is what
+// says a name was cut, and for a decoded hello it now never appears, because the
+// cut already happened where the name arrived.
 func playerName(given string) string {
-	const longest = 32
 	if given == "" {
 		return "somebody"
 	}
 	runes := []rune(given)
-	if len(runes) > longest {
-		return string(runes[:longest]) + "…"
+	if len(runes) > wire.NameLength {
+		return string(runes[:wire.NameLength]) + "…"
 	}
 	return given
 }

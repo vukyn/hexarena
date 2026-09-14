@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"slices"
 	"strconv"
@@ -20,6 +21,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/i18n"
+	"github.com/vukyn/hexarena/internal/plain"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/tui"
 )
@@ -54,7 +56,7 @@ func main() {
 	cfg.side = side
 
 	if cfg.replay != "" {
-		if err := replay(cfg); err != nil {
+		if err := replay(cfg, os.Stdout); err != nil {
 			fail(err)
 		}
 		return
@@ -564,7 +566,11 @@ func chooseAim(current *session, prompt *battle.Prompt, option battle.Option,
 
 // replay prints a saved battle, and with -verify re-runs it from its seed to
 // prove the file is a faithful record rather than a story about one.
-func replay(cfg config) error {
+//
+// ⚠️ **It takes a writer because the ORDER of what it writes is a security
+// property**, and an order is only testable against something a test can read
+// back. → the note on the unverified line below.
+func replay(cfg config, out io.Writer) error {
 	raw, err := os.ReadFile(cfg.replay)
 	if err != nil {
 		return fmt.Errorf("read %s: %w", cfg.replay, err)
@@ -593,23 +599,46 @@ func replay(cfg config) error {
 	if books, err := seed.Books(); err == nil {
 		glosses = logGlosses(books)
 	}
-	fmt.Printf("replaying seed %d, %d events, %d choices\n\n", log.Seed, len(log.Events), len(log.Choices))
-	fmt.Println(tui.Log(log.Events, tags, glosses))
-	fmt.Println()
-	fmt.Println("== summary ==")
-	fmt.Println(tui.Summary(log.Events, tags, tui.NamesFromLog(log.Events)))
 	if !cfg.verify {
-		// Everything above was read straight out of the file. Nothing re-ran the
+		// Everything below is read straight out of the file. Nothing re-ran the
 		// battle, so a hand-edited log renders exactly like an honest one; say so
 		// rather than let the output pass for a verified record.
-		fmt.Printf("\nunverified: this is what %s says happened, not a re-run of it; "+
-			"add -verify to replay seed %d and check every event\n", cfg.replay, log.Seed)
+		//
+		// ⚠️ **It is printed FIRST, and that is the fix rather than the wording.**
+		// This line used to come after the whole log and the summary, which put
+		// the only sentence saying "nothing checked this" on the far side of a few
+		// hundred lines the file itself supplied — so the file chose whether it
+		// was read. A crafted log needs no escape sequence to beat that: enough
+		// events scroll it off the top of a terminal, and a `verified: re-running
+		// seed N reproduced all 255 events exactly` forged in a note reads as the
+		// real thing, because the real thing is printed by this program in the
+		// same place. Measured in the finding, and the reason this is the part
+		// that mattered most: --verify is the trust anchor of the whole format,
+		// so a verdict a file can forge takes the format down with it.
+		//
+		// Ahead of the body is the one position the file cannot reach. The
+		// remaining half of that — that the bytes below cannot *draw* a line
+		// anywhere they like — is tui's, → its inert.
+		//
+		// The path is cleaned for the same reason everything else on this line is
+		// plain: it is argv rather than the file, but a line whose job is to be
+		// unforgeable has nothing raw in it.
+		fmt.Fprintf(out, "unverified: this is what %s says happened, not a re-run of it; "+
+			"add -verify to replay seed %d and check every event\n\n",
+			plain.Text(cfg.replay), log.Seed)
+	}
+	fmt.Fprintf(out, "replaying seed %d, %d events, %d choices\n\n", log.Seed, len(log.Events), len(log.Choices))
+	fmt.Fprintln(out, tui.Log(log.Events, tags, glosses))
+	fmt.Fprintln(out)
+	fmt.Fprintln(out, "== summary ==")
+	fmt.Fprintln(out, tui.Summary(log.Events, tags, tui.NamesFromLog(log.Events)))
+	if !cfg.verify {
 		return nil
 	}
-	return verify(log, cfg.limit)
+	return verify(log, cfg.limit, out)
 }
 
-func verify(log battle.Log, limit int) error {
+func verify(log battle.Log, limit int, out io.Writer) error {
 	if !log.Replayable() {
 		return fmt.Errorf(
 			"this log records no placement, so there is nothing to re-run it with: " +
@@ -642,7 +671,7 @@ func verify(log battle.Log, limit int) error {
 				i, log.Events[i], rerun[i])
 		}
 	}
-	fmt.Printf("\nverified: re-running seed %d reproduced all %d events exactly\n",
+	fmt.Fprintf(out, "\nverified: re-running seed %d reproduced all %d events exactly\n",
 		log.Seed, len(rerun))
 	return nil
 }

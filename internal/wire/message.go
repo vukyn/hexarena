@@ -4,11 +4,13 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	stdhex "encoding/hex"
+	"encoding/json"
 	"fmt"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
+	"github.com/vukyn/hexarena/internal/plain"
 )
 
 // Format is the room's size: how many units a side fields.
@@ -208,10 +210,31 @@ type Hello struct {
 	Version
 	// Squad is the placement this player brings, by reference.
 	Squad placement.Squad `json:"squad"`
-	// Name is what the other player sees. It is the one free-text field in the
-	// protocol and it is **not** prose in the sense the record bans: nothing
-	// words it, nothing branches on it, and it is the player's own writing
-	// rather than the server's.
+	// Name is the joining player's own writing, and it is the one free-text
+	// field in the protocol. Nothing words it, nothing branches on it and it is
+	// not prose in the sense the record bans.
+	//
+	// ⚠️ **Who actually reads it: the HOST'S SCREEN, and nothing else yet.**
+	// This used to say "what the other player sees", which described a feature
+	// that does not exist — room.peer.name is stored and has no reader at all,
+	// and the transport hands this field to Options.Joined rather than taking it
+	// off the seat (→ socket.Server, cmd/hexarena-host's playerName). So the one
+	// place these bytes go today is a terminal belonging to whoever opened the
+	// room, which is the person with the least reason to trust them and the most
+	// to lose. Whoever wires the *other* player up to it inherits a second
+	// reader, not a new rule: it is cleaned here, once, before either of them
+	// can have it.
+	//
+	// ⚠️ **It is somebody else's bytes and this is where they stop being
+	// arbitrary.** UnmarshalJSON runs CleanName on every hello that arrives from
+	// a socket, so a decoded Name holds no control character and no more than
+	// NameLength runes. Bounding it at the print site instead was the bug: the
+	// host truncated for width and stripped nothing, so 36 bytes of ESC reached
+	// a terminal that reads them as commands — an OSC 52 inside the old 32-rune
+	// allowance writes the reader's clipboard, and joining needs no password if
+	// the room is browsable. → plain.Text for what "cleaned" means, CleanName
+	// for the bound, room.Room.Join for the same call on a hello built in Go
+	// rather than decoded.
 	Name string `json:"name,omitempty"`
 	// Password is the room's password, or empty for a room with none.
 	Password Password `json:"password,omitempty"`
@@ -260,6 +283,76 @@ type Hello struct {
 
 // Kind is KindHello.
 func (Hello) Kind() Kind { return KindHello }
+
+// NameLength is how many runes of Hello.Name this protocol carries.
+//
+// ⚠️ **It is a protocol bound and not a column width**, which is why it lives
+// here and not on the screen that draws it. A message limit already caps a hello
+// at 64KB, and 64KB of name is not a name — what the field is *for* is a word or
+// two somebody is called, so the number is the length of a name rather than the
+// length a reader could survive. A screen may still cut it shorter for its own
+// reasons; it may not assume anything longer can never arrive, because a peer
+// that never decoded a hello (a client built in this process) is not bounded by
+// this line.
+//
+// The old 32 is kept deliberately: it is the figure cmd/hexarena-host already
+// truncated at, so no name that used to fit stops fitting.
+const NameLength = 32
+
+// CleanName is Hello.Name as this protocol accepts it: no control character, no
+// more than NameLength runes.
+//
+// ⚠️ **Cleaning and bounding are one function because they are one answer.** Two
+// call sites ask this question — UnmarshalJSON, for a hello off a socket, and
+// room.Room.Join, for one handed over in Go — and a site that bounded without
+// cleaning is exactly the bug this fixes: 32 runes is ample for a complete
+// OSC 52, so a length check alone refuses nothing that matters.
+//
+// It cleans **before** it cuts, so the bound counts runes a reader will actually
+// see rather than being spent on bytes that are about to be dropped. Cutting
+// first would also let a cut land inside an escape and leave a different one.
+//
+// ⚠️ **A name is cleaned rather than refused, and that is a decision.** A refusal
+// would be a second way for a join to fail over something nobody can see — an
+// old client sending a stray tab would be turned away from a room it belongs in
+// — and the protocol has nothing to say about it: the field is free text and a
+// name with the escapes taken out is still the name that was meant. Refusing
+// would also tell whoever sent it exactly which byte was noticed, which is the
+// one thing worth not saying. → plain.Text.
+func CleanName(name string) string {
+	name = plain.Text(name)
+	runes := []rune(name)
+	if len(runes) > NameLength {
+		return string(runes[:NameLength])
+	}
+	return name
+}
+
+// UnmarshalJSON decodes a hello and cleans the one field in it that a stranger
+// wrote.
+//
+// ⚠️ **Here rather than in Decode, because Decode is not the only door.** The
+// transport reaches a Hello through Decode, but a test fixture, a future
+// in-process client and anything that re-reads a recorded message all reach one
+// through json.Unmarshal directly — and a check on the path rather than on the
+// type is a check the next caller does not inherit. This is the type saying what
+// it is, which is the same reason Code, Kind, Closure and Digest each decode
+// themselves.
+//
+// The local alias is what stops this recursing: json.Unmarshal on a `hello` sees
+// a type with no UnmarshalJSON of its own, while every *field* keeps the one it
+// has (Digest's, Code's), because an alias of a struct is still that struct's
+// fields.
+func (h *Hello) UnmarshalJSON(raw []byte) error {
+	type hello Hello
+	var decoded hello
+	if err := json.Unmarshal(raw, &decoded); err != nil {
+		return err
+	}
+	*h = Hello(decoded)
+	h.Name = CleanName(h.Name)
+	return nil
+}
 
 // Act is a client spending its turn: a skill and where it is pointed. Client →
 // server.
