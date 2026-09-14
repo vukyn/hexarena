@@ -101,3 +101,5 @@ here now, and new ones belong here.
 - [Diff the verdict clause, not the log line](feedback_diff_the_verdict_clause_not_the_log_line.md) — the fielded-by list grows on ANY addition; the branch move reads as :264→:256; a data-only change scores risk 0.00
 - [No arithmetic test sees a literal that agrees](feedback_no_arithmetic_test_can_see_a_literal_that_agrees.md) — derived==measured is 139==139 until a column moves; AST-walk the declaration
 - [Readings beat draws only when work MOVES](feedback_readings_beat_draws_only_when_work_moves.md) — 130-vs-203 prices a move, not an addition (260); 0.2ms a battle decides nothing, the contract does
+- [An assertion may belong to someone else](assertion-may-belong-to-someone-else.md) — os.Open's *fs.PathError already names the file; a mutation deleting your wrapper's path stayed GREEN
+- [A doc about a scanner trigger triggers it](a-doc-about-a-scanner-trigger-triggers-it.md) — quoting the accepted literal in decisions.md gave gitleaks a NEW finding; .gitleaksignore needs .gitleaks.toml
